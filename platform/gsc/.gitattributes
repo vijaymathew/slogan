@@ -1,0 +1,8 @@
+*.tgz binary
+*.png binary
+*.tiff binary
+*.key binary
+*.exe binary
+*.dmg binary
+tests/test*.ok -text
+tests/error.scm -text

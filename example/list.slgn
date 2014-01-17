@@ -1,0 +1,6 @@
+var lst = pair ("a", "b");
+println (first (lst));
+println (rest (lst));
+lst = pair ([1, 2, 3], "hello, world");
+println (first (lst));
+println (rest (lst));

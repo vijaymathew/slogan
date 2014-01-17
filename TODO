@@ -1,0 +1,6 @@
+ * make { and } optional in if.
+ * test: 
+     - logical operators - not, and, or.
+     - "if" statements.
+     - math expressions, definitions, assignments and variabale usage in expressions.
+ * implement function defintion.

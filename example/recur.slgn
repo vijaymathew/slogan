@@ -1,0 +1,11 @@
+var len = function (lst) {
+    if empty? (lst) {
+        0
+    } else {
+        1 + (len (rest (lst)))
+    }
+};
+
+println (len ([1, 2, 3])); // => 3
+println (len ([])); // => 0
+println (len (["hello"])); // => 1

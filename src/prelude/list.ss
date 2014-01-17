@@ -1,0 +1,21 @@
+(define (pair a b)
+  (cons a b))
+
+(define (first seq) 
+  (car seq))
+
+(define (rest seq) 
+  (cdr seq))
+
+(define (empty? seq)
+  (null? seq))
+
+(define (at seq i)
+  (list-ref seq i))
+
+(define (get seq key)
+  (let ((value (assoc key seq)))
+    (if value (cdr value) #f)))
+
+(define (put seq key value)
+  (cons (cons key value) seq))
