@@ -287,6 +287,7 @@
                                      (loop (cons token vars) (cons expr exprs))))
                             (error "expected colon instead of " (tokenizer 'peek))))
                        ((eq? token '*close-brace*)
+                        (tokenizer 'next)
                         (mk-record-expr (reverse vars) (reverse exprs)))
                        (else
                         (error "expected variable instead of " token))))))
@@ -295,9 +296,9 @@
 (define (mk-record-expr vars exprs)
   (let loop ((vs vars)
              (es exprs)
-             (record-expr '(lambda (*msg*))))
+             (record-expr '(let ())))
     (if (null? vs)
-        (append record-expr (record-msg-handler vars))
+        (append record-expr (list (append (list 'lambda '(*msg*)) (record-msg-handler vars))))
         (loop (cdr vs) (cdr es) (append record-expr (list (list 'define (car vs) (car es))))))))
 
 (define (record-msg-handler vars)

@@ -1,3 +1,4 @@
+ * implement chained record variable access.
  * make { and } optional in if.
  * test: 
      - logical operators - not, and, or.
