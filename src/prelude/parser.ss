@@ -138,7 +138,8 @@
         expr
         (let ((token (tokenizer 'peek)))
           (cond ((or (number? token)
-                     (string? token))
+                     (string? token)
+		     (char? token))
                  (slogan-repr->scheme-repr (tokenizer 'next)))
                 ((add-sub-opr? token)
                  (tokenizer 'next)

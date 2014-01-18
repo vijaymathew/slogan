@@ -8,7 +8,9 @@
          val)
         ((and (real? val) (exact? val))
          (exact->inexact val))
-        ((or (number? val) (string? val))
+        ((or (number? val) 
+	     (string? val)
+	     (char? val))
          val)
         (else
          (repr-convert val *scheme-reprs*))))
@@ -41,6 +43,8 @@
          (slogan-display-list val))
         ((pair? val)
          (slogan-display-pair val))
+	((char? val)
+	 (slogan-display-char val))
         (else
          (display (scheme-repr->slogan-repr val))
          #t)))
@@ -63,6 +67,11 @@
   (display " : ")
   (display (cdr p))
   (display "]"))
+
+(define (slogan-display-char c)
+  (display "'")
+  (display c)
+  (display "'"))
 
 (define (print . args)
   (let loop ((args args))
