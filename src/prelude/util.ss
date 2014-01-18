@@ -1,3 +1,5 @@
+;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
 (define *slogan-reprs* '((True . #t) (False . #f)))                         
 (define *scheme-reprs* '((#t . True) (#f . False)))
 
@@ -28,8 +30,10 @@
   (let ((r (assq val reprs)))
     (if r (cdr r) val)))
 
+(define (void? val) (eq? '#!void val))
+
 (define (slogan-display val)
-  (cond ((eq? '#!void val)
+  (cond ((void? val)
          #f)
         ((procedure? val)
          (display "[function]"))

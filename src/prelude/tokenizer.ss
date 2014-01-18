@@ -1,3 +1,5 @@
+;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
 (define (make-tokenizer port)
   (let ((current-token #f)
         (lookahead-stack '()))

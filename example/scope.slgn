@@ -32,9 +32,10 @@ println (let double = function (x) { x + x }
              [double (3 * 4), double (99 / 11), double (2 - 7)]
          }); // => [24, 18, -10]
 
-var doubleAny = function (f, x) { f (x) };
-println (doubleAny (function (x) { x + x }, 100)); // => 200
-println (doubleAny (function (x) { pair (x, x) }, 20)); // => (20 . 20)
+let doubleAny = function (f, x) { f (x) } {
+    println (doubleAny (function (x) { x + x }, 100)); // => 200
+    println (doubleAny (function (x) { pair (x, x) }, 20)); // => (20 . 20)
+};
 
 println (let x = "a" {
     let f = function (y) { [x, y] } {
@@ -68,9 +69,9 @@ var doublePair = doubler (pair);
 println (double (10)); // => 20
 println (doublePair ("hello")); // => [hello : hello]
 
-var doubleAny = function (f, x) { doubler(f)(x) };
-
-println (doubleAny (function (a, b) { a + b }, 100)); // => 200
+let doubleAny = function (f, x) { doubler(f)(x) } {
+    println (doubleAny (function (a, b) { a + b }, 100)); // => 200
+};
 
 var abs = function (n) { 
     if (n < 0) { 

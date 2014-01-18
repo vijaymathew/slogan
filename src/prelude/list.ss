@@ -1,3 +1,5 @@
+;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
 (define (pair a b)
   (cons a b))
 
