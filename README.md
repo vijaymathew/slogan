@@ -20,8 +20,8 @@ It has an interpreter and a compiler that generates platform specific executable
 
 ###Building and running Slogan
 
-To build Slogan follow these steps:
- 
+Follow these steps to build Slogan:
+
   1. ./configure
   2. make
   3. cd src; ./slogan
