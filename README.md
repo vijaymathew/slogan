@@ -18,8 +18,7 @@ This implementation, built on top of the Gambit Scheme platform, is the specific
 It also acts as a playground for language design ideas. 
 It has an interpreter and a compiler that generates platform specific executable binaries.
 
-Building and running Slogan
-===========================
+###Building and running Slogan
 
 To build Slogan follow these steps:
  
