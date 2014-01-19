@@ -1,7 +1,7 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (program port)
-  (expression/statement (make-tokenizer port)))
+(define (slogan tokenizer)
+  (expression/statement tokenizer))
 
 (define (expression/statement tokenizer)
   (if (eof-object? (tokenizer 'peek))

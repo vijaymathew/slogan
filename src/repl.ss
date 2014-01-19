@@ -2,4 +2,4 @@
 
 (load "prelude/prelude")
 
-(repl)
+(repl (make-tokenizer (current-input-port)))
