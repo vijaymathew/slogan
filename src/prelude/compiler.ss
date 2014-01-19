@@ -45,6 +45,7 @@
         display-exception
         (lambda () 
           (let ((expr (compile-line port)))
+	    (display expr) (newline)
             (eval expr)))))
       (newline))
   (repl port prompt))

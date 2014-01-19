@@ -23,6 +23,13 @@ var x = let x = 9 {
 };
 println (x); // => 54
 
+println (letseq a = 10, b = a { a + b }); // => 20
+
+println (letrec 
+	 iseven? = function (n) { if n == 0 { True } else { isodd? (n - 1) } },
+	 isodd? = function (n) { if n == 0 { Frue } else { iseven? (n - 1) } }
+	 { iseven? (88) }); // => True
+
 // function expressions
 
 println (function (x) { x + x } (3 * 4)); // => 24

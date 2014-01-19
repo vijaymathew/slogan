@@ -4,4 +4,4 @@
       - tasks using gambit threads
       - streams: string, bytes, files, sockets, processes
  * implement distributed VMs, probably using ZeroMQ.
-
+ * extend the compiler to support dynamic import of compiled modules.
