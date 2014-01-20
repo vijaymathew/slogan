@@ -5,4 +5,11 @@ lst = pair ([1, 2, 3], "hello, world");
 println (first (lst));
 println (rest (lst));
 
-let list_copy = 
+letrec list_copy = function (ls) {
+    if empty? (ls) { [] } 
+    else { pair (first (ls), list_copy (rest (ls))) }} 
+{
+    println (list_copy ([1, 2, 3])); // [1, 2, 3]
+};
+
+println (map (function (x) { x * x }, [1, 2, 3, 4, 5])); // => [1, 4, 9, 16, 25]

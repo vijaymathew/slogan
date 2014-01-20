@@ -27,7 +27,6 @@
                                            script-name)
                    (lambda (port)
                      (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
-                       (display exprs) (newline)
                        (if (not (null? exprs))
                            (begin (write (car exprs) out-port)
                                   (newline out-port)
