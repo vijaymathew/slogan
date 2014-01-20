@@ -420,6 +420,7 @@
 (define (reserved-name? sym)
   (and (symbol? sym)
        (or (eq? sym 'var)
+           (eq? sym 'import)
            (eq? sym 'if)
            (eq? sym 'function)
            (eq? sym 'record)
