@@ -3,6 +3,7 @@
 (load "prelude/consts")
 (load "prelude/list")
 (load "prelude/str")
+(load "prelude/extn")
 (load "prelude/util")
 (load "prelude/tokenizer")
 (load "prelude/parser")

@@ -9,3 +9,27 @@ var len = function (lst) {
 println (len ([1, 2, 3])); // => 3
 println (len ([])); // => 0
 println (len (["hello"])); // => 1
+
+var factorial = function (n) {
+    if n == 0 { 1 }
+    else { n * factorial (n - 1) }
+};
+
+println (factorial (1));
+println (factorial (2));
+println (factorial (3));
+println (factorial (10));
+
+// iterative factorial.
+
+factorial = function (n) {
+    letrec fact = function (i, a) {
+        if i == 0 { a }
+        else { fact (i - 1, a * i) }
+    } { fact (n, 1) }
+};
+
+println (factorial (1));
+println (factorial (2));
+println (factorial (3));
+println (factorial (10));

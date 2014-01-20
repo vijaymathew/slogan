@@ -1,0 +1,17 @@
+var qend = pair (!ignored, []);
+    
+var make_queue = 
+    function () {
+        pair (qend, qend)
+    };
+
+var putq = 
+    function (q, v) {
+        set_first (rest (q), v);
+        set_rest (rest (q), qend);
+        set_rest (q, qend);
+    };
+
+var getq = function (q) { first (first (q)) };
+
+var delq = function (q) { set_first (q, rest (first (q))) };

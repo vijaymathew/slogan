@@ -1,0 +1,43 @@
+// Continuations are specific to this implementation of Slogan.
+
+var product = function (ls) {
+    callcc (function (break) {
+        letrec f = function(ls) {
+            if empty? (ls) { 1 }
+            else if first (ls) == 0 { break (!breaking_at_zero) }
+            else { first (ls) * f (rest (ls)) }
+        } { f (ls) } 
+    })
+};
+
+println (product ([1, 2, 3, 4, 5])); // => 120
+println (product ([7, 3, 8, 0, 1, 9, 5])); // => !breaking_at_zero
+
+// simple nonpreemptive multi-tasking:
+
+let lwp_list = [] {
+    var lwp = function (thunk) {
+        lwp_list = append (lwp_list, list (thunk));
+    };
+
+    var start = function () {
+        let p = first (lwp_list) {
+            lwp_list = rest (lwp_list);
+            p()
+        }
+    };
+
+    var pause = function () {
+        callcc (function (k) {
+            lwp (function () { k (false) });
+            start ()
+        })
+    };
+    
+    lwp (function () { letrec f = function () { pause (); display ("h"); f () } { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("e"); f () } { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("y"); f () } { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("!"); f () } { f () } });
+    lwp (function () { letrec f = function () { pause (); newline (); f () } { f () } });
+    start ();
+};
