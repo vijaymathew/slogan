@@ -10,7 +10,7 @@
   (if (compile script-name assemble: (tokenizer 'compile-mode?))
       (if (tokenizer 'compile-mode?)
           `(load ,script-name)
-          `(load ,(string-append script-name ".scm")))))
+          `(load ,(string-append script-name *scm-extn*)))))
 
 (define (expression/statement tokenizer)
   (if (eof-object? (tokenizer 'peek))
