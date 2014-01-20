@@ -1,9 +1,9 @@
 GSC = ../platform/gsc/gsc/gsc
 
 all:
-	${GSC} *.ss
-	${GSC} ./prelude/*.ss
-	${GSC} -o slogan -exe repl.ss
+	${GSC} *.scm
+	${GSC} ./prelude/*.scm
+	${GSC} -o slogan -exe repl.scm
 
 clean:
 	rm *.o*

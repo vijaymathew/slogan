@@ -1,6 +1,6 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (make-tokenizer port)
+(define (make-tokenizer port #!key (compile-mode #f))
   (let ((current-token #f)
         (lookahead-stack '()))
     (lambda (msg . args)
@@ -27,6 +27,7 @@
              (begin (set! lookahead-stack (cons current-token lookahead-stack))
                     (set! current-token #f)))
          (set! lookahead-stack (cons (car args) lookahead-stack)))
+        ((compile-mode?) compile-mode)
         (else (error "tokenizer received unknown message: " msg))))))
 
 (define (next-token port)

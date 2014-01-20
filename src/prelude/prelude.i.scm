@@ -1,0 +1,5 @@
+(load "prelude/list.scm")
+(load "prelude/util.scm")
+(load "prelude/tokenizer.scm")
+(load "prelude/parser.scm")
+(load "prelude/compiler.scm")

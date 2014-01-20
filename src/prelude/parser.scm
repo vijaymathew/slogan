@@ -1,7 +1,16 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+;; forward references:
+(define compile #f) ;; defined in compiler.ss
+
 (define (slogan tokenizer)
   (expression/statement tokenizer))
+
+(define (import script-name tokenizer)
+  (if (compile script-name assemble: (tokenizer 'compile-mode?))
+      (if (tokenizer 'compile-mode?)
+          `(load ,script-name)
+          `(load ,(string-append script-name ".scm")))))
 
 (define (expression/statement tokenizer)
   (if (eof-object? (tokenizer 'peek))
@@ -15,7 +24,7 @@
 (define (statement tokenizer)
   (if (eq? (tokenizer 'peek) '*semicolon*)
       '#!void
-      (assignment-stmt tokenizer)))
+      (import-stmt tokenizer)))
 
 (define (assert-semicolon tokenizer)
   (let ((token (tokenizer 'peek)))
@@ -24,6 +33,12 @@
         (if (eq? token '*semicolon*)
             (tokenizer 'next))
         (error "statement not properly terminated."))))
+
+(define (import-stmt tokenizer)
+  (if (eq? (tokenizer 'peek) 'import)
+      (begin (tokenizer 'next)
+             (import (tokenizer 'next) tokenizer))
+      (assignment-stmt tokenizer)))
 
 (define (assignment-stmt tokenizer)
   (if (name? (tokenizer 'peek))
