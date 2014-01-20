@@ -1,7 +1,7 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define *slogan-reprs* '((True . #t) (False . #f)))                         
-(define *scheme-reprs* '((#t . True) (#f . False)))
+(define *slogan-reprs* '((true . #t) (false . #f)))                         
+(define *scheme-reprs* '((#t . true) (#f . false)))
 
 (define (scheme-repr->slogan-repr val)
   (cond ((integer? val)
@@ -27,6 +27,10 @@
 
 (define (slogan-variable->scheme-keyword var)
   (string->keyword (symbol->string var)))
+
+(define (slogan-symbol? s)
+  (and (symbol? s)
+       (char=? (string-ref (symbol->string s) 0) #\!)))
 
 (define (repr-convert val reprs)
   (let ((r (assq val reprs)))
@@ -64,7 +68,7 @@
 (define (slogan-display-pair p)
   (display "[")
   (display (car p))
-  (display " : ")
+  (display " @ ")
   (display (cdr p))
   (display "]"))
 

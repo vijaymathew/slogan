@@ -21,3 +21,6 @@
 
 (define (put seq key value)
   (cons (cons key value) seq))
+
+(define set_first set-car!)
+(define set_rest set-cdr!)

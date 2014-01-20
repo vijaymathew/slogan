@@ -139,6 +139,7 @@
            (char=? c #\_)
            (char=? c #\$)
            (char=? c #\?)
+           (char=? c #\!)
            (char=? c #\&))))
 
 (define (char-valid-in-name? c)
@@ -155,7 +156,7 @@
                    (loop (peek-char port)
                          (cons c result)))
             (string->symbol (list->string (reverse result)))))
-      (error "read-name failed at " (peek-char port))))
+      (error "read-name failed at " (read-char port))))
 
 (define (read-string port)
   (let ((c (read-char port)))

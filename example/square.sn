@@ -1,6 +1,0 @@
-var square = function (n) { n * n };
-
-println (square (5));
-println (square (-200));
-println (square (0.5));
-println (square (-0.5));

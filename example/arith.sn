@@ -1,0 +1,21 @@
+var square = function (n) { n * n };
+
+println (square (5));
+println (square (-200));
+println (square (0.5));
+println (square (-0.5));
+
+let quadratic_formula = 
+    function (a, b, c) {
+        let minusb = 0 - b,
+        radical = sqrt (b * b - 4 * (a * c)),
+        divisor = 2 * a {
+            let root1 = (minusb + radical) / divisor,
+            root2 = (minusb - radical) / divisor {
+                pair (root1, root2)
+            }
+        }
+    } 
+{
+    println (quadratic_formula (2, -4, -6)) // => [3 @ -1]
+};
