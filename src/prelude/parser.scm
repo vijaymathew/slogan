@@ -174,7 +174,7 @@
                 ((eq? token '*open-brace*)
                  (block-expr tokenizer))
                 (else
-                 (error "invalid literal expression: " token)))))))
+                 (error "invalid literal expression: " (tokenizer 'next))))))))
 
 (define (list-literal tokenizer)
   (tokenizer 'next)

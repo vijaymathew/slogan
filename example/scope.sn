@@ -1,0 +1,137 @@
+var x = 100;
+
+// simple block expressions
+
+println ({
+    var x = 10;
+    var y = 20;
+    x + y;
+}); // => 30
+
+println (x + {
+    var x = 10;
+    var y = 20;
+    x + y;
+}); // => 130
+
+// let expressions
+
+println (let x = 10, y = 20 { x * y }); // => 200
+
+var x = let x = 9 {
+    x * (let x = x / 3 { x + x })
+};
+println (x); // => 54
+
+// function expressions
+
+println (function (x) { x + x } (3 * 4)); // => 24
+
+println (let double = function (x) { x + x } 
+         { 
+             [double (3 * 4), double (99 / 11), double (2 - 7)]
+         }); // => [24, 18, -10]
+
+let doubleAny = function (f, x) { f (x) } {
+    println (doubleAny (function (x) { x + x }, 100)); // => 200
+    println (doubleAny (function (x) { pair (x, x) }, 20)); // => (20 . 20)
+};
+
+println (let x = "a" {
+    let f = function (y) { [x, y] } {
+        f ("b")
+    }
+}); // => [a, b]
+
+println (let f = let x = "sam" { function (y, z) { [x, y, z] }} {
+    f ("i", "am")
+}); // => [sam, i, am]
+
+println (let f = let x = "sam" { function (y, z) { [x, y, z] }} {
+    let x = "not sam" {
+        f ("i", "am") // x is bound to the value when `f' was created.
+    }
+}); // => [sam, i, am]
+
+// top-level definitions
+
+var xyz = ["x", "y", "z"];
+{
+    var xyz = ["z", "y", "x"];
+    println (xyz) // => [z, y, x]
+};
+println (xyz); // => [x, y, z]
+    
+var doubler = function (f) { function (x) { f (x, x) }};
+var double = doubler (function (a, b) { a + b });
+var doublePair = doubler (pair);
+
+println (double (10)); // => 20
+println (doublePair ("hello")); // => [hello : hello]
+
+let doubleAny = function (f, x) { doubler(f)(x) } {
+    println (doubleAny (function (a, b) { a + b }, 100)); // => 200
+};
+
+var abs = function (n) { 
+    if (n < 0) { 
+        0 - n
+    } else {
+        n
+    }
+};
+
+println (abs (77)); // => 77
+println (abs (-77)); // => 77
+
+var reciprocal = function (n) {
+    not (n == 0) and (1 / n)
+};
+
+println (reciprocal (3)); // => .333333
+println (reciprocal (0.5)); // => 2.0
+println (reciprocal (0)); // => False
+
+var sign = function (n) {
+    if n < 0 {
+        -1
+    } else if n > 0 {
+        1
+    } else {
+        0
+    }
+};
+
+println (sign (-88.3)); // => -1
+println (sign (0)); // => 0
+println (sign (333333333333)); // => 1
+
+var incomeTax = function (income) {
+    if income <= 10000 {
+        income * .05
+    } else if income <= 20000 {
+        ((income - 10000) * .08) + 500.00
+    } else if income <= 30000 {
+        ((income - 20000) * .13) + 1300.00
+    } else {
+        ((income - 30000) * .21) + 2600.00
+    }
+};
+
+println (incomeTax (5000)); // => 250.0
+println (incomeTax (15000)); // => 900.0
+println (incomeTax (25000)); // => 1950.0
+println (incomeTax (50000)); // => 6800.0
+
+var shorter = function (a, b) {
+    if length (b) < length (a) {
+        b
+    } else {
+        a
+    }
+};
+
+println (shorter ([1, 2], [3, 4, 5])); // => [1, 2]
+println (shorter ([1, 2], [3, 4])); // => [1, 2]
+println (shorter ([1, 2], [3])); // => [3]
+        
