@@ -47,6 +47,8 @@
          (slogan-display-list val))
         ((pair? val)
          (slogan-display-pair val))
+        ((vector? val)
+         (slogan-display-array val))
 	((char? val)
 	 (slogan-display-char val))
         (else
@@ -72,6 +74,10 @@
   (display (cdr p))
   (display ")"))
 
+(define (slogan-display-array a)
+  (display "#")
+  (slogan-display-list (vector->list a)))
+  
 (define (slogan-display-char c)
   (display "'")
   (display c)

@@ -179,6 +179,8 @@
                  (list-literal tokenizer))
                 ((eq? token '*open-brace*)
                  (block-expr tokenizer))
+                ((eq? token '*hash*)
+                 (array-literal tokenizer))
                 (else
                  (error "invalid literal expression: " (tokenizer 'next))))))))
 
@@ -192,6 +194,21 @@
           (let ((expr (expression tokenizer)))
             (assert-comma-separator tokenizer '*close-bracket*)
             (loop (cons expr result)))))))
+
+(define (array-literal tokenizer)
+  (tokenizer 'next)
+  (if (eq? (tokenizer 'peek) '*open-bracket*)
+      (begin (tokenizer 'next)
+             (let loop ((expr (list 'vector))
+                        (token (tokenizer 'peek)))
+               (cond ((eq? token '*close-bracket*)
+                      (tokenizer 'next)
+                      (reverse expr))
+                     (else 
+                      (let ((e (expression tokenizer)))
+                        (assert-comma-separator tokenizer '*close-bracket*)
+                        (loop (cons e expr) (tokenizer 'peek)))))))
+      (error "invalid start of array literal. " (tokenizer 'next))))
 
 (define (let-expr tokenizer)
   (let ((letkw (letkw? (tokenizer 'peek))))

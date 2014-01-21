@@ -68,8 +68,9 @@
                                       (cons #\} '*close-brace*)
                                       (cons #\[ '*open-bracket*)
                                       (cons #\] '*close-bracket*)
+                                      (cons #\# '*hash*)
                                       (cons #\, '*comma*)
-                                      (cons #\: '*colon*)
+                                      (cons #\: '*colon*)                                      
                                       (cons #\; '*semicolon*)))
 
 (define (math-operator? sym)
