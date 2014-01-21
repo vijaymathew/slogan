@@ -6,8 +6,11 @@
 (define (slogan tokenizer)
   (expression/statement tokenizer))
 
-(define (import script-name tokenizer)
-  (if (compile script-name assemble: (tokenizer 'compile-mode?))
+(define (import tokenizer script-name)
+  (if (compile (if (symbol? script-name) 
+                   (symbol->string script-name) 
+                   script-name) 
+               assemble: (tokenizer 'compile-mode?))
       (if (tokenizer 'compile-mode?)
           `(load ,script-name)
           `(load ,(string-append script-name *scm-extn*)))))
@@ -35,10 +38,11 @@
         (error "statement not properly terminated."))))
 
 (define (import-stmt tokenizer)
-  (if (eq? (tokenizer 'peek) 'import)
-      (begin (tokenizer 'next)
-             (import (tokenizer 'next) tokenizer))
-      (assignment-stmt tokenizer)))
+  (cond ((eq? (tokenizer 'peek) 'import)
+         (tokenizer 'next)
+         (import tokenizer (tokenizer 'next)))
+        (else
+         (assignment-stmt tokenizer))))
 
 (define (assignment-stmt tokenizer)
   (if (name? (tokenizer 'peek))
@@ -421,14 +425,9 @@
 
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (or (eq? sym 'var)
-           (eq? sym 'import)
-           (eq? sym 'if)
-           (eq? sym 'function)
-           (eq? sym 'record)
-           (eq? sym 'let)
-	   (eq? sym 'letseq)
-	   (eq? sym 'letrec))))
+       (memq sym '(var import if and or
+                       function record
+                       let letseq letrec))))
 
 (define (name? sym) 
   (or (variable? sym)

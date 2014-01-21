@@ -66,11 +66,11 @@
            (loop (cdr lst))))))
 
 (define (slogan-display-pair p)
-  (display "[")
+  (display "(")
   (display (car p))
-  (display " @ ")
+  (display " ")
   (display (cdr p))
-  (display "]"))
+  (display ")"))
 
 (define (slogan-display-char c)
   (display "'")
@@ -128,35 +128,30 @@
   (display (nonprocedure-operator-exception-operator e)))
 
 (define (display-os-exception e)
-  (print "OS exception " (os-exception-message e) 
-         ", "
+  (print "OS exception " (os-exception-message e) ", "
          (os-exception-procedure e)
-         "(" (os-exception-arguments e) ")"))
+         (os-exception-arguments e)))
 
 (define (display-no-such-file-or-directory-exception e)
   (print "no such file or directory. "
          (no-such-file-or-directory-exception-procedure e)
-         "(" (no-such-file-or-directory-exception-arguments e) ")"))
+         (no-such-file-or-directory-exception-arguments e)))
 
 (define (display-datum-parsing-exception e)
   (print "datum parsing exception. "
-         (datum-parsing-exception-kind e)
-         ","
-         (datum-parsing-exception-parameters e)
-         ", "
+         (datum-parsing-exception-kind e) ","
+         (datum-parsing-exception-parameters e) ", "
          (datum-parsing-exception-readenv e)))
 
 (define (display-expression-parsing-exception e)
   (print "expression parsing exception. "
-         (expression-parsing-exception-kind e)
-         ", "
-         (expression-parsing-exception-parameters e)
-         ", "
+         (expression-parsing-exception-kind e) ", "
+         (expression-parsing-exception-parameters e) ", "
          (expression-parsing-exception-source e)))
 
 (define (display-type-exception e)
   (print "type exception in " (type-exception-procedure e)
-         "(" (type-exception-arguments e) ")"
+         (type-exception-arguments e)
          ". expected type for argument "
          (type-exception-arg-num e) " is "
          (type-exception-type-id e)))
@@ -164,7 +159,7 @@
 (define (display-wrong-number-of-arguments-exception e)
   (print "wrong number of arguments. "
          (wrong-number-of-arguments-exception-procedure e)
-         "(" (wrong-number-of-arguments-exception-arguments e) ")"))
+         (wrong-number-of-arguments-exception-arguments e)))
 
 (define (display-error-exception e)
   (print (error-exception-message e)
@@ -173,14 +168,14 @@
 (define (display-keyword-expected-exception e)
   (print "keyword expected. "
          (keyword-expected-exception-procedure e)
-         "(" (keyword-expected-exception-arguments e) ")"))
+         (keyword-expected-exception-arguments e)))
 
 (define (display-number-of-arguments-limit-exception e)
   (print "arguments limit reached. "
          (number-of-arguments-limit-exception-procedure e)
-         "(" (number-of-arguments-limit-exception-arguments e) ")"))
+         (number-of-arguments-limit-exception-arguments e)))
 
 (define (display-unknown-keyword-argument-exception e)
   (print "unknown keyword."
          (unknown-keyword-argument-exception-procedure e)
-         "(" (unknown-keyword-argument-exception-arguments e) ")"))
+         (unknown-keyword-argument-exception-arguments e)))

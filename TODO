@@ -1,5 +1,4 @@
  * test basic features - expressions, functions, records etc
- * extend the syntax of import to support appending defines with the module name, customizing the module name etc.
  * implement libraries 
       - data structures: string, list, arrays, maps.
       - tasks using gambit threads

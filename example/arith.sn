@@ -5,7 +5,7 @@ println (square (-200));
 println (square (0.5));
 println (square (-0.5));
 
-let quadratic_formula = 
+var quadratic_formula = 
     function (a, b, c) {
         let minusb = 0 - b,
         radical = sqrt (b * b - 4 * (a * c)),
@@ -15,7 +15,6 @@ let quadratic_formula =
                 pair (root1, root2)
             }
         }
-    } 
-{
-    println (quadratic_formula (2, -4, -6)) // => [3 @ -1]
-};
+    };
+
+println (quadratic_formula (2, -4, -6)) // => (3  -1)

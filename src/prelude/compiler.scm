@@ -13,7 +13,7 @@
 (set! compile ;; forward-declared in parser.ss
       (lambda (script-name #!key 
                            (assemble #f)
-                           (exe #f))
+                           (exe #f))      
         (with-exception-catcher
          display-exception
          (lambda ()
