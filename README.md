@@ -5,7 +5,7 @@ This project strives to achieve the following goals:
     1. Design a language that is easy to learn. 
 
        Slogan is designed around a couple of simple concepts.
-       Its syntax is familiar to the vast majority of programmers.
+       Its syntax is designed to be familiar to the vast majority of programmers.
 
     2. Design a language that scales well. 
 
@@ -15,8 +15,8 @@ This project strives to achieve the following goals:
     3. Build a language runtime that has distributed computing built-into its core.
 
 This implementation, built on top of the Gambit Scheme platform, is the specification of the language.
-It also acts as a playground for language design ideas. 
-It has an interpreter and a compiler that generates platform specific executable binaries.
+It also acts as a playground for language design ideas. It comes with an interpreter and a compiler that 
+generates platform specific executable binaries.
 
 ###Building and running Slogan
 
@@ -24,7 +24,7 @@ Follow these steps to build Slogan:
 
   1. ./configure
   2. make
-  3. export SLOGAN_PRELUDE_ROOT = /fullpath-to-this-directory/src
+  3. export SLOGAN_PRELUDE_ROOT=/fullpath-to-this-directory/src
   4. cd src; ./slogan
 
 The last step will land you in the Slogan REPL.

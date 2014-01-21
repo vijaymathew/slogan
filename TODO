@@ -1,5 +1,5 @@
- * test basic features - expressions, functions, records etc
- * implement libraries 
+ * complete sorting implementation in array, list - quick-sort.
+ * implement rest of libraries 
       - data structures: string, list, arrays, maps.
       - tasks using gambit threads
       - streams: string, bytes, files, sockets, processes

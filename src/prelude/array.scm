@@ -45,11 +45,29 @@
                                     end: len))
              (loop (+ i 1)))))))
 
+(define (insertion-sort arr test)
+  (let ((len (vector-length arr)))
+    (let loop ((i 1))
+      (cond ((< i len)
+             (let inner-loop ((j i))
+               (if (and (> j 0)
+                        (test (vector-ref arr j)
+                              (vector-ref arr (- j 1))))
+                   (begin (array_exchange arr j (- j 1))
+                          (inner-loop (- j 1)))))
+             (loop (+ i 1)))))))
+
 (define (quick-sort arr test)
   #f)
 
-(define (array_sort arr #!key (test <) (type '!quick))
+(define (invalid-sort arr test)
+  (error "not a valid sort type."))
+
+(define (array_sort arr #!key (test <) (type '!insertion))
   ((case type
+     ((!insertion) insertion-sort)
      ((!quick) quick-sort)
-     ((!selection) selection-sort))
+     ((!merge) merge-sort)
+     ((!selection) selection-sort)
+     (else invalid-sort))
    arr test))
