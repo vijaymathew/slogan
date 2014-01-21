@@ -297,7 +297,7 @@
       (error "expected opening-parenthesis at the start of parameter list instead of " (tokenizer 'next))))
 
 (define (param-directive? sym)
-  (memq sym '(&optional &key &rest)))
+  (memq sym '(!optional !key !rest)))
 
 (define (record-def-expr tokenizer)
   (if (eq? (tokenizer 'peek) 'record)

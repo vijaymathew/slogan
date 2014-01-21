@@ -20,9 +20,9 @@
 
 (define (slogan-directive->scheme-directive s)
   (case s
-    ((&optional) '#!optional)
-    ((&key) '#!key)
-    ((&rest) '#!rest)
+    ((!optional) '#!optional)
+    ((!key) '#!key)
+    ((!rest) '#!rest)
     (else s)))
 
 (define (slogan-variable->scheme-keyword var)
@@ -102,6 +102,12 @@
          (display-nonprocedure-operator-exception e))
         ((wrong-number-of-arguments-exception? e)
          (display-wrong-number-of-arguments-exception e))
+        ((keyword-expected-exception? e)
+         (display-keyword-expected-exception e))
+        ((number-of-arguments-limit-exception? e)
+         (display-number-of-arguments-limit-exception e))
+        ((unknown-keyword-argument-exception? e) 
+         (display-unknown-keyword-argument-exception e))
         ((datum-parsing-exception? e)
          (display-datum-parsing-exception e))
         ((expression-parsing-exception? e)
@@ -118,7 +124,7 @@
   (newline))
 
 (define (display-nonprocedure-operator-exception e)
-  (display "not a procedure: ")
+  (display "not a procedure. ")
   (display (nonprocedure-operator-exception-operator e)))
 
 (define (display-os-exception e)
@@ -163,3 +169,18 @@
 (define (display-error-exception e)
   (print (error-exception-message e)
          (error-exception-parameters e)))
+
+(define (display-keyword-expected-exception e)
+  (print "keyword expected. "
+         (keyword-expected-exception-procedure e)
+         "(" (keyword-expected-exception-arguments e) ")"))
+
+(define (display-number-of-arguments-limit-exception e)
+  (print "arguments limit reached. "
+         (number-of-arguments-limit-exception-procedure e)
+         "(" (number-of-arguments-limit-exception-arguments e) ")"))
+
+(define (display-unknown-keyword-argument-exception e)
+  (print "unknown keyword."
+         (unknown-keyword-argument-exception-procedure e)
+         "(" (unknown-keyword-argument-exception-arguments e) ")"))
