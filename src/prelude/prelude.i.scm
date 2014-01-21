@@ -1,5 +1,7 @@
 (load "prelude/consts.scm")
+(load "prelude/array.scm")
 (load "prelude/list.scm")
+(load "prelude/char.scm")
 (load "prelude/str.scm")
 (load "prelude/extn.scm")
 (load "prelude/util.scm")

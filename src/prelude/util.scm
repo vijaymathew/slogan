@@ -126,6 +126,12 @@
          (display "heap overflow."))
         ((stack-overflow-exception? e)
          (display "stack overflow."))
+        ((range-exception? e)
+         (display-range-exception e))
+        ((divide-by-zero-exception? e)
+         (display-divide-by-zero-exception e))
+        ((improper-length-list-exception? e)
+         (display-improper-length-list-exception e))
         (else (display e)))
   (newline))
 
@@ -182,6 +188,25 @@
          (number-of-arguments-limit-exception-arguments e)))
 
 (define (display-unknown-keyword-argument-exception e)
-  (print "unknown keyword."
+  (print "unknown keyword. "
          (unknown-keyword-argument-exception-procedure e)
          (unknown-keyword-argument-exception-arguments e)))
+
+(define (display-range-exception e)
+  (print "numeric parameter at position "
+         (range-exception-arg-num e)
+         " is not in the allowed range. "
+         (range-exception-procedure e)
+         (range-exception-arguments e)))
+
+(define (display-divide-by-zero-exception e)
+  (print "division by zero."
+         (divide-by-zero-exception-procedure e)
+         (divide-by-zero-exception-arguments e)))
+
+(define (display-improper-length-list-exception e)
+  (print "lists are not of the same length. "
+         (improper-length-list-exception-procedure e)
+         (improper-length-list-exception-arguments e)
+         ", argument: "
+         (improper-length-list-exception-arg-num e)))
