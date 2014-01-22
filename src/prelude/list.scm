@@ -87,7 +87,7 @@
            #f)
           (else (loop (cdr ls))))))
 
-(define (sort ls #!key (test <) (type '!insertion))
+(define (sort ls #!key (test <) (type '!quick))
   (let ((arr (list->vector ls)))
     (array_sort arr test: test type: type)
     (vector->list arr)))

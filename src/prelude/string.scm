@@ -1,3 +1,5 @@
+;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
 (define (string-endswith? s prefix)
   (let ((plen (string-length prefix))
         (slen (string-length s)))
@@ -7,4 +9,4 @@
           (string=? subs prefix))
         #f)))
 
-(define str_ends_with? string-endswith?)
+(define string_ends_with? string-endswith?)

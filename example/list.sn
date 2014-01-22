@@ -13,3 +13,9 @@ letrec list_copy = function (ls) {
 };
 
 println (map (function (x) { x * x }, [1, 2, 3, 4, 5])); // => [1, 4, 9, 16, 25]
+
+lst = [1, 89, 0, 100, 23];
+println (sort (lst)); // => [0, 1, 23, 89, 100]
+
+lst = ['f', 'a', 'e', 'x'];
+println (sort (lst, test = char_lt?)); // => [a, e, f, x]
