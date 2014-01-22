@@ -7,5 +7,5 @@
     (begin (error "The environment variable SLOGAN_PRELUDE_ROOT is not set.")
            (exit 1)))
                      
-(define *load-prelude* `(load (string-append ,*prelude-root* "/prelude")))
-(define *load-prelude-i* `(load (string-append ,*prelude-root* "/prelude.i.scm")))
+(define *load-prelude* `(load (string-append ,*prelude-root* "prelude")))
+(define *load-prelude-i* `(load (string-append ,*prelude-root* "prelude.i.scm")))
