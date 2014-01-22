@@ -1,0 +1,33 @@
+;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
+(define task make-thread)
+(define root-task make-root-thread)
+(define task? thread?)
+(define current_task current-thread)
+(define task_name thread-name)
+(define task_at thread-specific)
+(define task_put thread-specific-set!)
+(define task_base_priority thread-base-priority)
+(define task_set_base_priority thread-base-priority-set!)
+(define task_quantum thread-quantum)
+(define task_set_quantum thread-quantum-set!)
+(define task_start thread-start!)
+(define task_yield thread-yield!)
+(define task_sleep thread-sleep!)
+(define task_terminate thread-terminate!)
+(define task_join thread-join!)
+(define task_send thread-send)
+(define task_receive thread-receive)
+(define task_messages_next thread-mailbox-next)
+(define task_messages_first thread-mailbox-rewind)
+(define task_messages_rewind thread-mailbox-extract-and-rewind)
+
+(define mutex make-mutex)
+(define mutex_at mutex-specific)
+(define mutex_put mutex-specific-set!)
+(define mutex_name mutex-name)
+(define mutex_state mutex-state)
+(define mutex_lock mutex-lock!)
+(define mutex_unlock mutex-unlock!)
+
+;; TODO - condition variables

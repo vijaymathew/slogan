@@ -1,5 +1,4 @@
  * implement rest of libraries 
-      - tasks using gambit threads
       - streams: string, bytes, files, sockets, processes
  * implement distributed VMs, probably using ZeroMQ/nanomsg
 

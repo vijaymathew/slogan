@@ -9,7 +9,6 @@
 (load (string-append *prelude-root* "string"))
 (load (string-append *prelude-root* "table"))
 (load (string-append *prelude-root* "task"))
-(load (string-append *prelude-root* "env"))
 (load (string-append *prelude-root* "extn"))
 (load (string-append *prelude-root* "util"))
 (load (string-append *prelude-root* "tokenizer"))
