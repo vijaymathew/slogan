@@ -4,7 +4,5 @@ all:
 	${GSC} -o slogan -exe ./prelude/*.scm repl.scm
 
 clean:
-	rm *.o*
-	rm ./prelude/*.o*
 	rm slogan
 
