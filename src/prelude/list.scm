@@ -27,6 +27,7 @@
 (define tail list-tail)
 (define list_to_string list->string)
 (define list_to_array list->vector)
+(define list_to_table list->table)
 
 (define (contains? ls fn)
   (let loop ((ls ls))

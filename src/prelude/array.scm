@@ -3,9 +3,8 @@
 (define array make-vector)
 (define array_length vector-length)
 (define array_at vector-ref)
-(define array_set vector-set!)
+(define array_put vector-set!)
 (define array_to_list vector->list)
-(define list_to_array list->vector)
 
 (define (array_swap arr i j)
   (let ((tmp (vector-ref arr i)))

@@ -1,7 +1,5 @@
- * complete sorting implementation in array, list - quick-sort.
  * implement rest of libraries 
-      - data structures: string, list, arrays, maps.
       - tasks using gambit threads
       - streams: string, bytes, files, sockets, processes
- * implement distributed VMs, probably using ZeroMQ.
+ * implement distributed VMs, probably using ZeroMQ/nanomsg
 
