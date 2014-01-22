@@ -1,8 +1,5 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-;; forward references:
-(define compile #f) ;; defined in compiler.ss
-
 (define (slogan tokenizer)
   (expression/statement tokenizer))
 
