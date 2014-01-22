@@ -13,7 +13,8 @@
                assemble: (tokenizer 'compile-mode?))
       (if (tokenizer 'compile-mode?)
           `(load ,script-name)
-          `(load ,(string-append script-name *scm-extn*)))))
+          `(load ,(string-append script-name *scm-extn*)))
+      (error "failed to compile " script-name)))
 
 (define (expression/statement tokenizer)
   (if (eof-object? (tokenizer 'peek))

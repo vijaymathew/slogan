@@ -20,8 +20,9 @@
            (let ((out-file-name (string-append script-name *scm-extn*)))
              (call-with-output-file out-file-name
                (lambda (out-port)
-                 (write (if (or assemble exe) *load-prelude* *load-prelude-i*) out-port)
-                 (newline out-port)
+                 (if exe
+                     (begin (write *load-prelude* out-port)
+                            (newline out-port)))
                  (call-with-input-file (if (not (string-endswith? script-name *slgn-extn*)) 
                                            (string-append script-name *slgn-extn*)
                                            script-name)

@@ -24,7 +24,7 @@ Follow these steps to build Slogan:
 
   1. ./configure
   2. make
-  3. export SLOGAN_PRELUDE_ROOT=/fullpath-to-this-directory/src
+  3. export SLOGAN_PRELUDE_ROOT=/fullpath-to-this-directory/src/prelude
   4. cd src; ./slogan
 
 The last step will land you in the Slogan REPL.

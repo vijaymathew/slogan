@@ -60,6 +60,9 @@
 (define (quick-sort arr test)
   #f)
 
+(define (merge-sort arr test)
+  #f)
+
 (define (invalid-sort arr test)
   (error "not a valid sort type."))
 
