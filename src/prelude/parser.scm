@@ -143,7 +143,7 @@
                      (begin (error "expected closing-parenthesis instead of " (tokenizer 'next))
                             #f)
                      (begin (tokenizer 'next)
-                            expr))))
+                            (member-access-expr expr tokenizer)))))
         (let ((expr (if-expr tokenizer)))
           (if expr
               expr
@@ -152,7 +152,7 @@
 (define (literal-expr tokenizer)
   (let ((expr (func-def-expr tokenizer)))
     (if expr
-        expr
+        (member-access-expr expr tokenizer)
         (let ((token (tokenizer 'peek)))
           (cond ((or (number? token)
                      (string? token)
@@ -181,6 +181,12 @@
                  (array-literal tokenizer))
                 (else
                  (error "invalid literal expression: " (tokenizer 'next))))))))
+
+(define (member-access-expr expr tokenizer)
+  (if (eq? (tokenizer 'peek) '*period*)
+      (begin (tokenizer 'next)
+	     (record-member-access expr tokenizer))
+      expr))
 
 (define (list-literal tokenizer)
   (tokenizer 'next)
@@ -332,7 +338,7 @@
                         (if (eq? (tokenizer 'peek) '*colon*)
                             (begin (tokenizer 'next)
                                    (let ((expr (expression tokenizer)))
-                                     (if (eq? (tokenizer 'peek) '*semicolon*)
+                                     (if (eq? (tokenizer 'peek) '*comma*)
                                          (tokenizer 'next))
                                      (loop (cons token vars) (cons expr exprs))))
                             (error "expected colon instead of " (tokenizer 'peek))))
