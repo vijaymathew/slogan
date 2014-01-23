@@ -43,13 +43,27 @@
 		   #f))
 	     #t))))))
 
-(define (repl tokenizer #!optional (prompt "slogan> "))
+(define (show-waiting-prompt prompt)
+  (let loop ((len (- (string-length prompt) 2))
+             (i 0))
+    (if (< len 0)
+        (display "> ")
+        (if (< i len)
+            (begin (display " ")
+                   (loop len (+ i 1)))
+            (display "> ")))))
+
+(define (repl port #!optional (prompt "slogan> "))
   (display prompt) 
   (if (slogan-display
        (with-exception-catcher 
         display-exception
-        (lambda () 
-          (let ((expr (slogan tokenizer)))
-            (eval expr)))))
+        (lambda ()
+          (let loop ((line (read-line port)))
+            (cond ((string_ends_with? line ";")
+                   (let ((expr (slogan (make-tokenizer (open-input-string line)))))
+                     (eval expr)))
+                  (else (show-waiting-prompt prompt)
+                        (loop (string-append line (read-line port)))))))))
       (newline))
-  (repl tokenizer prompt))
+  (repl port prompt))

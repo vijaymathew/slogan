@@ -28,6 +28,21 @@
 (define (slogan-variable->scheme-keyword var)
   (string->keyword (symbol->string var)))
 
+(define (slogan-symbol->scheme-sym/kw s convfn)
+  (let ((str (symbol->string s)))
+    (convfn
+     (string_replace_all 
+      (substring
+       str
+       1 (string-length str))
+      #\_ #\-))))
+
+(define (slogan-symbol->scheme-keyword s)
+  (slogan-symbol->scheme-sym/kw s string->keyword))
+
+(define (slogan-symbol->scheme-symbol s)
+  (slogan-symbol->scheme-sym/kw s string->symbol))
+
 (define (slogan-symbol? s)
   (and (symbol? s)
        (char=? (string-ref (symbol->string s) 0) #\!)))
