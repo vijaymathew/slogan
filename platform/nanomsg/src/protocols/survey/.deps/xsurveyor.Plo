@@ -1,0 +1,161 @@
+src/protocols/survey/xsurveyor.lo: src/protocols/survey/xsurveyor.c \
+ src/protocols/survey/xsurveyor.h src/protocols/survey/../../protocol.h \
+ src/protocols/survey/../../utils/msg.h \
+ src/protocols/survey/../../utils/chunkref.h \
+ src/protocols/survey/../../utils/chunk.h \
+ /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h \
+ src/protocols/survey/../../utils/int.h \
+ /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
+ /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/include/i386-linux-gnu/bits/wordsize.h \
+ /usr/include/i386-linux-gnu/gnu/stubs.h \
+ /usr/include/i386-linux-gnu/gnu/stubs-32.h \
+ /usr/include/i386-linux-gnu/bits/wchar.h \
+ src/protocols/survey/../../utils/list.h \
+ src/protocols/survey/../../utils/int.h \
+ src/protocols/survey/../utils/dist.h \
+ src/protocols/survey/../utils/../../protocol.h \
+ src/protocols/survey/../utils/../../utils/list.h \
+ src/protocols/survey/../utils/fq.h \
+ src/protocols/survey/../utils/priolist.h src/protocols/survey/../../nn.h \
+ /usr/include/errno.h /usr/include/i386-linux-gnu/bits/errno.h \
+ /usr/include/linux/errno.h /usr/include/i386-linux-gnu/asm/errno.h \
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ src/protocols/survey/../../survey.h \
+ src/protocols/survey/../../utils/err.h /usr/include/stdio.h \
+ /usr/include/i386-linux-gnu/bits/types.h \
+ /usr/include/i386-linux-gnu/bits/typesizes.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h \
+ /usr/include/i386-linux-gnu/bits/stdio_lim.h \
+ /usr/include/i386-linux-gnu/bits/sys_errlist.h \
+ /usr/include/i386-linux-gnu/bits/stdio.h \
+ /usr/include/i386-linux-gnu/bits/stdio2.h /usr/include/string.h \
+ /usr/include/xlocale.h /usr/include/i386-linux-gnu/bits/string.h \
+ /usr/include/i386-linux-gnu/bits/string2.h /usr/include/endian.h \
+ /usr/include/i386-linux-gnu/bits/endian.h \
+ /usr/include/i386-linux-gnu/bits/byteswap.h /usr/include/stdlib.h \
+ /usr/include/i386-linux-gnu/bits/string3.h \
+ src/protocols/survey/../../utils/../nn.h \
+ src/protocols/survey/../../utils/fast.h \
+ src/protocols/survey/../../utils/cont.h \
+ src/protocols/survey/../../utils/fast.h \
+ src/protocols/survey/../../utils/list.h \
+ src/protocols/survey/../../utils/alloc.h
+
+src/protocols/survey/xsurveyor.h:
+
+src/protocols/survey/../../protocol.h:
+
+src/protocols/survey/../../utils/msg.h:
+
+src/protocols/survey/../../utils/chunkref.h:
+
+src/protocols/survey/../../utils/chunk.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+
+src/protocols/survey/../../utils/int.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+
+/usr/include/stdint.h:
+
+/usr/include/features.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
+
+/usr/include/i386-linux-gnu/sys/cdefs.h:
+
+/usr/include/i386-linux-gnu/bits/wordsize.h:
+
+/usr/include/i386-linux-gnu/gnu/stubs.h:
+
+/usr/include/i386-linux-gnu/gnu/stubs-32.h:
+
+/usr/include/i386-linux-gnu/bits/wchar.h:
+
+src/protocols/survey/../../utils/list.h:
+
+src/protocols/survey/../../utils/int.h:
+
+src/protocols/survey/../utils/dist.h:
+
+src/protocols/survey/../utils/../../protocol.h:
+
+src/protocols/survey/../utils/../../utils/list.h:
+
+src/protocols/survey/../utils/fq.h:
+
+src/protocols/survey/../utils/priolist.h:
+
+src/protocols/survey/../../nn.h:
+
+/usr/include/errno.h:
+
+/usr/include/i386-linux-gnu/bits/errno.h:
+
+/usr/include/linux/errno.h:
+
+/usr/include/i386-linux-gnu/asm/errno.h:
+
+/usr/include/asm-generic/errno.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+src/protocols/survey/../../survey.h:
+
+src/protocols/survey/../../utils/err.h:
+
+/usr/include/stdio.h:
+
+/usr/include/i386-linux-gnu/bits/types.h:
+
+/usr/include/i386-linux-gnu/bits/typesizes.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h:
+
+/usr/include/i386-linux-gnu/bits/stdio_lim.h:
+
+/usr/include/i386-linux-gnu/bits/sys_errlist.h:
+
+/usr/include/i386-linux-gnu/bits/stdio.h:
+
+/usr/include/i386-linux-gnu/bits/stdio2.h:
+
+/usr/include/string.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/i386-linux-gnu/bits/string.h:
+
+/usr/include/i386-linux-gnu/bits/string2.h:
+
+/usr/include/endian.h:
+
+/usr/include/i386-linux-gnu/bits/endian.h:
+
+/usr/include/i386-linux-gnu/bits/byteswap.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/i386-linux-gnu/bits/string3.h:
+
+src/protocols/survey/../../utils/../nn.h:
+
+src/protocols/survey/../../utils/fast.h:
+
+src/protocols/survey/../../utils/cont.h:
+
+src/protocols/survey/../../utils/fast.h:
+
+src/protocols/survey/../../utils/list.h:
+
+src/protocols/survey/../../utils/alloc.h:

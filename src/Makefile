@@ -1,8 +1,12 @@
-GSC = ../platform/gsc/gsc/gsc
+GSC=../platform/gsc/gsc/gsc
+PLATFORM_INCS=../../platform/nanomsg/src
+PLATFORM_LIBS=../platform/nanomsg/.libs
 
 all:
-	${GSC} -o slogan -exe ./prelude/*.scm repl.scm
+	${GSC} -cc-options "-I${PLATFORM_INCS}" -o slogan -ld-options "-L${PLATFORM_LIBS} -lpthread -lnanomsg -lanl" -exe ./prelude/*.scm repl.scm 
 
 clean:
-	rm slogan
+	rm -f *.o*
+	rm -f ./prelude/*.o*
+	rm -f slogan
 

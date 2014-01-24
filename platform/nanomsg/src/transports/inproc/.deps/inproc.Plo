@@ -1,0 +1,128 @@
+src/transports/inproc/inproc.lo: src/transports/inproc/inproc.c \
+ src/transports/inproc/inproc.h src/transports/inproc/../../transport.h \
+ src/transports/inproc/../../nn.h /usr/include/errno.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
+ /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/include/i386-linux-gnu/bits/wordsize.h \
+ /usr/include/i386-linux-gnu/gnu/stubs.h \
+ /usr/include/i386-linux-gnu/gnu/stubs-32.h \
+ /usr/include/i386-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/i386-linux-gnu/asm/errno.h /usr/include/asm-generic/errno.h \
+ /usr/include/asm-generic/errno-base.h \
+ /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h \
+ src/transports/inproc/../../aio/fsm.h \
+ src/transports/inproc/../../aio/../utils/queue.h \
+ src/transports/inproc/../../utils/list.h \
+ src/transports/inproc/../../utils/msg.h \
+ src/transports/inproc/../../utils/chunkref.h \
+ src/transports/inproc/../../utils/chunk.h \
+ src/transports/inproc/../../utils/int.h \
+ /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
+ /usr/include/i386-linux-gnu/bits/wchar.h \
+ src/transports/inproc/../../utils/int.h src/transports/inproc/ins.h \
+ src/transports/inproc/../../utils/list.h src/transports/inproc/binproc.h \
+ src/transports/inproc/../../aio/fsm.h src/transports/inproc/cinproc.h \
+ src/transports/inproc/sinproc.h src/transports/inproc/msgqueue.h \
+ src/transports/inproc/../../utils/msg.h \
+ src/transports/inproc/../../inproc.h /usr/include/string.h \
+ /usr/include/xlocale.h /usr/include/i386-linux-gnu/bits/string.h \
+ /usr/include/i386-linux-gnu/bits/string2.h /usr/include/endian.h \
+ /usr/include/i386-linux-gnu/bits/endian.h \
+ /usr/include/i386-linux-gnu/bits/byteswap.h \
+ /usr/include/i386-linux-gnu/bits/types.h \
+ /usr/include/i386-linux-gnu/bits/typesizes.h /usr/include/stdlib.h \
+ /usr/include/i386-linux-gnu/bits/string3.h
+
+src/transports/inproc/inproc.h:
+
+src/transports/inproc/../../transport.h:
+
+src/transports/inproc/../../nn.h:
+
+/usr/include/errno.h:
+
+/usr/include/features.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
+
+/usr/include/i386-linux-gnu/sys/cdefs.h:
+
+/usr/include/i386-linux-gnu/bits/wordsize.h:
+
+/usr/include/i386-linux-gnu/gnu/stubs.h:
+
+/usr/include/i386-linux-gnu/gnu/stubs-32.h:
+
+/usr/include/i386-linux-gnu/bits/errno.h:
+
+/usr/include/linux/errno.h:
+
+/usr/include/i386-linux-gnu/asm/errno.h:
+
+/usr/include/asm-generic/errno.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+
+src/transports/inproc/../../aio/fsm.h:
+
+src/transports/inproc/../../aio/../utils/queue.h:
+
+src/transports/inproc/../../utils/list.h:
+
+src/transports/inproc/../../utils/msg.h:
+
+src/transports/inproc/../../utils/chunkref.h:
+
+src/transports/inproc/../../utils/chunk.h:
+
+src/transports/inproc/../../utils/int.h:
+
+/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+
+/usr/include/stdint.h:
+
+/usr/include/i386-linux-gnu/bits/wchar.h:
+
+src/transports/inproc/../../utils/int.h:
+
+src/transports/inproc/ins.h:
+
+src/transports/inproc/../../utils/list.h:
+
+src/transports/inproc/binproc.h:
+
+src/transports/inproc/../../aio/fsm.h:
+
+src/transports/inproc/cinproc.h:
+
+src/transports/inproc/sinproc.h:
+
+src/transports/inproc/msgqueue.h:
+
+src/transports/inproc/../../utils/msg.h:
+
+src/transports/inproc/../../inproc.h:
+
+/usr/include/string.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/i386-linux-gnu/bits/string.h:
+
+/usr/include/i386-linux-gnu/bits/string2.h:
+
+/usr/include/endian.h:
+
+/usr/include/i386-linux-gnu/bits/endian.h:
+
+/usr/include/i386-linux-gnu/bits/byteswap.h:
+
+/usr/include/i386-linux-gnu/bits/types.h:
+
+/usr/include/i386-linux-gnu/bits/typesizes.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/i386-linux-gnu/bits/string3.h:
