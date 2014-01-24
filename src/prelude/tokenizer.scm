@@ -27,6 +27,8 @@
              (begin (set! lookahead-stack (cons current-token lookahead-stack))
                     (set! current-token #f)))
          (set! lookahead-stack (cons (car args) lookahead-stack)))
+        ((has-more?)
+         (char-ready? port))
         ((compile-mode?) compile-mode)
         (else (error "tokenizer received unknown message: " msg))))))
 
