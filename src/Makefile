@@ -8,5 +8,5 @@ all:
 clean:
 	rm -f *.o*
 	rm -f ./prelude/*.o*
-	rm -f slogan
+	rm -f ./slogan
 

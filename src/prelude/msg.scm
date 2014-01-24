@@ -186,7 +186,7 @@ c-declare-end
            (flags (if dont_wait c-NN-DONTWAIT 0)))
        (let ((r ((if isstr nn_send_string nn_send_bytes) s obj len flags)))
          (if (<= r 0)
-             (eagain?)
+             (and dont_wait (eagain?))
              r)))))                 
  
  (define (msg-recv-bytes s len dont-wait)
@@ -197,13 +197,13 @@ c-declare-end
          vect)))
 
  (define (msg_recv s len #!key 
-                   (dont_wait #t)
+                   (dont_wait #f)
                    (binary #f))
    (let ((r (if binary
                 (msg-recv-bytes s len dont_wait)
-                (nn_recv_string len (if dont_wait c-NN-DONTWAIT 0)))))
+                (nn_recv_string s len (if dont_wait c-NN-DONTWAIT 0)))))
      (if (not r)
-         (eagain?)
+         (and dont_wait (eagain?))
          r)))
 
  (define (msg_device a b)

@@ -6,4 +6,4 @@ all:
 clean:
 	make -C ./platform/gsc clean
 	make -C ./platform/nanomsg clean
-	make -C ./src
+	make -C ./src clean
