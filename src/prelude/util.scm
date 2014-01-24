@@ -83,11 +83,11 @@
            (loop (cdr lst))))))
 
 (define (slogan-display-pair p)
-  (display "(")
+  (display "[")
   (display (car p))
   (display " ")
   (display (cdr p))
-  (display ")"))
+  (display "]"))
 
 (define (slogan-display-array a)
   (display "#")

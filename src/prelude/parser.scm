@@ -193,14 +193,29 @@
 
 (define (list-literal tokenizer)
   (tokenizer 'next)
-  (let loop ((result (list 'list)))
+  (let loop ((result (list 'list))
+             (first #t))
     (let ((token (tokenizer 'peek)))
       (if (eq? token '*close-bracket*)
           (begin (tokenizer 'next)
                  (reverse result))
           (let ((expr (expression tokenizer)))
-            (assert-comma-separator tokenizer '*close-bracket*)
-            (loop (cons expr result)))))))
+            (let ((pl (if first
+                          (let ((t (tokenizer 'peek)))
+                            (not (or (eq? t '*comma*)
+                                     (eq? t '*close-bracket*))))
+                          #f)))
+              (if pl
+                  (pair-literal expr tokenizer)
+                  (begin (assert-comma-separator tokenizer '*close-bracket*)
+                         (loop (cons expr result) #f)))))))))
+
+(define (pair-literal expr tokenizer)
+  (let ((result (list 'cons expr (expression tokenizer))))
+    (if (not (eq? (tokenizer 'peek) '*close-bracket*))
+        (error "pair not terminated. " (tokenizer 'next))
+        (begin (tokenizer 'next)
+               result))))
 
 (define (array-literal tokenizer)
   (tokenizer 'next)

@@ -11,6 +11,11 @@
 #include "survey.h"
 #include "pair.h"
 
+ char *nn_str_error (int n)
+ {
+   return (char *) nn_strerror (n);
+ }
+
  int is_eagain () 
  {
    return (nn_errno () == EAGAIN);
@@ -79,7 +84,7 @@
 c-declare-end
 )
 
- (define nn_strerror (c-lambda (int) char-string "nn_strerror"))
+ (define nn_strerror (c-lambda (int) char-string "nn_str_error"))
  (define nn_errno (c-lambda () int "nn_errno"))
  (define eagain? (c-lambda () int "is_eagain"))
 
