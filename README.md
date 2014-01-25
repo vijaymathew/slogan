@@ -27,8 +27,7 @@ Follow these steps to build Slogan:
   $ cd src; ./slogan
 
 The last step will land you in the Slogan REPL.
-For the Slogan compiler to work properly, you will have to point the environemnt 
-variable `SLOGAN_ROOT' to this folder:
+For the Slogan compiler to work properly, you have to point the environemnt variable `SLOGAN_ROOT' to this folder:
 
    $ export SLOGAN_ROOT=/full_path_to_the_slogan_folder
 
