@@ -1,13 +1,13 @@
 src/protocols/pipeline/push.lo: src/protocols/pipeline/push.c \
+ /usr/include/stdc-predef.h /usr/include/i386-linux-gnu/bits/predefs.h \
  src/protocols/pipeline/push.h src/protocols/pipeline/../../protocol.h \
  src/protocols/pipeline/../../utils/msg.h \
  src/protocols/pipeline/../../utils/chunkref.h \
  src/protocols/pipeline/../../utils/chunk.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h \
  src/protocols/pipeline/../../utils/int.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
- /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
- /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
  /usr/include/i386-linux-gnu/gnu/stubs-32.h \
@@ -21,6 +21,10 @@ src/protocols/pipeline/push.lo: src/protocols/pipeline/push.c \
  src/protocols/pipeline/../../pipeline.h \
  src/protocols/pipeline/../../utils/list.h
 
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
+
 src/protocols/pipeline/push.h:
 
 src/protocols/pipeline/../../protocol.h:
@@ -31,17 +35,15 @@ src/protocols/pipeline/../../utils/chunkref.h:
 
 src/protocols/pipeline/../../utils/chunk.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 src/protocols/pipeline/../../utils/int.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 

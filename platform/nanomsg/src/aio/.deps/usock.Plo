@@ -1,6 +1,6 @@
-src/aio/usock.lo: src/aio/usock.c src/aio/usock.h src/aio/../nn.h \
- /usr/include/errno.h /usr/include/features.h \
- /usr/include/i386-linux-gnu/bits/predefs.h \
+src/aio/usock.lo: src/aio/usock.c /usr/include/stdc-predef.h \
+ /usr/include/i386-linux-gnu/bits/predefs.h src/aio/usock.h \
+ src/aio/../nn.h /usr/include/errno.h /usr/include/features.h \
  /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
@@ -8,17 +8,18 @@ src/aio/usock.lo: src/aio/usock.c src/aio/usock.h src/aio/../nn.h \
  /usr/include/i386-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/i386-linux-gnu/asm/errno.h /usr/include/asm-generic/errno.h \
  /usr/include/asm-generic/errno-base.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h src/aio/usock_posix.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h src/aio/usock_posix.h \
  src/aio/fsm.h src/aio/../utils/queue.h src/aio/worker.h \
  src/aio/timerset.h src/aio/../utils/clock.h src/aio/../utils/int.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
  /usr/include/i386-linux-gnu/bits/wchar.h src/aio/../utils/list.h \
  src/aio/worker_posix.h src/aio/../utils/mutex.h /usr/include/pthread.h \
  /usr/include/endian.h /usr/include/i386-linux-gnu/bits/endian.h \
- /usr/include/i386-linux-gnu/bits/byteswap.h /usr/include/sched.h \
+ /usr/include/i386-linux-gnu/bits/byteswap.h \
  /usr/include/i386-linux-gnu/bits/types.h \
- /usr/include/i386-linux-gnu/bits/typesizes.h /usr/include/time.h \
- /usr/include/i386-linux-gnu/bits/sched.h \
+ /usr/include/i386-linux-gnu/bits/typesizes.h \
+ /usr/include/i386-linux-gnu/bits/byteswap-16.h /usr/include/sched.h \
+ /usr/include/time.h /usr/include/i386-linux-gnu/bits/sched.h \
  /usr/include/i386-linux-gnu/bits/time.h \
  /usr/include/i386-linux-gnu/bits/timex.h /usr/include/xlocale.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
@@ -32,10 +33,12 @@ src/aio/usock.lo: src/aio/usock.c src/aio/usock.h src/aio/../nn.h \
  /usr/include/i386-linux-gnu/bits/sigset.h \
  /usr/include/i386-linux-gnu/bits/select2.h \
  /usr/include/i386-linux-gnu/sys/sysmacros.h \
+ /usr/include/i386-linux-gnu/bits/epoll.h \
  /usr/include/i386-linux-gnu/sys/socket.h \
  /usr/include/i386-linux-gnu/sys/uio.h \
  /usr/include/i386-linux-gnu/bits/uio.h \
  /usr/include/i386-linux-gnu/bits/socket.h \
+ /usr/include/i386-linux-gnu/bits/socket_type.h \
  /usr/include/i386-linux-gnu/bits/sockaddr.h \
  /usr/include/i386-linux-gnu/asm/socket.h \
  /usr/include/asm-generic/socket.h \
@@ -45,7 +48,7 @@ src/aio/usock.lo: src/aio/usock.c src/aio/usock.h src/aio/../nn.h \
  src/aio/../utils/alloc.h src/aio/../utils/closefd.h \
  src/aio/../utils/cont.h src/aio/../utils/fast.h src/aio/../utils/err.h \
  /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
- /usr/include/wchar.h /usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h \
+ /usr/include/wchar.h /usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h \
  /usr/include/i386-linux-gnu/bits/stdio_lim.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h \
  /usr/include/i386-linux-gnu/bits/stdio.h \
@@ -59,8 +62,13 @@ src/aio/usock.lo: src/aio/usock.c src/aio/usock.h src/aio/../nn.h \
  /usr/include/i386-linux-gnu/bits/confname.h /usr/include/getopt.h \
  /usr/include/i386-linux-gnu/bits/unistd.h /usr/include/fcntl.h \
  /usr/include/i386-linux-gnu/bits/fcntl.h \
+ /usr/include/i386-linux-gnu/bits/fcntl-linux.h \
  /usr/include/i386-linux-gnu/bits/stat.h \
  /usr/include/i386-linux-gnu/bits/fcntl2.h
+
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
 
 src/aio/usock.h:
 
@@ -69,8 +77,6 @@ src/aio/../nn.h:
 /usr/include/errno.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 
@@ -90,7 +96,7 @@ src/aio/../nn.h:
 
 /usr/include/asm-generic/errno-base.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 src/aio/usock_posix.h:
 
@@ -106,7 +112,7 @@ src/aio/../utils/clock.h:
 
 src/aio/../utils/int.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
 
 /usr/include/stdint.h:
 
@@ -126,11 +132,13 @@ src/aio/../utils/mutex.h:
 
 /usr/include/i386-linux-gnu/bits/byteswap.h:
 
-/usr/include/sched.h:
-
 /usr/include/i386-linux-gnu/bits/types.h:
 
 /usr/include/i386-linux-gnu/bits/typesizes.h:
+
+/usr/include/i386-linux-gnu/bits/byteswap-16.h:
+
+/usr/include/sched.h:
 
 /usr/include/time.h:
 
@@ -172,6 +180,8 @@ src/aio/poller_epoll.h:
 
 /usr/include/i386-linux-gnu/sys/sysmacros.h:
 
+/usr/include/i386-linux-gnu/bits/epoll.h:
+
 /usr/include/i386-linux-gnu/sys/socket.h:
 
 /usr/include/i386-linux-gnu/sys/uio.h:
@@ -179,6 +189,8 @@ src/aio/poller_epoll.h:
 /usr/include/i386-linux-gnu/bits/uio.h:
 
 /usr/include/i386-linux-gnu/bits/socket.h:
+
+/usr/include/i386-linux-gnu/bits/socket_type.h:
 
 /usr/include/i386-linux-gnu/bits/sockaddr.h:
 
@@ -212,7 +224,7 @@ src/aio/../utils/err.h:
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h:
 
 /usr/include/i386-linux-gnu/bits/stdio_lim.h:
 
@@ -251,6 +263,8 @@ src/aio/../utils/fast.h:
 /usr/include/fcntl.h:
 
 /usr/include/i386-linux-gnu/bits/fcntl.h:
+
+/usr/include/i386-linux-gnu/bits/fcntl-linux.h:
 
 /usr/include/i386-linux-gnu/bits/stat.h:
 

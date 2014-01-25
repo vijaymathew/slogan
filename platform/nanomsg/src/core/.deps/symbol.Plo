@@ -1,6 +1,6 @@
-src/core/symbol.lo: src/core/symbol.c src/core/../nn.h \
+src/core/symbol.lo: src/core/symbol.c /usr/include/stdc-predef.h \
+ /usr/include/i386-linux-gnu/bits/predefs.h src/core/../nn.h \
  /usr/include/errno.h /usr/include/features.h \
- /usr/include/i386-linux-gnu/bits/predefs.h \
  /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
@@ -8,18 +8,20 @@ src/core/symbol.lo: src/core/symbol.c src/core/../nn.h \
  /usr/include/i386-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/i386-linux-gnu/asm/errno.h /usr/include/asm-generic/errno.h \
  /usr/include/asm-generic/errno-base.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h src/core/../inproc.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h src/core/../inproc.h \
  src/core/../ipc.h src/core/../tcp.h src/core/../pair.h \
  src/core/../pubsub.h src/core/../reqrep.h src/core/../pipeline.h \
  src/core/../survey.h src/core/../bus.h
+
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
 
 src/core/../nn.h:
 
 /usr/include/errno.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 
@@ -39,7 +41,7 @@ src/core/../nn.h:
 
 /usr/include/asm-generic/errno-base.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 src/core/../inproc.h:
 

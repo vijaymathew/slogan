@@ -1,13 +1,13 @@
 src/protocols/reqrep/rep.lo: src/protocols/reqrep/rep.c \
+ /usr/include/stdc-predef.h /usr/include/i386-linux-gnu/bits/predefs.h \
  src/protocols/reqrep/rep.h src/protocols/reqrep/../../protocol.h \
  src/protocols/reqrep/../../utils/msg.h \
  src/protocols/reqrep/../../utils/chunkref.h \
  src/protocols/reqrep/../../utils/chunk.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h \
  src/protocols/reqrep/../../utils/int.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
- /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
- /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
  /usr/include/i386-linux-gnu/gnu/stubs-32.h \
@@ -30,7 +30,7 @@ src/protocols/reqrep/rep.lo: src/protocols/reqrep/rep.c \
  /usr/include/i386-linux-gnu/bits/types.h \
  /usr/include/i386-linux-gnu/bits/typesizes.h /usr/include/libio.h \
  /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h \
  /usr/include/i386-linux-gnu/bits/stdio_lim.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h \
  /usr/include/i386-linux-gnu/bits/stdio.h \
@@ -38,7 +38,8 @@ src/protocols/reqrep/rep.lo: src/protocols/reqrep/rep.c \
  /usr/include/xlocale.h /usr/include/i386-linux-gnu/bits/string.h \
  /usr/include/i386-linux-gnu/bits/string2.h /usr/include/endian.h \
  /usr/include/i386-linux-gnu/bits/endian.h \
- /usr/include/i386-linux-gnu/bits/byteswap.h /usr/include/stdlib.h \
+ /usr/include/i386-linux-gnu/bits/byteswap.h \
+ /usr/include/i386-linux-gnu/bits/byteswap-16.h /usr/include/stdlib.h \
  /usr/include/i386-linux-gnu/bits/string3.h \
  src/protocols/reqrep/../../utils/../nn.h \
  src/protocols/reqrep/../../utils/fast.h \
@@ -47,6 +48,10 @@ src/protocols/reqrep/rep.lo: src/protocols/reqrep/rep.c \
  src/protocols/reqrep/../../utils/chunkref.h \
  src/protocols/reqrep/../../utils/wire.h \
  src/protocols/reqrep/../../utils/list.h
+
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
 
 src/protocols/reqrep/rep.h:
 
@@ -58,17 +63,15 @@ src/protocols/reqrep/../../utils/chunkref.h:
 
 src/protocols/reqrep/../../utils/chunk.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 src/protocols/reqrep/../../utils/int.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 
@@ -130,7 +133,7 @@ src/protocols/reqrep/../../utils/err.h:
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h:
 
 /usr/include/i386-linux-gnu/bits/stdio_lim.h:
 
@@ -153,6 +156,8 @@ src/protocols/reqrep/../../utils/err.h:
 /usr/include/i386-linux-gnu/bits/endian.h:
 
 /usr/include/i386-linux-gnu/bits/byteswap.h:
+
+/usr/include/i386-linux-gnu/bits/byteswap-16.h:
 
 /usr/include/stdlib.h:
 

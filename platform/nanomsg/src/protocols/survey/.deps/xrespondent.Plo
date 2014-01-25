@@ -1,13 +1,13 @@
 src/protocols/survey/xrespondent.lo: src/protocols/survey/xrespondent.c \
+ /usr/include/stdc-predef.h /usr/include/i386-linux-gnu/bits/predefs.h \
  src/protocols/survey/xrespondent.h src/protocols/survey/../../protocol.h \
  src/protocols/survey/../../utils/msg.h \
  src/protocols/survey/../../utils/chunkref.h \
  src/protocols/survey/../../utils/chunk.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h \
  src/protocols/survey/../../utils/int.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
- /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
- /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
  /usr/include/i386-linux-gnu/gnu/stubs-32.h \
@@ -25,7 +25,7 @@ src/protocols/survey/xrespondent.lo: src/protocols/survey/xrespondent.c \
  /usr/include/i386-linux-gnu/bits/types.h \
  /usr/include/i386-linux-gnu/bits/typesizes.h /usr/include/libio.h \
  /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h \
  /usr/include/i386-linux-gnu/bits/stdio_lim.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h \
  /usr/include/i386-linux-gnu/bits/stdio.h \
@@ -33,7 +33,8 @@ src/protocols/survey/xrespondent.lo: src/protocols/survey/xrespondent.c \
  /usr/include/xlocale.h /usr/include/i386-linux-gnu/bits/string.h \
  /usr/include/i386-linux-gnu/bits/string2.h /usr/include/endian.h \
  /usr/include/i386-linux-gnu/bits/endian.h \
- /usr/include/i386-linux-gnu/bits/byteswap.h /usr/include/stdlib.h \
+ /usr/include/i386-linux-gnu/bits/byteswap.h \
+ /usr/include/i386-linux-gnu/bits/byteswap-16.h /usr/include/stdlib.h \
  /usr/include/i386-linux-gnu/bits/string3.h \
  src/protocols/survey/../../utils/../nn.h \
  src/protocols/survey/../../utils/fast.h \
@@ -41,6 +42,10 @@ src/protocols/survey/xrespondent.lo: src/protocols/survey/xrespondent.c \
  src/protocols/survey/../../utils/fast.h \
  src/protocols/survey/../../utils/alloc.h \
  src/protocols/survey/../../utils/list.h
+
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
 
 src/protocols/survey/xrespondent.h:
 
@@ -52,17 +57,15 @@ src/protocols/survey/../../utils/chunkref.h:
 
 src/protocols/survey/../../utils/chunk.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 src/protocols/survey/../../utils/int.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 
@@ -112,7 +115,7 @@ src/protocols/survey/../../utils/err.h:
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdarg.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h:
 
 /usr/include/i386-linux-gnu/bits/stdio_lim.h:
 
@@ -135,6 +138,8 @@ src/protocols/survey/../../utils/err.h:
 /usr/include/i386-linux-gnu/bits/endian.h:
 
 /usr/include/i386-linux-gnu/bits/byteswap.h:
+
+/usr/include/i386-linux-gnu/bits/byteswap-16.h:
 
 /usr/include/stdlib.h:
 

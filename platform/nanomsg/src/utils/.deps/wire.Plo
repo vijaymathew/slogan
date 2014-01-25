@@ -1,6 +1,7 @@
-src/utils/wire.lo: src/utils/wire.c src/utils/wire.h src/utils/int.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
- /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
+src/utils/wire.lo: src/utils/wire.c /usr/include/stdc-predef.h \
+ /usr/include/i386-linux-gnu/bits/predefs.h src/utils/wire.h \
+ src/utils/int.h /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h \
+ /usr/include/stdint.h /usr/include/features.h \
  /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
@@ -11,9 +12,10 @@ src/utils/wire.lo: src/utils/wire.c src/utils/wire.h src/utils/int.h \
  /usr/include/i386-linux-gnu/sys/types.h \
  /usr/include/i386-linux-gnu/bits/types.h \
  /usr/include/i386-linux-gnu/bits/typesizes.h /usr/include/time.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h /usr/include/endian.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h /usr/include/endian.h \
  /usr/include/i386-linux-gnu/bits/endian.h \
  /usr/include/i386-linux-gnu/bits/byteswap.h \
+ /usr/include/i386-linux-gnu/bits/byteswap-16.h \
  /usr/include/i386-linux-gnu/sys/select.h \
  /usr/include/i386-linux-gnu/bits/select.h \
  /usr/include/i386-linux-gnu/bits/sigset.h \
@@ -23,6 +25,7 @@ src/utils/wire.lo: src/utils/wire.c src/utils/wire.h src/utils/int.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/uio.h \
  /usr/include/i386-linux-gnu/bits/socket.h \
+ /usr/include/i386-linux-gnu/bits/socket_type.h \
  /usr/include/i386-linux-gnu/bits/sockaddr.h \
  /usr/include/i386-linux-gnu/asm/socket.h \
  /usr/include/asm-generic/socket.h \
@@ -31,17 +34,19 @@ src/utils/wire.lo: src/utils/wire.c src/utils/wire.h src/utils/int.h \
  /usr/include/i386-linux-gnu/bits/socket2.h \
  /usr/include/i386-linux-gnu/bits/in.h
 
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
+
 src/utils/wire.h:
 
 src/utils/int.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 
@@ -69,13 +74,15 @@ src/utils/int.h:
 
 /usr/include/time.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 /usr/include/endian.h:
 
 /usr/include/i386-linux-gnu/bits/endian.h:
 
 /usr/include/i386-linux-gnu/bits/byteswap.h:
+
+/usr/include/i386-linux-gnu/bits/byteswap-16.h:
 
 /usr/include/i386-linux-gnu/sys/select.h:
 
@@ -94,6 +101,8 @@ src/utils/int.h:
 /usr/include/i386-linux-gnu/bits/uio.h:
 
 /usr/include/i386-linux-gnu/bits/socket.h:
+
+/usr/include/i386-linux-gnu/bits/socket_type.h:
 
 /usr/include/i386-linux-gnu/bits/sockaddr.h:
 

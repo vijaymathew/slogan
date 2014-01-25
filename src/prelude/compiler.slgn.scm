@@ -31,12 +31,14 @@
 			      (loop (cdr exprs)))))))))
 	 (if (or assemble exe)
 	     (let ((build-cmd (if exe 
-				  (string-append "../platform/gsc/gsc/gsc -o "
-						 (string-append script-name *exe-extn*)
+				  (string-append *gsc-compiler* " " 
+						 *cc-options* 
+						 " -o " (string-append script-name *exe-extn*)
+						 " " *ld-options*
 						 " -exe "
 						 (string-append *prelude-root* "/*.scm ")
 						 out-file-name)
-				  (string-append "../platform/gsc/gsc/gsc " out-file-name))))
+				  (string-append *gsc-compiler* " " out-file-name))))
 	       (if (zero? (shell-command build-cmd))
 		   (begin (delete-file out-file-name)
 			  #t)

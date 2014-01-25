@@ -1,13 +1,13 @@
 src/protocols/pair/pair.lo: src/protocols/pair/pair.c \
+ /usr/include/stdc-predef.h /usr/include/i386-linux-gnu/bits/predefs.h \
  src/protocols/pair/pair.h src/protocols/pair/../../protocol.h \
  src/protocols/pair/../../utils/msg.h \
  src/protocols/pair/../../utils/chunkref.h \
  src/protocols/pair/../../utils/chunk.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h \
  src/protocols/pair/../../utils/int.h \
- /usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h /usr/include/stdint.h \
- /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
- /usr/include/i386-linux-gnu/sys/cdefs.h \
+ /usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
+ /usr/include/features.h /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
  /usr/include/i386-linux-gnu/gnu/stubs.h \
  /usr/include/i386-linux-gnu/gnu/stubs-32.h \
@@ -20,6 +20,10 @@ src/protocols/pair/pair.lo: src/protocols/pair/pair.c \
  /usr/include/asm-generic/errno-base.h src/protocols/pair/../../pair.h \
  src/protocols/pair/../../utils/list.h
 
+/usr/include/stdc-predef.h:
+
+/usr/include/i386-linux-gnu/bits/predefs.h:
+
 src/protocols/pair/pair.h:
 
 src/protocols/pair/../../protocol.h:
@@ -30,17 +34,15 @@ src/protocols/pair/../../utils/chunkref.h:
 
 src/protocols/pair/../../utils/chunk.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stddef.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stddef.h:
 
 src/protocols/pair/../../utils/int.h:
 
-/usr/lib/gcc/i686-linux-gnu/4.6/include/stdint.h:
+/usr/lib/gcc/i686-linux-gnu/4.8/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/features.h:
-
-/usr/include/i386-linux-gnu/bits/predefs.h:
 
 /usr/include/i386-linux-gnu/sys/cdefs.h:
 
