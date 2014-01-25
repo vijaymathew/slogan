@@ -22,11 +22,15 @@ generates platform specific executable binaries.
 
 Follow these steps to build Slogan:
 
-  1. ./configure-platform
-  2. make
-  3. cd src; ./slogan
+  $ ./configure-platform
+  $ make
+  $ cd src; ./slogan
 
 The last step will land you in the Slogan REPL.
+For the Slogan compiler to work properly, you will have to point the environemnt 
+variable `SLOGAN_ROOT' to this folder:
+
+   $ export SLOGAN_ROOT=/full_path_to_the_slogan_folder
 
 Slogan is still in the very early stages of design and your feedback is appreciated.
 Please send your comments, suggestions and bug reports to vijay.the.lisper@gmail.com.
