@@ -68,8 +68,8 @@ DIST_COMMON = README $(am__configure_deps) $(dist_man1_MANS) \
 	$(dist_man3_MANS) $(dist_man7_MANS) $(nninclude_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/libnanomsg.pc.in $(top_srcdir)/configure AUTHORS \
-	COPYING compile config.guess config.sub depcomp install-sh \
-	ltmain.sh missing
+	COPYING ChangeLog compile config.guess config.sub depcomp \
+	install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
 	$(top_srcdir)/m4/dolt.m4 $(top_srcdir)/m4/libtool.m4 \
@@ -420,7 +420,7 @@ CFLAGS = -g -O2 -pthread
 CPP = gcc -std=gnu99 -E
 CPPFLAGS =  -D_GNU_SOURCE -D_GNU_SOURCE -D_GNU_SOURCE
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"nanomsg\" -DPACKAGE_TARNAME=\"nanomsg\" -DPACKAGE_VERSION=\"0.2-alpha\" -DPACKAGE_STRING=\"nanomsg\ 0.2-alpha\" -DPACKAGE_BUGREPORT=\"nanomsg@freelists.org\" -DPACKAGE_URL=\"http://nanomsg.org/\" -DPACKAGE=\"nanomsg\" -DVERSION=\"0.2-alpha\" -DNN_HAVE_GCC=1 -DNN_HAVE_LINUX=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_NETINET_IN_H=1 -DHAVE_NETDB_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_UNISTD_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_SYS_IOCTL_H=1 -DHAVE_EVENTFD=1 -DNN_HAVE_EVENTFD=1 -DHAVE_PIPE=1 -DNN_HAVE_PIPE=1 -DHAVE_PIPE2=1 -DNN_HAVE_PIPE2=1 -DHAVE_POLL=1 -DNN_HAVE_POLL=1 -DHAVE_EPOLL_CREATE=1 -DNN_USE_EPOLL=1 -DHAVE_GETIFADDRS=1 -DNN_USE_IFADDRS=1 -DHAVE_ACCEPT4=1 -DNN_HAVE_ACCEPT4=1 -DNN_HAVE_GETADDRINFO_A=1 -DNN_HAVE_SOCKETPAIR=1 -DNN_HAVE_SEMAPHORE=1 -DNN_HAVE_GCC_ATOMIC_BUILTINS=1 -DNN_USE_EVENTFD=1 -DHAVE_DLFCN_H=1 -DLT_OBJDIR=\".libs/\"
+DEFS = -DPACKAGE_NAME=\"nanomsg\" -DPACKAGE_TARNAME=\"nanomsg\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"nanomsg\ \" -DPACKAGE_BUGREPORT=\"nanomsg@freelists.org\" -DPACKAGE_URL=\"http://nanomsg.org/\" -DPACKAGE=\"nanomsg\" -DVERSION=\"\" -DNN_HAVE_GCC=1 -DNN_HAVE_LINUX=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_NETINET_IN_H=1 -DHAVE_NETDB_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_UNISTD_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_SYS_IOCTL_H=1 -DHAVE_EVENTFD=1 -DNN_HAVE_EVENTFD=1 -DHAVE_PIPE=1 -DNN_HAVE_PIPE=1 -DHAVE_PIPE2=1 -DNN_HAVE_PIPE2=1 -DHAVE_POLL=1 -DNN_HAVE_POLL=1 -DHAVE_EPOLL_CREATE=1 -DNN_USE_EPOLL=1 -DHAVE_GETIFADDRS=1 -DNN_USE_IFADDRS=1 -DHAVE_ACCEPT4=1 -DNN_HAVE_ACCEPT4=1 -DNN_HAVE_GETADDRINFO_A=1 -DNN_HAVE_SOCKETPAIR=1 -DNN_HAVE_SEMAPHORE=1 -DNN_HAVE_GCC_ATOMIC_BUILTINS=1 -DNN_USE_EVENTFD=1 -DHAVE_DLFCN_H=1 -DLT_OBJDIR=\".libs/\"
 DEPDIR = .deps
 DLLTOOL = false
 DOLT_BASH = /bin/bash
@@ -456,7 +456,7 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 NN_ABI_VERSION = 0.1.0
 NN_LIBTOOL_VERSION = 0:1:0
-NN_PACKAGE_VERSION = 0.2-alpha
+NN_PACKAGE_VERSION = 
 OBJDUMP = objdump
 OBJEXT = o
 OTOOL = 
@@ -464,10 +464,10 @@ OTOOL64 =
 PACKAGE = nanomsg
 PACKAGE_BUGREPORT = nanomsg@freelists.org
 PACKAGE_NAME = nanomsg
-PACKAGE_STRING = nanomsg 0.2-alpha
+PACKAGE_STRING = nanomsg 
 PACKAGE_TARNAME = nanomsg
 PACKAGE_URL = http://nanomsg.org/
-PACKAGE_VERSION = 0.2-alpha
+PACKAGE_VERSION = 
 PATH_SEPARATOR = :
 PTHREAD_CC = gcc -std=gnu99
 PTHREAD_CFLAGS = -pthread
@@ -477,7 +477,7 @@ SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/bash
 STRIP = strip
-VERSION = 0.2-alpha
+VERSION = 
 XMLTO = 
 abs_builddir = /home/vijay/Projects/slogan/platform/nanomsg
 abs_srcdir = /home/vijay/Projects/slogan/platform/nanomsg
@@ -2549,7 +2549,7 @@ uninstall-man: uninstall-man1 uninstall-man3 uninstall-man7
 
 #.txt.xml:
 #	$(AM_V_GEN)$(ASCIIDOC) -d manpage -b docbook -f doc/asciidoc.conf \
-#        -aversion=0.2-alpha -o $@ $<
+#        -aversion= -o $@ $<
 #.xml.1:
 #	$(AM_V_GEN)$(XMLTO) -o doc man $<
 #.xml.3:
@@ -2560,17 +2560,17 @@ uninstall-man: uninstall-man1 uninstall-man3 uninstall-man7
 #.txt.1.html:
 #	$(AM_V_GEN)$(ASCIIDOC) -d manpage -b xhtml11 \
 #        -a stylesheet=$(abs_srcdir)/doc/htmldoc.css -f doc/asciidoc.conf \
-#        -aversion=0.2-alpha -o $@ $<
+#        -aversion= -o $@ $<
 
 #.txt.3.html:
 #	$(AM_V_GEN)$(ASCIIDOC) -d manpage -b xhtml11 \
 #        -a stylesheet=$(abs_srcdir)/doc/htmldoc.css -f doc/asciidoc.conf \
-#        -aversion=0.2-alpha -o $@ $<
+#        -aversion= -o $@ $<
 
 #.txt.7.html:
 #	$(AM_V_GEN)$(ASCIIDOC) -d manpage -b xhtml11 \
 #        -a stylesheet=$(abs_srcdir)/doc/htmldoc.css -f doc/asciidoc.conf \
-#        -aversion=0.2-alpha -o $@ $<
+#        -aversion= -o $@ $<
 
 ################################################################################
 #  additional packaging-related stuff                                          #

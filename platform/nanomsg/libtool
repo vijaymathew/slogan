@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # libtool - Provide generalized library-building support services.
-# Generated automatically by config.status (nanomsg) 0.2-alpha
+# Generated automatically by config.status (nanomsg) 
 # Libtool was configured on host vijay-mathew:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
@@ -96,7 +96,7 @@ NM="/usr/bin/nm -B"
 LN_S="ln -s"
 
 # What is the maximum length of a command?
-max_cmd_len=1572864
+max_cmd_len=805306365
 
 # Object file suffix (normally "o").
 objext=o

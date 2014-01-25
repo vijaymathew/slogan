@@ -1,9 +1,13 @@
 all:
-	make -C ./platform/gsc
-	make -C ./platform/nanomsg
 	make -C ./src
 
 clean:
-	make -C ./platform/gsc clean
-	make -C ./platform/nanomsg clean
+	make -C ./src clean
+clean-all:
+	cd ./platform/gsc
+	make clean
+	cd ../
+	cd ./platform/nanomsg
+	make clean
+	cd ../
 	make -C ./src clean

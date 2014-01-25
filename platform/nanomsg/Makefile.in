@@ -68,8 +68,8 @@ DIST_COMMON = README $(am__configure_deps) $(dist_man1_MANS) \
 	$(dist_man3_MANS) $(dist_man7_MANS) $(nninclude_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/libnanomsg.pc.in $(top_srcdir)/configure AUTHORS \
-	COPYING compile config.guess config.sub depcomp install-sh \
-	ltmain.sh missing
+	COPYING ChangeLog compile config.guess config.sub depcomp \
+	install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
 	$(top_srcdir)/m4/dolt.m4 $(top_srcdir)/m4/libtool.m4 \

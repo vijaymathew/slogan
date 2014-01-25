@@ -22,10 +22,9 @@ generates platform specific executable binaries.
 
 Follow these steps to build Slogan:
 
-  1. ./configure
+  1. ./configure-platform
   2. make
-  3. export SLOGAN_PRELUDE_ROOT=/fullpath-to-this-directory/src/prelude
-  4. cd src; ./slogan
+  3. cd src; ./slogan
 
 The last step will land you in the Slogan REPL.
 
