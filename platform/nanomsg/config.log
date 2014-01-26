@@ -492,7 +492,7 @@ configure: failed program was:
 configure:5040: result: no
 configure:4938: checking whether pthreads work without any flags
 configure:5031: gcc -std=gnu99 -o conftest -g -O2    conftest.c   >&5
-/tmp/cci5BJ8D.o: In function `main':
+/tmp/ccJUNEDw.o: In function `main':
 /home/vijay/Projects/slogan/platform/nanomsg/conftest.c:20: undefined reference to `pthread_create'
 /home/vijay/Projects/slogan/platform/nanomsg/conftest.c:21: undefined reference to `pthread_join'
 /home/vijay/Projects/slogan/platform/nanomsg/conftest.c:23: undefined reference to `__pthread_register_cancel'
@@ -804,7 +804,7 @@ configure:5735: $? = 0
 configure:5735: result: yes
 configure:5750: checking for gethrtime
 configure:5750: gcc -std=gnu99 -o conftest -g -O2 -pthread  -D_GNU_SOURCE  conftest.c   >&5
-/tmp/ccXKubaB.o: In function `main':
+/tmp/ccwO3wtA.o: In function `main':
 /home/vijay/Projects/slogan/platform/nanomsg/conftest.c:70: undefined reference to `gethrtime'
 collect2: error: ld returned 1 exit status
 configure:5750: $? = 1
@@ -905,7 +905,7 @@ configure:5870: $? = 0
 configure:5870: result: yes
 configure:5883: checking for library containing getaddrinfo_a
 configure:5914: gcc -std=gnu99 -o conftest -g -O2 -pthread  -D_GNU_SOURCE -D_GNU_SOURCE  conftest.c   >&5
-/tmp/cc88mGv9.o: In function `main':
+/tmp/ccToOP0f.o: In function `main':
 /home/vijay/Projects/slogan/platform/nanomsg/conftest.c:56: undefined reference to `getaddrinfo_a'
 collect2: error: ld returned 1 exit status
 configure:5914: $? = 1

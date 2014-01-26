@@ -90,7 +90,9 @@
 (define (multi-char-operator? c)
   (or (char=? c #\=)
       (char=? c #\<)
-      (char=? c #\>)))
+      (char=? c #\>)
+      (char=? c #\&)
+      (char=? c #\|)))
 
 (define (fetch-operator port 
                         suffix
@@ -102,6 +104,13 @@
              suffix-opr)
       opr))
 
+(define (fetch-same-operator port c opr)
+  (read-char port)
+  (if (char=? (peek-char port) c)
+      (begin (read-char port)
+	     opr)
+      (error "invalid character in operator. " (read-char port))))
+
 (define (read-multi-char-operator port)
   (let ((c (peek-char port)))
     (cond ((char=? c #\=)
@@ -110,6 +119,9 @@
            (fetch-operator port #\= '*less-than-equals* '*less-than*))
           ((char=? c #\>)
            (fetch-operator port #\= '*greater-than-equals* '*greater-than*))
+	  ((or (char=? c #\&)
+	       (char=? c #\|))
+	   (fetch-same-operator port c (if (char=? c #\&) '*and* '*or*)))
           (else
            (error "expected a valid operator. unexpected character: " (read-char port))))))
 
@@ -178,7 +190,7 @@
            (char=? c #\$)
            (char=? c #\?)
            (char=? c #\!)
-           (char=? c #\&))))
+           (char=? c #\@))))
 
 (define (char-valid-in-name? c)
   (and (char? c) 

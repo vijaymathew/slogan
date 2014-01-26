@@ -92,13 +92,17 @@
                expr)))
         (else #f)))
 
-(define (block-expr tokenizer #!optional (optional-braces #f))
+(define (block-expr tokenizer #!optional 
+		    (optional-braces #f)
+		    (use-let #f))
   (if (not (eq? (tokenizer 'peek) '*open-brace*))
       (if optional-braces
           (expression/statement tokenizer)
           (error "expected block start instead of " (tokenizer 'next)))
       (begin (tokenizer 'next)
-             (let loop ((expr (cons 'let (cons '() '())))
+             (let loop ((expr (if use-let 
+				  (cons 'let (cons '() '()))
+				  (cons 'begin '())))
                         (count 0))
                (let ((token (tokenizer 'peek)))
                  (if (eq? token '*close-brace*)
@@ -113,8 +117,8 @@
   (let loop ((expr (cmpr-expr tokenizer)))
     (if (and-or-opr? (tokenizer 'peek))
         (case (tokenizer 'next)
-          ((and) (loop (swap-operands (append (and-expr tokenizer) (list expr)))))
-          ((or) (loop (swap-operands (append (or-expr tokenizer) (list expr))))))
+          ((*and*) (loop (swap-operands (append (and-expr tokenizer) (list expr)))))
+          ((*or*) (loop (swap-operands (append (or-expr tokenizer) (list expr))))))
         expr)))
   
 (define (cmpr-expr tokenizer)
@@ -178,7 +182,7 @@
                 ((eq? token '*open-bracket*)
                  (list-literal tokenizer))
                 ((eq? token '*open-brace*)
-                 (block-expr tokenizer))
+                 (block-expr tokenizer #f #t))
                 ((eq? token '*hash*)
                  (array-literal tokenizer))
                 (else
@@ -505,8 +509,8 @@
       (eq? token '*greater-than-equals*)))
 
 (define (and-or-opr? token)
-  (or (eq? token 'and)
-      (eq? token 'or)))
+  (or (eq? token '*and*)
+      (eq? token '*or*)))
 
 (define (swap-operands expr)
   (if (= 3 (length expr))

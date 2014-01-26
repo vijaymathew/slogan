@@ -85,7 +85,7 @@ println (abs (77)); // => 77
 println (abs (-77)); // => 77
 
 var reciprocal = function (n) {
-    not (n == 0) and (1 / n)
+    not (n == 0) && (1 / n)
 };
 
 println (reciprocal (3)); // => .333333
