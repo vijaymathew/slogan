@@ -40,7 +40,7 @@
          (tokenizer 'next)
          (import tokenizer (tokenizer 'next)))
         (else
-         (assignment-stmt tokenizer))))
+         (record-def-stmt tokenizer))))
 
 (define (assignment-stmt tokenizer)
   (if (name? (tokenizer 'peek))
@@ -173,7 +173,7 @@
                      (let ((var (tokenizer 'next)))
                        (if (eq? (tokenizer 'peek) '*period*)
                            (begin (tokenizer 'next)
-                                  (record-member-access var tokenizer))
+                                  (closure-member-access var tokenizer))
                            (slogan-repr->scheme-repr var)))))
                 ((eq? token '*open-bracket*)
                  (list-literal tokenizer))
@@ -187,7 +187,7 @@
 (define (member-access/funcall-expr expr tokenizer)
   (cond ((eq? (tokenizer 'peek) '*period*)
          (begin (tokenizer 'next)
-                (record-member-access expr tokenizer)))
+                (closure-member-access expr tokenizer)))
         ((eq? (tokenizer 'peek) '*open-paren*)
          (func-call-expr expr tokenizer))
         (else 
@@ -275,7 +275,7 @@
              (list 'lambda 
                    (func-params-expr tokenizer)
                    (block-expr tokenizer)))
-      (record-def-expr tokenizer)))
+      (closure-def-expr tokenizer)))
 
 (define (func-call-expr func-val tokenizer)
   (cond ((eq? (tokenizer 'peek) '*open-paren*)
@@ -286,6 +286,58 @@
                       expr)
                (error "expected closing-parenthesis after function argument list instead of " (tokenizer 'next)))))
         (else func-val)))
+
+(define (record-def-stmt tokenizer)
+  (if (eq? (tokenizer 'peek) 'record)
+      (begin (tokenizer 'next)
+	     (let ((token (tokenizer 'peek)))
+	       (if (not (variable? token))
+		   (error "expected record name. " (tokenizer 'next)))
+	       (mk-record-expr (tokenizer 'next) tokenizer)))
+      (assignment-stmt tokenizer)))
+
+(define (mk-record-expr name tokenizer)
+  (if (eq? (tokenizer 'peek) '*open-paren*)
+      (begin (tokenizer 'next)
+	     (let loop ((token (tokenizer 'peek))
+			(members '()))
+	       (cond ((variable? token)
+		      (set! token (tokenizer 'next))
+		      (assert-comma-separator tokenizer '*close-paren*)
+		      (loop (tokenizer 'peek) (cons token members)))
+		     ((eq? token '*close-paren*)
+		      (tokenizer 'next)
+		      (def-struct-expr name (reverse members)))
+		     (else
+		      (error "invalid record specification. " (tokenizer 'next))))))
+      (error "expected record member specification. " (tokenizer 'next))))
+
+(define (def-struct-expr name members)
+  (append (list 'begin
+		(append (list 'define-structure name) members))
+	  (mk-struct-accessors/modifiers name members)))
+
+(define (mk-struct-accessors/modifiers name members)
+  (let loop ((members members)
+	     (expr (list (list 'define 
+			       (string->symbol 
+				(string-append (symbol->string name)))
+			       (string->symbol
+				(string-append "make-" (symbol->string name)))))))
+    (if (null? members)
+	(reverse expr)
+	(begin (loop (cdr members)
+		     (append expr (member-accessor/modifier name (car members))))))))
+
+(define (member-accessor/modifier name mem)
+  (let ((sname (symbol->string name))
+	(smem (symbol->string mem)))
+    (let ((scm-accessor (string->symbol (string-append sname "-" smem)))
+	  (scm-modifier (string->symbol (string-append sname "-" smem "-set!")))
+	  (slgn-accessor (string->symbol (string-append sname "_" smem)))
+	  (slgn-modifier (string->symbol (string-append sname "_set_" smem))))
+      (list (list 'define slgn-accessor scm-accessor)
+	    (list 'define slgn-modifier scm-modifier)))))
 
 (define (assert-comma-separator tokenizer end-seq-char)
   (let ((token (tokenizer 'peek)))
@@ -344,8 +396,8 @@
 (define (param-directive? sym)
   (memq sym '(!optional !key !rest)))
 
-(define (record-def-expr tokenizer)
-  (if (eq? (tokenizer 'peek) 'record)
+(define (closure-def-expr tokenizer)
+  (if (eq? (tokenizer 'peek) 'closure)
       (begin (tokenizer 'next)
              (if (not (eq? (tokenizer 'peek) '*open-brace*))
                  (error "expected opening-brace instead of " (tokenizer 'next))
@@ -364,27 +416,28 @@
                             (error "expected colon instead of " (tokenizer 'peek))))
                        ((eq? token '*close-brace*)
                         (tokenizer 'next)
-                        (mk-record-expr (reverse vars) (reverse exprs)))
+                        (mk-closure-expr (reverse vars) (reverse exprs)))
                        (else
                         (error "expected variable instead of " token))))))
       #f))
 
-(define (mk-record-expr vars exprs)
+(define (mk-closure-expr vars exprs)
   (let loop ((vs vars)
              (es exprs)
-             (record-expr '(let ())))
+             (closure-expr '()))
     (if (null? vs)
-        (append record-expr (list (append (list 'lambda '(*msg*)) (record-msg-handler vars))))
-        (loop (cdr vs) (cdr es) (append record-expr (list (list 'define (car vs) (car es))))))))
+        (append (append (list 'let*) (list closure-expr))
+		(list (append (list 'lambda '(*msg*)) (closure-msg-handler vars))))
+        (loop (cdr vs) (cdr es) (append closure-expr (list (list (car vs) (car es))))))))
 
-(define (record-msg-handler vars)
+(define (closure-msg-handler vars)
   (let loop ((vars vars)
              (msg-handler '()))
     (if (null? vars)
-        (list (append (list 'case '*msg*) (reverse (cons '(else (error "member not found in record.")) msg-handler))))
+        (list (append (list 'case '*msg*) (reverse (cons '(else (error "member not found in closure.")) msg-handler))))
         (loop (cdr vars) (cons `((,(car vars)) ,(car vars)) msg-handler)))))
 
-(define (record-member-access var tokenizer)
+(define (closure-member-access var tokenizer)
   (if (variable? (tokenizer 'peek))
       (let loop ((expr `(,var ',(tokenizer 'next))))
 	(if (eq? (tokenizer 'peek) '*period*)
@@ -466,8 +519,8 @@
 
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (memq sym '(var import if and or
-                       function record
+       (memq sym '(var import record if and or
+                       function closure
                        let letseq letrec))))
 
 (define (name? sym) 

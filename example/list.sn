@@ -6,8 +6,7 @@ println (first (lst));
 println (rest (lst));
 
 letrec list_copy = function (ls) {
-    if empty? (ls) { [] } 
-    else { pair (first (ls), list_copy (rest (ls))) }} 
+    if empty? (ls) []; else pair (first (ls), list_copy (rest (ls))) } 
 {
     println (list_copy ([1, 2, 3])); // [1, 2, 3]
 };
