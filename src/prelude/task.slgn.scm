@@ -2,7 +2,7 @@
 
 (define task make-thread)
 (define root-task make-root-thread)
-(define task? thread?)
+(define is_task thread?)
 (define current_task current-thread)
 (define task_name thread-name)
 (define task_at thread-specific)
@@ -23,6 +23,7 @@
 (define task_messages_rewind thread-mailbox-extract-and-rewind)
 
 (define mutex make-mutex)
+(define is_mutex mutex?)
 (define mutex_at mutex-specific)
 (define mutex_put mutex-specific-set!)
 (define mutex_name mutex-name)

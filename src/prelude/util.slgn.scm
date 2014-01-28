@@ -66,6 +66,8 @@
          (slogan-display-array val))
 	((char? val)
 	 (slogan-display-char val))
+        ((string? val)
+         (write val))
         (else
          (display (scheme-repr->slogan-repr val))
          #t)))

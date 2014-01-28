@@ -1,5 +1,8 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+(define is_list list?)
+(define is_pair pair?)
+
 (define (pair a b)
   (cons a b))
 
@@ -9,7 +12,7 @@
 (define (rest seq) 
   (cdr seq))
 
-(define (empty? seq)
+(define (is_empty seq)
   (null? seq))
 
 (define (at seq i)
@@ -29,7 +32,7 @@
 (define list_to_array list->vector)
 (define list_to_table list->table)
 
-(define (contains? ls fn)
+(define (contains ls fn)
   (let loop ((ls ls))
     (cond ((null? ls)
            #f)
@@ -80,7 +83,7 @@
 
 ;; sorting
 
-(define (sorted? ls #!key (test <))
+(define (is_sorted ls #!key (test <))
   (let loop ((ls ls))
     (cond ((or (null? ls) (= (length ls) 1))
            #t)
@@ -92,4 +95,3 @@
   (let ((arr (list->vector ls)))
     (array_sort arr test: test type: type)
     (vector->list arr)))
-    

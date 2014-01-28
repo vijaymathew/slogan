@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Introduction</title>
+
+    <link type="text/css" rel="stylesheet" href="../style/style.css">
+  </head>
+
+  <body>
+    <div id="page" class="wide">
+      <div class="container">
+        <h2>Introduction</h2>
+        <p>The best way to learn a new programming language is to use it. This is especially true for interactive languaes like Slogan.
+          The Slogan REPL is the interactive front-end of the language. The prompt <code>&gt;</code> that you see at the REPL means that
+          Slogan is waiting for your input. As you enter expressions at the REPL, the Slogan interpreter will evaluate them and dsiplay
+          their values. Then the prompt is displayed again for receiving more input. Hence the name Read-Eval-Print-Loop.</p>
+        <p>The simplest expression that you can enter at the REPL is an integer. As you can see from the following session, Slogan
+          expectes each expression to be terminated by a <code>;</code>.</p>
+        <pre>
+          > 7;
+          => 7
+        </pre>
+        <p>For a value like an integer, there is nothing much the interpreter has got to do. It just prints the value back. So let us
+        give the interpreter some real work to do, like adding two numbers:</p>
+        <pre>
+          > 2 + 3;
+          => 5
+          </pre>
+        <p>In this expression <code>+</code> is called the <i>operator</i>. <code>2</code> and <code>3</code> are <i>operands</i>.
+          Slogan has four operators for doing arithmetics: <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>.
+          Multiplicateion (<code>*</code>) and division (<code>/</code>) takes higher precedence over the other two. Expressions 
+          can be grouped together in parenthesis to make subexpressions: </p>
+        <pre>
+          > 3 + 4 * 5;
+          => 23
+          > (3 + 4) * 5;
+          => 35
+        </pre>
+        <h3>Data types</h3>
+        <p>Slogan offers all data types found in other languages. It also has types not found in most other languages.
+          We have already seen the type <i>integer</i>. Another data type is <i>string</i> which is a series of characters
+          enclosed in double-quotes. Like integers, strings also evaluate to themselves:</p>
+        <pre>
+          > "hello, world";
+          => "hello, world"
+        </pre>
+        <p>Two Slogan data types that are not commonly found in other languages are <i>symbols</i> and <i>lists</i>.
+          Symbols are names or identifiers that usually refer to other values. So when you enter a symbol at the REPL,
+          it will evaluate to the value <i>bound</i> to the symbol. To use a symbol as a literal or make it evaluate to itself
+          you precede it with a <code>!</code>:</p>
+        <pre>
+          > !hello;
+          => !hello
+        </pre>
+        <p>Lists are zero or more comma separated elements enclosed in brackets. The elements can be of any type including other lists.</p>
+        <pre>
+          > [1, 2, 3, "hello, world"];
+          => [1, 2, 3, "hello, world"];
+          > [];
+          => []
+          > [1, [2, 3], !hi];
+          => [1, [2, 3], !hi]
+        </pre>
+        <p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -3,7 +3,7 @@
 var product = function (ls) {
     callcc (function (break) {
         letrec f = function(ls) {
-            if empty? (ls) { 1 }
+            if is_empty (ls) { 1 }
             else if first (ls) == 0 { break (!breaking_at_zero) }
             else { first (ls) * f (rest (ls)) }
         } { f (ls) } 

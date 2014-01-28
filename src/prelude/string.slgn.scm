@@ -1,18 +1,18 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (string_eq? c1 c2 #!key (ignore_case #f))
+(define (string_is_eq c1 c2 #!key (ignore_case #f))
   ((if ignore_case string-ci=? char=?) c1 c2))
 
-(define (string_lteq? c1 c2 #!key (ignore_case #f))
+(define (string_is_lteq c1 c2 #!key (ignore_case #f))
   ((if ignore_case string-ci<=? char<=?) c1 c2))
 
-(define (string_gteq? c1 c2 #!key (ignore_case #f))
+(define (string_is_gteq c1 c2 #!key (ignore_case #f))
   ((if ignore_case string-ci>=? char>=?) c1 c2))
 
-(define (string_lt? c1 c2 #!key (ignore_case #f))
+(define (string_is_lt c1 c2 #!key (ignore_case #f))
   ((if ignore_case string-ci<? char<?) c1 c2))
 
-(define (string_gt? c1 c2 #!key (ignore_case #f))
+(define (string_is_gt c1 c2 #!key (ignore_case #f))
   ((if ignore_case string-ci>? char>?) c1 c2))
 
 (define (string-map s fn)
@@ -107,8 +107,9 @@
 (define (string-trim s) 
   (string-rtrim (string-ltrim s)))
       
-(define string_starts_with? string-starts-with?)
-(define string_ends_with? string-ends-with?)
+(define is_string string?)
+(define string_starts_with string-starts-with?)
+(define string_ends_with string-ends-with?)
 (define string_to_list string->list)
 (define string_to_number string->number)
 (define string_to_symbol string->symbol)
@@ -117,7 +118,7 @@
 (define string_fill string-fill!)
 (define string_length string-length)
 (define string_at string-ref)
-(define string_put string-set!)
+(define string_set string-set!)
 (define symbol_to_string symbol->string)
 (define string_hash string=?-hash)
 (define string_indexof string-indexof)

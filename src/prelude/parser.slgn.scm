@@ -83,22 +83,24 @@
   (cond ((eq? (tokenizer 'peek) 'if)
          (tokenizer 'next)
          (let ((expr (cons 'if (list (expression tokenizer)
-                                     (block-expr tokenizer #t)))))
+                                     (expression-with-semicolon tokenizer)))))
            (if (eq? (tokenizer 'peek) 'else)
                (begin (tokenizer 'next)
                       (if (eq? (tokenizer 'peek) 'if)
                           (append expr (list (if-expr tokenizer)))
-                          (append expr (list (block-expr tokenizer #t)))))
+                          (append expr (list (expression-with-semicolon tokenizer)))))
                expr)))
         (else #f)))
 
-(define (block-expr tokenizer #!optional 
-		    (optional-braces #f)
-		    (use-let #f))
+(define (expression-with-semicolon tokenizer)
+  (let ((expr (expression tokenizer)))
+    (if (eq? (tokenizer 'peek) '*semicolon*)
+        (tokenizer 'next))
+    expr))
+
+(define (block-expr tokenizer #!optional (use-let #f))
   (if (not (eq? (tokenizer 'peek) '*open-brace*))
-      (if optional-braces
-          (expression/statement tokenizer)
-          (error "expected block start instead of " (tokenizer 'next)))
+      (error "expected block start instead of " (tokenizer 'next))
       (begin (tokenizer 'next)
              (let loop ((expr (if use-let 
 				  (cons 'let (cons '() '()))
@@ -182,7 +184,7 @@
                 ((eq? token '*open-bracket*)
                  (list-literal tokenizer))
                 ((eq? token '*open-brace*)
-                 (block-expr tokenizer #f #t))
+                 (block-expr tokenizer #t))
                 ((eq? token '*hash*)
                  (array-literal tokenizer))
                 (else

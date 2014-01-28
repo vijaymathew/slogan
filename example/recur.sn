@@ -1,5 +1,5 @@
 var len = function (lst) {
-    if empty? (lst) {
+    if is_empty (lst) {
         0
     } else {
         1 + (len (rest (lst)))

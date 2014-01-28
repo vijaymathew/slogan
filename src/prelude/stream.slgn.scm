@@ -131,9 +131,9 @@
 (define (call_with_input_string string-or-settings fn)
   (call-with-input-string (slgn-path/settings->scm-path/settings string-or-settings) fn))
 
-(define input_stream? input-port?)
-(define output_stream? output-port?)
-(define stream? port?)
+(define is_input_stream input-port?)
+(define is_output_stream output-port?)
+(define is_stream port?)
 (define current_input_stream current-input-port)
 (define current_output_stream current-output-port)
 (define close_input_stream close-input-port)
@@ -141,7 +141,7 @@
 (define close_stream close-port)
 (define read_char read-char)
 (define peek_char peek-char)
-(define char_ready? char-ready?)
+(define is_char_ready char-ready?)
 (define write_char write-char)
 (define read_line read-line)
 (define read_substring read-substring)
@@ -151,5 +151,5 @@
 (define read_u8array read-subu8vector)
 (define write_u8array write-subu8vector)
 (define force_output force-output)
-(define eof? eof-object?)
+(define is_eof eof-object?)
 

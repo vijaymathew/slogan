@@ -3,7 +3,7 @@
 (define array make-vector)
 (define array_length vector-length)
 (define array_at vector-ref)
-(define array_put vector-set!)
+(define array_set vector-set!)
 (define array_to_list vector->list)
 
 (define (array_swap arr i j)
@@ -23,7 +23,7 @@
 
 ;; sorting
 
-(define (array_sorted? arr #!key (test <))
+(define (array_is_sorted arr #!key (test <))
   (let ((len (vector-length arr)))
     (if (<= len 1)
         #t

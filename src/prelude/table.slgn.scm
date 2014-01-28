@@ -58,10 +58,11 @@
                   test: test
                   min-load: min_load
                   max-load: max_load)))
-      
+
+(define is_table table?)      
 (define table_length table-length)
 (define table_at table-ref)
-(define table_put table-set!)
+(define table_set table-set!)
 (define table_search table-search)
 (define table_foreach table-for-each)
 (define table_to_list table->list)

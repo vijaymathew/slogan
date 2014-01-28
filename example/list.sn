@@ -6,7 +6,7 @@ println (first (lst));
 println (rest (lst));
 
 letrec list_copy = function (ls) {
-    if empty? (ls) []; else pair (first (ls), list_copy (rest (ls))) } 
+    if is_empty (ls) []; else pair (first (ls), list_copy (rest (ls))) } 
 {
     println (list_copy ([1, 2, 3])); // [1, 2, 3]
 };
@@ -17,4 +17,4 @@ lst = [1, 89, 0, 100, 23];
 println (sort (lst)); // => [0, 1, 23, 89, 100]
 
 lst = ['f', 'a', 'e', 'x'];
-println (sort (lst, test = char_lt?)); // => [a, e, f, x]
+println (sort (lst, test = char_is_lt)); // => [a, e, f, x]
