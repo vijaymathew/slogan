@@ -86,9 +86,9 @@
 
 (define (slogan-display-pair p)
   (display "[")
-  (display (car p))
+  (slogan-display (car p))
   (display " ")
-  (display (cdr p))
+  (slogan-display (cdr p))
   (display "]"))
 
 (define (slogan-display-array a)
@@ -118,7 +118,8 @@
   (cond ((error-exception? e)
          (display-error-exception e))
         ((unbound-global-exception? e)
-         (print "unbound global " (unbound-global-exception-variable e)))
+         (display "unbound global ") 
+         (display (unbound-global-exception-variable e)))
         ((type-exception? e)
          (display-type-exception e))
         ((nonprocedure-operator-exception? e)
@@ -186,13 +187,14 @@
          (type-exception-type-id e)))
 
 (define (display-wrong-number-of-arguments-exception e)
-  (print "wrong number of arguments. "
-         (wrong-number-of-arguments-exception-procedure e)
+  (display "wrong number of arguments. ")
+  (print (wrong-number-of-arguments-exception-procedure e)
          (wrong-number-of-arguments-exception-arguments e)))
 
 (define (display-error-exception e)
-  (print (error-exception-message e)
-         (error-exception-parameters e)))
+  (display (error-exception-message e))
+  (display " ")
+  (display (error-exception-parameters e)))
 
 (define (display-keyword-expected-exception e)
   (print "keyword expected. "

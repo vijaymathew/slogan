@@ -85,7 +85,7 @@
        (with-exception-catcher 
         display-exception
         (lambda ()
-          (let loop ((line (read-line port)))
+          (let loop ((line (read-line port #\newline #t)))
             (cond ((and (string-ends-with? (string-rtrim line) ";")
                         (braces-matches? line))
                    (let ((tokenizer (make-tokenizer (open-input-string line))))
@@ -95,6 +95,6 @@
                                   (loop (slogan tokenizer)))
                            (eval expr)))))
                   (else (show-waiting-prompt prompt)
-                        (loop (string-append line (read-line port)))))))))
+                        (loop (string-append line (read-line port #\newline #t)))))))))
       (newline))
   (repl port prompt))

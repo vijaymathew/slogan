@@ -1,3 +1,5 @@
+;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
 (define (char_is_eq c1 c2 #!key (ignore_case #f))
   ((if ignore_case char-ci=? char=?) c1 c2))
 

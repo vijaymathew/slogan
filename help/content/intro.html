@@ -12,22 +12,20 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Introduction</h2>
-        <p>The best way to learn a new programming language is to use it. This is especially true for an interactive language like Slogan.
+        <p>The best way to learn a programming language is to use it. This is especially true for an interactive language like Slogan.
           The Slogan REPL is the interactive front-end of the language. The prompt <code>&gt;</code> that you see at the REPL means that
           Slogan is waiting for your input. As you enter expressions at the REPL, the Slogan interpreter will evaluate them and display
-          their values. Then the prompt is displayed again for receiving more input. Hence the name Read-Eval-Print-Loop.</p>
+          their values. Then the prompt is displayed again for receiving more input. Hence the name REPL or Read-Eval-Print-Loop.</p>
         <p>The simplest expression that you can enter at the REPL is an integer. As you can see from the following session, Slogan
           expects each expression to be terminated by a <code>;</code>.</p>
         <pre>
           > 7;
-          => 7
-        </pre>
+          => 7</pre>
         <p>For a value like an integer, there is nothing much the interpreter has got to do. It just prints the value back. So let us
-        give the interpreter some real work to do, like adding two numbers:</p>
+          give the interpreter some real work to do, like adding two numbers:</p>
         <pre>
           > 2 + 3;
-          => 5
-          </pre>
+          => 5</pre>
         <p>In this expression <code>+</code> is called the <i>operator</i>. <code>2</code> and <code>3</code> are <i>operands</i>.
           Slogan has four operators for doing arithmetic: <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>.
           Multiplication (<code>*</code>) and division (<code>/</code>) takes higher precedence over addition (<code>+</code>) and
@@ -36,24 +34,21 @@
           > 3 + 4 * 5;
           => 23
           > (3 + 4) * 5;
-          => 35
-        </pre>
+          => 35</pre>
         <h3>Data types</h3>
         <p>Slogan offers all data types found in other languages. It also has types not found in most other languages.
           We have already seen the type <i>integer</i>. Another data type is <i>string</i> which is a series of characters
           enclosed in double-quotes. Like integers, strings evaluate to themselves:</p>
         <pre>
           > "hello, world";
-          => "hello, world"
-        </pre>
+          => "hello, world"</pre>
         <p>Two Slogan data types that are not commonly found in other languages are <i>symbols</i> and <i>lists</i>.
           Symbols are names or identifiers that usually refer to other values. So when you enter a symbol at the REPL,
           it will evaluate to the value <i>bound</i> to the symbol. To use a symbol as a literal or make it evaluate to itself
           you precede it with the exclamation mark:</p>
         <pre>
           > !hello;
-          => !hello
-        </pre>
+          => !hello</pre>
         <p><i>Lists</i> are zero or more comma separated elements enclosed in brackets. The elements can be of any type including other lists.</p>
         <pre>
           > [1, 2, 3, "hello, world"];
@@ -61,9 +56,207 @@
           > [];
           => []
           > [1, [2, 3], !hi];
-          => [1, [2, 3], !hi]
-        </pre>
-        <p>
+          => [1, [2, 3], !hi]</pre>
+        <p>Lists are also built using the function <code>list</code>:</p>
+        <pre>
+          >  list (1, 2, 3);
+          => [1, 2, 3]</pre>
+        <p>In fact, lists are constructed from simpler structures known as pairs. A pair consists of two elements enclosed in brackets but
+          unlike a list, the elements are separated by just a space: </p>
+        <pre>
+          > [1 2];
+          => [1 2]
+
+          > [1 [2 3]];
+          => [1 [2 3]]
+
+          > [1 [2 [3 [4 5]]]];
+          => [1 [2 [3 [4 5]]]]
+
+          > [1 [2 [3 [4, 5]]]];
+          => [1, 2, 3, 4, 5]</pre>
+        <p>The first expression creates a pair of two integers. The second and third expressions creates pairs with more pairs nested within them.
+          A pair is converted to a list by simply making its last element a list. This is what the last expressions does. Another way to
+          build pairs is by using the <code>pair</code> function: </p>          
+        <pre> 
+          > pair (1, 2);
+          => [1 2]
+          > pair (1, pair (2, 3));
+          => [1 [2 3]]</pre>
+        <p>The functions <code>first</code> and <code>rest</code> are used to extract the elements from a pair. As lists are built from pairs
+          these functions work with lists as well:</p>
+        <pre>
+          > first (["hello" "bye"]);
+          => "hello"
+          > rest (["hello" "bye"]);
+          => "bye"
+          > rest ([1, 2, 3, 4, 5]);
+          => [2, 3, 4, 5]
+          > first ([1, 2, 3, 4, 5]);
+          => 1
+          >  first (rest (rest ([1, 2, 3, 4, 5])));
+          => 3</pre>
+        <h4>Truth values and Conditionals</h4>
+        <p>The symbol <code>true</code> represents truth and <code>false</code> represents falsity. The data type of truth values is called
+          <i>Boolean</i>. A function that returns a truth value is known as a <i>predicate</i>. In Slogan predicates are often 
+          identified by the presence of the indicative <i>is</i>. For example, the predicate <code>is_list</code> 
+          returns <code>true</code> if its argument is a list. <code>is_pair</code> is used to check if a value is a pair.</p>
+        <pre>
+          > is_list ([1,2,3]);
+          => true
+          > is_list (123);
+          => false
+          > is_pair (123);
+          => false
+          > is_pair ([1, 2, 3]);
+          => true
+          > is_pair ([1 [2 3]]);
+          => true</pre>
+        <p><code>is_empty</code> returns <code>true</code> for an empty list.</p>
+        <pre>
+          > is_empty ([]);
+          => true
+          > is_empty ([1, 2, 3]);
+          => false</pre>
+        <p><code>not</code> is another useful function for working with truth values. It returns the inverse of its argument.</p>
+        <pre>
+          > not (true);
+          => false
+          > not (is_list (100));
+          => true</pre>
+        <p>Slogan has only one conditional - <code>if</code>. Unlike its counterpart in most other languages, <code>if</code> is an expression
+          in Slogan, i.e, it evaluates to a value. In its simplest form <code>if</code> consumes an expression. If it evaluates to 
+          <code>true</code>, the expression that follows is evaluated, otherwise it is skipped.</p>
+        <pre>
+          > if is_list ([1, 2, 3]) 1 + 2 + 3;
+          => 6
+          > (if is_list ([1, 2, 3]) 1 + 2 + 3) * 100;
+          => 600
+          > if is_list (123) 1 + 2 + 3;
+          ></pre>
+        <p>The last expression returns no value. (In fact, it returns a special value called <code>void</code> which has no visual 
+          representation). <code>if</code> can have an optional <code>else</code> part, the expression following which is evaluated if
+          the condition evaluated to <code>false</code>.</p>
+        <pre>
+          >  if is_list (123) 1 + 2 + 3 else "not a list";
+          => "not a list"
+          > if is_list (123) 1 + 2 + 3 else if is_pair ([1, [2 3]]) 10 + 20 + 30;
+          => 60
+          > if is_list (123) 1 + 2 + 3 else if is_pair (123) 10 + 20 + 30 else "not a list or a pair";
+          => "not a list or a pair"</pre>
+        <p>The logical functions <code>and</code> and <code>or</code> are often used in conditional expressions. <code>and</code>
+          evaluates to <code>true</code> if all its arguments evaluates to <code>true</code>. <code>or</code> evaluates to <code>true</code>
+          if any of its arguments evaluates to <code>true</code>.</p>
+        <pre>
+          > and (is_list ([1, 2, 3]), is_integer (123));
+          => true
+          > and (is_list (123), is_integer (123));
+          => false
+          > or (is_list (123), is_integer (123));
+          => true</pre>
+        <h3>Variables</h3>
+        <p>Even if you have never programmed before, the concept of variables must be familiar to you. 
+          They are commonly used in mathematics, for instance, to represent unknown values. In the following formula,
+          which computes the area of a circle, <code>r</code> is a variable that stands for the radius. The area of any
+          circle can be calculated just by replacing <code>r</code> with the actual radius:</p>
+        <p><code>3.14 * r * r</code></p>
+        <p>Variable play a similar role in Slogan. <code>let</code> is the expression used to introduce new local variables.
+          <code>let</code> has two parts. First comes the declarations part which binds variable names to values. It is followed by 
+          a code block which becomes the body of the <code>let</code> expressions. A code block is a bunch of expressions enclosed in
+          opening and closing braces (<code> { } </code>). In the following example, the variables <code>x</code> and <code>y</code>
+          are visible only in the local <i>context</i> of the <code>let</code> that introduces them. They are not visible globally.</p>
+        <pre>
+          > let x = 100, y = 200 { x + y };
+          => 300
+          > x + y;
+          => error: unbound global x</pre>
+        <p>Global variables are introduced with the variable declaration statement. A variable declaration starts with the keyword
+          <code>var</code>. It is followed by the variable name and a value assignment. </p>
+        <pre>
+          > var x = 100;
+          > var y = 200;
+          > x + y;
+          => 300</pre>
+        <p>The value of a variable can be changed using the assignment statement.</p> 
+        <pre>
+          > x = 500;
+          > x + y;
+          => 700
+          > let x = 0 { x = 400; x + y };
+          => 600
+          > x + y;
+          => 700</pre>        
+        <p>Assignment changes the value of the variable bound in the immediate context. The <code>x</code> getting assigned in the
+          <code>let</code> body is the local <code>x</code>, not the global one.</p>
+        <div id="note"><p><em>Note:</em> If you have programmed in a statically typed language like C, you might have 
+            notice the lack of type specification in the <code>var</code> statement. Slogan is dynamically typed and types are 
+            associated with values not variables. As the program runs, a variable can point to values of any type.</p></div>
+        <h3>Functions</h3>
+        <p>Functions are code blocks that are associated with a list of variables called <i>parameters</i>. The code of the function
+          can be executed or <i>called</i> by providing values to the parameters. These values are known as <i>arguments</i>. Slogan
+          treats functions themselves as normal values. This means that a function can be bound to a variable. It also means that
+          a function can receive a function as its argument. A function can also evaluate to produce another function as its value.</p>
+        <p>The <code>function</code> keyword creates a new function. A function expression is similar to <code>let</code>. 
+          It has two parts - a parenthesized list of parameters and a code block that becomes the function body. Unlike <code>let</code>
+          the values of the variables are provided only when the function is called. That means the same function can be invoked with
+          different values bound to its local variables or parameters.</p>
+        <p>The following code shows how to define and use a function that calculates the area of a circle with radius <code>r</code>:</p>
+        <pre>
+          > var area_of_circle = function(r) { 3.14 * r * r };
+          > area_of_circle (10);
+          => 314.
+          > area_of_circle (14.23);
+          => 635.827706</pre>
+        <p>Here is one more example of a function. This one takes a list as argument and returns its third element.</p>
+        <pre>
+          > var third = function (list) { first (rest (rest (list))) };
+          > third ([1, 2, 3, 4, 5]);
+          => 3
+          > third (["what", "is", "your", "name?"]);
+          => "your"</pre>
+        <h4>Recursion and Iteration</h4>
+        <p>The function <code>third</code> calls other functions to get its work done. A function can also call itself. Such a
+          function is said to be <i>recursive</i>. The following recursive function checks whether an object is the member of 
+          a list or not:</p>
+        <pre>
+          > var is_member = 
+          function (list, object) {
+          if is_empty (list) false
+          else if object == first (list) true
+          else is_member (rest (list), object)
+          };</pre>
+        <p>The only new feature that this function introduces is the <code>==</code> operator. It returns <code>true</code>
+          if both its operands are identical. It works for all built-in data types including strings and lists. Here is our new
+          function in action: </p>
+        <pre>
+          > is_member ([1, 2, 3], 3);
+          => true
+          > is_member ([1, 2, 3], 4);
+          > false</pre>
+        <p>Here is an English description of what the function does: </p>
+        <ol>
+          <li>if the list is empty, it is clear that <code>object</code> is not a member. Hence return <code>false</code>.</li>
+          <li>else if the first element of the list is equal to <code>object</code>, return <code>true</code>.</li>
+          <li>else ignore the first element and continue the search with the rest of the elements.</li>
+        </ol>
+        <p>The <code>is_member</code> is also a special case of a recursive function, in that it is <i>iterative</i>.
+          This is because the recursive call to <code>is_member</code> is a <i>tail call</i>, i.e, it happens as the final
+          action that the function performs. As a consequence, <code>is_member</code> need not keep track of any state in between
+          calls to itself. As Slogan has optimized tail calls, it does not need special looping constructs like 
+          <code>for</code> and <code>while</code>. In effect, the <code>is_member</code> function is equal to the following function written 
+          in an imperative language:</p>
+        <pre>
+          // C like pseudo-code.
+          bool is_member (List list, Object object) {
+              int len = length (list);
+              for (int i = 0; i < len; ++i) {
+                 if (list[i] == object) {
+                    return true;
+                 }
+              }
+              return false;
+          }</pre>
+        <p></p>
       </div>
     </div>
   </body>

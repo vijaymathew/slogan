@@ -33,7 +33,7 @@
             (eq? token '*close-brace*))
         (if (eq? token '*semicolon*)
             (tokenizer 'next))
-        (error "statement not properly terminated."))))
+        (error "statement or expression not properly terminated."))))
 
 (define (import-stmt tokenizer)
   (cond ((eq? (tokenizer 'peek) 'import)
@@ -83,12 +83,12 @@
   (cond ((eq? (tokenizer 'peek) 'if)
          (tokenizer 'next)
          (let ((expr (cons 'if (list (expression tokenizer)
-                                     (expression-with-semicolon tokenizer)))))
+                                     (expression tokenizer)))))
            (if (eq? (tokenizer 'peek) 'else)
                (begin (tokenizer 'next)
                       (if (eq? (tokenizer 'peek) 'if)
                           (append expr (list (if-expr tokenizer)))
-                          (append expr (list (expression-with-semicolon tokenizer)))))
+                          (append expr (list (expression tokenizer)))))
                expr)))
         (else #f)))
 

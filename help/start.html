@@ -25,48 +25,40 @@
         <h2>Installing Slogan</h2>
         <p>You can fetch the latest source code of Slogan from <a href="https://github.com/vijaymathew/slogan">github</a>.
           Slogan should build without problems on all modern Unixes - including GNU/Linux and the various BSDs.
-          Once you have cloned the git repository, issue these commands to compile Slogan:
+          Once you have cloned the git repository, issue these commands to compile Slogan:</p>
           <pre>
             $ cd /path-to-slogan-directory
             $ ./configure-platform
             $ make
-            $ ./src/slogan
-          </pre>
-          Once you execute the last command, you should see a prompt like this:
+            $ ./src/slogan</pre>
+         <p>Once you execute the last command, you should see a prompt like this:</p>
           <pre>
-            slogan>
-          </pre>
-          This is the Slogan REPL (Read-Eval-Print-Loop) where you can enter expressions.
+            slogan></pre>
+          <p>This is the Slogan REPL (Read-Eval-Print-Loop) where you can enter expressions.
           Slogan will print back the result of evaluating the expressions.
-          Here is are a few expressions that you may want to try:
+          Here is are a few expressions that you may want to try:</p>
           <pre>
             slogan> "hello, world";
-            hello, world
+            "hello, world"
             slogan> 1 + 2;
-            3
-          </pre>
-          Congratulations for executing your first programs in Slogan!
-          To quit the REPL, type `exit();' and press enter.<br />
+            3</pre>
+          <p>To quit the REPL, type `exit();' and press enter.</p>
 
-          To compile Slogan programs from any directory, you have to create the environment variable `SLOGAN_ROOT':
+          <p>To compile Slogan programs from any directory, you have to create the environment variable `SLOGAN_ROOT':</p>
 
           <pre>
-            $ export SLOGAN_ROOT=/path-to-slogan-directory
-          </pre>
+            $ export SLOGAN_ROOT=/path-to-slogan-directory</pre>
           
           <h2>Learn Slogan</h2>
-        <p>Slogan is easy to learn. Its syntax must be familiar to most programmers, 
-          especially those who have worked with JavaScript or some 
-          language in the C family. Slogan's semantics is modeled after the 
+        <p>Slogan is a simple language. Its syntax must be familiar to most programmers, 
+          especially those who have worked with JavaScript or some language in the C family. Slogan's semantics is modeled after the 
           programming language <a href="http://en.wikipedia.org/wiki/Scheme_(programming_language)">Scheme</a>.
           This means that you need to master only a small set of concepts to program in the small as well
           as in the large.</p>
-        <p>The following tutorial will help you get started programming in Slogan. It assumes no previous programming
-          background. I hope even experienced programmers, who are new to functional programming, will enjoy it. </p>
-        <p>All sample code can be directly entered at the REPL and evaluated. In the text of the tutorial, an expression or
-          a program statement to be typed at the REPL is preceded by a ">" and the result of evaluation will be prefixed 
-          by a "=>".
-        </p>
+        <p>The following tutorial will help you get started programming in Slogan. It makes no assumption about your programming
+          background. All sample code can be directly entered at the REPL and evaluated. In the text of the tutorial, an 
+          expression or a program statement to be typed at the REPL is preceded by a ">" and the result of evaluation will 
+          be prefixed by a "=>".</p>
         <ol>
           <li><a href="./content/intro.html">Introduction</a></li>
         </ol>

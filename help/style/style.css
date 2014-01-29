@@ -192,6 +192,12 @@ div#footer {
     margin: 40px 0;
 }
 
+div#note {
+    color: #666;
+    font-size: 14px;
+    margin: 40px 0;
+}
+
 div#menu > a,
 div#menu > input,
 div#learn .buttons a,
