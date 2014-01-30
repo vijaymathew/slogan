@@ -1,0 +1,31 @@
+// Code adapted from Paul Graham's ANSI Common Lisp.
+
+var compress = 
+    function (lst) {
+        letrec ne_pair = 
+            function (e, n) {
+                if n > 1 pair (n, e) else e
+            },
+        compr = 
+            function (e, n, lst) {
+                if is_empty (lst) list (ne_pair (e, n))
+                else let next = head (lst) {
+                    if next == e compr (e, n + 1, tail (lst))
+                    else pair (ne_pair (e, n), compr (next, 1, tail (lst)))
+                }
+            }
+        {
+            if is_pair (lst) compr (head (lst), 1, tail (lst))
+            else lst
+        }
+    };
+
+var uncompress =
+    function (lst) {
+        if is_empty (lst) lst
+        else let e = head (lst),
+        rest = uncompress (tail (lst)) {
+            if is_pair (e) append (list_of (head (e), tail (e)), rest)
+            else pair (e, rest)
+        }
+    };

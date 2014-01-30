@@ -83,18 +83,18 @@
           => [1 2]
           > pair (1, pair (2, 3));
           => [1 [2 3]]</pre>
-        <p>The functions <code>first</code> and <code>rest</code> are used to extract the elements from a pair. As lists are built from pairs
+        <p>The functions <code>head</code> and <code>tail</code> are used to extract the elements from a pair. As lists are built from pairs
           these functions work with lists as well:</p>
         <pre>
-          > first (["hello" "bye"]);
+          > head (["hello" "bye"]);
           => "hello"
-          > rest (["hello" "bye"]);
+          > tail (["hello" "bye"]);
           => "bye"
-          > rest ([1, 2, 3, 4, 5]);
+          > tail ([1, 2, 3, 4, 5]);
           => [2, 3, 4, 5]
-          > first ([1, 2, 3, 4, 5]);
+          > head ([1, 2, 3, 4, 5]);
           => 1
-          >  first (rest (rest ([1, 2, 3, 4, 5])));
+          >  head (tail (tail ([1, 2, 3, 4, 5])));
           => 3</pre>
         <h4>Truth values and Conditionals</h4>
         <p>The symbol <code>true</code> represents truth and <code>false</code> represents falsity. The data type of truth values is called
@@ -209,7 +209,7 @@
           => 635.827706</pre>
         <p>Here is one more example of a function. This one takes a list as argument and returns its third element.</p>
         <pre>
-          > var third = function (list) { first (rest (rest (list))) };
+          > var third = function (list) { head (tail (tail (list))) };
           > third ([1, 2, 3, 4, 5]);
           => 3
           > third (["what", "is", "your", "name?"]);
@@ -222,12 +222,11 @@
           > var is_member = 
           function (list, object) {
           if is_empty (list) false
-          else if object == first (list) true
-          else is_member (rest (list), object)
+          else if object == head (list) true
+          else is_member (tail (list), object)
           };</pre>
         <p>The only new feature that this function introduces is the <code>==</code> operator. It returns <code>true</code>
-          if both its operands are identical. It works for all built-in data types including strings and lists. Here is our new
-          function in action: </p>
+          if both its operands are normally regarded as same. Here is our new function in action: </p>
         <pre>
           > is_member ([1, 2, 3], 3);
           => true
@@ -256,7 +255,15 @@
               }
               return false;
           }</pre>
-        <p></p>
+                                  <h3>Comments</h3>
+        <p>Slogan supports both line and block comments. The character combination <code>//</code> starts a line comment.
+          All input following a <code>//</code> up till the end of the line is ignored. Block comments are enclosed within
+          <code>/* */</code>:</p>
+        <pre>
+          // this is a line comment.
+
+          /* this is a 
+             block comment. */</pre>
       </div>
     </div>
   </body>

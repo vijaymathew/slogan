@@ -2,14 +2,15 @@
 
 (define is_list list?)
 (define is_pair pair?)
+(define (is_atom x) (not (pair? x)))
 
 (define (pair a b)
   (cons a b))
 
-(define (first seq) 
+(define (head seq) 
   (car seq))
 
-(define (rest seq) 
+(define (tail seq) 
   (cdr seq))
 
 (define (is_empty seq)
@@ -25,9 +26,8 @@
 (define (put seq key value)
   (cons (cons key value) seq))
 
-(define set_first set-car!)
-(define set_rest set-cdr!)
-(define tail list-tail)
+(define set_head set-car!)
+(define set_tail set-cdr!)
 (define list_to_string list->string)
 (define list_to_array list->vector)
 (define list_to_table list->table)
@@ -95,3 +95,18 @@
   (let ((arr (list->vector ls)))
     (array_sort arr test: test type: type)
     (vector->list arr)))
+
+;; 
+
+(define (copy_list lst)
+  (if (is_atom lst) 
+      lst
+      (cons (car lst) (copy_list (cdr lst)))))
+
+(define (list_of n #!optional fill-with)
+  (let ((opr (if (< n 0) + -)))
+    (let loop ((r '())
+               (n n))
+      (if (zero? n)
+          r
+          (loop (cons fill-with r) (opr n 1))))))

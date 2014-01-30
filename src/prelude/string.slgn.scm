@@ -1,19 +1,19 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define (string_is_eq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci=? char=?) c1 c2))
+  ((if ignore_case string-ci=? string=?) c1 c2))
 
 (define (string_is_lteq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci<=? char<=?) c1 c2))
+  ((if ignore_case string-ci<=? string<=?) c1 c2))
 
 (define (string_is_gteq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci>=? char>=?) c1 c2))
+  ((if ignore_case string-ci>=? string>=?) c1 c2))
 
 (define (string_is_lt c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci<? char<?) c1 c2))
+  ((if ignore_case string-ci<? string<?) c1 c2))
 
 (define (string_is_gt c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci>? char>?) c1 c2))
+  ((if ignore_case string-ci>? string>?) c1 c2))
 
 (define (string-map s fn)
   (let* ((len (string-length s))

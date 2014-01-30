@@ -1,12 +1,12 @@
 var lst = pair ("a", "b");
-println (first (lst));
-println (rest (lst));
+println (head (lst));
+println (tail (lst));
 lst = pair ([1, 2, 3], "hello, world");
-println (first (lst));
-println (rest (lst));
+println (head (lst));
+println (tail (lst));
 
 letrec list_copy = function (ls) {
-    if is_empty (ls) [] else pair (first (ls), list_copy (rest (ls))) } 
+    if is_empty (ls) [] else pair (head (ls), list_copy (tail (ls))) } 
 {
     println (list_copy ([1, 2, 3])); // [1, 2, 3]
 };

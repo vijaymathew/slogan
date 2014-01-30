@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Data structures</title>
+
+    <link type="text/css" rel="stylesheet" href="../style/style.css">
+  </head>
+
+  <body>
+    <div id="page" class="wide">
+      <div class="container">
+        <h2>Data structures</h2>
+        <h3>Pairs and Lists</h3>
+        <p>In the <a href="./intro.html">introduction</a> we met <code>pair</code>, <code>head</code> and <code>tail</code>, 
+          the basic list manipulation functions. <code>pair</code> combines two objects. The two halves of a pair can point to
+          any objects, including other pairs. It is by taking advantage of this fact that we use pairs to build lists.
+          A list is a pair whose tail points to another pair. This tutorial already showed you how to create lists using
+          literal expressions and the functions <code>pair</code> and <code>list</code>. Another function that can build new
+          lists is <code>copy_list</code>. It takes a list and returns a copy of it. The following session makes clear the difference
+          between simply assigning a list to a variable and actually copying it:</p>
+        <pre>
+          > var a = [1,2,3];
+          > var b = a;
+          > set_head (b, 100);
+          > b;
+          => [100, 2, 3]
+          > a;
+          => [100, 2, 3]</pre>
+        <p>The destructive function <code>set_head</code> changes both <code>a</code> and <code>b</code> because the assignment
+          operation simply points <code>b</code> to the same memory location as <code>a</code>. To actually copy the contents of
+          the list to a new memory location and point <code>b</code> to that, we can use <code>copy_list</code>:</p>
+        <pre>
+          > a = [1, 2, 3];
+          > b = copy_list (a);
+          > a;
+          => [1, 2, 3]
+          > b;
+          => [1, 2, 3]
+          > set_head (b, 100);
+          > a;
+          => [1, 2, 3]
+          > b;
+          => [100, 2, 3]</pre>
+        <p>Another function useful for building new lists is <code>append</code>. It returns the concatenation any number of lists
+          by copying all its arguments except the last.</p>
+        <pre>
+          > append ([1, 2], ["hello", "there"], [3, 4, [!good !bye]]);
+          => [1, 2, "hello", "there", 3, 4, [!good !bye]]</pre>
+        <p>The functions and language facilities that we learned so far is enough to write programs that does something useful,
+          for instance, a utility that compresses a list. The compression algorithm used itself can be very simple - 
+          replace repeated occurrences of an element with a pair that contains the number of occurrences and the element itself. 
+          For example, the list <code>[1, 1, 1, 2]</code> will be compressed as <code>[[3 1], 2]</code>. Here is an initial
+          version of our <code>compress</code> function:</p>
+        <pre>
+var compress = 
+    function (lst) {
+        letrec ne_pair = 
+            function (e, n) {
+                if n > 1 pair (n, e) 
+                else e
+            },
+        compr = 
+            function (e, n, lst) {
+                if is_empty (lst) list (ne_pair (e, n))
+                else let next = head (lst) {
+                    if next == e compr (e, n + 1, tail (lst))
+                    else pair (ne_pair (e, n), compr (next, 1, tail (lst)))
+                }
+            }
+        {
+            if is_pair (lst) compr (head (lst), 1, tail (lst))
+            else lst
+        }
+};</pre>
+        <p>As this a rather large piece of code, you might want to type it into a text editor and import the file into the
+          Slogan REPL. Files of Slogan scripts usually has the extension <code>.sn</code>. So you can save this file as
+          <code>compress.sn</code>. To make the function definition available in the REPL, you import the script using the
+          <code>import</code> statement. You don't have to provide the extension while importing the script. Once the script
+          is imported its global definitions can be accessed from the REPL:</p>
+        <pre>
+          > import "/path/to/my/scripts/compress";
+          > compress ([1, 1, 1, 2]);
+          => [[3 1], 2]
+          > compress ([1, 1, 1, 2, 0, 2, 2]);
+          => [[3 1], 2, 0, [2 2]]</pre>
+        <p>Now some explanation on the implementation. <code>compress</code> makes use of two internal functions - <code>ne_pair</code>
+          and <code>compr</code> to get the actual work done. They are introduced using a <code>letrec</code> (let-recursive) expression
+          because the <code>compr</code> makes recursive calls to itself and <code>ne_pair</code>. (More on <code>letrec</code> later).
+          <code>ne_pair</code> is called to pack an element and its number of occurrences in the list to a pair. For each subsequent
+          occurrence of the same element in the list, <code>compr</code> calls itself. On finding a new element or at the end of the
+          list <code>compr</code> call <code>ne_pair</code> to get the compressed representation.</p>
+        <p>We need a function to recreate compressed lists:</p>
+        <pre>
+var uncompress =
+  function (lst) {
+    if is_empty (lst) lst
+    else let e = head (lst),
+    rest = uncompress (tail (lst)) {
+       if is_pair (e) append (list_of (head (e), tail (e)), rest)
+       else pair (e, rest)
+    }
+};</pre>
+        <p>The <code>uncompress</code> function makes use of the built-in function <code>list_of</code> to expand a pair into a list.
+          The first argument of <code>list_of</code> is the length of the new list and the optional second argument is the initial value
+          to put in each slot.</p>
+        <p>Our compression program has many limitations - it is slow, inefficient and will break for lists that contain other lists.
+          In later sections of this tutorial, we will re-visit these functions and fix some of these issues.</p>
+        <p><div id="note"><em>Note:</em> The compression sample was adapted from Paul Graham's ANSI Common Lisp. Full source code of 
+                                        coding examples are available in the <code>example/tutorial</code> directory.</div></p>
+      </div>
+    </div>
+    </body>
+</html>

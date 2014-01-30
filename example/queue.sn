@@ -1,17 +1,21 @@
-var qend = pair (!ignored, []);
+var mk_qend = function () { pair (!ignored, []) };
     
 var make_queue = 
     function () {
-        pair (qend, qend)
+        let qend = mk_qend () {
+            pair (qend, qend)
+        }
     };
 
 var putq = 
     function (q, v) {
-        set_first (rest (q), v);
-        set_rest (rest (q), qend);
-        set_rest (q, qend);
+        let qend = mk_qend () {
+            set_head (tail (q), v);
+            set_tail (tail (q), qend);
+            set_tail (q, qend);
+        }
     };
 
-var getq = function (q) { first (first (q)) };
+var getq = function (q) { head (head (q)) };
 
-var delq = function (q) { set_first (q, rest (first (q))) };
+var delq = function (q) { set_head (q, tail (head (q))) };
