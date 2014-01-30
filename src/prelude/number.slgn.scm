@@ -5,3 +5,8 @@
 (define is_real real?)
 (define is_zero zero?)
 (define integer_to_char integer->char)
+
+(define add +)
+(define sub -)
+(define mult *)
+(define div /)

@@ -87,6 +87,18 @@
           (else 
            (loop (cdr ls) removed (cons (car ls) result))))))
 
+(define (reduce ls fn #!key initial_value)
+  (if (null? ls)
+      ls
+      (begin (if (not initial_value)
+		 (begin (set! initial_value (car ls))
+			(set! ls (cdr ls))))
+	     (let loop ((ls (cdr ls))
+			(result (fn initial_value (car ls))))
+	       (if (null? ls)
+		   result
+		   (loop (cdr ls) (fn result (car ls))))))))
+
 ;; sorting
 
 (define (is_sorted ls #!key (test <))

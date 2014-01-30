@@ -180,11 +180,13 @@
          (expression-parsing-exception-source e)))
 
 (define (display-type-exception e)
-  (print "type exception in " (type-exception-procedure e)
-         (type-exception-arguments e)
-         ". expected type for argument "
-         (type-exception-arg-num e) " is "
-         (type-exception-type-id e)))
+  (display "type exception in ")
+  (print (type-exception-procedure e)
+	 (type-exception-arguments e))
+  (display ". expected type for argument ")
+  (display (type-exception-arg-num e))
+  (display " is ")
+  (display (type-exception-type-id e)))
 
 (define (display-wrong-number-of-arguments-exception e)
   (display "wrong number of arguments. ")
