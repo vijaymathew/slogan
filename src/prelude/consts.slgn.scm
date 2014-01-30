@@ -10,3 +10,5 @@
 (define *platform-libs* (string-append *slogan-root* "/platform/nanomsg/.libs"))
 (define *cc-options* (string-append "-cc-options \"-I" *platform-incs* "\""))
 (define *ld-options* (string-append "-ld-options \"-L" *platform-libs* " -lpthread -lnanomsg -lanl\""))
+
+(define *default-eq* eqv?)

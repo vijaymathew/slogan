@@ -26,19 +26,12 @@
 (define (put seq key value)
   (cons (cons key value) seq))
 
+(define for_each for-each)
 (define set_head set-car!)
 (define set_tail set-cdr!)
 (define list_to_string list->string)
 (define list_to_array list->vector)
 (define list_to_table list->table)
-
-(define (contains ls fn)
-  (let loop ((ls ls))
-    (cond ((null? ls)
-           #f)
-          ((fn (car ls))
-           #t)
-          (else (loop (cdr ls))))))
 
 (define (filter ls fn)
   (let loop ((ls ls)
@@ -50,13 +43,26 @@
           (else
            (loop (cdr ls) result)))))
 
-(define (find ls fn)
+(define (find ls test #!key (default #f))
+  (let loop ((ls ls))
+    (cond ((null? ls)
+           default)
+          ((test (car ls))
+           (car ls))
+          (else (loop (cdr ls))))))
+
+(define (is_member ls e #!key (test *default-eq*))
   (let loop ((ls ls))
     (cond ((null? ls)
            #f)
-          ((fn (car ls))
-           (car ls))
+          ((test e (car ls))
+           #t)
           (else (loop (cdr ls))))))
+
+(define (adjoin ls e #!key test)
+  (if (not (is_member (ls e)))
+      (cons e ls)
+      ls))
 
 (define (smallest ls #!key (test <))
   (if (null? ls) 
@@ -69,7 +75,7 @@
                (loop (cdr ls) (car ls)))
               (else (loop (cdr ls) s))))))
 
-(define (remove ls elem #!key (test equal?) (all #f))
+(define (remove ls elem #!key (test *default-eq*) (all #f))
   (let loop ((ls ls)
              (removed #f)
              (result '()))

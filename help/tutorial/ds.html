@@ -107,9 +107,64 @@ var uncompress =
           to put in each slot.</p>
         <p>Our compression program has many limitations - it is slow, inefficient and will break for lists that contain other lists.
           In later sections of this tutorial, we will re-visit these functions and fix some of these issues.</p>
-        <p><div id="note"><em>Note:</em> The compression sample was adapted from Paul Graham's ANSI Common Lisp. Full source code of 
-                                        coding examples are available in the <code>example/tutorial</code> directory.</div></p>
+        <p><div id="note">
+            <em>Note:</em> The compression sample, as most other samples in this tutorial, was adapted from 
+            Paul Graham's ANSI Common Lisp.</p>
+        <h4>Accessing elements</h4>
+        <p>The function <code>at</code> allows list elements to be accessed based on their zero based indexed position:</p>
+        <pre>
+          > at ([10, 20, 30], 1);
+          => 20</pre>
+      <h4>Mapping functions</h4>
+      <p>A mapping function abstracts the idea of applying some transformation to each element of a list. The most useful mapping
+        function is <code>map</code> which takes a function (the transformer) and an abitrary number of lists as its arguments. 
+        The transformer must accept as many arguments as there are lists. <code>map</code> returns a list that contains the result
+        of the transformations. Another mapping function is <code>for_each</code> which is similar to <code>map</code>. 
+        The only difference is that, <code>for_each</code> is called for its side-effects rather than producing a value. 
+        The following examples demonstrate <code>map</code> and <code>for_each</code>:</p>
+      <pre>
+        > map (function (x) { x * x}, [1, 2, 3, 4, 5]);
+        => [1, 4, 9, 16, 25]
+        > map (function (x, y) { x * y}, [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]);
+        => [10, 40, 90, 160, 250]
+        > for_each (function (x, y) { println (x + y) }, [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]);
+        11
+        22
+        33
+        44
+        55</pre>
+      <h4>Searching, filtering etc</h4>
+        <p>There are two functions that can be used to check a list for the existence of a particular element: <code>find</code>
+          and <code>is_member</code>. <code>find</code> takes a predicate that takes a single argument and returns the first 
+          element that makes it evaluate to <code>true</code>. While no element is found that satisfies this condition, <code>find</code>
+          return <code>false</code>. This behaviour can be overriden by providing a value for the <code>default</code> parameter. </p>
+        <pre>
+          > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
+          => 2
+          > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 });
+          => false
+          > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 }, default = "not found");
+          => "not found"
+        </pre>
+        <p><code>is_member</code> returns <code>true</code> if an element exists in the list. By default it uses the <code>==</code>
+          operator to compare the values. This can be overriden by passing a comparison predicate to the <code>test</code> argument.</p>
+        <pre>
+          > is_member ([1, 2, 3, 4, 5], 4);
+          => true
+          > is_member ([1, 2, 3, 4, 5], 7);
+          => false
+          > is_member (["a", "b", "c", "d", "e"], "b", test = string_is_eq);
+          => true
+          > is_member (["a", "b", "c", "d", "e"], "f", test = string_is_eq);
+          =>false</pre>
+        <p>Another function, similar to <code>find</code> is <code>filter</code>. It returns all elements that statisfies the predicate.</p>
+        <pre>
+          > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
+          => [2, 4]
+          > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 });
+          => []</pre>
+        </div>
       </div>
-    </div>
-    </body>
+
+  </body>
 </html>
