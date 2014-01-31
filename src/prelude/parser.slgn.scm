@@ -313,7 +313,7 @@
              (list 'lambda 
                    (func-params-expr tokenizer)
                    (block-expr tokenizer)))
-      (closure-def-expr tokenizer)))
+      #f))
 
 (define (func-call-expr func-val tokenizer)
   (cond ((eq? (tokenizer 'peek) '*open-paren*)
@@ -434,47 +434,6 @@
 (define (param-directive? sym)
   (memq sym '(@optional @key @rest)))
 
-(define (closure-def-expr tokenizer)
-  (if (eq? (tokenizer 'peek) 'closure)
-      (begin (tokenizer 'next)
-             (if (not (eq? (tokenizer 'peek) '*open-brace*))
-                 (error "expected opening-brace instead of " (tokenizer 'next))
-                 (tokenizer 'next))
-             (let loop ((vars '())
-                        (exprs '()))
-               (let ((token (tokenizer 'peek)))
-                 (cond ((variable? token)
-                        (tokenizer 'next)
-                        (if (eq? (tokenizer 'peek) '*colon*)
-                            (begin (tokenizer 'next)
-                                   (let ((expr (expression tokenizer)))
-                                     (if (eq? (tokenizer 'peek) '*comma*)
-                                         (tokenizer 'next))
-                                     (loop (cons token vars) (cons expr exprs))))
-                            (error "expected colon instead of " (tokenizer 'peek))))
-                       ((eq? token '*close-brace*)
-                        (tokenizer 'next)
-                        (mk-closure-expr (reverse vars) (reverse exprs)))
-                       (else
-                        (error "expected variable instead of " token))))))
-      #f))
-
-(define (mk-closure-expr vars exprs)
-  (let loop ((vs vars)
-             (es exprs)
-             (closure-expr '()))
-    (if (null? vs)
-        (append (append (list 'let*) (list closure-expr))
-		(list (append (list 'lambda '(*msg*)) (closure-msg-handler vars))))
-        (loop (cdr vs) (cdr es) (append closure-expr (list (list (car vs) (car es))))))))
-
-(define (closure-msg-handler vars)
-  (let loop ((vars vars)
-             (msg-handler '()))
-    (if (null? vars)
-        (list (append (list 'case '*msg*) (reverse (cons '(else (error "member not found in closure.")) msg-handler))))
-        (loop (cdr vars) (cons `((,(car vars)) ,(car vars)) msg-handler)))))
-
 (define (closure-member-access var tokenizer)
   (if (variable? (tokenizer 'peek))
       (let loop ((expr `(,var ',(tokenizer 'next))))
@@ -557,9 +516,8 @@
 
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (memq sym '(var import record if and or
-                       function closure
-                       let letseq letrec))))
+       (memq sym '(var import record if case 
+                       function let letseq letrec))))
 
 (define (name? sym) 
   (or (variable? sym)

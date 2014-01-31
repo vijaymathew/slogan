@@ -2,7 +2,7 @@ var len = function (lst) {
     if is_empty (lst) {
         0
     } else {
-        1 + (len (rest (lst)))
+        1 + (len (tail (lst)))
     }
 };
 
