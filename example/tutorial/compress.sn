@@ -1,4 +1,4 @@
-// Code adapted from Paul Graham's ANSI Common Lisp.
+// Ref: ANSI Common Lisp [page36].
 
 var compress = 
     function (lst) {
