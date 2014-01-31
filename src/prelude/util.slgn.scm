@@ -203,35 +203,35 @@
   (display (error-exception-parameters e)))
 
 (define (display-keyword-expected-exception e)
-  (print "keyword expected. "
-         (keyword-expected-exception-procedure e)
+  (display "keyword expected. ")
+  (print (keyword-expected-exception-procedure e)
          (keyword-expected-exception-arguments e)))
 
 (define (display-number-of-arguments-limit-exception e)
-  (print "arguments limit reached. "
-         (number-of-arguments-limit-exception-procedure e)
+  (display "arguments limit reached. ")
+  (print (number-of-arguments-limit-exception-procedure e)
          (number-of-arguments-limit-exception-arguments e)))
 
 (define (display-unknown-keyword-argument-exception e)
-  (print "unknown keyword. "
-         (unknown-keyword-argument-exception-procedure e)
+  (display "unknown keyword. ")
+  (print (unknown-keyword-argument-exception-procedure e)
          (unknown-keyword-argument-exception-arguments e)))
 
 (define (display-range-exception e)
-  (print "numeric parameter at position "
-         (range-exception-arg-num e)
-         " is not in the allowed range. "
-         (range-exception-procedure e)
+  (display "numeric parameter at position ")
+  (display (range-exception-arg-num e))
+  (display " is not in the allowed range. ")
+  (print (range-exception-procedure e)
          (range-exception-arguments e)))
 
 (define (display-divide-by-zero-exception e)
-  (print "division by zero."
-         (divide-by-zero-exception-procedure e)
+  (display "division by zero.")
+  (print (divide-by-zero-exception-procedure e)
          (divide-by-zero-exception-arguments e)))
 
 (define (display-improper-length-list-exception e)
-  (print "lists are not of the same length. "
-         (improper-length-list-exception-procedure e)
-         (improper-length-list-exception-arguments e)
-         ", argument: "
-         (improper-length-list-exception-arg-num e)))
+  (display "lists are not of the same length. ")
+  (print (improper-length-list-exception-procedure e)
+         (improper-length-list-exception-arguments e))
+  (display ", argument: ")
+  (display (improper-length-list-exception-arg-num e)))

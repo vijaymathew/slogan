@@ -47,6 +47,7 @@
         <pre>
           > append ([1, 2], ["hello", "there"], [3, 4, [!good !bye]]);
           => [1, 2, "hello", "there", 3, 4, [!good !bye]]</pre>
+        <h4>Example: Compression</h4>
         <p>The functions and language facilities that we learned so far is enough to write programs that does something useful,
           for instance, a utility that compresses a list. The compression algorithm used itself can be very simple - 
           replace repeated occurrences of an element with a pair that contains the number of occurrences and the element itself. 
@@ -116,7 +117,7 @@ var uncompress =
           => 20</pre>
       <h4>Mapping functions</h4>
       <p>A mapping function abstracts the idea of applying some transformation to each element of a list. The most useful mapping
-        function is <code>map</code> which takes a function (the transformer) and an abitrary number of lists as its arguments. 
+        function is <code>map</code> which takes a function (the transformer) and an arbitrary number of lists as its arguments. 
         The transformer must accept as many arguments as there are lists. <code>map</code> returns a list that contains the result
         of the transformations. Another mapping function is <code>for_each</code> which is similar to <code>map</code>. 
         The only difference is that, <code>for_each</code> is called for its side-effects rather than producing a value. 
@@ -132,11 +133,21 @@ var uncompress =
         33
         44
         55</pre>
-      <h4>Searching, filtering etc</h4>
+      <p>The <code>reduce</code> function combines the elements of a list using a binary function.</p>
+      <pre>
+        > reduce ([1, 2, 3, 4, 5], add);
+        => 15
+        > reduce ([1, 2, 3, 4, 5], add, initial_value = 100);
+        => 115</pre>
+        <p>The <code>apply</code> is used to invoke a function by using a list to provide its actual arguments:</p>
+        <pre>
+          > apply (add, [1,2,3,4,5]);
+          => 15</pre>
+      <h4>Searching, filtering, sorting etc</h4>
         <p>There are two functions that can be used to check a list for the existence of a particular element: <code>find</code>
           and <code>is_member</code>. <code>find</code> takes a predicate that takes a single argument and returns the first 
           element that makes it evaluate to <code>true</code>. While no element is found that satisfies this condition, <code>find</code>
-          return <code>false</code>. This behaviour can be overriden by providing a value for the <code>default</code> parameter. </p>
+          return <code>false</code>. This behaviour can be overridden by providing a value for the <code>default</code> parameter. </p>
         <pre>
           > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
           => 2
@@ -146,7 +157,7 @@ var uncompress =
           => "not found"
         </pre>
         <p><code>is_member</code> returns <code>true</code> if an element exists in the list. By default it uses the <code>==</code>
-          operator to compare the values. This can be overriden by passing a comparison predicate to the <code>test</code> argument.</p>
+          operator to compare the values. This can be overridden by passing a comparison predicate to the <code>test</code> argument.</p>
         <pre>
           > is_member ([1, 2, 3, 4, 5], 4);
           => true
@@ -156,14 +167,121 @@ var uncompress =
           => true
           > is_member (["a", "b", "c", "d", "e"], "f", test = string_is_eq);
           =>false</pre>
-        <p>Another function, similar to <code>find</code> is <code>filter</code>. It returns all elements that statisfies the predicate.</p>
+        <p>The <code>filter</code> function returns all elements that satisfies a predicate:</p>
         <pre>
           > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
           => [2, 4]
           > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 });
           => []</pre>
+        <p>To delete elements from a list, use the <code>remove</code> function. <code>remove_duplicates</code>
+          removes all duplicate elements from the list. Both these function uses the <code>==</code> operator to
+          compare elements. A comparison function can be provided using the <code>test</code> keyword argument.</p>
+        <pre>
+          > remove ([1, 2, 3, 4, 5], 3);
+          => [1, 2, 4, 5]
+          > remove ([1, 2, 3, 4, 5, 3, 4, 5], 3);
+          => [1, 2, 4, 5, 3, 4, 5]
+          > remove ([1, 2, 3, 4, 5, 3, 4, 5], 3, all = true);
+          => [1, 2, 4, 5, 4, 5]
+          > remove (["a", "b", "a", "b"], "a", test = string_is_eq, all = true);
+          => ["b", "b"]
+          > remove_duplicates ([1, 2, 2, 3, 4, 4, 4, 5]);
+          => [1, 2, 3, 4, 5]</pre>
+        <p>Lists can be sorted in both ascending and descending order using the <code>sort</code> function. It takes two
+          optional arguments - <code>test</code> and <code>type</code>. <code>test</code> is the predicate used to compare
+          the elements, and it defaults to <code>&lt;</code>. <code>type</code> is a symbol that identifies the sorting algorithm 
+          to use. The only algorithm currently supported is quick-sort identified by <code>!quick</code>.</p>
+        <pre>
+          > sort ([10, 0, 100, 1, -1]);
+          => [-1, 0, 1, 10, 100]
+          > sort ([10, 0, 100, 1, -1], test = is_number_lt);
+          => [100, 10, 1, 0, -1]</pre>
+        <p><code>is_number_lt</code> is a function that can stand-in for the numeric <code>&lt;</code> operator. It takes an
+          arbitrary number of arguments. A predicate to check whether a list of integers is sorted can be defined by combining
+          <code>apply</code> and <code>is_number_lt</code>:</p>
+        <pre>
+          > var is_sorted = function (lst) { apply (is_number_lt, lst) };
+          > is_sorted (sort ([10, 0, 100, 1, -1]));
+          => true</pre>
+        <h4>Example: Sets</h4>
+        <p>Lists are ideal for representing sets. In this section we will develop a few functions that let us build and manipulate
+          sets. The built-in function <code>is_member</code> is enough to check for set membership:</p>
+        <pre>
+          > is_member ([1, 2, 3], 1);
+          => true
+          > is_member ([1, 2, 3], 0);
+          => false</pre>
+        <p>We need a function to build sets. The set constructor should add an element to the list only if it is not already
+          a member. Let us call this function <code>adjoin</code>. <p>Here is the implementation of <code>adjoin</code> and the 
+          three set operations: <code>union</code>, <code>intersection</code> and <code>difference</code>:</p>
+        <pre>
+var adjoin = function (element, set) {
+    if not (is_member (set, element)) pair (element, set) else set
+};
+
+var union = function (a, b) {
+    for_each (function (x) { b = adjoin (x, b) }, a);
+    b
+};
+
+var intersection = function (a, b) {
+    remove_duplicates (append (filter (a, function (x) { is_member (b, x) }),
+                               filter (b, function (x) { is_member (a, x) })));
+};
+
+var difference = function (a, b) {
+    remove_duplicates (append (filter (a, function (x) { not (is_member (b, x)) }),
+                               filter (b, function (x) { not (is_member (a, x)) })));
+};</pre>
+
+        <p>Sample usage:</p>
+        <pre>
+          > var a = adjoin (1, (adjoin (2, adjoin (3, []))));
+          > var b = adjoin (1, (adjoin (2, adjoin (4, (adjoin (5, []))))));
+          > union (a, b);
+          => [3, 1, 2, 4, 5]
+          > difference (a, b);
+          => [3, 4, 5]
+          > intersection (a, b);
+          => [1, 2]</pre>
+        <h4>Lists as dictionaries</h4>
+        <p>Lists can be used for associating data to values. Each entry in the dictionary is represented as a pair. 
+          A list of pairs is known as an association list. There are three functions for working with association lists:
+          <code>assoc_put</code>, <code>assoc_get</code> and <code>assoc_set</code>. <code>assoc_put</code> returns a new
+          list that contains a mapping between a key and value. <code>assoc_get</code> returns the mapping for a given key
+          and <code>assoc_set</code> updates an existing mapping, in-place. Both <code>assoc_get</code> and <code>assoc_set</code>
+          accepts an optional <code>test</code> argument that can be used to customize the way keys are compared.</p>
+        <pre>
+          > var person = [[!name "jay"], [!age 10]];
+          > assoc_get (person, !name);
+          => [name "jay"]
+          > assoc_get (person, !age);
+          => [age 10]
+          > assoc_get (person, !place);
+          => false
+          > assoc_get (person, !place, default_value = "not found");
+          => "not found"
+          > person = assoc_put (person, !place, "blr");
+          > assoc_get (person, !place);
+          => [place "blr"]
+          > assoc_set (person, !age, 11);
+          => [age 11]
+          > assoc_get (person, !age);
+          => [age 11]
+          > person = [["name" "mary"], ["age" 5]];
+          > assoc_get (person, "name", test = string_is_eq);
+          => ["name" "mary"]
+          > assoc_get (person, "name"); // default comparison operator will not work for string keys.
+          => false
+          > assoc_get (person, "age", test = string_is_eq);
+          => ["age" 5]
+          > person = assoc_put (person, !place, "ny");
+          > assoc_get (person, !place);
+          => [place "ny"]
+          > assoc_get (person, "age", test = string_is_eq); // not a good idea to mix keys of types that cannot share the comparison predicate.
+          error: type exception in [function][place, "age"]. expected type for argument 1 is string</pre>
         </div>
       </div>
-
+      
   </body>
 </html>

@@ -1,0 +1,18 @@
+var adjoin = function (element, set) {
+    if not (is_member (set, element)) pair (element, set) else set
+};
+
+var union = function (a, b) {
+    for_each (function (x) { b = adjoin (x, b) }, a);
+    b
+};
+
+var intersection = function (a, b) {
+    remove_duplicates (append (filter (a, function (x) { is_member (b, x) }),
+                               filter (b, function (x) { is_member (a, x) })));
+};
+
+var difference = function (a, b) {
+    remove_duplicates (append (filter (a, function (x) { not (is_member (b, x)) }),
+                               filter (b, function (x) { not (is_member (a, x)) })));
+};

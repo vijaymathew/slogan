@@ -10,3 +10,9 @@
 (define sub -)
 (define mult *)
 (define div /)
+
+(define is_number_eq =)
+(define is_number_lt <)
+(define is_number_gt >)
+(define is_number_lteq <=)
+(define is_number_gteq >=)

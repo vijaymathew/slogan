@@ -248,14 +248,14 @@
           // C like pseudo-code.
           bool is_member (List list, Object object) {
               int len = length (list);
-              for (int i = 0; i < len; ++i) {
+              for (int i = 0; i &lt; len; ++i) {
                  if (list[i] == object) {
                     return true;
                  }
               }
               return false;
           }</pre>
-                                  <h3>Comments</h3>
+        <h3>Comments</h3>
         <p>Slogan supports both line and block comments. The character combination <code>//</code> starts a line comment.
           All input following a <code>//</code> up till the end of the line is ignored. Block comments are enclosed within
           <code>/* */</code>:</p>
