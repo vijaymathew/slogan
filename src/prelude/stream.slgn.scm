@@ -2,14 +2,14 @@
 
 (define (stream type path-or-settings)
   (case type
-    ((!file) (open_file path-or-settings))
-    ((!process) (open_process path-or-settings))
-    ((!tcpclient) (open_tcp_client path-or-settings))
-    ((!tcpserver) (open_tcp_server path-or-settings))
-    ((!directory) (open_directory path-or-settings))
-    ((!array) (open_array path-or-settings))
-    ((!u8array) (open_u8array path-or-settings))
-    ((!string) (open_string path-or-settings))
+    ((file) (open_file path-or-settings))
+    ((process) (open_process path-or-settings))
+    ((tcpclient) (open_tcp_client path-or-settings))
+    ((tcpserver) (open_tcp_server path-or-settings))
+    ((directory) (open_directory path-or-settings))
+    ((array) (open_array path-or-settings))
+    ((u8array) (open_u8array path-or-settings))
+    ((string) (open_string path-or-settings))
     (else (error "not a supported stream type. " type))))
 
 (define (slgn-path/settings->scm-path/settings path-or-settings)

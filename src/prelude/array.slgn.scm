@@ -92,8 +92,8 @@
 
 (define (array_sort arr #!key (test <) (type '!quick))
   ((case type
-     ((!insertion) insertion-sort)
-     ((!quick) quick-sort)
-     ((!selection) selection-sort)
+     ((insertion) insertion-sort)
+     ((quick) quick-sort)
+     ((selection) selection-sort)
      (else invalid-sort))
    arr test))

@@ -20,9 +20,9 @@
 
 (define (slogan-directive->scheme-directive s)
   (case s
-    ((!optional) '#!optional)
-    ((!key) '#!key)
-    ((!rest) '#!rest)
+    ((@optional) '#!optional)
+    ((@key) '#!key)
+    ((@rest) '#!rest)
     (else s)))
 
 (define (slogan-variable->scheme-keyword var)
@@ -46,6 +46,10 @@
 (define (slogan-symbol? s)
   (and (symbol? s)
        (char=? (string-ref (symbol->string s) 0) #\!)))
+
+(define (scm-symbol->slgn-symbol s)
+  (let ((str (symbol->string s)))
+    (string->symbol (substring str 1 (string-length str)))))
 
 (define (repr-convert val reprs)
   (let ((r (assq val reprs)))
