@@ -286,14 +286,12 @@
 		   (tokenizer 'next)
 		   (error "expected assignment instead of " (tokenizer 'next)))
 	       (let ((expr (expression tokenizer)))
-		 (cond ((eq? (tokenizer 'peek) '*open-brace*)
-			(append (list letkw) 
-				(cons (append result (list (list sym expr))) 
-				      (list (block-expr tokenizer)))))
-		       ((eq? (tokenizer 'peek) '*comma*)
+		 (cond ((eq? (tokenizer 'peek) '*comma*)
 			(tokenizer 'next)
 			(loop (append result (list (list sym expr)))))
-		       (else (error "invalid token " (tokenizer 'next))))))))
+		       (else (append (list letkw) 
+				     (cons (append result (list (list sym expr))) 
+					   (list (func-body-expr tokenizer))))))))))
 	  (else 
 	   (func-call-expr (literal-expr tokenizer) tokenizer)))))
 
@@ -312,8 +310,13 @@
       (begin (tokenizer 'next)
              (list 'lambda 
                    (func-params-expr tokenizer)
-                   (block-expr tokenizer)))
+                   (func-body-expr tokenizer)))
       #f))
+
+(define (func-body-expr tokenizer)
+  (if (eq? (tokenizer 'peek) '*open-brace*)
+      (block-expr tokenizer)
+      (expression tokenizer)))
 
 (define (func-call-expr func-val tokenizer)
   (cond ((eq? (tokenizer 'peek) '*open-paren*)
