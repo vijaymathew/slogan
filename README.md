@@ -1,22 +1,8 @@
-Slogan is a general purpose, high-level, expression oriented programming language.
+Slogan is a general purpose, high-level, expression oriented programming language with
+facilities for distributed computing built into its core.
 
-This project strives to achieve the following goals:
-
-    1. Design a language that is easy to learn. 
-
-       Slogan is designed around a couple of simple concepts.
-       Its syntax is designed to be familiar to the vast majority of programmers.
-
-    2. Design a language that scales well. 
-
-       Once the basics are mastered, no new syntax or concept needs to be 
-       learned to program in the large.
-
-    3. Build a language runtime that has distributed computing built-into its core.
-
-This implementation, built on top of the Gambit Scheme platform, is the specification of the language.
-It also acts as a playground for language design ideas. It comes with an interpreter and a compiler that 
-generates platform specific executable binaries.
+This implementation comes with an interpreter and a compiler for generating platform 
+specific executable binaries.
 
 ###Building and running Slogan
 
