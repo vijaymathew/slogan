@@ -359,16 +359,18 @@
 	  (mk-struct-accessors/modifiers name members)))
 
 (define (mk-struct-accessors/modifiers name members)
-  (let loop ((members members)
-	     (expr (list (list 'define 
-			       (string->symbol 
-				(string-append (symbol->string name)))
-			       (string->symbol
-				(string-append "make-" (symbol->string name)))))))
-    (if (null? members)
-	(reverse expr)
-	(begin (loop (cdr members)
-		     (append expr (member-accessor/modifier name (car members))))))))
+  (let ((sname (symbol->string name)))
+    (let loop ((members members)
+               (expr (list (list 'define 
+                                 (string->symbol (string-append sname))
+                                 (string->symbol (string-append "make-" sname)))
+                           (list 'define 
+                                 (string->symbol (string-append "is_" sname))
+                                 (string->symbol (string-append sname "?"))))))
+      (if (null? members)
+          (reverse expr)
+          (begin (loop (cdr members)
+                       (append expr (member-accessor/modifier name (car members)))))))))
 
 (define (member-accessor/modifier name mem)
   (let ((sname (symbol->string name))

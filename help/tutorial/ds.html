@@ -317,7 +317,41 @@
           > table_at (coords, [13.0839 80]);
           => false</pre>
         <h3>Records</h3>
-        <p></p>
+        <p>A record is a collection of one or more variables collected together under a single name. Records are used to
+          organize complicated data. A simple example of a record is one that represents a point in the cartesian coordinate
+          system:</p>
+        <pre>
+          > record point (x , y);
+          > var p = point (10, 20);
+          > is_point (p);
+          => true
+          > point_x (p);
+          => 10
+          > point_y (p);
+          => 20
+          > point_set_x (p, 100);
+          > point_set_y (p, 200);
+          > point_x (p);
+          => 100
+          > point_y (p);
+          => 200</pre>
+        <p>When we create a new record with the <code>record</code>, Slogan automatically creates the following functions to 
+          create and manipulate record objects:</p>
+        <ol>
+          <li>A constructor with the same name as the record.</li>
+          <li>A predicate for checking if an object is an instance of the record.</li>
+          <li>Accessors and modifiers for record members.</li>
+        </ol>
+        <p>Once defined a record gets the same status as the built-in types of the language - it can be passed as arguments to
+          functions and it can be returned as results of functions. For example, here is a function that adds two points together
+          to create a new point:</p>
+        <pre>
+          > var add_points = 
+              function (p1, p2) {
+                point (point_x (p1) + point_x (p2), point_y (p1) + point_y (p2))
+            };
+          > add_points (point (10, 20), point (12, 15));
+          => #&lt;point #3 x: 22 y: 35&gt;</pre>
       </div>
     </div>
     
