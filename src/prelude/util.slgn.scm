@@ -101,14 +101,18 @@
   
 (define (slogan-display-char c)
   (display "'")
-  (display c)
+  (scheme-print c)
   (display "'"))
+
+(define scheme-print print)
 
 (define (print . args)
   (let loop ((args args))
     (if (not (null? args))
         (begin (slogan-display (car args))
                (loop (cdr args))))))
+
+(define scheme-println println)
 
 (define (println . args)
   (let loop ((args args))
@@ -162,26 +166,27 @@
   (display (nonprocedure-operator-exception-operator e)))
 
 (define (display-os-exception e)
-  (print "OS exception " (os-exception-message e) ", "
-         (os-exception-procedure e)
-         (os-exception-arguments e)))
+  (display "OS exception ")
+  (scheme-print (os-exception-message e) #\,
+                (os-exception-procedure e)
+                (os-exception-arguments e)))
 
 (define (display-no-such-file-or-directory-exception e)
-  (print "no such file or directory. "
-         (no-such-file-or-directory-exception-procedure e)
-         (no-such-file-or-directory-exception-arguments e)))
+  (display "no such file or directory. ")
+  (scheme-print (no-such-file-or-directory-exception-procedure e)
+                (no-such-file-or-directory-exception-arguments e)))
 
 (define (display-datum-parsing-exception e)
-  (print "datum parsing exception. "
-         (datum-parsing-exception-kind e) ","
-         (datum-parsing-exception-parameters e) ", "
-         (datum-parsing-exception-readenv e)))
+  (display "datum parsing exception. ")
+  (scheme-print (datum-parsing-exception-kind e) #\,
+                (datum-parsing-exception-parameters e) #\,
+                (datum-parsing-exception-readenv e)))
 
 (define (display-expression-parsing-exception e)
-  (print "expression parsing exception. "
-         (expression-parsing-exception-kind e) ", "
-         (expression-parsing-exception-parameters e) ", "
-         (expression-parsing-exception-source e)))
+  (display "expression parsing exception. ")
+  (scheme-print (expression-parsing-exception-kind e) #\,
+                (expression-parsing-exception-parameters e) #\,
+                (expression-parsing-exception-source e)))
 
 (define (display-type-exception e)
   (display "type exception in ")

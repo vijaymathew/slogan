@@ -70,12 +70,91 @@
         => "12122123"
         > lookup ("vijay", contacts);
         => false</pre>
-          <p><code>lookup</code> introduces a new function for manipulating arrays: <code>subarray (a, start, end)</code>.
-            It creates a new array formed by the elements of <code>a</code> beginning with index <code>start</code>
-            (inclusive) and ending with index <code>end</code> (exclusive).</p>
+        <p><code>lookup</code> introduces a new function for manipulating arrays: <code>subarray (a, start, end)</code>.
+          It creates a new array formed by the elements of <code>a</code> beginning with index <code>start</code>
+          (inclusive) and ending with index <code>end</code> (exclusive).</p>
+        <h4>Multi-dimensional arrays</h4>
+        <p>Slogan provides multi-dimensional arrays, i.e an array of arrays or an array of arrays of arrays and so on.
+          An array of multiple dimensions are created by calling the <code>array</code> function with a list of dimensions as the
+          first argument: </p>
+        <pre>
+          > array ([2, 3]);
+          => #[#[false, false, false], #[false, false, false]]
+          > array ([2, 3], fill = !hi);
+          => #[#[hi, hi, hi], #[hi, hi, hi]]</pre>
+        <h4>Example: Date conversion</h4>
+        <p>This sections shows the definition of two date conversion functions: <code>day_of_year</code> and <code>month_day</code>.
+          <code>day_of_year</code> takes two arguments, <code>month</code> and <code>day</code>, and converts them into the day of the year.
+          For example, the arguments <code>month = 3</code> (March) and <code>day = 1</code> will return <code>60</code> for a non-leap year.
+          <code>month_day</code> will convert the day of the year into a pair of month and day. <code>month_day (year = 1987, day = 60)</code>
+          will return <code>[3 1]</code>. Both these functions need access to a single table that contains number of days in each month
+          for a leap year and a non-leap year. This table can be represented as a multi-dimensional array of two rows and thirteen columns:</p>
+        <pre>
+          > var day_table =  = #[ #[0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+                                  #[0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] ];</pre>
+        <p>We also need to define a helper function <code>is_leap</code> to check if the given year is a leap year or not:</p>
+        <pre>
+          > var is_leap = 
+              function (year) { 
+                and (is_zero (remainder (year, 4)),
+                     or (not (is_zero (remainder (year, 100))),
+                         is_zero (remainder (year, 400))))
+            };</pre>
+        <p>Now we are ready to define the two date conversion functions:</p>
+        <pre>
+          > var day_of_year = 
+              function (year, month, day) {
+                array_reduce (array_at (day_table, if is_leap (year) 1 else 0),
+                              add, start = 1, end = month, 
+                              initial_value = day)
+            };
+
+          > var month_day = 
+              function (year, yday) {
+                letrec loop = function (month, yday, mdays) { 
+                                let days_in_month = array_at (mdays, month)
+                                  if yday > days_in_month loop (month + 1, yday - days_in_month, mdays)
+                                  else [month yday]
+                             }
+                   loop (1, yday, array_at (day_table, if is_leap (year) 1 else 0))
+            };</pre>
+        <p><code>day_of_year</code> makes use of the array mapping function <code>array_reduce</code> which calls
+          a function for each element of the array. Here we add the days of all months upto <code>month</code> to
+          find the day of the year:</p>
+        <pre>
+          > day_of_year (2016, 3, 1);
+          => 61
+          > day_of_year (2015, 3, 1);
+          => 60
+          > day_of_year (2015, 12, 31);
+          => 365</pre>
+        <p><code>month_day</code> shows how a tail-recursive function could be used in place of a traditional loop. The <code>loop</code>
+          function calls itself until the day of the year (<code>yday</code>) could fit into a month. That month and the remaining value of
+          <code>yday</code> is returned as result:</p>
+        <pre>
+          > month_day (2016, 61);
+          => [3 1]
+          > month_day (2015, 60);
+          => [3 1]
+          > month_day (2015, 365);
+          => [12 31]</pre>
+        <h3>Strings and Characters</h3>
+        <p>Slogan supports the Unicode character encoding standard. Slogan characters can be any of the characters whose Unicode 
+          encoding is in the range 0 to #x10ffff (inclusive) but not in the range #xd800 to #xdfff. Individual characters are surrounded
+          by single quotes and strings are surrounded in double quotes:</p>
+        <pre>
+          > is_char ('a');
+          => true
+          > is_char ("a");
+          => false
+          > is_string ("a");
+          =>true</pre>
+        <p><code>char_to_integer</code> returns the Unicode encoding of a character. <code>integer_to_char</code> returns the 
+          character representation of a Unicode encoding.</p>
+        <pre>
+          > 
       </div>
     </div>
     
   </body>
 </html>
-

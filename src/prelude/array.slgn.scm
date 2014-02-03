@@ -30,3 +30,18 @@
           (begin (vector-set! arr i (car s))
                  (loop (cdr s) (+ i 1)))))))
     
+(define (array_for_each arr func #!key (start 0) end)
+  (if (not end) (set! end (vector-length arr)))
+  (let loop ((i start))
+    (if (< i end)
+        (begin (func (vector-ref arr i))
+               (loop (+ i 1))))))
+
+(define (array_reduce arr func #!key (start 0) end initial_value)
+  (if (not end) (set! end (vector-length arr)))
+  (let loop ((i (if (not initial_value) (+ start 1) start))
+             (result (if (not initial_value) (vector-ref arr start) initial_value)))
+    (if (< i end)
+        (loop (+ i 1)
+              (func result (vector-ref arr i)))
+        result)))
