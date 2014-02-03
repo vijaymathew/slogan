@@ -14,8 +14,65 @@
         <h2>Other data structures</h2>
         <p>This chapter shows how to use data structures other than <a href="./lists.html">lists</a>: arrays, strings, tables and records.</p>
         <h3>Arrays</h3>
-        <p>
-          </p>
+        <p><i>Arrays</i> are structures similar to lists but they occupy less space and the average time required to access a random
+          element by index is typically less than that required for a list. The <code>array</code> function is used to create an array
+          of a specified length. By default, all elements are initialized to <code>false</code>. This behaviour can be overriden by
+          specifying a value for the <code>fill</code> keyword parameter. Array literals are enclosed in <code>#[]</code>.
+          <code>array_at</code> and <code>array_set</code> are used to access and update elements by index. 
+          Keep in mind that <code>array_set</code> is a destructive operation:</p>
+        <pre>
+          > var a = array (3);
+          > a;
+          => #[false, false, false]
+          > a = array (3, fill = "hello");
+          > a;
+          => #["hello", "hello", "hello"]
+          > array_at (a, 2);
+          => "hello"
+          > array_set (a, 2, !hi);
+          > a;
+          => #["hello", "hello", hi]
+          > array_length (#[1, 2, 3, 4, 5]);
+          => 5</pre>
+        <h4>Example: Phone book</h4>
+        <p>This example shows how to search for an object in a sorted array. Each entry in the array contains a pair representing
+          the name and phone number of a person. First we will see how such an array can be sorted. The we will write a function
+          that does a fast number lookup in the array, given the name of the contact person.<p>
+        <p>Sorting the array is simple - just use the <code>array_sort</code> function with a custom <code>test</code> function
+          that orders pairs based on their first element, which must be a string:</p>
+        <pre>
+          > var contacts = #[["sam" "98289182"], ["anna" "88499394"],
+                 ["caroline" "993002993"], ["ankit" "38929839"],
+                 ["paul" "322288348"], ["sean" "12122123"]];
+          > array_sort (contacts, test = function (a, b) { string_is_gt (head (a), head (b)) });
+          => #[["ankit" "38929839"], ["anna" "88499394"], ["caroline" "993002993"], 
+               ["paul" "322288348"], ["sam" "98289182"], ["sean" "12122123"]]</pre>
+        <p>Now that we have sorted the array, we can implement the <code>lookup</code> function. <code>lookup</code> does a binary search
+          on the array. If the contact being searched for is at the middle of the array, its phone number is returned. If the mid-entrie's
+          name is lexicographically less than the name searched for, the search continues with the left half of the array, otherwise the
+          right half is searched. So on each iteration, the array is halved until either the name is found or the array is exhauseted, which
+          will result in <code>false</code> being returned.</p>
+        <pre>
+        > var lookup = function (name, contacts) {
+            let len = array_length (contacts)
+            if len == 0 false
+            else 
+            let mid = floor (len / 2) // floor converts its argument to an integer.
+              let entry = array_at (contacts, mid)
+                if string_is_eq (name, head (entry)) tail (entry)
+                else if string_is_lt (name, head (entry)) lookup (name, subarray (contacts, 0, mid))
+                else lookup (name, subarray (contacts, mid + 1, array_length (contacts)))
+          };
+
+        > lookup ("anna", contacts);
+        => "88499394"
+        > lookup ("sean", contacts);
+        => "12122123"
+        > lookup ("vijay", contacts);
+        => false</pre>
+          <p><code>lookup</code> introduces a new function for manipulating arrays: <code>subarray (a, start, end)</code>.
+            It creates a new array formed by the elements of <code>a</code> beginning with index <code>start</code>
+            (inclusive) and ending with index <code>end</code> (exclusive).</p>
       </div>
     </div>
     
