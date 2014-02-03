@@ -16,7 +16,7 @@
         <h3>Arrays</h3>
         <p><i>Arrays</i> are structures similar to lists but they occupy less space and the average time required to access a random
           element by index is typically less than that required for a list. The <code>array</code> function is used to create an array
-          of a specified length. By default, all elements are initialized to <code>false</code>. This behaviour can be overriden by
+          of a specified length. By default, all elements are initialized to <code>false</code>. This behaviour can be overridden by
           specifying a value for the <code>fill</code> keyword parameter. Array literals are enclosed in <code>#[]</code>.
           <code>array_at</code> and <code>array_set</code> are used to access and update elements by index. 
           Keep in mind that <code>array_set</code> is a destructive operation:</p>
@@ -37,7 +37,7 @@
         <h4>Example: Phone book</h4>
         <p>This example shows how to search for an object in a sorted array. Each entry in the array contains a pair representing
           the name and phone number of a person. First we will see how such an array can be sorted. The we will write a function
-          that does a fast number lookup in the array, given the name of the contact person.<p>
+          that does a fast number look-up in the array, given the name of the contact person.<p>
         <p>Sorting the array is simple - just use the <code>array_sort</code> function with a custom <code>test</code> function
           that orders pairs based on their first element, which must be a string:</p>
         <pre>
@@ -48,9 +48,9 @@
           => #[["ankit" "38929839"], ["anna" "88499394"], ["caroline" "993002993"], 
                ["paul" "322288348"], ["sam" "98289182"], ["sean" "12122123"]]</pre>
         <p>Now that we have sorted the array, we can implement the <code>lookup</code> function. <code>lookup</code> does a binary search
-          on the array. If the contact being searched for is at the middle of the array, its phone number is returned. If the mid-entrie's
+          on the array. If the contact being searched for is at the middle of the array, its phone number is returned. If the mid-entry's
           name is lexicographically less than the name searched for, the search continues with the left half of the array, otherwise the
-          right half is searched. So on each iteration, the array is halved until either the name is found or the array is exhauseted, which
+          right half is searched. So on each iteration, the array is halved until either the name is found or the array is exhausted, which
           will result in <code>false</code> being returned.</p>
         <pre>
         > var lookup = function (name, contacts) {
@@ -119,7 +119,7 @@
                    loop (1, yday, array_at (day_table, if is_leap (year) 1 else 0))
             };</pre>
         <p><code>day_of_year</code> makes use of the array mapping function <code>array_reduce</code> which calls
-          a function for each element of the array. Here we add the days of all months upto <code>month</code> to
+          a function for each element of the array. Here we add the days of all months up to <code>month</code> to
           find the day of the year:</p>
         <pre>
           > day_of_year (2016, 3, 1);
@@ -152,7 +152,172 @@
         <p><code>char_to_integer</code> returns the Unicode encoding of a character. <code>integer_to_char</code> returns the 
           character representation of a Unicode encoding.</p>
         <pre>
-          > 
+          > char_to_integer ('A');
+          => 65
+          > integer_to_char (71);
+          => 'G'</pre>
+        <p>The character comparison functions are <code>char_is_eq</code>, <code>char_is_lt</code>, <code>char_is_gt</code>, 
+          <code>char_is_lteq</code> and <code>char_is_gteq</code>. Similarly, string comparison functions are <code>string_is_eq</code>,
+          <code>string_is_lt</code>, <code>string_is_gt</code>, <code>string_is_lteq</code> and <code>string_is_gteq</code>. The
+          generic sequence equality predicate <code>is_equal</code> can be instead of <code>string_is_eq</code>.</p>
+        <pre>
+          > char_is_eq ('a', 'A');
+          => false
+          > char_is_eq ('a', 'A', ignore_case = true);
+          => true
+          > char_is_eq ('a', 'B', ignore_case = true);
+          => false
+          > char_is_lt ('a', 'z');
+          => true
+          > char_is_lt ('a', 'A');
+          => false
+          > char_is_lt ('a', 'Z');
+          => false
+          > char_is_lt ('a', 'Z', ignore_case = true);
+          => true
+          > string_is_eq ("hello", "Hello");
+          => false
+          > string_is_eq ("hello", "Hello", ignore_case = true);
+          => true</pre>
+        <p>Other useful operations on a string are finding its length and accessing individual characters based on their index:</p>
+        <pre>
+          > var s = "hello, world";
+          > string_length (s);
+          => 12
+          > string_at (s, 5);
+          => ','
+          > string_set (s, 0, 'H');
+          > string_set (s, 7, 'W');
+          > s;
+          => "Hello, World"</pre>
+        <p>Just like for lists and arrays, there are mapping functions for strings. <code>string_map</code> returns a new
+          string where each character is the result of applying the function to each character of the original string.
+        <code>string_foreach</code> is similar to <code>string_map</code> but is called for its side-effect:</p>
+        <pre>
+          > string_map ("hello", function (c) { char_upcase (c) });
+          => "HELLO"
+          > string_foreach ("hello", function (c) { print (c) });
+          'h''e''l''l''o'</pre>
+        <p>In addition to string literals, the functions <code>string</code>, <code>string_append</code> and <code>substring</code>
+          can be used to create new strings: </p>
+        <pre>
+          > string (10);
+          => "\0\0\0\0\0\0\0\0\0\0"
+          > string (10, 'a');
+          => "aaaaaaaaaa"
+          > string_append ("hello, ", "world", "!");
+          => "hello, world!"
+          > substring ("hello, world!", 0, 5);
+          => "hello"</pre>
+        <h4>Example: Date parsing</h4>
+        <p>Before we conclude the section on strings, we will write a simple function that parses dates in the format "DD MON YYYY"
+          and converts it into a list of integers. For example, the input <code>"02 AUG 2012"</code> will be converted to
+          <code>[2, 8, 2012]</code>. The main purpose of this sample is to introduce some more useful string functions.</p>
+        <pre>
+          > var months = #[!JAN, !FEB, !MAR,
+                           !APR, !MAY, !JUN,
+                           !JUL, !AUG, !SEP,
+                           !OCT, !NOV, !DEC];
+
+          > var parse_date = 
+              function (str_date) {
+                let parts = string_split (str_date)
+                  if not (length (parts) == 3) {
+                     println ("Date should be in DD MON YYYY format.");
+                     false
+                  } else {
+                     let mon = array_index_of (months, string_to_symbol (at (parts, 1)))
+                       if mon == -1 {
+                         println ("Invalid month. ", at (parts, 1));
+                         false
+                       } else {
+                         let year = string_to_number (at (parts, 2)), month = mon + 1
+                           [validate_mday (month, year, string_to_number (at (parts, 0))),
+                            month,
+                           year]
+                       }
+                  }
+               };
+
+          > var validate_mday =
+              function (month, year, mday) {
+                 if (mday &gt; 0 && mday &lt;= (array_at (array_at (day_table, if is_leap (year) 1 else 0), month))) mday
+                 else false
+            }; </pre>
+        <p>The <code>parse_date</code> function introduces these new built-in functions: <code>string_split</code>,
+          <code>array_index_of</code>, <code>string_to_symbol</code> and <code>string_to_number</code>. </p>
+        <p><code>string_split</code> breaks up a string into a list of strings using a character or list of characters
+          as delimiters. The delimiter character defaults to space:</p>
+        <pre>
+          > string_split ("hello, world");
+          => ["hello,", "world"]
+          > string_split ("hello, world", ',');
+          => ["hello", " world"]
+          > string_split ("hello, world", [',', 'o']);
+          => ["hell", " w", "rld"]</pre>
+        <p><code>string_to_symbol</code> and <code>string_to_number</code> does the obvious - they convert strings to symbols and
+          numbers.</p>
+        <p><code>array_index_of</code> returns the index of an element in the array. If the element is not found <code>-1</code> is returned.
+          An optional comparison predicate can be passed as the <code>test</code> keyword parameter:</p>
+        <pre>
+          > array_index_of (#[1, 2, 3], 1);
+          => 0
+          > array_index_of (#[1, 2, 3], 10);
+          => -1
+          > array_index_of (#['a', 'b', 'c'], 'a');
+          => 0
+          > array_index_of (#["a", "b", "c"], "a");
+          => -1
+          > array_index_of (#["a", "b", "c"], "a", test = string_is_eq);
+          => 0</pre>
+        <p>The <code>parse_date</code> function does not do a lot of data validation. It just checks if the month is valid and the day
+          falls within that month. As an extended exercise, you can add more validation code to <code>parse_date</code> and make 
+          it more robust. Instead of printing an error message, you may want to try the <code>error</code> function to raise
+          exceptions. In a later chapter we will cover exceptions in more detail.</p>
+        <h3>Tables</h3>
+        <p>In the chapter on <a href="./lists.html">lists</a>, we saw how to use lists as tables of key-value pairs. We use the
+          <code>assoc_***</code> functions to store and retrieve values from these structures. But lists can get inefficient for 
+          large number of key-value pairs as it has to be sequentially scanned to access a particular entry. <em>Tables</em> are
+          array-like structures whose elements are indexed by keys which are arbitrary objects. They typically has faster access times
+          than association lists. The following REPL session demonstrates most of the useful table functions:</p>
+        <pre>
+          > var fruit_colors = table();
+          > table_set (fruit_colors, !apricot, !yellow);
+          > table_set (fruit_colors, !orange, !orange);
+          > table_set (fruit_colors, !apple, !red);
+          > table_at (fruit_colors, !apricot);
+          => yellow
+          > table_at (fruit_colors, !apple);
+          => red
+          > table_at (fruit_colors, !banana);
+          => false
+          > table_at (fruit_colors, !banana, !yellow);
+          => yellow
+          > table_set (fruit_colors, !apple, !green);
+          > table_at (fruit_colors, !apple);
+          => green
+          > table_length (fruit_colors);
+          => 3
+          > table_foreach (function (key, value) { println (key, ": ", value) }, fruit_colors);
+          orange": "orange
+          apple": "green
+          apricot": "yellow </pre>
+        <p>The table uses a hash function to convert the key into an integer index into an array. The default hash function
+          is good enough for almost all built-in types like lists, strings and arrays. If you want to customize the way
+          key hashes are created, you can provide the table constructor with a <code>hash</code> function which takes a key
+          object as parameter and returns an integer that uniquely identifies the key:</p>
+        <pre>
+          > var coords = table (hash = function (p) { real_to_integer (head (p) + tail (p) * 31) });
+          > table_set (coords, [12.9667 77.5667], "Bangalore");
+          > table_set (coords, [13.0839 80.2700], "Chennai");
+          > table_at (coords, [13.0839 80.2700]);
+          => "Chennai"
+          > table_at (coords, [13.0839 80.27]);
+          => "Chennai"
+          > table_at (coords, [13.0839 80]);
+          => false</pre>
+        <h3>Records</h3>
+        <p></p>
       </div>
     </div>
     

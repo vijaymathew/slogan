@@ -1,5 +1,7 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+(define string make-string)
+
 (define (string_is_eq c1 c2 #!key (ignore_case #f))
   ((if ignore_case string-ci=? string=?) c1 c2))
 
@@ -127,3 +129,22 @@
 (define string_trim string-trim)
 (define string_map string-map)
 (define string_foreach string-foreach)
+
+(define (string_split str #!optional (delim #\space))
+  (if (not (or (char? delim)
+               (list? delim)))
+      str
+      (let ((len (string-length str)))
+        (let loop ((result '())
+                   (currstr '())
+                   (i 0))
+          (cond ((>= i len)
+                 (if (null? currstr)
+                     (reverse result)
+                     (reverse (cons (list->string (reverse currstr)) result))))
+                ((or (and (list? delim) (member (string-ref str i) delim))
+                     (and (char? delim) (char=? (string-ref str i) delim)))
+                 (loop (if (null? currstr) result (cons (list->string (reverse currstr)) result))
+                       '() 
+                       (+ i 1)))
+                (else (loop result (cons (string-ref str i) currstr) (+ i 1))))))))

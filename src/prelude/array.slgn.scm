@@ -45,3 +45,12 @@
         (loop (+ i 1)
               (func result (vector-ref arr i)))
         result)))
+
+(define (array_index_of arr obj #!key (test *default-eq*))
+  (let ((len (vector-length arr)))
+    (let loop ((i 0))
+      (cond ((>= i len)
+             -1)
+            ((test (vector-ref arr i) obj)
+             i)
+            (else (loop (+ i 1)))))))
