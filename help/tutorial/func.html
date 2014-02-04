@@ -184,6 +184,58 @@
           These objects can be described as sharing a common base type because all of them respond to
           a common set of messages: <code>area</code> and <code>show</code>.</p>
         <pre>
+var geometry = 
+    function (message) {
+        let make_circle = function (radius) {
+            function (message) {
+            case message {
+                !area: 3.14 * radius * radius
+                !show: println ("radius: ", radius)
+              }
+            }
+        },
+        make_square = function (side) {
+            function (message) {
+            case message {
+                !area: side * side
+                !show: println ("side: ", side)
+              }
+            }
+        },
+        make_rectangle = function (length, width) {
+            function (message) {
+            case message {
+                !area: length * width
+                !show: println ("length: ", length, ", width: ", width)
+              }
+            }
+        }
+        
+    case message {
+        !make_circle: make_circle
+        !make_square: make_square
+        !make_rectangle: make_rectangle
+    }
+};</pre>
+        <p>Let us create and use some geometry objects: </p>
+        <pre>
+          > var c = geometry.make_circle (10);
+          > var s = geometry.make_square (3);
+          > var r = geometry.make_rectangle (3, 4);
+          > c.area;
+          => 314.
+          > s.area;
+          => 9
+          > r.area;
+          => 12
+          > c.show;
+          radius: 10
+          > s.show;
+          side: 3
+          > r.show;
+          length: 3, width: 4</pre>
+        <p>Invoking a non-existent message returns <code>void</code>. The <code>case</code> expressions that check the message can
+          raise an exception in its <code>else</code> clause to notify the user that the message could not be processed.</p>
         <h4>Keyword, optional and rest parameters</h4>
         <p>Function parameters can be marked as optional with the special marker - <code>@optional</code>.
           A function definition can also specify a default value for the optional parameter. If no default value is
