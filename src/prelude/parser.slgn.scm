@@ -357,12 +357,16 @@
 		(append (list 'define-structure name) members))
 	  (mk-struct-accessors/modifiers name members)))
 
+(define (mk-record-constructor recname members)
+  (list 'lambda (append (list '#!key) members)
+        (cons (string->symbol (string-append "make-" recname))
+              members)))
+
 (define (mk-struct-accessors/modifiers name members)
   (let ((sname (symbol->string name)))
     (let loop ((members members)
-               (expr (list (list 'define 
-                                 (string->symbol (string-append sname))
-                                 (string->symbol (string-append "make-" sname)))
+               (expr (list (list 'define (string->symbol sname) 
+                                 (mk-record-constructor sname members))
                            (list 'define 
                                  (string->symbol (string-append "is_" sname))
                                  (string->symbol (string-append sname "?"))))))

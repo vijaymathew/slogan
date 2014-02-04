@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>Scope and Context</title>
+    <title>Scope and Control</title>
 
     <link type="text/css" rel="stylesheet" href="../style/style.css">
   </head>
@@ -11,7 +11,7 @@
   <body>
     <div id="page" class="wide">
       <div class="container">
-        <h2>Scope and Context</h2>
+        <h2>Scope and Control</h2>
         <p>The scope a variable is the part of the program where the variable can be used. A variable declared with <code>var</code>
           is visible to the entire program. One way to limit the scope of a variable is to declare them within a function:</p>
         <pre>
@@ -21,7 +21,7 @@
           error: unbound global x
           > y;
           error: unbound global y</pre>
-        <p>The scope of <code>x</code> and <code>y</code> are limted to the body of the function. Variables of the same name 
+        <p>The scope of <code>x</code> and <code>y</code> are limited to the body of the function. Variables of the same name 
           can be declared and used outside the function without causing any conflicts. It is not necessary to explicitly create
           a function just to limit the scope of some variables. This can be done with code blocks:</p>
         <pre>
@@ -41,7 +41,7 @@
           > let x = 1, y = 2, z = 3
             [x, y, z];
           => [1, 2, 3] </pre>
-        <p>As with a function, the local definitions in a <code>let</code> will <em>shadow</em> any global defintiion with the
+        <p>As with a function, the local definitions in a <code>let</code> will <em>shadow</em> any global definition with the
           same name:</p>
         <pre>
           > var x = 10;
@@ -56,7 +56,7 @@
           <code>200</code>. <code>x</code> evaluates to <code>10</code> and <code>200</code> evaluates to itself. As the next step, a new
           <em>environment</em> of variable bindings is created for <code>let</code> and two slots named <code>x</code> and <code>y</code> are
           created there. <code>10</code> is assigned to <code>x</code> and <code>200</code> to <code>y</code>. The body of <code>let</code>
-          always refers to its local enviroment when it has to find the value of a variable. Only if it cannot find the variable there it will
+          always refers to its local environment when it has to find the value of a variable. Only if it cannot find the variable there it will
           refer to the environment in which <code>let</code> was evaluated. This behavior is what causes the <em>shadowing</em> that we
           observe.</p>
         <p><code>letseq</code> is similar to <code>let</code> but the definition and initialization of each local variable is done 
@@ -90,13 +90,13 @@
           => greater</pre>
         <p>The <code>case</code> expression is used to compare the value of an expression with a list of constants: </p>
         <pre>
-          > var signal = function () { array_at (#[!red, !green, !ambre], random (3)) };
+          > var signal = function () { array_at (#[!red, !green, !amber], random (3)) };
           > var check_signal = 
              function () {
                case signal () {
                  red: "Stop!"
                  green: "Go!"
-                 ambre: "Watch!"
+                 Amber: "Watch!"
                  else: "Invalid signal!"
                }
             };
@@ -112,7 +112,89 @@
               &lt;valueN&gt;: &lt;result-expressionN&gt;
               else: &lt;else-expression&gt;
           }</pre>
-        <p>Case values can be of any type for which the euqlity operator (<code>==</code>) works.</p>
+        <p>Case values can be of any type for which the equality operator (<code>==</code>) works.</p>
+        <h3>Exceptions</h3>
+        <p>Exceptions are events that changes the normal flow of program execution. They are commonly used to raise a signal
+          when things cannot proceed as expected. For example, a program to download some resource from a web server may raise
+          an exception when a connection to the server cannot be established. An exception is raised by calling the <code>raise</code>
+          function. Exceptions cause program control to break out of the current context and invokes a 
+          special function called the <code>exception handler</code>. There is a default system-wide exception handler which just prints
+          a textual description of the exception raised. The function <code>current_exception_handler</code> returns this function.
+          The global exception handler can be set to a user-defined function using <code>set_current_exception_handler</code>.</p>
+        <p>Another function for raising exceptions is <code>error</code>. It takes an error message as the first argument and an
+          arbitrary number of optional arguments that will provide more information to the exception handler. The following session
+          reviews all the concepts we have learned so far:</p>
+        <pre>
+          > raise ("oh!");
+          error: oh!
+          > var old_handler = current_exception_handler ();
+          > set_current_exception_handler (function (exception) { println ("exception again! ", exception) });
+          > raise ("oh!");
+          exception again! oh!
+          > error ("an error", 1, 2, 3);
+          exception again! an error [1, 2, 3]
+          > set_current_exception_handler (old_handler);
+          > error ("an error", 1, 2, 3);
+          error: an error [1, 2, 3]</pre>
+        <p>Most of the time it is better to handle exceptions locally. The <code>try</code> function lets us do that.
+          It takes three functions as arguments and invokes the first one which is known as the <code>thunk</code>. 
+          If an exception is raised in that invocation, that exception is handed over to the function given as the second argument. 
+          This function is specified using the keyword <code>catch</code> and defaults to the global exception handler.</p>
+        <pre>
+          > try (function () { raise ("hello") });
+          error: hello
+          > try (function () { raise ("hello") },
+                 catch = function (exception) { println ("exception caught: ", exception) });
+          exception caught: hello</pre>
+        <p>If the third function argument called <code>finally</code> is provided, it will be called after executing thunk.
+          In case of an exception <code>finally</code> will be called after executing the exception handler.</p>
+        <pre>
+          > try (function () { raise ("hello") }, finally = function () { 100 } );
+          error: hello
+          => 100
+          > try (function () { raise ("hello") }, 
+                 catch = function (exception) { println (exception) }, 
+                 finally = function () { 100 } );
+          hello
+          => 100</pre>
+        <p>If a <code>finally</code> function is provided, <code>try</code> always evaluates to the value returned by that function.
+          Otherwise it will return the value of <code>thunk</code>, in case of no exceptions. If there was an exception raised during
+          the invocation of <code>thunk</code>, <code>try</code> will return the value returned by the handler.</p>
+        <p>The following example, though contrived, shows how <code>finally</code> can work together with the exception handler 
+          and make a function more robust. The <code>show_temp</code> function that we define below displays the current temperature.
+          It depends on a function <code>get_temp</code> which contacts a remote server and retrieves the current temperature.
+          If the server cannot be contacted, it raises an exception. <code>show_temp</code> has an exception handler that prints
+          the error. Its <code>finally</code> checks if temperature was successfully retrieved. If not it will return a cached value
+          ensuring that <code>show_temp</code> always prints an output useful for the user.</p>
+        <pre>
+var get_temp = 
+    function () { 
+        if random (2) == 1 raise ("failed to contact temperature server.") 
+        else random (40) 
+    };
+
+var cache = random (40);
+
+var show_temp =
+    function () {
+        println ("temperature is: ",
+                 let temp = false
+                 try (function () { temp = get_temp (); cache = temp },
+                      catch = function (exception) { println ("caught error: ", exception) },
+                      finally = function () { if not (temp) cache else temp }));
+    };</pre>
+        <p></p>
+        <pre>
+          > show_temp ();
+          caught error: failed to contact temperature server.
+          temperature is: 29
+          slogan> show_temp ();
+          temperature is: 0
+          slogan> show_temp ();
+          temperature is: 8
+          slogan> show_temp ();
+          caught error: failed to contact temperature server.
+          temperature is: 8</pre>
       </div>
     </div>
   </body>

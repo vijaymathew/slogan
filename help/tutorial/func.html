@@ -34,3 +34,191 @@
         <p>The first function adds two numbers in the global environment (<code>x</code> and <code>y</code>) with a parameter of its own 
           (<code>z</code>). The second function shadows the global <code>x</code> with one of its parameter of the same name. The third
           function has a <code>let</code> expression that shadows both the global variables.</p>
+        <h3>Higher-order functions</h3>
+        <p>Functions that manipulate other functions are called <em>higher-order functions</em>. A higher-order function can
+          either receive other functions as arguments or return a function as its value or do both. The following sections show
+          how higher-order functions can act as powerful abstraction mechanisms.</p>
+        <h4>Functions as arguments</h4>
+        <p>Consider the following two functions. The first one adds all integers in a given range:</p>
+        <pre>
+          > var sum_integers =
+              function (a, b) {
+                if a > b 0
+                else a + sum_integers (a + 1, b)
+            }; 
+
+          > sum_integers (1, 5);
+          => 15</pre>
+        <p>The second finds the sum of all alternative elements in a sequence after doubling each elements value:</p>
+        <pre>
+           > var sum_alternate_doubles =
+              function (a, b) {
+                if a > b 0
+                else (a + a) + sum_alternate_doubles (a + 2, b)
+             };
+
+           > sum_alternate_doubles (1, 10);
+           => 50</pre>
+        <p>Both functions share a some common patterns. These patterns can be abstracted into a single function that does the following:
+          <ol>
+            <li>Return <code>0</code> when <code>a</code> is greater than <code>b</code>.</li>
+            <li>Transform <code>a</code> in some way and add the result to the value of a recursive call to itself.</li>
+            <li>The recursive call should be passed a successor of <code>a</code> and <code>b</code> unchanged as arguments.</li>
+          </ol>
+        <p>Let us call this function <code>sum</code>. The only portions that need customization for each call of <code>sum</code> is
+          the way <code>a</code> is transformed and how a its successor is obtained. These custom behaviors can be passed to <code>sum</code>
+          in the form of other functions. Here is the definition of <code>sum</code> and the redefinitions of <code>sum_integers</code> and
+          <code>sum_alternate_doubles</code> in its terms:</p>
+        <pre>
+          > var sum = 
+             function (a, b, transformer, successor) {
+               if a > b 0
+               else transformer (a) + sum (successor (a), b, transformer, successor)
+            };
+
+          > sum_integers = 
+               function (a, b) { 
+                sum (a, b, function (x) { x }, function (x) { x + 1 })
+            };
+
+          > sum_alternate_doubles = 
+              function (a, b) {
+               sum (a, b, function (x) { x + x }, function (x) { x + 2 })
+          };
+
+          > sum_integers (1, 5);
+          => 15
+          > sum_alternate_doubles (1, 10);
+          => 50</pre>
+        <p><code>sum</code> is quite a powerful abstraction in that it represents the concept of summation itself rather than a
+          concrete instance of computing a particular sum. Such instances can be defined in terms of <code>sum</code>, 
+          <code>sum_integers</code> and <code>sum_alternate_doubles</code> are two examples. You can think of more, like
+          a function that sums the cubes of all numbers in a sequence: </p>
+        <pre>
+          > var sum_cubes = 
+              function (a, b) {
+                sum (a, b, function (x) { x * x * x }, function (x) { x + 1})
+            };
+          
+          > sum_cubes (1, 3);
+          => 36</pre>
+        <p>One of the most useful higher-order functions in Slogan is <code>map</code> which abstract the idea of iterating
+          over all the elements in a list, transform that element in some way and create a new list of the results of all
+          transformations. The following example combines <code>map</code> with another higher-order function <code>apply</code>
+          to create a new version of <code>sum_cubes</code>. <code>apply</code> takes a function and a list of values as its arguments.
+          The function is called with the elements of the list as its arguments:</p>
+        <pre>
+          > sum_cubes = function (numbers) { apply (add, map (function (x) { x * x * x }, numbers)) };
+          > sum_cubes ([1, 2, 3]);
+          => 36</pre>
+        <h4>Functions as returned values</h4>
+        <p>In the previous section we used the <code>sum</code> higher-order function to define specific summation function.
+          Defining new instances of summation will be easier if we have a function that acts as a builder or <em>constructor</em>
+          of summations. Such a function will take the transformer and successor functions as arguments and return a new function
+          that accept the range as additional parameters. The new function can refer to the transformer and successor implicitly
+          as they are available in its defining environment. Our constructor of summations is called <code>make_summation</code>:</p>
+        <pre>
+          > var make_summation = 
+              function (transformer, successor) {
+                function (a, b) { sum (a, b, transformer, successor) }
+            };
+          
+          > sum_integers = make_summation (function (x) { x }, function (x) { x + 1 });
+          > sum_integers (1, 5);
+          => 15</pre>
+        <h4>Closures</h4>
+        <p>A closure is a function packaged along with its defining environment. <code>make_summation</code> returns a closure.
+          The returned function has a reference to the environment where <code>transformer</code> and <code>successor</code> is
+          defined so invocations of the function need not pass those values explicitly. Closures can be used to manage state across
+          function calls and simulate entities what other languages might call <em>objects</em>. The following example shows the
+          definition of a simple <em>counter</em> object. The constructor <code>make_counter</code> creates a new counter:</p>
+        <pre>
+          > var make_counter = function (n) { function () { n = n + 1; n } };
+          > var count_from_5 = make_counter (5);
+          > var count_from_10 = make_counter (10);
+          > count_from_5 ();
+          => 6
+          > count_from_5 ();
+          => 7
+          > count_from_10 ();
+          => 11
+          > count_from_10 ();
+          =>12</pre>
+        <p>Each new instance of counter is created in an environment bound to the value passed to <code>n</code> and that becomes
+          the internal state of the object.</p>
+        <p>Objects in an Object Oriented language can respond to messages. Using closures and symbols we can define such 
+          <em>message-aware</em> objects:</p>
+        <pre>
+          > var make_circle = function (radius) {
+                function (message) {
+                  case message {
+                    !radius: radius
+                    !area: 3.14 * radius * radius
+                    !set_radius: function (r) { radius = r }
+                 }
+              }
+          };
+          > var c = make_circle (2.4);
+          > c (!radius);
+          => 2.4
+          > c (!area);
+          => 18.086399999999998
+          > c (!set_radius) (3);
+          > c (!radius);
+          => 3</pre>
+        <p>Slogan provides a convenient dot-notation for passing messages to closures: </p>
+        <pre>
+          > c = make_circle (10.5);
+          > c.radius;
+          => 10.5
+          > c.area;
+          => 346.185
+          > c.set_radius (21.5);
+          > c.radius;
+          => 21.5
+          > c.area;
+          => 1451.4650000000001</pre>
+        <h4>Example: Geometric package</h4>
+        <p>The following example shows how to define a simple package of geometric objects.
+          The package can create various types of geometric objects like circle, rectangle and square.
+          These objects can be described as sharing a common base type because all of them respond to
+          a common set of messages: <code>area</code> and <code>show</code>.</p>
+        <pre>
+        <h4>Keyword, optional and rest parameters</h4>
+        <p>Function parameters can be marked as optional with the special marker - <code>@optional</code>.
+          A function definition can also specify a default value for the optional parameter. If no default value is
+          specified, an optional parameter will contain the value <code>false</code>.</p>
+        <pre>
+          > var f = function (a, b, @optional c = 100) {
+                       a + b + c
+                    };
+          > f (1, 2);
+          => 103
+          > f (1, 2, 3);
+          => 6</pre>
+        <p>Keyword parameters let arguments be explicitly assigned to specific parameters while calling the function.
+          Keyword parameters make the order of parameters irrelevant. Like optional parameters, keyword parameters
+          can be assigned a default value. Keyword parameters are introduced with the marker <code>@key</code>.</p>
+        <pre>
+          > f = function (a, @key b, c) {
+                  a + b + c;
+                };
+          > f (10, c = 100, b = 20);
+          => 130
+          > f (10, b = 90, c = 100);
+          => 200</pre>
+        <p>Functions can be made to accept variable number of arguments using the <code>@rest</code> marker. All
+          the arguments that follow this marker will be packaged into a list and passed to the function: </p>
+        <pre>
+          > f = function (a, b, @rest c) {
+                  apply (add, append (list (a, b), c))
+                };
+          > f (1, 2);
+          => 3
+          > f (1, 2, 3 ,4 ,5);
+          => 15</pre>
+      </div>
+    </div>
+  </body>
+</html>
+

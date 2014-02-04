@@ -322,7 +322,7 @@
           system:</p>
         <pre>
           > record point (x , y);
-          > var p = point (10, 20);
+          > var p = point (x = 10, y = 20);
           > is_point (p);
           => true
           > point_x (p);
@@ -348,9 +348,9 @@
         <pre>
           > var add_points = 
               function (p1, p2) {
-                point (point_x (p1) + point_x (p2), point_y (p1) + point_y (p2))
+                point (x = point_x (p1) + point_x (p2), y = point_y (p1) + point_y (p2))
             };
-          > add_points (point (10, 20), point (12, 15));
+          > add_points (point (x = 10, y = 20), point (x = 12, y = 15));
           => #&lt;point #3 x: 22 y: 35&gt;</pre>
       </div>
     </div>
