@@ -109,7 +109,6 @@
                        (error "expected colon after case expression. " (tokenizer 'next))
                        (tokenizer 'next))
                    (let ((result (expression tokenizer)))
-                     (assert-semicolon tokenizer)
                      (loop (tokenizer 'peek)
                            (cons (list (if (or (list? expr)
                                                (eq? expr 'else))
@@ -300,9 +299,9 @@
 	   (or (eq? sym 'let)
 	       (eq? sym 'letseq)
 	       (eq? sym 'letrec)))
-      (if (eq? sym 'letseq)
-	  'let*
-	  sym)
+      (cond ((eq? sym 'letseq)
+             'let*)
+            (else sym))
       #f))
 
 (define (func-def-expr tokenizer)

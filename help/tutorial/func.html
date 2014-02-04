@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Functions</title>
+    
+    <link type="text/css" rel="stylesheet" href="../style/style.css">
+  </head>
+  
+  <body>
+    <div id="page" class="wide">
+      <div class="container">
+        <h2>Functions</h2>
+        <p>Functions are at the core of Slogan. They are the primary means of abstraction provided by the language. Functions have first-class
+          status - they can be assigned to variables, passed to other functions as arguments. You can also write functions that create
+          new functions as their result. The <code>function</code> keyword is used to introduce a function literal:</p>
+        <pre>
+          function (&lt;param1&gt;, &lt;param2&gt; ...) {
+              // function body
+          }</pre>
+        <p>The function object has a pointer to the environment in which it was created. So in addition to its parameters, its body
+          can refer to variables in the defining environment. Just like the <code>let*</code> expressions, a function can shadow
+          definitions in this environment with definitions of its own:</p>
+        <pre>
+          > var x = 10;
+          > var y = 20;
+          > function (z) { x + y + z } (30);
+          => 60
+          > function (x, z) { x + y + z } (100, 30);
+          => 150
+          > function (z) { let x = 1, y= 2 x + y + z } (30);
+          => 33 </pre>
+        <p>The first function adds two numbers in the global environment (<code>x</code> and <code>y</code>) with a parameter of its own 
+          (<code>z</code>). The second function shadows the global <code>x</code> with one of its parameter of the same name. The third
+          function has a <code>let</code> expression that shadows both the global variables.</p>

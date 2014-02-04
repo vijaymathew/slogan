@@ -24,3 +24,8 @@
 (define is_number_gt >)
 (define is_number_lteq <=)
 (define is_number_gteq >=)
+
+(define (random n)
+  (if (integer? n)
+      (random-integer n)
+      (random-real)))
