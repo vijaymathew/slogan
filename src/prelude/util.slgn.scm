@@ -29,9 +29,7 @@
   (let ((str (symbol->string s)))
     (convfn
      (string_replace_all 
-      (substring
-       str
-       1 (string-length str))
+      str
       #\_ #\-))))
 
 (define (slgn-symbol->scm-keyword s)
@@ -72,6 +70,8 @@
                  (write val port)))
             ((error-exception? val)
              (display-exception val port))
+            ((eof-object? val)
+             (display '!end-of-stream))
             (else
              (display (scm-repr->slgn-repr val) port)))))
 

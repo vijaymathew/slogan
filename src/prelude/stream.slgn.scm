@@ -17,11 +17,11 @@
       (let loop ((settings path-or-settings)
                  (result '()))
         (if (null? settings)
-            (reverse result)
+            result
             (loop (cdr settings)
-                  (cons (list (slgn-symbol->scm-keyword (caar settings))
-                              (slgn-setting->scm-setting (cadr settings)))
-                        result))))
+                  (append (list (slgn-symbol->scm-keyword (car (car settings)))
+                                (slgn-setting->scm-setting (cdr (car settings))))
+                          result))))
       path-or-settings))
 
 (define (slgn-setting->scm-setting s)
@@ -146,12 +146,12 @@
 (define read_line read-line)
 (define read_substring read-substring)
 (define write_substring write-substring)
-(define read_u8 read-u8)
-(define write_u8 write-u8)
-(define read_u8array read-subu8vector)
-(define write_u8array write-subu8vector)
+(define read_byte read-u8)
+(define write_byte write-u8)
+(define read_byte_array read-subu8vector)
+(define write_byte_array write-subu8vector)
 (define force_output force-output)
-(define is_eof eof-object?)
+(define is_eos eof-object?)
 
 (define scm_print print)
 (define scm_println println)
@@ -167,6 +167,10 @@
   (newline output))
 
 (define (read_expression #!key (input (current-input-port)))
+  (let ((tokenizer (make-tokenizer input)))
+    (expression tokenizer)))
+
+(define (read_program #!key (input (current-input-port)))
   (let ((tokenizer (make-tokenizer input)))
     (slogan tokenizer)))
 

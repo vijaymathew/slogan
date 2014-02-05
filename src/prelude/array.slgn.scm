@@ -1,13 +1,15 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (array dim #!key fill)
+(define (make-array dim fill constructor)
   (cond ((integer? dim)
-         (make-vector dim fill))
+         (constructor dim fill))
         ((list? dim)
          (if (null? (cdr dim))
-             (array (car dim) fill: fill)
-             (array (car dim) fill: (array (cdr dim) fill: fill))))
+             (make-array (car dim) fill constructor)
+             (make-array (car dim) (make-array (cdr dim) fill constructor) constructor)))
         (else (error "invalid array dimension. " dim))))
+
+(define (array dim #!key fill) (make-array dim fill make-vector))
 
 (define array_length vector-length)
 (define array_at vector-ref)
@@ -54,3 +56,20 @@
             ((test (vector-ref arr i) obj)
              i)
             (else (loop (+ i 1)))))))
+
+;; byte arrays.
+
+(define (byte_array dim #!key (fill 0)) (make-u8vector dim fill))
+(define is_byte_array u8vector?)
+(define byte_array_length u8vector-length)
+(define byte_array_at u8vector-ref)
+(define bytye_array_set u8vector-set!)
+(define byte_array_to_list u8vector->list)
+(define list_to_byte_array list->u8vector)
+(define byte_array_fill u8vector-fill!)
+(define byte_subarray_fill subu8vector-fill!)
+(define byte_array_append u8vector-append)
+(define byte_array_copy u8vector-copy)
+(define byte_subarray subu8vector)
+(define byte_subarray_move subu8vector-move!)
+(define byte_array_shrink u8vector-shrink!)
