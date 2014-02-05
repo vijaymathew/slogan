@@ -10,40 +10,40 @@
             (loop (slogan tokenizer) exprs))
         (reverse exprs))))
 
-(define compile
-  (lambda (script-name #!key 
-		       (assemble #f)
-		       (exe #f))      
-    (with-exception-catcher
-     display-exception
-     (lambda ()
-       (let ((out-file-name (string-append script-name *scm-extn*)))
-	 (call-with-output-file out-file-name
-	   (lambda (out-port)
-	     (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
-				       (string-append script-name *slgn-extn*)
-				       script-name)
-	       (lambda (port)
-		 (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
-		   (if (not (null? exprs))
-		       (begin (scm_write (car exprs) out-port)
-			      (newline out-port)
-			      (loop (cdr exprs)))))))))
-	 (if (or assemble exe)
-	     (let ((build-cmd (if exe 
-				  (string-append *gsc-compiler* " " 
-						 *cc-options* 
-						 " -o " (string-append script-name *exe-extn*)
-						 " " *ld-options*
-						 " -exe "
-						 (string-append *prelude-root* "/*.scm ")
-						 out-file-name)
-				  (string-append *gsc-compiler* " " out-file-name))))
-	       (if (zero? (shell-command build-cmd))
-		   (begin (delete-file out-file-name)
-			  #t)
-		   #f))
-	     #t))))))
+(define (compile script-name #!key 
+                 (assemble #f)
+                 (exe #f)
+                 (exception_handler display-exception))
+  (with-exception-catcher
+   exception_handler
+   (lambda ()
+     (let ((out-file-name (string-append script-name *scm-extn*)))
+       (call-with-output-file out-file-name
+         (lambda (out-port)
+           (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
+                                     (string-append script-name *slgn-extn*)
+                                     script-name)
+             (lambda (port)
+               (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
+                 (if (not (null? exprs))
+                     (begin (write (car exprs) out-port)
+                            (newline out-port)
+                            (loop (cdr exprs)))))))))
+       (if (or assemble exe)
+           (let ((build-cmd (if exe 
+                                (string-append *gsc-compiler* " " 
+                                               *cc-options* 
+                                               " -o " (string-append script-name *exe-extn*)
+                                               " " *ld-options*
+                                               " -exe "
+                                               (string-append *prelude-root* "/*.scm ")
+                                               out-file-name)
+                                (string-append *gsc-compiler* " " out-file-name))))
+             (if (zero? (shell-command build-cmd))
+                 (begin (delete-file out-file-name)
+                        #t)
+                 #f))
+           #t)))))
 
 (define (show-waiting-prompt prompt)
   (let loop ((len (- (string-length prompt) 2))
@@ -79,20 +79,24 @@
          (zero? pcount)
          (zero? scount))))
 
-(define (repl port #!optional (prompt "slogan> "))
+(define (repl port #!key (prompt "slogan> ")
+              (exception_handler display-exception))
   (display prompt) 
-  (let ((val (let loop ((line (read-line port #\newline #t)))
-               (cond ((and (string-ends-with? (string-rtrim line) ";")
-                           (braces-matches? line))
-                      (let ((tokenizer (make-tokenizer (open-input-string line))))
-                        (let loop ((expr (slogan tokenizer)))
-                          (if (not (eof-object? (tokenizer 'peek)))
-                              (begin (eval expr)
-                                     (loop (slogan tokenizer)))
-                              (eval expr)))))
-                     (else (show-waiting-prompt prompt)
-                           (loop (string-append line (read-line port #\newline #t))))))))
-    (if (not (void? val))
-        (begin (slogan-display val)
-               (newline))))
-  (repl port prompt))
+  (with-exception-catcher
+   exception_handler
+   (lambda ()
+     (let ((val (let loop ((line (read-line port #\newline #t)))
+                  (cond ((and (string-ends-with? (string-rtrim line) ";")
+                              (braces-matches? line))
+                         (let ((tokenizer (make-tokenizer (open-input-string line))))
+                           (let loop ((expr (slogan tokenizer)))
+                             (if (not (eof-object? (tokenizer 'peek)))
+                                 (begin (eval expr)
+                                        (loop (slogan tokenizer)))
+                                 (eval expr)))))
+                        (else (show-waiting-prompt prompt)
+                              (loop (string-append line (read-line port #\newline #t))))))))
+       (if (and (not (void? val)))
+           (begin (slogan-display val)
+                  (newline))))))
+  (repl port prompt: prompt exception_handler: exception_handler))

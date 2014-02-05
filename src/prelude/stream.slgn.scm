@@ -166,12 +166,9 @@
   (apply print (append (list output: output) args))
   (newline output))
 
-(define scm_read read)
-(define scm_write write)
-
-(define (read #!key (input (current-input-port)))
+(define (read_expression #!key (input (current-input-port)))
   (let ((tokenizer (make-tokenizer input)))
     (slogan tokenizer)))
 
-(define (write obj #!key (output (current-output-port)))
+(define (write_expression obj #!key (output (current-output-port)))
   (slogan-display obj port: output))

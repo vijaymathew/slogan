@@ -69,7 +69,7 @@
             ((string? val)
              (if display-string
                  (display val port)
-                 (scm_write val port)))
+                 (write val port)))
             ((error-exception? val)
              (display-exception val port))
             (else
@@ -153,38 +153,38 @@
         (else (display e port))))
 
 (define (display-nonprocedure-operator-exception e port)
-  (print stream: port "not a procedure. "
+  (print output: port "not a procedure. "
          (nonprocedure-operator-exception-operator e)))
 
 (define (display-os-exception e port)
-  (print stream: port
+  (print output: port
          "OS exception "
          (os-exception-message e) #\,
          (os-exception-procedure e)
          (os-exception-arguments e)))
 
 (define (display-no-such-file-or-directory-exception e port)
-  (print stream: port
+  (print output: port
          "no such file or directory. "
          (no-such-file-or-directory-exception-procedure e)
          (no-such-file-or-directory-exception-arguments e)))
 
 (define (display-datum-parsing-exception e port)
-  (print stream: port
+  (print output: port
          "datum parsing exception. "
          (datum-parsing-exception-kind e) #\,
          (datum-parsing-exception-parameters e) #\,
          (datum-parsing-exception-readenv e)))
 
 (define (display-expression-parsing-exception e port)
-  (print stream: port
+  (print output: port
          "expression parsing exception. "
          (expression-parsing-exception-kind e) #\,
          (expression-parsing-exception-parameters e) #\,
          (expression-parsing-exception-source e)))
 
 (define (display-type-exception e port)
-  (print stream: port "type exception in "
+  (print output: port "type exception in "
          (type-exception-procedure e)
          (type-exception-arguments e)
          ". expected type for argument "
@@ -193,36 +193,36 @@
          (type-exception-type-id e)))
 
 (define (display-wrong-number-of-arguments-exception e port)
-  (print stream: port
+  (print output: port
          "wrong number of arguments. "
          (wrong-number-of-arguments-exception-procedure e)
          (wrong-number-of-arguments-exception-arguments e)))
 
 (define (display-error-exception e port)
-  (print stream: port
+  (print output: port
          (error-exception-message e)
          " "
          (error-exception-parameters e)))
 
 (define (display-keyword-expected-exception e port)
-  (print stream: port "keyword expected. "
+  (print output: port "keyword expected. "
          (keyword-expected-exception-procedure e)
          (keyword-expected-exception-arguments e)))
 
 (define (display-number-of-arguments-limit-exception e port)
-  (print stream: port 
+  (print output: port 
          "arguments limit reached. "
          (number-of-arguments-limit-exception-procedure e)
          (number-of-arguments-limit-exception-arguments e)))
 
 (define (display-unknown-keyword-argument-exception e port)
-  (print stream: port 
+  (print output: port 
          "unknown keyword. "
          (unknown-keyword-argument-exception-procedure e)
          (unknown-keyword-argument-exception-arguments e)))
 
 (define (display-range-exception e port)
-  (print stream: port 
+  (print output: port 
          "numeric parameter at position "
          (range-exception-arg-num e)
          " is not in the allowed range. "
@@ -230,13 +230,13 @@
          (range-exception-arguments e)))
 
 (define (display-divide-by-zero-exception e port)
-  (print stream: port 
+  (print output: port 
          "division by zero."
          (divide-by-zero-exception-procedure e)
          (divide-by-zero-exception-arguments e)))
 
 (define (display-improper-length-list-exception e port)
-  (print stream: port 
+  (print output: port 
          "lists are not of the same length. "
          (improper-length-list-exception-procedure e)
          (improper-length-list-exception-arguments e)
