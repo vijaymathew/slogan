@@ -8,14 +8,15 @@ specific executable binaries.
 
 Follow these steps to build Slogan:
 
-  $ ./configure-platform
-  $ make
-  $ cd src; ./slogan
+$ ./configure-platform
+$ make
+$ cd src; ./slogan
 
 The last step will land you in the Slogan REPL.
-For the Slogan compiler to work properly, you have to point the environemnt variable `SLOGAN_ROOT' to this folder:
+For the Slogan compiler to work properly, you have to point the environment variable 
+`SLOGAN_ROOT' to this folder:
 
-   $ export SLOGAN_ROOT=/full_path_to_the_slogan_folder
+$ export SLOGAN_ROOT=/full_path_to_the_slogan_folder
 
-Slogan is still in the very early stages of design and your feedback is appreciated.
+Slogan is still in the very early stages of design and your feedback is highly valued.
 Please send your comments, suggestions and bug reports to vijay.the.lisper@gmail.com.
