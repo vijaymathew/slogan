@@ -14,7 +14,13 @@
         <h2>Streams</h2>
         <p>Streams are input and output devices that can read and write characters. Slogan supports various types of streams:
           files, strings, byte arrays, network etc. All types of streams can be created with a single constructor 
-          called <code>stream</code>.</p>
+          called <code>stream</code>. The first argument to this function identifies the type of the stream to create.
+          This implementation of Slogan supports the following types of streams: <code>!file</code>, <code>!directory</code>, 
+          <code>!string</code>, <code>!array</code>, <code>!byte_array</code>, <code>!tcp_client</code>, <code>!tcp_server</code>
+          and <code>!process</code>. The second argument is an association list that map symbolic settings to values.
+          All streams can have these two common settings: <code>!direction</code> and <code>!buffering</code>. Direction
+          is one of three values: <code>!output</code>, <code>!input</code> and <code>!output_input</code>. Buffering
+          cane be either <code>true</code>, <code>false</code> or <code>!line</code>.</p>
         <p>The common functions used to read from an input stream are <code>read_char</code> and
           <code>read_expression</code>. <code>read_char</code> reads and returns a single character from the stream. 
           To check if a character is ready to be read from the stream you can use the <code>is_char_ready</code> predicate.
@@ -37,7 +43,24 @@
         <p>There are a few more stream input/output functions that we did not mention here. They will be introduced as we
           discuss specific stream types.</p>
         <h3>Files</h3>
-        <p></p>
+        <p>File streams are used to read and write data on files. Usually a file stream will connect to a file managed by the
+          host Operating System though this is not a requirement. For instance, a Slogan VM designed to run in a restrictive 
+          environment may have a transitive in-memory file system.</p>
+        <p>A file stream is opened by specifying the type as <code>file</code> in the stream constructor. Type specific settings
+          accepted by the constructor are: 
+          <ul>
+            <li><code>!path:</code> The location of the file. This setting is required.</li>
+            <li><code>!append:</code> A boolean value indicating whether to open the file in append more or not.</li>
+            <li><code>!create:</code> Can be a boolean value or the symbol <code>!maybe</code>. The value <code>true</code>
+              will try to create the file and raises an exception if the file already exists. The value <code>false</code>
+              requires that the file already exist. <code>!maybe</code> will try to create the file if it does not exist.
+              The default value is <code>!maybe</code> for output streams and <code>false</code> for other streams.</li>
+            <li><code>!permissions:</code> UNIX style file permissions, default is 0o666.</li>
+            <li><code>!truncate:</code> <code>true</code> or <code>false</code>. Controls whether the file will be truncated
+              upon opening. Default is <code>true</code> for output streams when append is <code>false</code> and <code>false</code>
+              otherwise.</li>
+          </ul>
+        </p>
         </div>
     </div>
   </body>
