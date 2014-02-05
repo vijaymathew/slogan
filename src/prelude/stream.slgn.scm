@@ -4,8 +4,8 @@
   (case type
     ((file) (open_file path-or-settings))
     ((process) (open_process path-or-settings))
-    ((tcpclient) (open_tcp_client path-or-settings))
-    ((tcpserver) (open_tcp_server path-or-settings))
+    ((tcp_client) (open_tcp_client path-or-settings))
+    ((tcp_server) (open_tcp_server path-or-settings))
     ((directory) (open_directory path-or-settings))
     ((array) (open_array path-or-settings))
     ((u8array) (open_u8array path-or-settings))
@@ -153,3 +153,25 @@
 (define force_output force-output)
 (define is_eof eof-object?)
 
+(define scm_print print)
+(define scm_println println)
+
+(define (print #!key (output (current-output-port)) #!rest args)
+  (let loop ((args args))
+    (if (not (null? args))
+        (begin (slogan-display (car args) display-string: #t port: output)
+               (loop (cdr args))))))
+
+(define (println #!key (output (current-output-port)) #!rest args)
+  (apply print (append (list output: output) args))
+  (newline output))
+
+(define scm_read read)
+(define scm_write write)
+
+(define (read #!key (input (current-input-port)))
+  (let ((tokenizer (make-tokenizer input)))
+    (slogan tokenizer)))
+
+(define (write obj #!key (output (current-output-port)))
+  (slogan-display obj port: output))

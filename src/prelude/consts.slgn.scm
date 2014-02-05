@@ -12,3 +12,6 @@
 (define *ld-options* (string-append "-ld-options \"-L" *platform-libs* " -lpthread -lnanomsg -lanl\""))
 
 (define *default-eq* eqv?)
+
+(define *slogan-reprs* '((true . #t) (false . #f)))                         
+(define *scheme-reprs* '((#t . true) (#f . false)))

@@ -1,8 +1,5 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define *slogan-reprs* '((true . #t) (false . #f)))                         
-(define *scheme-reprs* '((#t . true) (#f . false)))
-
 (define (scheme-repr->slogan-repr val)
   (cond ((integer? val)
          val)
@@ -58,27 +55,25 @@
 (define (void? val) (eq? '#!void val))
 
 (define (slogan-display val #!key display-string (port (current-output-port)))
-  (cond ((void? val)
-         #f)
-        ((procedure? val)
-         (slogan-display-function val port))
-        ((list? val)
-         (slogan-display-list val port))
-        ((pair? val)
-         (slogan-display-pair val port))
-        ((vector? val)
-         (slogan-display-array val port))
-	((char? val)
-	 (slogan-display-char val port))
-        ((string? val)
-         (if display-string
-             (display val port)
-             (write val port)))
-        ((error-exception? val)
-         (display-exception val port))
-        (else
-         (display (scheme-repr->slogan-repr val) port)
-         #t)))
+  (if (not (void? val))
+      (cond ((procedure? val)
+             (slogan-display-function val port))
+            ((list? val)
+             (slogan-display-list val port))
+            ((pair? val)
+             (slogan-display-pair val port))
+            ((vector? val)
+             (slogan-display-array val port))
+            ((char? val)
+             (slogan-display-char val port))
+            ((string? val)
+             (if display-string
+                 (display val port)
+                 (scm_write val port)))
+            ((error-exception? val)
+             (display-exception val port))
+            (else
+             (display (scheme-repr->slogan-repr val) port)))))
 
 (define (slogan-display-function proc port)
   (let ((name (with-output-to-string '() 
@@ -95,8 +90,7 @@
   (display "[" port)
   (let loop ((lst lst))
     (cond ((null? lst)
-           (display "]" port)
-           #t)
+           (display "]" port))
           (else
            (slogan-display (car lst) port: port)
            (if (not (null? (cdr lst)))
@@ -116,25 +110,8 @@
   
 (define (slogan-display-char c port)
   (display "'" port)
-  (scheme-print c port: port)
+  (scm_print c port: port)
   (display "'") port)
-
-(define scheme-print print)
-
-(define (print #!key (stream (current-output-port)) #!rest args)
-  (let loop ((args args))
-    (if (not (null? args))
-        (begin (slogan-display (car args) display-string: #t port: stream)
-               (loop (cdr args))))))
-
-(define scheme-println println)
-
-(define (println #!key (stream (current-output-port)) #!rest args)
-  (let loop ((args args))
-    (if (not (null? args))
-        (begin (slogan-display (car args) display-string: #t port: stream)
-               (loop (cdr args)))
-        (newline stream))))
 
 (define (display-exception e #!optional (port (current-output-port)))
   (display "error: " port)
