@@ -1,6 +1,6 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (scheme-repr->slogan-repr val)
+(define (scm-repr->slgn-repr val)
   (cond ((integer? val)
          val)
         ((and (real? val) (exact? val))
@@ -12,20 +12,20 @@
         (else
          (repr-convert val *scheme-reprs*))))
 
-(define (slogan-repr->scheme-repr val)
+(define (slgn-repr->scm-repr val)
   (repr-convert val *slogan-reprs*))
 
-(define (slogan-directive->scheme-directive s)
+(define (slgn-directive->scm-directive s)
   (case s
     ((@optional) '#!optional)
     ((@key) '#!key)
     ((@rest) '#!rest)
     (else s)))
 
-(define (slogan-variable->scheme-keyword var)
+(define (slgn-variable->scm-keyword var)
   (string->keyword (symbol->string var)))
 
-(define (slogan-symbol->scheme-sym/kw s convfn)
+(define (slgn-symbol->scm-sym/kw s convfn)
   (let ((str (symbol->string s)))
     (convfn
      (string_replace_all 
@@ -34,13 +34,13 @@
        1 (string-length str))
       #\_ #\-))))
 
-(define (slogan-symbol->scheme-keyword s)
-  (slogan-symbol->scheme-sym/kw s string->keyword))
+(define (slgn-symbol->scm-keyword s)
+  (slgn-symbol->scm-sym/kw s string->keyword))
 
-(define (slogan-symbol->scheme-symbol s)
-  (slogan-symbol->scheme-sym/kw s string->symbol))
+(define (slgn-symbol->scm-symbol s)
+  (slgn-symbol->scm-sym/kw s string->symbol))
 
-(define (slogan-symbol? s)
+(define (slgn-symbol? s)
   (and (symbol? s)
        (char=? (string-ref (symbol->string s) 0) #\!)))
 
@@ -54,18 +54,18 @@
 
 (define (void? val) (eq? '#!void val))
 
-(define (slogan-display val #!key display-string (port (current-output-port)))
+(define (slgn-display val #!key display-string (port (current-output-port)))
   (if (not (void? val))
       (cond ((procedure? val)
-             (slogan-display-function val port))
+             (slgn-display-function val port))
             ((list? val)
-             (slogan-display-list val port))
+             (slgn-display-list val port))
             ((pair? val)
-             (slogan-display-pair val port))
+             (slgn-display-pair val port))
             ((vector? val)
-             (slogan-display-array val port))
+             (slgn-display-array val port))
             ((char? val)
-             (slogan-display-char val port))
+             (slgn-display-char val port))
             ((string? val)
              (if display-string
                  (display val port)
@@ -73,9 +73,9 @@
             ((error-exception? val)
              (display-exception val port))
             (else
-             (display (scheme-repr->slogan-repr val) port)))))
+             (display (scm-repr->slgn-repr val) port)))))
 
-(define (slogan-display-function proc port)
+(define (slgn-display-function proc port)
   (let ((name (with-output-to-string '() 
                                      (lambda () (display proc)))))
     (display "[function " port)
@@ -86,32 +86,32 @@
                  (loop (cdr parts)))
           (display "]" port)))))
       
-(define (slogan-display-list lst port)
+(define (slgn-display-list lst port)
   (display "[" port)
   (let loop ((lst lst))
     (cond ((null? lst)
            (display "]" port))
           (else
-           (slogan-display (car lst) port: port)
+           (slgn-display (car lst) port: port)
            (if (not (null? (cdr lst)))
                (display ", " port))
            (loop (cdr lst))))))
 
-(define (slogan-display-pair p port)
+(define (slgn-display-pair p port)
   (display "[" port)
-  (slogan-display (car p) port: port)
+  (slgn-display (car p) port: port)
   (display " " port)
-  (slogan-display (cdr p) port: port)
+  (slgn-display (cdr p) port: port)
   (display "]" port))
 
-(define (slogan-display-array a port)
+(define (slgn-display-array a port)
   (display "#" port)
-  (slogan-display-list (vector->list a) port))
+  (slgn-display-list (vector->list a) port))
   
-(define (slogan-display-char c port)
+(define (slgn-display-char c port)
   (display "'" port)
-  (scm_print c port: port)
-  (display "'") port)
+  (scm_print port: port c)
+  (display "'" port))
 
 (define (display-exception e #!optional (port (current-output-port)))
   (display "error: " port)

@@ -1,6 +1,6 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (stream type path-or-settings)
+(define (stream type #!rest path-or-settings)
   (case type
     ((file) (open_file path-or-settings))
     ((process) (open_process path-or-settings))
@@ -18,15 +18,15 @@
                  (result '()))
         (if (null? settings)
             (reverse result)
-            (loop (cddr settings)
-                  (cons (list (slogan-symbol->scheme-keyword (car settings))
+            (loop (cdr settings)
+                  (cons (list (slgn-symbol->scm-keyword (caar settings))
                               (slgn-setting->scm-setting (cadr settings)))
                         result))))
       path-or-settings))
 
 (define (slgn-setting->scm-setting s)
   (if (symbol? s)
-      (slogan-symbol->scheme-symbol s)
+      (slgn-symbol->scm-symbol s)
       s))
 
 (define (open_file path-or-settings) 
@@ -159,7 +159,7 @@
 (define (print #!key (output (current-output-port)) #!rest args)
   (let loop ((args args))
     (if (not (null? args))
-        (begin (slogan-display (car args) display-string: #t port: output)
+        (begin (slgn-display (car args) display-string: #t port: output)
                (loop (cdr args))))))
 
 (define (println #!key (output (current-output-port)) #!rest args)
@@ -171,4 +171,4 @@
     (slogan tokenizer)))
 
 (define (write_expression obj #!key (output (current-output-port)))
-  (slogan-display obj port: output))
+  (slgn-display obj port: output))

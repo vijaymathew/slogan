@@ -97,6 +97,6 @@
                         (else (show-waiting-prompt prompt)
                               (loop (string-append line (read-line port #\newline #t))))))))
        (if (and (not (void? val)))
-           (begin (slogan-display val)
+           (begin (slgn-display val)
                   (newline))))))
   (repl port prompt: prompt exception_handler: exception_handler))
