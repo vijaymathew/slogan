@@ -287,7 +287,6 @@
         (loop (cons (read-char port) result) (peek-char port)))))
 
 (define (eval-unicode-literal s)
-  (display s) (newline);
   (eval (with-input-from-string s read)))
 
 (define (hexchar-prefix len)

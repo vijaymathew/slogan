@@ -1,17 +1,19 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define (stream type path-or-settings)
-  ((case type
-     ((file) open-file)
-     ((process) open-process)
-     ((tcp_client) open-tcp-client)
-     ((tcp_server) open-tcp-server)
-     ((directory) open-directory)
-     ((array) open-vector)
-     ((byte_array) open-u8vector)
-     ((string) open-string)
-     (else invalid-stream-type))
-   (slgn-path/settings->scm-path/settings path-or-settings)))
+  (if (eq? type 'token)
+      (make-tokenizer path-or-settings)
+      ((case type
+	 ((file) open-file)
+	 ((process) open-process)
+	 ((tcp_client) open-tcp-client)
+	 ((tcp_server) open-tcp-server)
+	 ((directory) open-directory)
+	 ((array) open-vector)
+	 ((byte_array) open-u8vector)
+	 ((string) open-string)
+	 (else invalid-stream-type))
+       (slgn-path/settings->scm-path/settings path-or-settings))))
 
 (define (with_stream type path-or-settings fn)
   (let ((s (stream type path-or-settings)))
@@ -59,6 +61,10 @@
 (define (tcp_service_unregister path-or-settings)
   (tcp-service-unregister! (slgn-path/settings->scm-path/settings path-or-settings)))
 
+(define (close_stream port) 
+  (if (port? port)
+      (close-port port)))
+
 (define is_input_stream input-port?)
 (define is_output_stream output-port?)
 (define is_stream port?)
@@ -66,7 +72,6 @@
 (define current_output_stream current-output-port)
 (define close_input_stream close-input-port)
 (define close_output_stream close-output-port)
-(define close_stream close-port)
 (define read_char read-char)
 (define peek_char peek-char)
 (define is_char_ready char-ready?)
@@ -108,13 +113,11 @@
   (apply print (append (list to: to) args))
   (newline to))
 
-(define (read_expression #!optional (from (current-input-port)))
-  (let ((tokenizer (make-tokenizer from)))
-    (expression tokenizer)))
+(define (peek_token tokenizer)
+  (tokenizer 'peek))
 
-(define (read_program #!optional (from (current-input-port)))
-  (let ((tokenizer (make-tokenizer from)))
-    (slogan tokenizer)))
+(define (read_token tokenizer)
+  (tokenizer 'next))
 
 (define (write_expression obj #!optional (to (current-output-port)))
   (slgn-display obj port: to))
