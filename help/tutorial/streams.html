@@ -21,6 +21,20 @@
           All streams can have these two common settings: <code>!direction</code> and <code>!buffering</code>. Direction
           is one of three values: <code>!output</code>, <code>!input</code> and <code>!output_input</code>. Buffering
           cane be either <code>true</code>, <code>false</code> or <code>!line</code>.</p>
+        <p>Streams like that connect to system resources like files and the network must be closed after use. Otherwise it may
+          lead to a <em>resource leak</em>. The function <code>close_stream</code> is called to free the system resources 
+          acquired by the stream. Given below is a programming idiom that will ensure that a stream is closed even in the case of an 
+          exceptional event: </p>
+        <pre>
+          let s = stream (&lt;type&gt;, &lt;settings&gt;)
+          try (function () { /* read/write the stream. */ },
+               catch = function (exception) { /* handle exception. */ },
+               finally = function () { if s close_stream (s) });</pre>
+        <p>The streams library provides a convenience function that wraps over this idiom. It is called <code>with_stream</code>.
+          It accepts a stream type, settings and a function of arity one. The stream is opened using the settings and the function
+          is called with the opened stream as argument. If the function raises an exception, <code>with_stream</code> makes sure that
+          the stream is closed and re-throws the exception. If no exception occurs the value of the function is returned after closing
+          the port.</p>
         <p>The common functions used to read from an input stream are <code>read_char</code> and
           <code>read_expression</code>. <code>read_char</code> reads and returns a single character from the stream. 
           To check if a character is ready to be read from the stream you can use the <code>is_char_ready</code> predicate.
@@ -34,20 +48,15 @@
         <p>Data is written to streams using the <code>print</code>, <code>println</code>, <code>write_char</code> and 
           <code>write_expression</code> functions. <code>print</code> can take an arbitrary number of Slogan data and output
           their human-readable representation. <code>println</code> is the same as <code>print</code> but it also emits a
-          newline character after the data. This is achieved by calling the <code>newline</code> function. <code>write_char</code>
-          writes an individual character to the stream and <code>write_expression</code> writes a whole scheme expression.</p>
-        <p>All the input/output functions take optional keyword arguments that specifies the target stream. These arguments are
-          named <code>input</code> and <code>output</code>. These arguments defaults to the values returned by
-          the functions <code>current_input_stream</code> and <code>current_output_stream</code> respectively. These correspond to
-          <code>stdin</code> and <code>stdout</code> in the C language.</p>
+          newline character after the data. This is achieved by calling the <code>newline</code> function. These two functions
+          take an optional <code>to</code> keyword parameter that default to the value of <code>current_output_stream</code>.
+          <code>write_char</code> writes an individual character to the stream and <code>write_expression</code> 
+          writes a whole scheme expression.</p>
         <p>There are a few more stream input/output functions that we did not mention here. They will be introduced as we
           discuss specific stream types.</p>
         <h3>Files</h3>
-        <p>File streams are used to read and write data on files. Usually a file stream will connect to a file managed by the
-          host Operating System though this is not a requirement. For instance, a Slogan VM designed to run in a restrictive 
-          environment may have a transitive in-memory file system.</p>
-        <p>A file stream is opened by specifying the type as <code>file</code> in the stream constructor. Type specific settings
-          accepted by the constructor are: 
+        <p>File streams are used to read and write data on files. A file stream is opened by specifying the type as 
+          <code>file</code> in the stream constructor. Type specific settings accepted by the constructor are: 
           <ul>
             <li><code>!path:</code> The location of the file. This setting is required.</li>
             <li><code>!append:</code> A boolean value indicating whether to open the file in append more or not.</li>
@@ -61,7 +70,30 @@
               otherwise.</li>
           </ul>
         </p>
-        </div>
+        <p>The following example shows how to open a file and write and read a line of text on it:</p>
+        <pre>
+          > var f = stream (!file, [[!path "hello.txt"], [!direction !output]]);
+          > println (to = f, "hello, world!");
+          > close_stream (f);
+
+          > f = stream (!file, [[!path "hello.txt"], [!direction !input]]);
+          > read_line (f);
+          => "hello, world!"
+          > close_stream (f);</pre>
+        <p><code>read_line</code> reads characters from an input stream until a specific separator or the end-of-stream is encountered.
+          The characters read are returned as a string. The separator can be specified as the second argument and it defaults to the
+          <code>newline</code> character.</p>
+        <p>The above example can be re-written using <code>with_stream</code> so that the task of closing the stream after use will
+          be taken care for us:</p>
+        <pre>
+          > with_stream (!file, [[!path "hello.txt"], [!direction !output]],
+                         function (f) { println (to = f, "hello, world!") });
+          > with_stream (!file, [[!path "hello.txt"], [!direction !input]],
+                         function (f) { read_line (f) });
+          => "hello, world!"</pre>
+        <h3>Example: Copying files</h3>
+        <p>
+      </div>
     </div>
   </body>
 </html>

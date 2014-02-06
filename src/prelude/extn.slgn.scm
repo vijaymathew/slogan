@@ -21,5 +21,4 @@
 (define error_message error-exception-message)
 (define error_args error-exception-parameters)
 
-;; Extensions specific to this implementation of Slogan.
 (define callcc call/cc)
