@@ -53,8 +53,9 @@
           <code>write_char</code> writes an individual character to the stream and <code>write_expression</code> 
           writes a whole scheme expression.</p>
         <p>There are a few more stream input/output functions that we did not mention here. They will be introduced as we
-          discuss specific stream types.</p>
-        <h3>Files</h3>
+          discuss specific stream types. In the following sections gives an overview of three stream types that are
+          most often used - file, string and tcp-server/client.</p>
+        <h3>File</h3>
         <p>File streams are used to read and write data on files. A file stream is opened by specifying the type as 
           <code>file</code> in the stream constructor. Type specific settings accepted by the constructor are: 
           <ul>
@@ -92,7 +93,35 @@
                          function (f) { read_line (f) });
           => "hello, world!"</pre>
         <h3>Example: Copying files</h3>
-        <p>
+        <p>This example shows a function that copies a file byte-by-byte. For this we make use of the stream functions that can read
+          and write 8-bit unsigned values. </p>
+        <pre>
+var file_copy = 
+    function (src, dest) {
+        with_stream (!file, [[!path dest], [!direction !output]],
+                     function (out_stream) {
+                         with_stream (!file, [[!path src], [!direction !input], [!buffering true]],
+                                      function (in_stream) {
+                                          letrec loop = function () {
+                                              let buffer = byte_array (1024)
+                                              let r = read_bytes (buffer, 0, 1024, in_stream, 1024)
+                                              if r > 0 { write_bytes (buffer, 0, r, out_stream); loop () }
+                                          } loop()
+                                      })
+                     })
+    };</pre>
+        <p><code>read_bytes</code> fills its first argument, which must be a <code>byte_array</code>, with bytes from a stream.
+          The second and third arguments are optional and specifies the range of indices in the byet array that will get filled.
+          If these values are ommited, they will default to 0 and the size of the array. The third argument is the input stream.
+          And the last argument specifies the number of bytes that needs to be read. <code>write_bytes</code> writes the content
+          of a byte array starting and ending at the specified index range to an output stream.</p>
+        <h2>String</h2>
+        <p>String streams represent in-memory streams of characters: </p>
+        <pre>
+          > var name = "nook";
+          > var age = 22;
+          > with_stream (!string, "", function (s) { print (to = s, "name: ", name, ", age: ", age); get_output_string (s) });
+          "name: nook, age: 22"</pre>
       </div>
     </div>
   </body>

@@ -76,8 +76,21 @@
 (define write_substring write-substring)
 (define read_byte read-u8)
 (define write_byte write-u8)
-(define read_byte_array read-subu8vector)
-(define write_byte_array write-subu8vector)
+(define get_output_string get-output-string)
+(define get_output_byte_array get-output-u8vector)
+(define get_output_array get-output-vector)
+
+(define (read_bytes bytes #!optional (start 0) end 
+                    (port (current-input-port)) 
+                    need)
+  (if (not end) (set! end (u8vector-length bytes))) 
+  (read-subu8vector bytes start end port need))
+
+(define (write_bytes bytes #!optional (start 0) end 
+                     (port (current-output-port)))
+  (if (not end) (set! end (u8vector-length bytes)))
+  (write-subu8vector bytes start end port))
+
 (define force_output force-output)
 (define is_eos eof-object?)
 (define input_stream_byte_position input-port-byte-position)
