@@ -116,8 +116,34 @@
                                            expr
                                            (cons expr '())) 
                                        result) body))))))))
-        (else #f)))
+        (else (try-catch-expr tokenizer))))
 
+(define (try-catch-expr tokenizer)
+  (if (eq? (tokenizer 'peek) 'try)
+      (begin (tokenizer 'next)
+             (let ((try-expr (expression tokenizer)))
+               (if (not (eq? (tokenizer 'peek) 'catch))
+                   (error "expected keyword catch instead of " (tokenizer 'next)))
+               (begin (tokenizer 'next)
+                      (make-try-catch-expr try-expr (catch-args tokenizer) (expression tokenizer)))))
+      #f))
+
+(define (catch-args tokenizer)
+  (if (not (eq? (tokenizer 'peek) '*open-paren*))
+      (error "expected opening parenthesis instead of " (tokenizer 'next)))
+  (tokenizer 'next)
+  (let ((result (tokenizer 'next)))
+    (if (not (variable? result))
+        (error "expected exception identifier. " result))
+    (if (not (eq? (tokenizer 'peek) '*close-paren*))
+        (error "exception closing parenthesis instead of " (tokenizer 'next)))
+    (tokenizer 'next)
+    (list result)))
+
+(define (make-try-catch-expr try-expr catch-args catch-expr)
+  (list 'with-exception-catcher (list 'lambda catch-args catch-expr)
+        (list 'lambda (list) try-expr)))
+                   
 (define (normalize-sym s)
   (if (and (list? s)
            (eq? (car s) 'quote))
@@ -525,7 +551,7 @@
 
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (memq sym '(var import record if case 
+       (memq sym '(var import record if case try
                        function let letseq letrec))))
 
 (define (name? sym) 

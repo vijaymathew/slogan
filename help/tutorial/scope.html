@@ -118,83 +118,24 @@
           when things cannot proceed as expected. For example, a program to download some resource from a web server may raise
           an exception when a connection to the server cannot be established. An exception is raised by calling the <code>raise</code>
           function. Exceptions cause program control to break out of the current context and invokes a 
-          special function called the <code>exception handler</code>. There is a default system-wide exception handler which just prints
-          a textual description of the exception raised. The function <code>current_exception_handler</code> returns this function.
-          The global exception handler can be set to a user-defined function using <code>set_current_exception_handler</code>.</p>
+          special function called the <code>exception handler</code>. </p>
         <p>Another function for raising exceptions is <code>error</code>. It takes an error message as the first argument and an
           arbitrary number of optional arguments that will provide more information to the exception handler. The following session
           reviews all the concepts we have learned so far:</p>
         <pre>
           > raise ("oh!");
-          error: oh!
-          > var old_handler = current_exception_handler ();
-          > set_current_exception_handler (function (exception) { println ("exception again! ", exception) });
-          > raise ("oh!");
-          exception again! oh!
-          > error ("an error", 1, 2, 3);
-          exception again! an error [1, 2, 3]
-          > set_current_exception_handler (old_handler);
-          > error ("an error", 1, 2, 3);
-          error: an error [1, 2, 3]</pre>
-        <p>Most of the time it is better to handle exceptions locally. The <code>try</code> function lets us do that.
-          It takes three functions as arguments and invokes the first one which is known as the <code>thunk</code>. 
-          If an exception is raised in that invocation, that exception is handed over to the function given as the second argument. 
-          This function is specified using the keyword <code>catch</code> and defaults to the global exception handler.</p>
+          This object was raised: "ho!"
+          > error ("oh!", 1, 2, 3);
+          error: oh! 1 2 3</pre>
+        <p>The <code>try-catch</code> expression lets us handle exceptions locally. The syntax of <code>try-catch</code> is:</p>
         <pre>
-          > try (function () { raise ("hello") });
-          error: hello
-          > try (function () { raise ("hello") },
-                 catch = function (exception) { println ("exception caught: ", exception) });
+          try &lt;expression&gt; catch (&lt;exception&gt;) &lt;exception_handler&gt;</pre>
+        <p>If code in the <code>try</code> block raises an exception, it is passed to the <code>catch</code> block
+          where it is handled.</p>
+        <pre>
+          > try raise ("hello")
+            catch (exception) println ("exception caught: ", exception);
           exception caught: hello</pre>
-        <p>If the third function argument called <code>finally</code> is provided, it will be called after executing thunk.
-          In case of an exception <code>finally</code> will be called after executing the exception handler.</p>
-        <pre>
-          > try (function () { raise ("hello") }, finally = function () { 100 } );
-          error: hello
-          => 100
-          > try (function () { raise ("hello") }, 
-                 catch = function (exception) { println (exception) }, 
-                 finally = function () { 100 } );
-          hello
-          => 100</pre>
-        <p>If a <code>finally</code> function is provided, <code>try</code> always evaluates to the value returned by that function.
-          Otherwise it will return the value of <code>thunk</code>, in case of no exceptions. If there was an exception raised during
-          the invocation of <code>thunk</code>, <code>try</code> will return the value returned by the handler.</p>
-        <p>The following example, though contrived, shows how <code>finally</code> can work together with the exception handler 
-          and make a function more robust. The <code>show_temp</code> function that we define below displays the current temperature.
-          It depends on a function <code>get_temp</code> which contacts a remote server and retrieves the current temperature.
-          If the server cannot be contacted, it raises an exception. <code>show_temp</code> has an exception handler that prints
-          the error. Its <code>finally</code> checks if temperature was successfully retrieved. If not it will return a cached value
-          ensuring that <code>show_temp</code> always prints an output useful for the user.</p>
-        <pre>
-var get_temp = 
-    function () { 
-        if random (2) == 1 raise ("failed to contact temperature server.") 
-        else random (40) 
-    };
-
-var cache = random (40);
-
-var show_temp =
-    function () {
-        println ("temperature is: ",
-                 let temp = false
-                 try (function () { temp = get_temp (); cache = temp },
-                      catch = function (exception) { println ("caught error: ", exception) },
-                      finally = function () { if not (temp) cache else temp }));
-    };</pre>
-        <p></p>
-        <pre>
-          > show_temp ();
-          caught error: failed to contact temperature server.
-          temperature is: 29
-          slogan> show_temp ();
-          temperature is: 0
-          slogan> show_temp ();
-          temperature is: 8
-          slogan> show_temp ();
-          caught error: failed to contact temperature server.
-          temperature is: 8</pre>
         <h3>Continuations</h3>
         <p><em>TO BE DONE!</em></p>
       </div>

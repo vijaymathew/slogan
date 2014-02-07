@@ -79,6 +79,29 @@
                                       (cons #\: '*colon*)                                      
                                       (cons #\; '*semicolon*)))
 
+(define *single-char-operators-strings* (list (cons "+" '*plus*)
+                                              (cons "-" '*minus*)
+                                              (cons "/" '*backslash*)
+                                              (cons "*" '*asterisk*)
+                                              (cons "(" '*open-paren*)
+                                              (cons ")" '*close-paren*)
+                                              (cons "{" '*open-brace*)
+                                              (cons "}" '*close-brace*)
+                                              (cons "[" '*open-bracket*)
+                                              (cons "]" '*close-bracket*)
+                                              (cons "#" '*hash*)
+                                              (cons "," '*comma*)
+                                              (cons ":" '*colon*)                                      
+                                              (cons ";" '*semicolon*)))
+
+(define *multi-char-operators-strings* (list (cons "==" '*equals*)
+                                             (cons ">" '*greater-than*)
+                                             (cons "<" '*less-than*)
+                                             (cons ">=" '*greater-than-equals*)
+                                             (cons "<=" '*less-than-equals*)
+                                             (cons "&&" '*and*)
+                                             (cons "||" '*or*)))
+
 (define (math-operator? sym)
   (or (eq? sym '*plus*)
       (eq? sym '*minus*)
@@ -95,6 +118,20 @@
            (char=? c #\>)
            (char=? c #\&)
            (char=? c #\|))))
+
+(define (fetch-operator-string token strs)
+  (let loop ((oprs strs))
+    (cond ((null? oprs)
+           #f)
+          ((eq? token (cdar oprs))
+           (caar oprs))
+          (else (loop (cdr oprs))))))
+
+(define (fetch-single-char-operator-string token)
+  (fetch-operator-string token *single-char-operators-strings*))
+
+(define (fetch-multi-char-operator-string token)
+  (fetch-operator-string *multi-char-operators-strings*))
 
 (define (fetch-operator port 
                         suffix
@@ -318,3 +355,16 @@
         ((char=? c #\d)
          #\delete)
         (else (error "invalid escaped character " c))))
+
+(define (is_operator_token token)
+  (or (single-char-operator? token)
+      (multi-char-operator? token)))
+
+(define (operator_token_to_string token)
+  (cond ((single-char-operator? token)
+         (fetch-single-char-operator-string token))
+        ((multi-char-operator? token)
+         (fetch-multi-char-operator-string token))
+        (else #f)))
+
+(define is_keyword_token reserved-name?)

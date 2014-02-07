@@ -12,52 +12,45 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Streams</h2>
-        <p>Streams are input and output devices that can read and write characters. Slogan supports various types of streams:
-          files, strings, byte arrays, network etc. All types of streams can be created with a single constructor 
-          called <code>stream</code>. The first argument to this function identifies the type of the stream to create.
-          This implementation of Slogan supports the following types of streams: <code>!file</code>, <code>!directory</code>, 
-          <code>!string</code>, <code>!array</code>, <code>!byte_array</code>, <code>!tcp_client</code>, <code>!tcp_server</code>
-          and <code>!process</code>. The second argument is an association list that map symbolic settings to values.
-          All streams can have these two common settings: <code>!direction</code> and <code>!buffering</code>. Direction
-          is one of three values: <code>!output</code>, <code>!input</code> and <code>!output_input</code>. Buffering
-          cane be either <code>true</code>, <code>false</code> or <code>!line</code>.</p>
-        <p>Streams like that connect to system resources like files and the network must be closed after use. Otherwise it may
-          lead to a <em>resource leak</em>. The function <code>close_stream</code> is called to free the system resources 
-          acquired by the stream. Given below is a programming idiom that will ensure that a stream is closed even in the case of an 
-          exceptional event: </p>
+        <p>Streams are input and output devices that can read and write characters. Streams are created with any one of the
+          three constructors: <code>stream</code>, <code>output_stream</code> and <code>input_stream</code>. 
+          The functions <code>close_stream</code>, <code>close_input_stream</code> or <code>close_output_stream</code> 
+          must be called on a stream to release all system resources held by it. The usual programming idiom to open, use and
+          close a stream is: </p>
         <pre>
-          let s = stream (&lt;type&gt;, &lt;settings&gt;)
-          try (function () { /* read/write the stream. */ },
-               catch = function (exception) { /* handle exception. */ },
-               finally = function () { if s close_stream (s) });</pre>
-        <p>The streams library provides a convenience function that wraps over this idiom. It is called <code>with_stream</code>.
-          It accepts a stream type, settings and a function of arity one. The stream is opened using the settings and the function
-          is called with the opened stream as argument. If the function raises an exception, <code>with_stream</code> makes sure that
-          the stream is closed and re-throws the exception. If no exception occurs the value of the function is returned after closing
-          the port.</p>
-        <p>The common functions used to read from an input stream are <code>read_char</code> and
-          <code>read_expression</code>. <code>read_char</code> reads and returns a single character from the stream. 
-          To check if a character is ready to be read from the stream you can use the <code>is_char_ready</code> predicate.
-          <code>peek_char</code> returns the next character without actually removing it from the stream. 
-          <code>read_expression</code> reads a whole Slogan expression from the stream. It means it can be used to read
-          literals for strings, numbers, lists, functions and other Slogan data. The function <code>read_program</code>
-          is used to read whole program statements from streams, including semicolon terminated variable declarations,
-          assignments and record definitions.</p>
-        <p>An attempt to read beyond the end of the stream will return a special object called the <code>end-of-stream</code>. 
-          The predicate <code>is_eos</code> checks if an object represents the end-of-stream.</p>
-        <p>Data is written to streams using the <code>print</code>, <code>println</code>, <code>write_char</code> and 
-          <code>write_expression</code> functions. <code>print</code> can take an arbitrary number of Slogan data and output
-          their human-readable representation. <code>println</code> is the same as <code>print</code> but it also emits a
-          newline character after the data. This is achieved by calling the <code>newline</code> function. These two functions
-          take an optional <code>to</code> keyword parameter that default to the value of <code>current_output_stream</code>.
-          <code>write_char</code> writes an individual character to the stream and <code>write_expression</code> 
-          writes a whole scheme expression.</p>
-        <p>There are a few more stream input/output functions that we did not mention here. They will be introduced as we
-          discuss specific stream types. In the following sections gives an overview of three stream types that are
-          most often used - file, string and tcp-server/client.</p>
-        <h3>File</h3>
-        <p>File streams are used to read and write data on files. A file stream is opened by specifying the type as 
-          <code>file</code> in the stream constructor. Type specific settings accepted by the constructor are: 
+          var s = stream (&lt;stream_type&gt;, &lt;stream_settings&gt;);
+          try { /* read/write stream s. */ }
+          catch (stream_exception) { /* handle stream_exception. */ };
+          if s close_stream (s);</pre>
+        <p>The functions <code>with_stream</code>, <code>with_output_stream</code> and <code>with_input_stream</code> implements this
+          idiom. The following sections briefly show how to use some of the most useful stream types provided by Slogan.</p>
+        <h3>File streams</h3>
+        <p>File streams are used to read and write data on files. This is how we write some text to a file:</p>
+        <pre>
+          > var f = output_stream (!file, "hello.txt");
+          > println (to = f, "hello, world!");
+          > close_stream (f);</pre>
+        <p>Reading the text back is just as simple:</p>
+        <pre>
+          > f = input_stream (!file, "hello.txt");
+          > read_line (f);
+          => "hello, world!"
+          > close_stream (f);</pre>
+        <p>The code becomes even shorter if we use the <code>with_stream</code> functions:</p>
+        <pre>
+          > with_output_stream (!file, "hello.txt", function (s) { println (to = s, "hello, world!") });
+          > with_input_stream (!file, "hello.txt", function (s) { read_line (s) });
+          => "hello, world!"</pre>
+        <p><code>read_line</code> reads characters from an input stream until a specific separator or the end-of-stream is encountered.
+          The characters read are returned as a string. The separator can be specified as the second argument and it defaults to the
+          <code>newline</code> character.</p>
+        <p>To prevent new content from overwriting the old content, the file has to be opened by specifying the <code>append</code>
+          flag turned on:</p>
+        <pre>
+          > with_output_stream (!file, [[!path "hello.txt"], [!append true]], function (s) { println (to = s, "hello, world!") });
+          > with_input_stream (!file, "hello.txt", function (s) { println (read_line (s), read_line (s)) });
+          hello, world!this is some new text</pre>
+        <p>Settings accepted by the constructor are for a file stream are:
           <ul>
             <li><code>!path:</code> The location of the file. This setting is required.</li>
             <li><code>!append:</code> A boolean value indicating whether to open the file in append more or not.</li>
@@ -69,29 +62,15 @@
             <li><code>!truncate:</code> <code>true</code> or <code>false</code>. Controls whether the file will be truncated
               upon opening. Default is <code>true</code> for output streams when append is <code>false</code> and <code>false</code>
               otherwise.</li>
-          </ul>
+          </ul>          
         </p>
-        <p>The following example shows how to open a file and write and read a line of text on it:</p>
-        <pre>
-          > var f = stream (!file, [[!path "hello.txt"], [!direction !output]]);
-          > println (to = f, "hello, world!");
-          > close_stream (f);
-
-          > f = stream (!file, [[!path "hello.txt"], [!direction !input]]);
-          > read_line (f);
-          => "hello, world!"
-          > close_stream (f);</pre>
-        <p><code>read_line</code> reads characters from an input stream until a specific separator or the end-of-stream is encountered.
-          The characters read are returned as a string. The separator can be specified as the second argument and it defaults to the
-          <code>newline</code> character.</p>
-        <p>The above example can be re-written using <code>with_stream</code> so that the task of closing the stream after use will
-          be taken care for us:</p>
-        <pre>
-          > with_stream (!file, [[!path "hello.txt"], [!direction !output]],
-                         function (f) { println (to = f, "hello, world!") });
-          > with_stream (!file, [[!path "hello.txt"], [!direction !input]],
-                         function (f) { read_line (f) });
-          => "hello, world!"</pre>
+        <p>These are in addition to the two settings that are common to all types of streams:
+          <ul>
+            <li><code>!direction:</code> Either <code>!output</code>, <code>!input</code> or <code>!input_output</code>.</li>
+            <li><code>!buffering</code> Controls the buffering of the port. Should be one of <code>true</code> (for fully buffered IO), 
+              <code>false</code> (for no buffering), or <code>!line</code>. In line-buffering an output buffer is flushed on a newline.</li>
+            </ul>
+          </p>
         <h3>Example: Copying files</h3>
         <p>This example shows a function that copies a file byte-by-byte. For this we make use of the stream functions that can read
           and write 8-bit unsigned values. </p>
@@ -111,17 +90,84 @@ var file_copy =
                      })
     };</pre>
         <p><code>read_bytes</code> fills its first argument, which must be a <code>byte_array</code>, with bytes from a stream.
-          The second and third arguments are optional and specifies the range of indices in the byet array that will get filled.
-          If these values are ommited, they will default to 0 and the size of the array. The third argument is the input stream.
+          The second and third arguments are optional and specifies the range of indexes in the byte array that will get filled.
+          If these values are omitted, they will default to 0 and the size of the array. The third argument is the input stream.
           And the last argument specifies the number of bytes that needs to be read. <code>write_bytes</code> writes the content
           of a byte array starting and ending at the specified index range to an output stream.</p>
-        <h2>String</h2>
+        <h2>String streams</h2>
         <p>String streams represent in-memory streams of characters: </p>
         <pre>
           > var name = "nook";
           > var age = 22;
-          > with_stream (!string, "", function (s) { print (to = s, "name: ", name, ", age: ", age); get_output_string (s) });
-          "name: nook, age: 22"</pre>
+          > with_output_stream (!string, "", function (s) { print (to = s, "name: ", name, ", age: ", age) });
+          => "name: nook, age: 22"
+          > with_input_stream (!string, "line 1\nline 2\n", function (s) { println (read_line (s)); println (read_line (s)) });
+          line 1
+          line 2</pre>
+        <h2>Network streams</h2>
+        <p>Tcp streams allow us to create network servers and clients that communicate using TCP. As an example, let us
+          create an echo server and client. The echo server sends back whatever text the client sends it. First the server:</p>
+        <pre>
+          > var server = stream (!tcp_server, [[!port_number 5000]]);
+          > var run_server = function () {
+              let client = read (server) { 
+                println (to = client, read_line (client));
+                flush_output (client)
+              };
+              run_server ()
+            };
+          > run_server(); </pre>
+        <p>The client connection is accepted by the <code>read</code> function. This is a rather low-level function that reads an 
+          object in a host-environment specific format. In this case <code>read</code> returns a stream that can be used to
+          read and write on a network connection. The server reads a line from the client, echoes it back and goes back to
+          process the next client. Once you call <code>run_server</code> the REPL will hang as the call to <code>read</code>
+          waits for the client connection to arrive.</p>
+        <p>Now we need a client that can talk to the server. In a new REPL, enter the following code:</p>
+        <pre>
+          > var client = stream (!tcp_client, [[!server_address "localhost"], [!port_number 5000]]);
+          > println (to = client, "hello");
+          > flush_output (client);
+          > println (read_line (client));
+          > close_stream (close_stream);</pre>
+        <p>Now you should see the client and server saying "hello" to each other.</p>
+        <h2>Tokenizing streams</h2>
+        <p>It is possible to break an input stream into a series of tokens based on a single character or a list of character delimiters. 
+          For example, let us see how to read comma-separated values from a stream:</p>
+        <pre>
+          > var s = input_stream (!string, "hello, world");
+          > var tokenizer = stream_tokenizer (s, delimiters = ',');
+          > read_token (tokenizer);
+          => "hello"
+          > read_token (tokenizer);
+          => " world"
+          > read_token (tokenizer);
+          => !end-of-stream</pre>
+        <p>A stream of Slogan program statements can be tokenized into tokens of the language: </p>
+        <pre>
+          > var s = input_stream (!string, "var x = 10; x + 100");
+          > var tokenizer = stream_tokenizer (s, program = true);
+          > read_token (tokenizer);
+          => var
+          > read_token (tokenizer);
+          => x
+          > read_token (tokenizer);
+          => *assignment*
+          > read_token (tokenizer);
+          => 10
+          > read_token (tokenizer);
+          => *semicolon*
+          > read_token (tokenizer);
+          => x
+          > read_token (tokenizer);
+          => *plus*
+          > read_token (tokenizer);
+          => 100</pre>
+        <p>It is also possible to read, compile and execute programs from streams dynamically: </p>
+        <pre>
+          > var s = input_stream (!string, "{ var x = 10; x + 100 }");
+          > var tokenizer = stream_tokenizer (s, program = true);
+          > eval (slogan (tokenizer));
+          => 110</pre>
       </div>
     </div>
   </body>

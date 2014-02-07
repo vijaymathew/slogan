@@ -1,19 +1,43 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define (stream type path-or-settings)
-  (if (eq? type 'token)
-      (make-tokenizer path-or-settings)
-      ((case type
-	 ((file) open-file)
-	 ((process) open-process)
-	 ((tcp_client) open-tcp-client)
-	 ((tcp_server) open-tcp-server)
-	 ((directory) open-directory)
-	 ((array) open-vector)
-	 ((byte_array) open-u8vector)
-	 ((string) open-string)
-	 (else invalid-stream-type))
-       (slgn-path/settings->scm-path/settings path-or-settings))))
+  ((case type
+     ((file) open-file)
+     ((array) open-vector)
+     ((byte_array) open-u8vector)
+     ((string) open-string)
+     ((process) open-process)
+     ((tcp_client) open-tcp-client)
+     ((tcp_server) open-tcp-server)
+     ((directory) open-directory)
+     (else invalid-stream-type))
+   (slgn-path/settings->scm-path/settings path-or-settings)))
+
+(define (output_stream type path-or-settings)
+  ((case type
+     ((file) open-output-file)
+     ((array) open-output-vector)
+     ((byte_array) open-output-u8vector)
+     ((string) open-output-string)
+     ((process) open-output-process)
+     ((tcp_client) open-tcp-client)
+     ((tcp_server) open-tcp-server)
+     ((directory) open-directory)
+     (else invalid-stream-type))
+   (slgn-path/settings->scm-path/settings path-or-settings)))
+
+(define (input_stream type path-or-settings)
+  ((case type
+     ((file) open-input-file)
+     ((array) open-input-vector)
+     ((byte_array) open-input-u8vector)
+     ((string) open-input-string)
+     ((process) open-input-process)
+     ((tcp_client) open-tcp-client)
+     ((tcp_server) open-tcp-server)
+     ((directory) open-directory)
+     (else invalid-stream-type))
+   (slgn-path/settings->scm-path/settings path-or-settings)))
 
 (define (with_stream type path-or-settings fn)
   (let ((s (stream type path-or-settings)))
@@ -96,7 +120,7 @@
   (if (not end) (set! end (u8vector-length bytes)))
   (write-subu8vector bytes start end port))
 
-(define force_output force-output)
+(define flush_output force-output)
 (define is_eos eof-object?)
 (define input_stream_byte_position input-port-byte-position)
 (define output_stream_byte_position output-port-byte-position)
@@ -113,11 +137,45 @@
   (apply print (append (list to: to) args))
   (newline to))
 
+(define (write_expression obj #!optional (to (current-output-port)))
+  (slgn-display obj port: to))
+
+(define (make-delimited-tokenizer stream delimiters)
+  (let ((current-token #f))
+    (lambda (msg)
+      (case msg
+        ((next)
+         (if (not current-token)
+             (next-delimited-token stream delimiters)
+             (let ((tmp current-token))
+               (set! current-token #f)
+               tmp)))
+        ((peek)
+         (if (not current-token)
+             (set! current-token (next-delimited-token stream delimiters)))
+         current-token)
+        (else (error "Invalid message received by delimited-tokenizer. " msg))))))
+
+(define (next-delimited-token stream delimiters)
+  (if (eof-object? (peek-char stream))
+      (read-char stream)
+      (let ((cmpr (if (list? delimiters) memv char=?)))
+        (let loop ((str '())
+                   (c (peek-char stream)))
+          (if (or (eof-object? c)
+                  (cmpr c delimiters))
+              (begin (read-char stream)
+                     (list->string (reverse str)))
+              (loop (cons (read-char stream) str) (peek-char stream)))))))
+
+(define (stream_tokenizer stream #!key program
+                          (delimiters #\space))
+  (if program
+      (make-tokenizer stream)
+      (make-delimited-tokenizer stream delimiters)))
+
 (define (peek_token tokenizer)
   (tokenizer 'peek))
 
 (define (read_token tokenizer)
   (tokenizer 'next))
-
-(define (write_expression obj #!optional (to (current-output-port)))
-  (slgn-display obj port: to))
