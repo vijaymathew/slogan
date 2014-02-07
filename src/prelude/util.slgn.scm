@@ -85,6 +85,8 @@
              (if display-string
                  (display val port)
                  (write val port)))
+	    ((thread? val)
+	     (slgn-display-task val port))
             ((error-exception? val)
              (display-exception val port))
             ((eof-object? val)
@@ -135,3 +137,8 @@
    '()
    (lambda (s)
      (display-exception e s))))
+
+(define (slgn-display-task task port)
+  (display "[task " port)
+  (slgn-display (thread-name task) port: port)
+  (display "]" port))

@@ -1,7 +1,7 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define task make-thread)
-(define root-task make-root-thread)
+(define root_task make-root-thread)
 (define is_task thread?)
 (define current_task current-thread)
 (define task_name thread-name)
@@ -11,7 +11,7 @@
 (define task_set_base_priority thread-base-priority-set!)
 (define task_quantum thread-quantum)
 (define task_set_quantum thread-quantum-set!)
-(define task_start thread-start!)
+(define task_run thread-start!)
 (define task_yield thread-yield!)
 (define task_sleep thread-sleep!)
 (define task_terminate thread-terminate!)

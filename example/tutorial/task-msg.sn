@@ -1,0 +1,24 @@
+var parser = function () {
+    let msg = task_receive ()
+    let sender = head (msg)
+    let program = tail (msg)
+    with_input_stream (!string, program,
+		       function (stream) {
+			   let tokenier = stream_tokenizer (stream, program = true)
+			   task_send (sender, eval (slogan (tokenier)))
+		       });
+    parser ()
+};
+
+var parser_task = task (parser);
+task_run (parser_task);
+
+var sender = function (program) {
+    task_run (task (function () {
+	task_send (parser_task, [current_task() program]);
+	println (task_receive ())
+    }))
+};
+
+sender ("10 + 20"); // => 30
+sender ("function (x) { x * x } (100)"); // => 1000
