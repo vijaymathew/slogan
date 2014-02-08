@@ -1,5 +1,5 @@
 Slogan is a general purpose, high-level, expression oriented programming language with
-facilities for concurrent-distributed computing built into its core.
+facilities for concurrent and distributed computing.
 
 This implementation comes with an interpreter and a compiler for generating platform 
 specific executable binaries.

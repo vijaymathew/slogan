@@ -1,7 +1,7 @@
 GSC=../platform/gsc/gsc/gsc
 
 all:
-	${GSC} -cc-options -o slogan -ld-options -exe ./prelude/*.scm repl.scm 
+	${GSC} -o slogan -exe ./prelude/*.scm repl.scm 
 
 clean:
 	rm -f *.o*

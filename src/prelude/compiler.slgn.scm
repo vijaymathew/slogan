@@ -32,9 +32,7 @@
        (if (or assemble exe)
            (let ((build-cmd (if exe 
                                 (string-append *gsc-compiler* " " 
-                                               *cc-options* 
                                                " -o " (string-append script-name *exe-extn*)
-                                               " " *ld-options*
                                                " -exe "
                                                (string-append *prelude-root* "/*.scm ")
                                                out-file-name)
