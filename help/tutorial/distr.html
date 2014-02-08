@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Distributed Computing</title>
+    
+    <link type="text/css" rel="stylesheet" href="../style/style.css">
+  </head>
+
+  <body>
+    <div id="page" class="wide">
+      <div class="container">
+        <h2>Distributed Computing</h2>
+	<p>In the <a href="tasts.html">previous chapter</a> we saw how a Slogan program can execute mutiple independet tasks simultaneosly.
+	  We also saw how these tasks can work together by passing messages to each other. This chapter shows how separate Slogan programs
+	  communicate and coordinate their actions by message passing. The programs participating in the distributed computation may run on the
+	  same computer or on separate computers connected by a network. Messaging happens over <em>sockets</em>. These are not the same sockets 
+	  that you might have encountered in networking libraries of other languages. Slogan messaging sockets are objects that can efficiently transfer 
+	  messages over a number of transports: in-process, inter-process and TCP. Slogan sockets are also highly scalable, taking advantage
+	  of event-based IO facilities provided by the underlying operating system. If you are familiar with <a href="http://zeromq.org/">ZeroMQ</a>
+	  you know what this is all about. The messaging framework of Slogan is implemented on top of <a href="http://nanomsg.org">nanomsg</a>,
+	  the next generation ZeroMQ.</p>
+	<p>This chapter introduces the different patterns in which Slogan programs can form distributed systems. </p>
+	<h3>Request-Reply</h3>
+	<p>One of the simplest distributed computing pattern in <em>Request-Reply</em>. In the pattern a client application sends requests to
+	  stateless workers and receieve responses. Here we re-implement the echo server from the streams chapter using this pattern:</p>
+	<pre>
+	  
+      </div>
+    </div>
+  </body>
+</html>

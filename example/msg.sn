@@ -1,0 +1,27 @@
+var request_client = 
+    function (msg) {
+	var s = msg_socket (!req);
+	msg_connect (s, "ipc:///tmp/echo.ipc");
+	msg_send (s, number_to_string (string_length (msg)));
+	msg_recv (s, 2);
+	msg_send (s, msg);
+	println (msg_recv (s, string_length (msg)));
+	msg_close (s)
+    };
+
+var reply_server =
+    function () {
+	var s = msg_socket (!rep);
+	msg_bind (s, "ipc:///tmp/echo.ipc");
+	letrec loop = function () {
+	    let len = string_to_number (msg_recv (s, 5))
+	    { println (len); msg_send (s, "ok");
+	      let msg = msg_recv (s, len)
+	      msg_send (s, msg)
+	    };
+	    loop ()
+	}
+	loop ();
+	msg_shutdown (s, 0);
+    };
+	

@@ -7,6 +7,7 @@
 (define integer_to_char integer->char)
 (define exact_to_inexact exact->inexact)
 (define inexact_to_exact inexact->exact)
+(define number_to_string number->string)
 
 (define (real_to_integer n)
   (inexact->exact (round n)))
