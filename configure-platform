@@ -7,9 +7,3 @@ cd ${SLOGAN_HOME}/platform/gsc
 make
 
 cd ../../
-
-cd ${SLOGAN_HOME}/platform/nanomsg
-./configure --enable-shared=no
-make
-
-cd ../../
