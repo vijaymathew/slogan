@@ -10,38 +10,44 @@
             (loop (slogan tokenizer) exprs))
         (reverse exprs))))
 
-(define (compile script-name #!key 
-                 (assemble #f)
-                 (exe #f)
+(define (compile-slgn-script->scm-script script-name out-file-name
+					 assemble exe)
+  (call-with-output-file out-file-name
+    (lambda (out-port)
+      (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
+				(string-append script-name *slgn-extn*)
+				script-name)
+	(lambda (port)
+	  (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
+	    (if (not (null? exprs))
+		(begin (write (car exprs) out-port)
+		       (newline out-port)
+		       (loop (cdr exprs))))))))))
+
+(define (compile script-name #!key assemble exe
+		 ld_options cc_options
                  (exception_handler display-exception))
-  (with-exception-catcher
-   exception_handler
-   (lambda ()
-     (let ((out-file-name (string-append script-name *scm-extn*)))
-       (call-with-output-file out-file-name
-         (lambda (out-port)
-           (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
-                                     (string-append script-name *slgn-extn*)
-                                     script-name)
-             (lambda (port)
-               (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
-                 (if (not (null? exprs))
-                     (begin (write (car exprs) out-port)
-                            (newline out-port)
-                            (loop (cdr exprs)))))))))
-       (if (or assemble exe)
-           (let ((build-cmd (if exe 
-                                (string-append *gsc-compiler* " " 
-                                               " -o " (string-append script-name *exe-extn*)
-                                               " -exe "
-                                               (string-append *prelude-root* "/*.scm ")
-                                               out-file-name)
-                                (string-append *gsc-compiler* " " out-file-name))))
-             (if (zero? (shell-command build-cmd))
-                 (begin (delete-file out-file-name)
-                        #t)
-                 #f))
-           #t)))))
+  (let ((is-scm (string-ends-with? script-name *scm-extn*)))
+    (with-exception-catcher
+     exception_handler
+     (lambda ()
+       (let ((out-file-name (if is-scm script-name (string-append script-name *scm-extn*))))
+	 (if (not is-scm) (compile-slgn-script->scm-script script-name out-file-name assemble exe))
+	 (if (or assemble exe)
+	     (let ((build-cmd (if exe 
+				  (string-append *gsc-compiler* " " 
+						 (if cc_options cc_options "")
+						 " -o " (string-append script-name *exe-extn*)
+						 (if ld_options ld_options "")
+						 " -exe "
+						 (string-append *prelude-root* "/*.scm ")
+						 out-file-name)
+				  (string-append *gsc-compiler* " " out-file-name))))
+	       (if (zero? (shell-command build-cmd))
+		   (begin (delete-file out-file-name)
+			  #t)
+		   #f))
+	     #t))))))
 
 (define (show-waiting-prompt prompt)
   (let loop ((len (- (string-length prompt) 2))

@@ -29,6 +29,8 @@
          (set! lookahead-stack (cons (car args) lookahead-stack)))
         ((has-more?)
          (char-ready? port))
+	((get-port)
+	 port)
         ((compile-mode?) compile-mode)
         (else (error "tokenizer received unknown message: " msg))))))
 
