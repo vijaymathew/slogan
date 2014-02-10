@@ -12,11 +12,10 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Compilation and FFI</h2>
-        <p>This chapter discusses two features of this implementation of Slogan that will enable you to write high-performance
-          applications that integrates well with the host operating system. The first feature that we describe is the compiler.</p>
+        <p>This chapter is about using Slogan to write high-performance applications that integrates well with the host operating system.</p>
         <h3>Compilation</h3>
         <p>The <code>compile</code> function translates a slogan script into machine code. For example, here is a simple script
-          that we will use to produce an executable:</p>
+          that we will convert to a system executable:</p>
         <pre>
           // hello.sn
           println ("hello, world!"); </pre>
@@ -24,10 +23,10 @@
         <pre>
           > compile ("hello", exe = true); </pre>
         <p>The <code>exe</code> keyword parameter instructs the compiler to assemble a standalone executable. This executable is
-          created as "hello.run". This can be ran from the command line just like you run any other program.</p>
+          created as "hello.run" and can be ran from the command line just like you run any other program.</p>
         <h3>FFI</h3>
         <p>The Foreign Function Interface (FFI) is a set of functions that allows a Slogan script to load a shared library (or DLL)
-          and call the functions exported by that library. Here is a simple shared library written in C and the Slogan function call
+          and call the functions exported by it. Here is a simple shared library written in C and the Slogan function call
           that invokes the functions in it:</p>
         <pre>/* mylib.c */
 #include <stdio.h>
@@ -55,14 +54,16 @@ int c_add_two_ints (___SLOGAN_OBJ i, ___SLOGAN_OBJ j)
           > ffi_call_int_2 (mylib, "c_add_two_ints", 10, 20);
           => 30
           > ffi_close (mylib);</pre>
-        <p>Functions for calling into dynamic libraries all start with the prefix <code>ffi_call_</code>. The next part of the
+        <p>Functions for calling into dynamic libraries all start with the prefix <code>ffi_call_***</code>. The next part of the
           name identifies the return type of the C function and the number of arguments it takes. For example, <code>ffi_call_void_0</code>
           calls a C function that take no argument and returns nothing. <code>ffi_call_int_2</code> calls a C function that takes
           two arguments and returns an <code>int</code>. The C functions must accept arguments of type <code>___SLOGAN_OBJ</code> which
-          can represent a Slogan object of any type. There are C macros and functions declared in <code>slogan.h</code> that can
-          convert a ___SLOGAN_OBJ to an equivalent C object and vice versa. C functions that takes a single <code>void *</code> can also
+          can represent a Slogan object of any type. There are C macros and functions declared in <code>slogan.h</code> for
+          converting a ___SLOGAN_OBJ to an equivalent C object and vice versa. C functions that takes a single <code>void *</code> can also
           be called from Slogan. The functions <code>ffi_call_with_void_pointer_1</code> and <code>ffi_call_void_pointer_with_void_pointer_1</code>
-          are used for this. For more usage scenarios of FFI, see the samples <code>./example/tutorial/egdlib.c</code> and 
+          are used for this. A C library function to be called using the FFI should not have more that 8 parameters. For passing more
+          values from Slogan to C, we can make use of Lists and Arrays. </p>
+        <p>For more usage scenarios of FFI, see the samples <code>./example/tutorial/egdlib.c</code> and 
           <code>./example/tutorial/ffi.sn</code>.</p>
       </div>
     </div>
