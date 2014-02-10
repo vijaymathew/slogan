@@ -11,95 +11,93 @@ void c_hello (void)
   printf ("hello from C!\n");
 }
 
-void c_add_ten (___SLOGAN_OBJ i)
+void c_add_ten (___slogan_obj i)
 {
-  printf ("%d\n", ___INT (i) + 10);
+  printf ("%d\n", ___int (i) + 10);
 }
 
-int c_add_two_ints (___SLOGAN_OBJ i, ___SLOGAN_OBJ j)
+int c_add_two_ints (___slogan_obj i, ___slogan_obj j)
 {
-  return ___INT (i) + ___INT (j);
+  return ___int (i) + ___int (j);
 }
 
-float c_add_two_floats (___SLOGAN_OBJ i, ___SLOGAN_OBJ j)
+float c_add_two_floats (___slogan_obj i, ___slogan_obj j)
 {
   float a, b;
-  ___SLOGAN_OBJ_to_FLOAT (i, &a, 0);
-  ___SLOGAN_OBJ_to_FLOAT (j, &b, 0);
+  ___slogan_obj_to_float (i, &a);
+  ___slogan_obj_to_float (j, &b);
   return a + b;
 }
 
-void c_print_msg (___SLOGAN_OBJ msg)
+void c_print_msg (___slogan_obj msg)
 {
   char *str;
-  ___SLOGAN_OBJ_to_CHARSTRING (msg, &str, 0);
+  ___slogan_obj_to_charstring (msg, &str);
   printf ("%s\n", str);
 }
 
-char *c_get_greeting (___SLOGAN_OBJ name)
+char *c_get_greeting (___slogan_obj name)
 {
   static char buf[100];
   char *str;
   strcpy (buf, "hello ");
-  ___SLOGAN_OBJ_to_CHARSTRING (name, &str, 0);
+  ___slogan_obj_to_charstring (name, &str);
   strcat (buf, str);
   return buf;
 }
 
-___SLOGAN_OBJ c_get_greeting_as_string (___SLOGAN_OBJ name)
+___slogan_obj c_get_greeting_as_string (___slogan_obj name)
 {
   char *greetings = c_get_greeting (name);
-  ___SLOGAN_OBJ str;
-  ___CHARSTRING_to_SLOGAN_OBJ (___PSTATE, greetings, &str, 0);
+  ___slogan_obj str;
+  ___charstring_to_slogan_obj (greetings, &str);
   ___release_slogan_obj (str);
   return str;
 }
 
-void c_print_list_of_strings (___SLOGAN_OBJ lst)
+void c_print_list_of_strings (___slogan_obj lst)
 {
   while (lst != ___NUL)
     {
       char *s;
-      ___SLOGAN_OBJ_to_CHARSTRING (___HEAD (lst), &s, 0);
+      ___slogan_obj_to_charstring (___head (lst), &s);
       printf ("%s\n", s);
-      lst = ___TAIL (lst);
+      lst = ___tail (lst);
     }
 }
 
-void c_print_array_of_strings (___SLOGAN_OBJ array, ___SLOGAN_OBJ len)
+void c_print_array_of_strings (___slogan_obj array, ___slogan_obj len)
 {
-  ___SLOGAN_OBJ *elements = ___BODY (array);
+  ___slogan_obj *elements = ___body (array);
   int i;
-  for (i = 0; i < ___INT (len); ++i)
+  for (i = 0; i < ___int (len); ++i)
     {
       char *s;
-      ___SLOGAN_OBJ_to_CHARSTRING (elements[i], &s, 0);
+      ___slogan_obj_to_charstring (elements[i], &s);
       printf ("%s\n", s);
     }
 }
 
-___SLOGAN_OBJ c_make_int_list (___SLOGAN_OBJ a, ___SLOGAN_OBJ b, ___SLOGAN_OBJ c)
+___slogan_obj c_make_int_list (___slogan_obj a, ___slogan_obj b, ___slogan_obj c)
 {
-  ___SLOGAN_OBJ result = ___PAIR (___PSTATE, a, 
-                                  ___PAIR (___PSTATE, b, 
-                                           ___PAIR (___PSTATE, c, ___NUL)));
+  ___slogan_obj result = ___pair (a, ___pair (b, ___pair (c, ___NUL)));
   ___release_slogan_obj (result);
   return result;
 }
 
-void c_fill_int_array (___SLOGAN_OBJ array, ___SLOGAN_OBJ a, ___SLOGAN_OBJ b, ___SLOGAN_OBJ c)
+void c_fill_int_array (___slogan_obj array, ___slogan_obj a, ___slogan_obj b, ___slogan_obj c)
 {
-  ___SLOGAN_OBJ *objs = malloc (sizeof (___SLOGAN_OBJ) * 3);
+  ___slogan_obj *objs = malloc (sizeof (___slogan_obj) * 3);
   objs[0] = a;
   objs[1] = b;
   objs[2] = c;
-  memcpy (___BODY (array), objs, sizeof (___SLOGAN_OBJ) * 3);
+  memcpy (___body (array), objs, sizeof (___slogan_obj) * 3);
   free (objs);
 }
 
 struct c_point { int x; int y; };
 
-void *c_make_point (___SLOGAN_OBJ x, ___SLOGAN_OBJ y)
+void *c_make_point (___slogan_obj x, ___slogan_obj y)
 {
   struct c_point *p = malloc (sizeof (struct c_point));
   p->x = ___INT (x);

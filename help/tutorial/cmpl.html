@@ -37,9 +37,9 @@ void c_hello (void)
   printf ("hello from C!\n");
 }
 
-int c_add_two_ints (___SLOGAN_OBJ i, ___SLOGAN_OBJ j)
+int c_add_two_ints (___slogan_obj i, ___slogan_obj j)
 {
-  return ___INT (i) + ___INT (j);
+  return ___int (i) + ___int (j);
 }</pre>
         <p>On a platform with the GCC compiler suite installed, a dynamically loadable library is created using these commands:</p>
         <pre>
@@ -57,9 +57,9 @@ int c_add_two_ints (___SLOGAN_OBJ i, ___SLOGAN_OBJ j)
         <p>Functions for calling into dynamic libraries all start with the prefix <code>ffi_call_***</code>. The next part of the
           name identifies the return type of the C function and the number of arguments it takes. For example, <code>ffi_call_void_0</code>
           calls a C function that take no argument and returns nothing. <code>ffi_call_int_2</code> calls a C function that takes
-          two arguments and returns an <code>int</code>. The C functions must accept arguments of type <code>___SLOGAN_OBJ</code> which
+          two arguments and returns an <code>int</code>. The C functions must accept arguments of type <code>___slogan_obj</code> which
           can represent a Slogan object of any type. There are C macros and functions declared in <code>slogan.h</code> for
-          converting a ___SLOGAN_OBJ to an equivalent C object and vice versa. C functions that takes a single <code>void *</code> can also
+          converting a ___slogan_obj to an equivalent C object and vice versa. C functions that takes a single <code>void *</code> can also
           be called from Slogan. The functions <code>ffi_call_with_void_pointer_1</code> and <code>ffi_call_void_pointer_with_void_pointer_1</code>
           are used for this. A C library function to be called using the FFI should not have more that 8 parameters. For passing more
           values from Slogan to C, we can make use of Lists and Arrays. </p>
