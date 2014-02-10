@@ -1,4 +1,4 @@
-// gcc -c -Wall -Werror -I../platform/gsc/include -I../src/include -fpic egdlib.c 
+// gcc -c -Wall -Werror -I${SLOGAN_ROOT}/platform/gsc/include -I${SLOGAN_ROOT}/src/include -fpic egdlib.c 
 // gcc -shared -o libegdlib.so egdlib.o
 
 #include <stdio.h>

@@ -1,0 +1,24 @@
+var h = ffi_open ("./example/tutorial/libegdlib.so");
+
+ffi_call_void_0 (h, "c_hello"); // => hello from C!
+ffi_call_void_1 (h, "c_add_ten", 100); // => 110
+
+println (ffi_call_int_2 (h, "c_add_two_ints", 10, 20)); // => 30
+println (ffi_call_float_2 (h, "c_add_two_floats", 4.5, 1.5)); // => 6.0
+
+ffi_call_void_1 (h, "c_print_msg", "hello from Slogan!"); // hello from Slogan!
+println (ffi_call_char_string_1 (h, "c_get_greeting", "vijay")); // hello vijay
+println (ffi_call_obj_1 (h, "c_get_greeting_as_string", "vijay")); // hello vijay
+
+ffi_call_void_1 (h, "c_print_list_of_strings", ["one", "two", "three"]); // => one\ntwo\nthree\n
+ffi_call_void_2 (h, "c_print_array_of_strings", #["one", "two", "three"], 3); // => one\ntwo\nthree\n
+
+println (ffi_call_obj_3 (h, "c_make_int_list", 1, 2, 3)); // => [1, 2, 3]
+var a = array (3);
+println (ffi_call_obj_4 (h, "c_fill_int_array", a, 1, 2, 3)); // => #[1, 2, 3]
+
+var point = ffi_call_void_pointer_2 (h, "c_make_point", 10, 20);
+ffi_call_with_void_pointer_1 (h, "c_print_point", point);
+ffi_call_with_void_pointer_1 (h, "c_destroy_point", point);
+
+ffi_close (h);
