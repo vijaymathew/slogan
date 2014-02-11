@@ -12,14 +12,15 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Other data structures</h2>
-        <p>This chapter shows how to use data structures other than <a href="./lists.html">lists</a>: arrays, strings, tables and records.</p>
+        <p>In the <a href="./lists.html">last chapter</a> we saw how to use the list data structure. 
+          In this chapter we will meet the other Slogan data structures: arrays, strings, tables and records.</p>
         <h3>Arrays</h3>
         <p><i>Arrays</i> are structures similar to lists but they occupy less space and the average time required to access a random
           element by index is typically less than that required for a list. The <code>array</code> function is used to create an array
           of a specified length. By default, all elements are initialized to <code>false</code>. This behaviour can be overridden by
           specifying a value for the <code>fill</code> keyword parameter. Array literals are enclosed in <code>#[]</code>.
-          <code>array_at</code> and <code>array_set</code> are used to access and update elements by index. 
-          Keep in mind that <code>array_set</code> is a destructive operation:</p>
+          The functions <code>array_at</code> and <code>array_set</code> are used to access and update elements by index. 
+          <code>array_set</code> is a destructive operation because it updates the array in-place:</p>
         <pre>
           > var a = array (3);
           > a;
@@ -37,21 +38,24 @@
         <h4>Example: Phone book</h4>
         <p>This example shows how to search for an object in a sorted array. Each entry in the array contains a pair representing
           the name and phone number of a person. First we will see how such an array can be sorted. The we will write a function
-          that does a fast number look-up in the array, given the name of the contact person.<p>
-        <p>Sorting the array is simple - just use the <code>array_sort</code> function with a custom <code>test</code> function
-          that orders pairs based on their first element, which must be a string:</p>
-        <pre>
+          that does a fast number look-up in the array, given the name of the contact person. First let us define the array
+          to hold our contacts:<p>
+          <pre>
           > var contacts = #[["sam" "98289182"], ["anna" "88499394"],
                  ["caroline" "993002993"], ["ankit" "38929839"],
-                 ["paul" "322288348"], ["sean" "12122123"]];
+                 ["paul" "322288348"], ["sean" "12122123"]];</pre>
+
+        <p>Sorting the array is simple - call <code>array_sort</code> with a function that orders pairs based on their first element
+          which must be a string:</p>
+        <pre>
           > array_sort (contacts, test = function (a, b) { string_is_gt (head (a), head (b)) });
           => #[["ankit" "38929839"], ["anna" "88499394"], ["caroline" "993002993"], 
                ["paul" "322288348"], ["sam" "98289182"], ["sean" "12122123"]]</pre>
         <p>Now that we have sorted the array, we can implement the <code>lookup</code> function. <code>lookup</code> does a binary search
           on the array. If the contact being searched for is at the middle of the array, its phone number is returned. If the mid-entry's
           name is lexicographically less than the name searched for, the search continues with the left half of the array, otherwise the
-          right half is searched. So on each iteration, the array is halved until either the name is found or the array is exhausted, which
-          will result in <code>false</code> being returned.</p>
+          right half is searched. So on each iteration, the array is halved until either the name is found or the array is exhausted, in which
+          case <code>false</code> is returned.</p>
         <pre>
         > var lookup = function (name, contacts) {
             let len = array_length (contacts)
@@ -74,7 +78,7 @@
           It creates a new array formed by the elements of <code>a</code> beginning with index <code>start</code>
           (inclusive) and ending with index <code>end</code> (exclusive).</p>
         <h4>Multi-dimensional arrays</h4>
-        <p>Slogan provides multi-dimensional arrays, i.e an array of arrays or an array of arrays of arrays and so on.
+        <p>Slogan supports multi-dimensional arrays, i.e an array of arrays or an array of arrays of arrays and so on.
           An array of multiple dimensions are created by calling the <code>array</code> function with a list of dimensions as the
           first argument: </p>
         <pre>
@@ -84,14 +88,14 @@
           => #[#[hi, hi, hi], #[hi, hi, hi]]</pre>
         <h4>Example: Date conversion</h4>
         <p>This sections shows the definition of two date conversion functions: <code>day_of_year</code> and <code>month_day</code>.
-          <code>day_of_year</code> takes two arguments, <code>month</code> and <code>day</code>, and converts them into the day of the year.
+          <code>day_of_year</code> takes two arguments - <code>month</code> and <code>day</code> - and converts them into the day of the year.
           For example, the arguments <code>month = 3</code> (March) and <code>day = 1</code> will return <code>60</code> for a non-leap year.
           <code>month_day</code> will convert the day of the year into a pair of month and day. <code>month_day (year = 1987, day = 60)</code>
           will return <code>[3 1]</code>. Both these functions need access to a single table that contains number of days in each month
           for a leap year and a non-leap year. This table can be represented as a multi-dimensional array of two rows and thirteen columns:</p>
         <pre>
-          > var day_table =  = #[ #[0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-                                  #[0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] ];</pre>
+          > var day_table =  #[ #[0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+                                #[0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] ];</pre>
         <p>We also need to define a helper function <code>is_leap</code> to check if the given year is a leap year or not:</p>
         <pre>
           > var is_leap = 
@@ -159,7 +163,7 @@
         <p>The character comparison functions are <code>char_is_eq</code>, <code>char_is_lt</code>, <code>char_is_gt</code>, 
           <code>char_is_lteq</code> and <code>char_is_gteq</code>. Similarly, string comparison functions are <code>string_is_eq</code>,
           <code>string_is_lt</code>, <code>string_is_gt</code>, <code>string_is_lteq</code> and <code>string_is_gteq</code>. The
-          generic sequence equality predicate <code>is_equal</code> can be instead of <code>string_is_eq</code>.</p>
+          generic sequence equality predicate <code>is_equal</code> can be used instead of <code>string_is_eq</code>.</p>
         <pre>
           > char_is_eq ('a', 'A');
           => false
@@ -179,7 +183,7 @@
           => false
           > string_is_eq ("hello", "Hello", ignore_case = true);
           => true</pre>
-        <p>Other useful operations on a string are finding its length and accessing individual characters based on their index:</p>
+        <p>Other useful operations on a string are finding its length and accessing individual characters using their index:</p>
         <pre>
           > var s = "hello, world";
           > string_length (s);
@@ -190,7 +194,7 @@
           > string_set (s, 7, 'W');
           > s;
           => "Hello, World"</pre>
-        <p>Just like for lists and arrays, there are mapping functions for strings. <code>string_map</code> returns a new
+        <p>Just like lists and arrays, there are mapping functions for strings. <code>string_map</code> returns a new
           string where each character is the result of applying the function to each character of the original string.
         <code>string_foreach</code> is similar to <code>string_map</code> but is called for its side-effect:</p>
         <pre>
@@ -210,8 +214,8 @@
           > substring ("hello, world!", 0, 5);
           => "hello"</pre>
         <h4>Example: Date parsing</h4>
-        <p>Before we conclude the section on strings, we will write a simple function that parses dates in the format "DD MON YYYY"
-          and converts it into a list of integers. For example, the input <code>"02 AUG 2012"</code> will be converted to
+        <p>Before we conclude the section on strings, we will write a simple function to parse dates in the format "DD MON YYYY"
+          into a list of integers. For example, the input <code>"02 AUG 2012"</code> will be converted to
           <code>[2, 8, 2012]</code>. The main purpose of this sample is to introduce some more useful string functions.</p>
         <pre>
           > var months = #[!JAN, !FEB, !MAR,
@@ -243,7 +247,13 @@
               function (month, year, mday) {
                  if (mday &gt; 0 && mday &lt;= (array_at (array_at (day_table, if is_leap (year) 1 else 0), month))) mday
                  else false
-            }; </pre>
+            };
+          
+          // Some tests:
+          > parse_date ("02 AUG 2012");
+          => [2, 8, 2012]
+          > parse_date ("31 DEC 2014");
+          => [31, 12, 2014]</pre>
         <p>The <code>parse_date</code> function introduces these new built-in functions: <code>string_split</code>,
           <code>array_index_of</code>, <code>string_to_symbol</code> and <code>string_to_number</code>. </p>
         <p><code>string_split</code> breaks up a string into a list of strings using a character or list of characters
@@ -272,10 +282,10 @@
           => 0</pre>
         <p>The <code>parse_date</code> function does not do a lot of data validation. It just checks if the month is valid and the day
           falls within that month. As an extended exercise, you can add more validation code to <code>parse_date</code> and make 
-          it more robust. Instead of printing an error message, you may want to try the <code>error</code> function to raise
+          it robust. Instead of printing an error message, you may want to try the <code>error</code> function to raise
           exceptions. In a later chapter we will cover exceptions in more detail.</p>
         <h3>Tables</h3>
-        <p>In the chapter on <a href="./lists.html">lists</a>, we saw how to use lists as tables of key-value pairs. We use the
+        <p>In the chapter on <a href="./lists.html">lists</a>, we saw how to use lists as tables of key-value pairs. We used the
           <code>assoc_***</code> functions to store and retrieve values from these structures. But lists can get inefficient for 
           large number of key-value pairs as it has to be sequentially scanned to access a particular entry. <em>Tables</em> are
           array-like structures whose elements are indexed by keys which are arbitrary objects. They typically has faster access times
@@ -304,7 +314,7 @@
           apricot": "yellow </pre>
         <p>The table uses a hash function to convert the key into an integer index into an array. The default hash function
           is good enough for almost all built-in types like lists, strings and arrays. If you want to customize the way
-          key hashes are created, you can provide the table constructor with a <code>hash</code> function which takes a key
+          key hashes are created, you can provide the table constructor with a hash function which takes a key
           object as parameter and returns an integer that uniquely identifies the key:</p>
         <pre>
           > var coords = table (hash = function (p) { real_to_integer (head (p) + tail (p) * 31) });
@@ -335,14 +345,14 @@
           => 100
           > point_y (p);
           => 200</pre>
-        <p>When we create a new record with the <code>record</code>, Slogan automatically creates the following functions to 
+        <p>When we define a new record, Slogan automatically creates the following functions to 
           create and manipulate record objects:</p>
         <ol>
           <li>A constructor with the same name as the record.</li>
           <li>A predicate for checking if an object is an instance of the record.</li>
           <li>Accessors and modifiers for record members.</li>
         </ol>
-        <p>Once defined a record gets the same status as the built-in types of the language - it can be passed as arguments to
+        <p>Once defined, a record gets the same status as the built-in types of the language - it can be passed as arguments to
           functions and it can be returned as results of functions. For example, here is a function that adds two points together
           to create a new point:</p>
         <pre>

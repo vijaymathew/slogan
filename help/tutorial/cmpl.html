@@ -22,6 +22,8 @@
         <p>This script can be compiled from the REPL as: </p>
         <pre>
           > compile ("hello", exe = true); </pre>
+        <div id="note"><p><em>Note:</em>For the compiler to work correctly, make sure you have set the <code>SLOGAN_ROOT</code> 
+            environment variable as described in the <a href="../start.html">install instructions</a>.</p></div>
         <p>The <code>exe</code> keyword parameter instructs the compiler to assemble a standalone executable. This executable is
           created as "hello.run" and can be ran from the command line just like you run any other program.</p>
         <h3>FFI</h3>
@@ -29,7 +31,7 @@
           and call the functions exported by it. Here is a simple shared library written in C and the Slogan function call
           that invokes the functions in it:</p>
         <pre>/* mylib.c */
-#include <stdio.h>
+#include &lt;stdio.h&gt;
 #include "slogan.h"
  
 void c_hello (void)
@@ -43,7 +45,6 @@ int c_add_two_ints (___slogan_obj i, ___slogan_obj j)
 }</pre>
         <p>On a platform with the GCC compiler suite installed, a dynamically loadable library is created using these commands:</p>
         <pre>
-          $ export SLOGAN_ROOT=/home/me/slogan
           $ gcc -c -I${SLOGAN_ROOT}/platform/gsc/include -I${SLOGAN_ROOT}/src/include -fpic mylib.c 
           $ gcc -shared -o libmylib.so mylib.o</pre>
         <p>The following sessions shows how to load the library and call the C functions:</p>
@@ -56,15 +57,17 @@ int c_add_two_ints (___slogan_obj i, ___slogan_obj j)
           > ffi_close (mylib);</pre>
         <p>Functions for calling into dynamic libraries all start with the prefix <code>ffi_call_***</code>. The next part of the
           name identifies the return type of the C function and the number of arguments it takes. For example, <code>ffi_call_void_0</code>
-          calls a C function that take no argument and returns nothing. <code>ffi_call_int_2</code> calls a C function that takes
+          calls a C function that take no arguments and returns nothing. <code>ffi_call_int_2</code> calls a C function that takes
           two arguments and returns an <code>int</code>. The C functions must accept arguments of type <code>___slogan_obj</code> which
           can represent a Slogan object of any type. There are C macros and functions declared in <code>slogan.h</code> for
-          converting a ___slogan_obj to an equivalent C object and vice versa. C functions that takes a single <code>void *</code> can also
-          be called from Slogan. The functions <code>ffi_call_with_void_pointer_1</code> and <code>ffi_call_void_pointer_with_void_pointer_1</code>
+          converting a <code>___slogan_obj</code> to an equivalent C object and vice versa. C functions that takes a single <code>void*</code> 
+          as argument can also
+          be called using FFI. The functions <code>ffi_call_with_void_pointer_1</code> and <code>ffi_call_void_pointer_with_void_pointer_1</code>
           are used for this. A C library function to be called using the FFI should not have more that 8 parameters. For passing more
-          values from Slogan to C, we can make use of Lists and Arrays. </p>
-        <p>For more usage scenarios of FFI, see the samples <code>./example/tutorial/egdlib.c</code> and 
-          <code>./example/tutorial/ffi.sn</code>.</p>
+          values from Slogan to C, we can make use of lists and arrays. A C function can return the following types into Slogan:
+          <code>int</code>, <code>int64</code>, <code>float</code>, <code>double</code>, <code>char*</code> and <code>void*</code>.</p>
+        <p>See the samples <code>./example/tutorial/egdlib.c</code> and 
+          <code>./example/tutorial/ffi.sn</code> for more usage scenarios of FFI.</p>
       </div>
     </div>
   </body>

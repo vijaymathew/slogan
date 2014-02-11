@@ -20,18 +20,19 @@
         <h1>Introduction</h1>
         <p>Slogan is a general purpose, dynamically typed, expression-oriented programming language.
           Slogan makes it easy to write multi-threaded, distributed applications.
-          The current implementation of Slogan comes with an interpreter and an optimizing compiler 
+          This implementation, which acts as the specification of the language, comes with an interpreter and an optimizing compiler 
           that generates platform specific binaries.</p>
         <h2>Installing Slogan</h2>
         <p>You can fetch the latest source code of Slogan from <a href="https://github.com/vijaymathew/slogan">github</a>.
-          Slogan should build without problems on all modern Unixes - including GNU/Linux and the various BSDs.
+          Slogan should build on all modern Unixes - GNU/Linux, Mac and the various BSDs.
           Once you have cloned the git repository, issue these commands to compile Slogan:</p>
           <pre>
             $ cd /path-to-slogan-directory
             $ ./configure-platform
-            $ make
-            $ ./src/slogan</pre>
-         <p>Once you execute the last command, you should see a prompt like this:</p>
+            $ make</pre>
+          <p>After the sources are compiled, type the following command to launch the Slogan interpreter:</p>
+          <pre>$ ./src/slogan</pre>
+         <p>Now you should see a prompt like this:</p>
           <pre>
             slogan></pre>
           <p>This is the Slogan REPL (Read-Eval-Print-Loop) where you can enter expressions.
@@ -44,7 +45,8 @@
             3</pre>
           <p>To quit the REPL, type <code>exit();</code> and press enter.</p>
 
-          <p>To compile Slogan programs from any directory, you have to create the environment variable `SLOGAN_ROOT':</p>
+          <p>To compile Slogan programs from any directory, you have to create the environment variable `SLOGAN_ROOT' and point that
+            to the directory where you have checked out the Slogan repository:</p>
 
           <pre>
             $ export SLOGAN_ROOT=/path-to-slogan-directory</pre>
@@ -64,7 +66,6 @@
             <li><a href="http://www.scheme.com/tspl4/">The Scheme Programming Language, Fourth Edition</a> by R. Kent Dybvig</li>
             <li><a href="http://mitpress.mit.edu/sicp/full-text/book/book.html">Structure and Interpretation of Computer Programs</a>
               by Abelson and Sussman</li>
-            <li><a href="http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html">Common Lisp the Language, 2nd Edition</a> by Guy L. Steele</li>
             <li><a href="http://cm.bell-labs.com/cm/cs/cbook/">The C Programming Language</a> by Kernighan and Ritchie</li>
         </ul></p>
         <p>Other technical references include:

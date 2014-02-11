@@ -12,15 +12,15 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Scope and Control</h2>
-        <p>The scope a variable is the part of the program where the variable can be used. A variable declared with <code>var</code>
-          is visible to the entire program. One way to limit the scope of a variable is to declare them within a function:</p>
+        <p>The <em>scope</em> of a variable is that part of the program where the variable can be used. A variable declared with <code>var</code>
+          is visible to the entire program. One way to limit the scope of a variable is to declare it within a function:</p>
         <pre>
           > function(x) { var y = 100; x * y };
           => [function]
           > x;
-          error: unbound global x
+          Unbound variable: x
           > y;
-          error: unbound global y</pre>
+          Unbound variable: y</pre>
         <p>The scope of <code>x</code> and <code>y</code> are limited to the body of the function. Variables of the same name 
           can be declared and used outside the function without causing any conflicts. It is not necessary to explicitly create
           a function just to limit the scope of some variables. This can be done with code blocks:</p>
@@ -28,9 +28,9 @@
           > { var x = 10; var y = 20; x * y };
           => 200
           > x;
-          error: unbound global x
+          Unbound variable: x
           > y;
-          error: unbound global y</pre>
+          Unbound variable: y</pre>
         <p>Another option is to use the <code>let*</code> family of expressions. They allows a more explicit introduction of 
           the variables to be used locally.</p>
         <h3>let, letseq and letrec</h3>
@@ -51,14 +51,15 @@
           => 10
           > let x = x, y = 200 x + y;
           => 210 </pre>
-        <p>In the last expression throws some light on how <code>let</code> initializes the variables. First, the initialization expression
+        <p>The last expression throws some light on how <code>let</code> initializes the variables. First, the initialization expression
           is evaluated with the variable bindings at the beginning of <code>let</code>. Here we have two expressions - <code>x</code> and
           <code>200</code>. <code>x</code> evaluates to <code>10</code> and <code>200</code> evaluates to itself. As the next step, a new
           <em>environment</em> of variable bindings is created for <code>let</code> and two slots named <code>x</code> and <code>y</code> are
-          created there. <code>10</code> is assigned to <code>x</code> and <code>200</code> to <code>y</code>. The body of <code>let</code>
+          created there. <code>10</code> is assigned to the new <code>x</code> and <code>200</code> to the new <code>y</code>. 
+          The body of <code>let</code>
           always refers to its local environment when it has to find the value of a variable. Only if it cannot find the variable there it will
           refer to the environment in which <code>let</code> was evaluated. This behavior is what causes the <em>shadowing</em> that we
-          observe.</p>
+          observed.</p>
         <p><code>letseq</code> is similar to <code>let</code> but the definition and initialization of each local variable is done 
           sequentially. In our earlier example, this means that <code>y</code> is bound in an environment which already has a valid binding
           for <code>x</code>. So initialization expressions can refer to local variables bound previously:</p>
@@ -74,8 +75,8 @@
             is_even (88);
           => true </pre>
         <h3>Conditionals</h3>
-        <p>We have already encountered the <code>if</code> conditional expression. Unlike its counterparts in other languages <code>if</code>
-          in Slogan is an expression in that it evaluates to a value. It has the following general form: </p>
+        <p>We have already encountered the <code>if</code> conditional expression. Unlike its counterparts in other languages, <code>if</code>
+          in Slogan is an expression that evaluates to a value. It has the following general form: </p>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;if &lt;condition&gt; &lt;expression1&gt; else &lt;expression2&gt;</code>
         <p>If <code>condition</code> evaluates to <code>true</code> <code>expression1</code> is evaluated otherwise <code>expression2</code>
           is evaluated. The <code>else</code> part is optional. If <code>else</code> is not specified and <code>condition</code> evaluates
@@ -114,10 +115,10 @@
           }</pre>
         <p>Case values can be of any type for which the equality operator (<code>==</code>) works.</p>
         <h3>Exceptions</h3>
-        <p>Exceptions are events that changes the normal flow of program execution. They are commonly used to raise a signal
+        <p>Exceptions are events that change the normal flow of program execution. They are commonly used to raise a signal
           when things cannot proceed as expected. For example, a program to download some resource from a web server may raise
           an exception when a connection to the server cannot be established. An exception is raised by calling the <code>raise</code>
-          function. Exceptions cause program control to break out of the current context and invokes a 
+          function. Exceptions cause program control to break out of the current context and invoke a 
           special function called the <code>exception handler</code>. </p>
         <p>Another function for raising exceptions is <code>error</code>. It takes an error message as the first argument and an
           arbitrary number of optional arguments that will provide more information to the exception handler. The following session

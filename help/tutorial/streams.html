@@ -12,7 +12,7 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Streams</h2>
-        <p>Streams are input and output devices that can read and write characters. Streams are created with any one of the
+        <p>Streams are input/output devices that can read and write characters. Streams are created with any one of the
           three constructors: <code>stream</code>, <code>output_stream</code> and <code>input_stream</code>. 
           The functions <code>close_stream</code>, <code>close_input_stream</code> or <code>close_output_stream</code> 
           must be called on a stream to release all system resources held by it. The usual programming idiom to open, use and
@@ -36,7 +36,7 @@
           > read_line (f);
           => "hello, world!"
           > close_stream (f);</pre>
-        <p>The code becomes even shorter if we use the <code>with_stream</code> functions:</p>
+        <p>The code becomes even shorter if we use one of the <code>with_stream</code> functions:</p>
         <pre>
           > with_output_stream (!file, "hello.txt", function (s) { println (to = s, "hello, world!") });
           > with_input_stream (!file, "hello.txt", function (s) { read_line (s) });
@@ -44,16 +44,16 @@
         <p><code>read_line</code> reads characters from an input stream until a specific separator or the end-of-stream is encountered.
           The characters read are returned as a string. The separator can be specified as the second argument and it defaults to the
           <code>newline</code> character.</p>
-        <p>To prevent new content from overwriting the old content, the file has to be opened by specifying the <code>append</code>
+        <p>To prevent new content from overwriting old content, the file has to be opened by specifying the <code>append</code>
           flag turned on:</p>
         <pre>
-          > with_output_stream (!file, [[!path "hello.txt"], [!append true]], function (s) { println (to = s, "hello, world!") });
+          > with_output_stream (!file, [[!path "hello.txt"], [!append true]], function (s) { println (to = s, "this is some new text") });
           > with_input_stream (!file, "hello.txt", function (s) { println (read_line (s), read_line (s)) });
           hello, world!this is some new text</pre>
-        <p>Settings accepted by the constructor are for a file stream are:
+        <p>Settings accepted by the file stream constructor are:
           <ul>
             <li><code>!path:</code> The location of the file. This setting is required.</li>
-            <li><code>!append:</code> A boolean value indicating whether to open the file in append more or not.</li>
+            <li><code>!append:</code> A boolean value indicating whether to open the file in append mode or not.</li>
             <li><code>!create:</code> Can be a boolean value or the symbol <code>!maybe</code>. The value <code>true</code>
               will try to create the file and raises an exception if the file already exists. The value <code>false</code>
               requires that the file already exist. <code>!maybe</code> will try to create the file if it does not exist.
@@ -91,7 +91,7 @@ var file_copy =
     };</pre>
         <p><code>read_bytes</code> fills its first argument, which must be a <code>byte_array</code>, with bytes from a stream.
           The second and third arguments are optional and specifies the range of indexes in the byte array that will get filled.
-          If these values are omitted, they will default to 0 and the size of the array. The third argument is the input stream.
+          If these values are omitted, they will default to 0 and the size of the array respectively. The third argument is the input stream.
           And the last argument specifies the number of bytes that needs to be read. <code>write_bytes</code> writes the content
           of a byte array starting and ending at the specified index range to an output stream.</p>
         <h2>String streams</h2>
@@ -105,7 +105,7 @@ var file_copy =
           line 1
           line 2</pre>
         <h2>Network streams</h2>
-        <p>Tcp streams allow us to create network servers and clients that communicate using TCP. As an example, let us
+        <p>Tcp streams allow us to create network servers and clients that communicate over TCP. As an example, let us
           create an echo server and client. The echo server sends back whatever text the client sends it. First the server:</p>
         <pre>
           > var server = stream (!tcp_server, [[!port_number 5000]]);
@@ -128,6 +128,7 @@ var file_copy =
           > println (to = client, "hello");
           > flush_output (client);
           > println (read_line (client));
+          hello
           > close_stream (close_stream);</pre>
         <p>Now you should see the client and server saying "hello" to each other.</p>
         <h2>Tokenizing streams</h2>
@@ -162,7 +163,7 @@ var file_copy =
           => *plus*
           > read_token (tokenizer);
           => 100</pre>
-        <p>It is also possible to read, compile and execute programs from streams dynamically: </p>
+        <p>It is also possible to read, compile and execute programs directly from a stream: </p>
         <pre>
           > var s = input_stream (!string, "{ var x = 10; x + 100 }");
           > var tokenizer = stream_tokenizer (s, program = true);

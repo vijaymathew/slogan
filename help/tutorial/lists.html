@@ -42,8 +42,8 @@
           => [1, 2, 3]
           > b;
           => [100, 2, 3]</pre>
-        <p>Another function useful for building new lists is <code>append</code>. It returns the concatenation any number of lists
-          by copying all its arguments except the last.</p>
+        <p>Another function useful for building new lists is <code>append</code>. It returns the concatenation of 
+          all the lists passed to it as arguments:</p>
         <pre>
           > append ([1, 2], ["hello", "there"], [3, 4, [!good !bye]]);
           => [1, 2, "hello", "there", 3, 4, [!good !bye]]</pre>
@@ -51,8 +51,8 @@
         <p>The functions and language facilities that we learned so far is enough to write programs that does something useful,
           for instance, a utility that compresses a list. The compression algorithm used itself can be very simple - 
           replace repeated occurrences of an element with a pair that contains the number of occurrences and the element itself. 
-          For example, the list <code>[1, 1, 1, 2]</code> will be compressed as <code>[[3 1], 2]</code>. Here is an initial
-          version of our <code>compress</code> function:</p>
+          For example, the list <code>[1, 1, 1, 2]</code> will be compressed as <code>[[3 1], 2]</code>. Here is the definition
+          of our <code>compress</code> function:</p>
         <pre>
 var compress = 
     function (lst) {
@@ -86,7 +86,7 @@ var compress =
           > compress ([1, 1, 1, 2, 0, 2, 2]);
           => [[3 1], 2, 0, [2 2]]</pre>
         <p>Now some explanation on the implementation. <code>compress</code> makes use of two internal functions - <code>ne_pair</code>
-          and <code>compr</code> to get the actual work done. They are introduced using a <code>letrec</code> (let-recursive) expression
+          and <code>compr</code>. They are introduced using a <code>letrec</code> (let-recursive) expression
           because the <code>compr</code> makes recursive calls to itself and <code>ne_pair</code>. (More on <code>letrec</code> later).
           <code>ne_pair</code> is called to pack an element and its number of occurrences in the list to a pair. For each subsequent
           occurrence of the same element in the list, <code>compr</code> calls itself. On finding a new element or at the end of the
@@ -106,7 +106,7 @@ var uncompress =
           The first argument of <code>list_of</code> is the length of the new list and the optional second argument is the initial value
           to put in each slot.</p>
         <p>Our compression program has many limitations - it is slow, inefficient and will break for lists that contain other lists.
-          In later sections of this tutorial, we will re-visit these functions and fix some of these issues.</p>
+          But it does a good enough job at introducing the possibilities of the list data structure.</p>
         <p><div id="note">
             <em>Note:</em> The <code>example/tutorial/</code> directory contains the full source code of all example programs.
 	    Refernces to the original source of the program, if any, can be found in header comments.</div> </p>
@@ -133,13 +133,13 @@ var uncompress =
         33
         44
         55</pre>
-      <p>The <code>reduce</code> function combines the elements of a list using a binary function.</p>
+      <p><code>reduce</code> combines the elements of a list using a binary function:</p>
       <pre>
         > reduce ([1, 2, 3, 4, 5], add);
         => 15
         > reduce ([1, 2, 3, 4, 5], add, initial_value = 100);
         => 115</pre>
-        <p>The <code>apply</code> is used to invoke a function by using a list to provide its actual arguments:</p>
+        <p><code>apply</code> is used to invoke a function by using a list to provide its actual arguments:</p>
         <pre>
           > apply (add, [1,2,3,4,5]);
           => 15</pre>
@@ -157,7 +157,8 @@ var uncompress =
           => "not found"
         </pre>
         <p><code>is_member</code> returns <code>true</code> if an element exists in the list. By default it uses the <code>==</code>
-          operator to compare the values. This can be overridden by passing a comparison predicate to the <code>test</code> argument.</p>
+          operator to compare the values. This can be overridden by passing a comparison predicate to the <code>test</code> 
+          keyword parameter:</p>
         <pre>
           > is_member ([1, 2, 3, 4, 5], 4);
           => true
@@ -166,16 +167,16 @@ var uncompress =
           > is_member (["a", "b", "c", "d", "e"], "b", test = string_is_eq);
           => true
           > is_member (["a", "b", "c", "d", "e"], "f", test = string_is_eq);
-          =>false</pre>
+          => false</pre>
         <p>The <code>filter</code> function returns all elements that satisfies a predicate:</p>
         <pre>
           > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
           => [2, 4]
           > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 });
           => []</pre>
-        <p>To delete elements from a list, use the <code>remove</code> function. <code>remove_duplicates</code>
+        <p>To delete elements from a list, use <code>remove</code>. <code>remove_duplicates</code>
           removes all duplicate elements from the list. Both these function uses the <code>==</code> operator to
-          compare elements. A comparison function can be provided using the <code>test</code> keyword argument.</p>
+          compare elements. A comparison function can be provided using the <code>test</code> keyword parameter.</p>
         <pre>
           > remove ([1, 2, 3, 4, 5], 3);
           => [1, 2, 4, 5]
@@ -246,7 +247,7 @@ var difference = function (a, b) {
           => [1, 2]</pre>
         <h4>Lists as dictionaries</h4>
         <p>Lists can be used for associating data to values. Each entry in the dictionary is represented as a pair. 
-          A list of pairs is known as an association list. There are three functions for working with association lists:
+          A list of pairs is known as an <em>association list</em>. There are three functions for working with association lists:
           <code>assoc_put</code>, <code>assoc_get</code> and <code>assoc_set</code>. <code>assoc_put</code> returns a new
           list that contains a mapping between a key and value. <code>assoc_get</code> returns the mapping for a given key
           and <code>assoc_set</code> updates an existing mapping, in-place. Both <code>assoc_get</code> and <code>assoc_set</code>
@@ -279,7 +280,7 @@ var difference = function (a, b) {
           > assoc_get (person, !place);
           => [place "ny"]
           > assoc_get (person, "age", test = string_is_eq); // not a good idea to mix keys of types that cannot share the comparison predicate.
-          error: type exception in [function][place, "age"]. expected type for argument 1 is string</pre>
+          (Argument 1) STRING expected</pre>
         </div>
       </div>
       

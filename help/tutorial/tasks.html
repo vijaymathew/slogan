@@ -39,11 +39,11 @@
 	  > var parser = function () {
 	      let msg = task_receive ()
 	      let sender = head (msg)
-	      let program = tail (msg)
-	      with_input_stream (!string, program,
+	      let code = tail (msg)
+	      with_input_stream (!string, code,
 	                         function (stream) {
 			           let tokenizer = stream_tokenizer (stream, program = true)
-	                           task_send (sender, eval (slogan (tokenzier)))
+	                           task_send (sender, eval (slogan (tokenizer)))
 	                        });
 	      parser ()
 	  };
@@ -53,10 +53,11 @@
 
 	  > var sender = function (program) {
 	                   task_run (task (function () {
-	                   task_send (parser_task, [current_task() program]);
-	                   println (task_receive ())
-                          }))
-	  };
+	                                     task_send (parser_task, [current_task() program]);
+	                                     println (task_receive ());
+                                             force_output ()
+                                    }))
+	    };
 
 	  > sender ("10 + 20");
 	  30

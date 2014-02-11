@@ -13,8 +13,8 @@
       <div class="container">
         <h2>Functions</h2>
         <p>Functions are at the core of Slogan. They are the primary means of abstraction provided by the language. Functions have first-class
-          status - they can be assigned to variables, passed to other functions as arguments. You can also write functions that create
-          new functions as their result. The <code>function</code> keyword is used to introduce a function literal:</p>
+          status - they can be assigned to variables, passed to other functions as arguments and returned as results. 
+          The <code>function</code> keyword is used to introduce a function literal:</p>
         <pre>
           function (&lt;param1&gt;, &lt;param2&gt; ...) {
               // function body
@@ -59,23 +59,23 @@
 
            > sum_alternate_doubles (1, 10);
            => 50</pre>
-        <p>Both functions share a some common patterns. These patterns can be abstracted into a single function that does the following:
+        <p>Both functions share a some common pattern. This pattern can be abstracted into a single function that does the following:
           <ol>
             <li>Return <code>0</code> when <code>a</code> is greater than <code>b</code>.</li>
             <li>Transform <code>a</code> in some way and add the result to the value of a recursive call to itself.</li>
             <li>The recursive call should be passed a successor of <code>a</code> and <code>b</code> unchanged as arguments.</li>
           </ol>
         <p>Let us call this function <code>sum</code>. The only portions that need customization for each call of <code>sum</code> is
-          the way <code>a</code> is transformed and how a its successor is obtained. These custom behaviors can be passed to <code>sum</code>
-          in the form of other functions. Here is the definition of <code>sum</code> and the redefinitions of <code>sum_integers</code> and
-          <code>sum_alternate_doubles</code> in its terms:</p>
+          the way <code>a</code> is transformed and how its successor is obtained. These custom behaviors can be passed to <code>sum</code>
+          as function arguments. Here is the definition of <code>sum</code>:</p>
         <pre>
           > var sum = 
              function (a, b, transformer, successor) {
                if a > b 0
                else transformer (a) + sum (successor (a), b, transformer, successor)
-            };
-
+            };</pre>
+        <p>Now we can redefine <code>sum_integers</code> and <code>sum_alternate_doubles</code> using <code>sum</code>:</p>
+        <pre>
           > sum_integers = 
                function (a, b) { 
                 sum (a, b, function (x) { x }, function (x) { x + 1 })
@@ -91,8 +91,8 @@
           > sum_alternate_doubles (1, 10);
           => 50</pre>
         <p><code>sum</code> is quite a powerful abstraction in that it represents the concept of summation itself rather than a
-          concrete instance of computing a particular sum. Such instances can be defined in terms of <code>sum</code>, 
-          <code>sum_integers</code> and <code>sum_alternate_doubles</code> are two examples. You can think of more, like
+          concrete instance of computing a particular sum. <code>sum_integers</code> and <code>sum_alternate_doubles</code> are two 
+          concrete instances of <code>sum</code>. You can think of more, like
           a function that sums the cubes of all numbers in a sequence: </p>
         <pre>
           > var sum_cubes = 
@@ -112,8 +112,7 @@
           > sum_cubes ([1, 2, 3]);
           => 36</pre>
         <h4>Functions as returned values</h4>
-        <p>In the previous section we used the <code>sum</code> higher-order function to define specific summation function.
-          Defining new instances of summation will be easier if we have a function that acts as a builder or <em>constructor</em>
+        <p>Defining new instances of summation will be easier if we have a function that acts as a builder or <em>constructor</em>
           of summations. Such a function will take the transformer and successor functions as arguments and return a new function
           that accept the range as additional parameters. The new function can refer to the transformer and successor implicitly
           as they are available in its defining environment. Our constructor of summations is called <code>make_summation</code>:</p>
@@ -182,7 +181,7 @@
         <p>The following example shows how to define a simple package of geometric objects.
           The package can create various types of geometric objects like circle, rectangle and square.
           These objects can be described as sharing a common base type because all of them respond to
-          a common set of messages: <code>area</code> and <code>show</code>.</p>
+          two common messages: <code>area</code> and <code>show</code>.</p>
         <pre>
 var geometry = 
     function (message) {
@@ -235,9 +234,9 @@ var geometry =
           > r.show;
           length: 3, width: 4</pre>
         <p>Invoking a non-existent message returns <code>void</code>. The <code>case</code> expressions that check the message can
-          raise an exception in its <code>else</code> clause to notify the user that the message could not be processed.</p>
+          also raise an exception in its <code>else</code> clause to notify the user that the message could not be processed.</p>
         <h4>Keyword, optional and rest parameters</h4>
-        <p>Function parameters can be marked as optional with the special marker - <code>@optional</code>.
+        <p>Function parameters can be marked as optional with the special marker <code>@optional</code>.
           A function definition can also specify a default value for the optional parameter. If no default value is
           specified, an optional parameter will contain the value <code>false</code>.</p>
         <pre>
@@ -260,7 +259,7 @@ var geometry =
           > f (10, b = 90, c = 100);
           => 200</pre>
         <p>Functions can be made to accept variable number of arguments using the <code>@rest</code> marker. All
-          the arguments that follow this marker will be packaged into a list and passed to the function: </p>
+          arguments that follow this marker will be made available to the function as elements of a list: </p>
         <pre>
           > f = function (a, b, @rest c) {
                   apply (add, append (list (a, b), c))

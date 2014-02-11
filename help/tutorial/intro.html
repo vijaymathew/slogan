@@ -15,9 +15,9 @@
         <p>A new programming language is best learned by writing programs in it. This task is especially easy and enjoyable in an 
 	  interactive language like Slogan. The Slogan REPL is the interactive front-end of the language. 
           The prompt (<code>&gt;</code>) that you see at the REPL means Slogan is waiting for your input. As you enter expressions 
-          at the REPL, the Slogan interpreter will evaluate them and display
+          at the REPL the Slogan interpreter will evaluate them and display
           their values. Then the prompt is displayed again for receiving more input. Hence the name REPL or Read-Eval-Print-Loop.
-          As you type-in code, please do remember that Slogan expects each expression to be terminated by a semicolon (<code>;</code>).</p>
+          As you type-in code, do remember that Slogan expects each expression to be terminated by a semicolon (<code>;</code>).</p>
         <p>The simplest expression you can enter at the REPL is probably an integer.</p>
         <pre>
           > 7;
@@ -137,7 +137,7 @@
           ></pre>
         <p>The last expression returns no value. (In fact, it returns a special value called <code>void</code> which has no visual 
           representation). <code>if</code> can have an optional <code>else</code> part, the expression following which is evaluated if
-          the condition evaluated to <code>false</code>.</p>
+          the condition evaluates to <code>false</code>.</p>
         <pre>
           >  if is_list (123) 1 + 2 + 3 else "not a list";
           => "not a list"
@@ -155,22 +155,34 @@
           => false
           > or (is_list (123), is_integer (123));
           => true</pre>
+        <p>Slogan also supports the logical operators <code>&&</code> (for and) and <code>||</code> (for or) commonly found in languages of
+          the C family:</p>
+        <pre>
+          > is_list ([1, 2, 3]) && is_integer (123);
+          => true
+          > is_list (123) && is_integer (123);
+          => false
+          > is_list (123) || is_integer (123);
+          => true</pre>
         <h3>Variables</h3>
         <p>Even if you have never programmed before, the concept of variables must be familiar to you. 
           They are commonly used in mathematics to represent unknown values. In the following formula,
           which computes the area of a circle, <code>r</code> is a variable that stands for the radius. The area of any
-          circle can be calculated just by replacing <code>r</code> with the actual radius:</p>
+          circle can be calculated by replacing <code>r</code> with the actual radius:</p>
         <p><code>3.14 * r * r</code></p>
-        <p>Variables play a similar role in Slogan. <code>let</code> is the expression used to introduce new local variables.
+        <p>Variables play a similar role in Slogan. The <code>let</code> expression is used to introduce new local variables.
           <code>let</code> has two parts. First comes the declarations part which binds variable names to values. It is followed by 
-          a code block which becomes the body of the <code>let</code> expression. A code block is a bunch of expressions enclosed in
-          opening and closing braces (<code> { } </code>). In the following example, the variables <code>x</code> and <code>y</code>
-          are visible only in the local <i>context</i> introduced by <code>let</code>. They are not visible globally.</p>
+          an expression which becomes the <em>body</em> of the <code>let</code>. The body is evaluated in a new <em>context</em>
+          where the variable introduced by <code>let</code> is visible. </p>
         <pre>
-          > let x = 100, y = 200 { x + y };
+          > let x = 100, y = 200 
+            x + y;
           => 300
           > x + y;
-          => error: unbound global x</pre>
+          Unbound variable x</pre>
+        <div id="note"><p><em>Note:</em>A variable name must start with an alphabet or one of the following characters: _, @, ?, $.
+            The rest of a variable name can contain numbers in addition to the previous characters. These are some examples of
+            valid variable names: <code>x, xyz, __xy@z, $age</code>.</p></div>
         <p>Global variables are introduced with the variable declaration statement. A variable declaration starts with the keyword
           <code>var</code>. It is followed by the variable name and a value assignment. </p>
         <pre>
@@ -187,10 +199,15 @@
           => 600
           > x + y;
           => 700</pre>        
-        <p>Assignment changes the value of the variable bound in the immediate context. The <code>x</code> getting assigned in the
-          <code>let</code> body is the local <code>x</code>, not the global one.</p>
+
         <div id="note"><p><em>Note:</em>Slogan is dynamically typed. It means types are 
             associated with values not variables. As the program runs, a variable can point to values of any type.</p></div>
+
+        <p>Assignment changes the value of the variable bound in the immediate context. The <code>x</code> getting assigned in the
+          <code>let</code> body is the local <code>x</code>, not the global one. Also you might have noticed that the body of the <code>let</code>
+          is enclosed in braces (<code>{ }</code>). This is known as a code block. It is used to group together expressions that should be
+          evaluated sequentially. A code block returns the value of the last expression. Moreover, <code>var</code> declarations and
+          assignments are statements and should always appear in a code block when used in a local context.</p>
         <h3>Functions</h3>
         <p>Functions are code blocks that are associated with a list of variables called <i>parameters</i>. The code of the function
           can be executed or <i>called</i> by providing values to the parameters. These values are known as <i>arguments</i>. Slogan
@@ -219,34 +236,34 @@
           function is said to be <i>recursive</i>. The following recursive function checks whether an object is the member of 
           a list or not:</p>
         <pre>
-          > var is_member = 
+          > var list_has_object = 
                   function (list, object) {
                      if is_empty (list) false
                      else if object == head (list) true
-                     else is_member (tail (list), object)
+                     else list_has_object (tail (list), object)
                   };</pre>
         <p>The only new feature this function introduces is the <code>==</code> operator. It returns <code>true</code>
           if both its operands are normally regarded as same. Let us use our new function: </p>
         <pre>
-          > is_member ([1, 2, 3], 3);
+          > list_has_object ([1, 2, 3], 3);
           => true
-          > is_member ([1, 2, 3], 4);
+          > list_has_object ([1, 2, 3], 4);
           > false</pre>
         <p>Here is an English description of what the function does: </p>
         <ol>
-          <li>if the list is empty, it is clear that <code>object</code> is not a member. Hence return <code>false</code>.</li>
-          <li>else if the first element of the list is equal to <code>object</code>, return <code>true</code>.</li>
-          <li>else ignore the first element and continue the search with the rest of the elements.</li>
+          <li>If the list is empty, it is clear that <code>object</code> is not a member, hence return <code>false</code>.</li>
+          <li>Else if the first element of the list is equal to <code>object</code>, return <code>true</code>.</li>
+          <li>Else ignore the first element and continue the search with the rest of the elements.</li>
         </ol>
-        <p>The <code>is_member</code> is also a special case of a recursive function, in that it is <i>iterative</i>.
-          This is because the recursive call to <code>is_member</code> is a <i>tail call</i>, i.e, it happens as the final
-          action that the function performs. As a consequence, <code>is_member</code> need not keep track of any state in between
-          calls to itself. As Slogan has optimized tail calls, it does not need special looping constructs like 
-          <code>for</code> and <code>while</code>. In effect, the <code>is_member</code> function is equal to the following function written 
+        <p>The <code>list_has_object</code> is also a special case of a recursive function, in that it is <i>iterative</i>.
+          This is because the recursive call to <code>list_has_object</code> is a <i>tail call</i>, i.e, it happens as the final
+          action that the function performs. As a consequence, <code>list_has_object</code> need not keep track of any state in between
+          calls to itself. As Slogan has optimized tail calls, it do not need special looping constructs like 
+          <code>for</code> and <code>while</code>. In effect, the <code>list_has_object</code> function is equal to the following function written 
           in an imperative language:</p>
         <pre>
           // C like pseudo-code.
-          bool is_member (List list, Object object) {
+          bool list_has_object (List list, Object object) {
               int len = length (list);
               for (int i = 0; i &lt; len; ++i) {
                  if (list[i] == object) {
@@ -264,6 +281,7 @@
 
           /* this is a 
              block comment. */</pre>
+        <p>Nested block comments are not supported.</p>
       </div>
     </div>
   </body>
