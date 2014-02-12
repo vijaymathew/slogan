@@ -34,19 +34,6 @@
 (define shell_command shell-command)
 (define command_line command-line)
 
-(define current_time current-time)
-(define is_time time?)
-(define time_to_seconds time->seconds)
-(define seconds_to_time seconds->time)
-(define process_times process-times)
-(define cpu_time cpu-time)
-(define real_time real-time)
-
-(define (benchmark expr-string)
-  (let ((tokenizer (make-tokenizer (open-input-string expr-string))))
-    (let ((expr (expression tokenizer)))
-      (time (eval expr)))))
-
 (define file_exists file-exists?)
 (define file_info file-info)
 (define is_file_info file-info?)
