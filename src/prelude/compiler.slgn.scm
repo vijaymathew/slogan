@@ -84,8 +84,7 @@
          (zero? scount))))
 
 (define (repl-exception-handler ex)
-  (if (error-exception? ex)
-      (display "error: "))
+  (display "error: ")
   (display-exception ex))
 
 (define (repl port #!key (prompt "slogan> "))

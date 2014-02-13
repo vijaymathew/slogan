@@ -3,6 +3,7 @@
 (define is_eq eq?)
 (define is_equal equal?)
 (define is_boolean boolean?)
+(define is_function procedure?)
 
 (define (current_exception_handler) 
   (current-exception-handler))
