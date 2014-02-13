@@ -160,7 +160,9 @@
 	(list 'lambda catch-args (if (not (void? finally-expr))
 				     (list 'begin finally-expr catch-expr)
 				     catch-expr))
-	(list 'lambda (list) (list 'begin try-expr finally-expr))))
+	(list 'lambda (list) (if (not (void? finally-expr))
+				 (list 'begin try-expr finally-expr)
+				 try-expr))))
                    
 (define (normalize-sym s)
   (if (and (list? s)
