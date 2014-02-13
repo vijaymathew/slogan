@@ -128,7 +128,7 @@
 (define string_ltrim string-ltrim)
 (define string_trim string-trim)
 (define string_map string-map)
-(define string_foreach string-foreach)
+(define string_for_each string-foreach)
 
 (define (string_split str #!optional (delim #\space))
   (if (not (or (char? delim)

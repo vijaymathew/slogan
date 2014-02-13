@@ -1,33 +1,32 @@
-var geometry = 
-    function (message) {
-        let make_circle = function (radius) {
-            function (message) {
-            case message {
-                !area: 3.14 * radius * radius
-                !show: println ("radius: ", radius)
-              }
-            }
-        },
-        make_square = function (side) {
-            function (message) {
-            case message {
-                !area: side * side
-                !show: println ("side: ", side)
-              }
-            }
-        },
-        make_rectangle = function (length, width) {
-            function (message) {
-            case message {
-                !area: length * width
-                !show: println ("length: ", length, ", width: ", width)
-              }
-            }
+var geometry = function (message) {
+    let make_circle = function (radius) {
+        function (message) {
+        case message {
+            !area: 3.14 * radius * radius
+            !show: println ("radius: ", radius)
         }
-        
-    case message {
-        !make_circle: make_circle
-        !make_square: make_square
-        !make_rectangle: make_rectangle
+        }
+    },
+    make_square = function (side) {
+        function (message) {
+        case message {
+            !area: side * side
+            !show: println ("side: ", side)
+        }
+        }
+    },
+    make_rectangle = function (length, width) {
+        function (message) {
+        case message {
+            !area: length * width
+            !show: println ("length: ", length, ", width: ", width)
+        }
+        }
     }
+    
+case message {
+    !make_circle: make_circle
+    !make_square: make_square
+    !make_rectangle: make_rectangle
+}
 };

@@ -67,7 +67,7 @@
   (let ((r (assq val reprs)))
     (if r (cdr r) val)))
 
-(define (void? val) (eq? '#!void val))
+(define (void? val) (eq? *void* val))
 
 (define (slgn-display val #!key display-string (port (current-output-port)))
   (if (not (void? val))

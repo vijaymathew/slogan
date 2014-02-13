@@ -196,11 +196,11 @@
           => "Hello, World"</pre>
         <p>Just like lists and arrays, there are mapping functions for strings. <code>string_map</code> returns a new
           string where each character is the result of applying the function to each character of the original string.
-        <code>string_foreach</code> is similar to <code>string_map</code> but is called for its side-effect:</p>
+        <code>string_for_each</code> is similar to <code>string_map</code> but is called for its side-effect:</p>
         <pre>
           > string_map ("hello", function (c) { char_upcase (c) });
           => "HELLO"
-          > string_foreach ("hello", function (c) { print (c) });
+          > string_for_each ("hello", function (c) { print (c) });
           'h''e''l''l''o'</pre>
         <p>In addition to string literals, the functions <code>string</code>, <code>string_append</code> and <code>substring</code>
           can be used to create new strings: </p>
@@ -308,10 +308,10 @@
           => green
           > table_length (fruit_colors);
           => 3
-          > table_foreach (function (key, value) { println (key, ": ", value) }, fruit_colors);
-          orange": "orange
-          apple": "green
-          apricot": "yellow </pre>
+          > table_for_each (function (key, value) { println (key, ": ", value) }, fruit_colors);
+          >> orange": "orange
+             apple": "green
+             apricot": "yellow </pre>
         <p>The table uses a hash function to convert the key into an integer index into an array. The default hash function
           is good enough for almost all built-in types like lists, strings and arrays. If you want to customize the way
           key hashes are created, you can provide the table constructor with a hash function which takes a key

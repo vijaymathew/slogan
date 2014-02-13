@@ -18,9 +18,9 @@
           > function(x) { var y = 100; x * y };
           => [function]
           > x;
-          Unbound variable: x
+          >> error: Unbound variable: x
           > y;
-          Unbound variable: y</pre>
+          >> error: Unbound variable: y</pre>
         <p>The scope of <code>x</code> and <code>y</code> are limited to the body of the function. Variables of the same name 
           can be declared and used outside the function without causing any conflicts. It is not necessary to explicitly create
           a function just to limit the scope of some variables. This can be done with code blocks:</p>
@@ -28,9 +28,9 @@
           > { var x = 10; var y = 20; x * y };
           => 200
           > x;
-          Unbound variable: x
+          >> error: Unbound variable: x
           > y;
-          Unbound variable: y</pre>
+          >> error: Unbound variable: y</pre>
         <p>Another option is to use the <code>let*</code> family of expressions. They allows a more explicit introduction of 
           the variables to be used locally.</p>
         <h3>let, letseq and letrec</h3>
@@ -125,10 +125,10 @@
           reviews all the concepts we have learned so far:</p>
         <pre>
           > raise ("oh!");
-          This object was raised: "ho!"
+          >> error: This object was raised: "ho!"
           > error ("oh!", 1, 2, 3);
-          error: oh! 1 2 3</pre>
-        <p>The <code>try-catch</code> expression lets us handle exceptions locally. The syntax of <code>try-catch</code> is:</p>
+          >> error: oh! 1 2 3</pre>
+        <p>The <code>try</code> expression lets us handle exceptions locally. The syntax of <code>try</code> is:</p>
         <pre>
           try &lt;expression&gt; catch (&lt;exception&gt;) &lt;exception_handler&gt;</pre>
         <p>If code in the <code>try</code> block raises an exception, it is passed to the <code>catch</code> block
@@ -137,6 +137,18 @@
           > try raise ("hello")
             catch (exception) println ("exception caught: ", exception);
           exception caught: hello</pre>
+        <p>A <code>try</code> expression can also have a <code>finally</code> clause which is always executed, whether or not
+          an exception is raised. So the full syntax of <code>try-catch</code> is:</p>
+        <pre>
+          try &lt;expression1&gt; catch (&lt;exception&gt;) &lt;exception_handler&gt; finally &lt;expression2&gt</pre>
+        <p>A common usage scenario of <code>finally</code> is where we want to ensure that some "cleanup" happens, even if an exception
+          happens. If <code>finally</code> is specified, <code>catch</code> becomes optional. In this case the exception is 
+          re-thrown after executing the <code>finally</code> clause:</p>
+        <pre>
+          > try raise ("oh!")
+            finally println ("[[In finally]]");
+            >> [[In finally]]
+            >> error: This object was raised: "oh!"</pre>
         <h3>Continuations</h3>
         <p>The <em>current continuation</em> at any point in the execution of a program represents the <em>rest of the program</em>.
           Thus in the expression <code>1 + 2</code>, the continuation of <code>2</code> is <code>1 + []</code>. In other words,

@@ -11,3 +11,5 @@
 
 (define *slogan-reprs* '((true . #t) (false . #f)))                         
 (define *scheme-reprs* '((#t . true) (#f . false)))
+
+(define *void* '#!void)

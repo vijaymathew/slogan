@@ -51,7 +51,7 @@ int c_add_two_ints (___slogan_obj i, ___slogan_obj j)
         <pre>
           > var mylib = ffi_open ("./libmylib.so");
           > ffi_call_void_0 (mylib, "c_hello");
-          hello from C!
+          >> hello from C!
           > ffi_call_int_2 (mylib, "c_add_two_ints", 10, 20);
           => 30
           > ffi_close (mylib);</pre>

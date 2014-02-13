@@ -1,0 +1,12 @@
+var write_hello = function (name) {
+    let f = false
+    try {
+        f = output_stream (!file, name);
+        println (to = f, "hello");
+    } catch (e) {
+        println ("error: ", exception_to_string (e))
+    } finally {
+        println ("closing stream ", f);
+        if f close_stream (f)
+    }
+};

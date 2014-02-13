@@ -24,7 +24,7 @@
 
 (define (statement tokenizer)
   (if (eq? (tokenizer 'peek) '*semicolon*)
-      '#!void
+      *void*
       (import-stmt tokenizer)))
 
 (define (assert-semicolon tokenizer)
@@ -60,7 +60,7 @@
 (define (define-stmt tokenizer)
   (if (variable? (tokenizer 'peek))
       (if (reserved-name? (tokenizer 'peek))
-          (error "reserved name cannot be used as variable name - " (tokenizer 'next))
+          (error "reserved name cannot be used as identifier - " (tokenizer 'next))
           (var-def-set (tokenizer 'next) tokenizer #t))
       (error "expected variable name instead of " (tokenizer 'peek))))
 
@@ -119,16 +119,25 @@
         (else (try-catch-expr tokenizer))))
 
 (define (try-catch-expr tokenizer)
-  (if (eq? (tokenizer 'peek) 'try)
-      (begin (tokenizer 'next)
-             (let ((try-expr (expression tokenizer)))
-               (if (not (eq? (tokenizer 'peek) 'catch))
-                   (error "expected keyword catch instead of " (tokenizer 'next)))
-               (begin (tokenizer 'next)
-                      (make-try-catch-expr try-expr (catch-args tokenizer) (expression tokenizer)))))
-      #f))
+  (cond ((eq? (tokenizer 'peek) 'try)
+         (tokenizer 'next)
+         (let ((try-expr (expression tokenizer)))
+           (case (tokenizer 'peek)
+             ((catch)
+              (make-try-catch-expr try-expr 
+                                   (catch-args tokenizer)
+                                   (expression tokenizer)
+                                   (finally-expr tokenizer)))
+             ((finally)
+              (make-try-catch-expr try-expr
+                                   '(*e*) '(raise *e*)
+                                   (finally-expr tokenizer)))
+             (else
+              (error "expected catch or finally instead of " (tokenizer 'next))))))
+        (else #f)))
 
 (define (catch-args tokenizer)
+  (tokenizer 'next)
   (if (not (eq? (tokenizer 'peek) '*open-paren*))
       (error "expected opening parenthesis instead of " (tokenizer 'next)))
   (tokenizer 'next)
@@ -140,9 +149,21 @@
     (tokenizer 'next)
     (list result)))
 
-(define (make-try-catch-expr try-expr catch-args catch-expr)
-  (list 'with-exception-catcher (list 'lambda catch-args catch-expr)
-        (list 'lambda (list) try-expr)))
+(define (finally-expr tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'finally)
+         (tokenizer 'next)
+         (expression tokenizer))
+        (else *void*)))
+      
+(define (make-try-catch-expr try-expr catch-args catch-expr finally-expr)
+  (let ((expr (list 'with-exception-catcher 
+                    (list 'lambda catch-args (if (not (void? finally-expr))
+                                                 (list 'begin finally-expr catch-expr)
+                                                 catch-expr))
+                    (list 'lambda (list) try-expr))))
+    (if (not (void? finally-expr))
+        (list 'begin expr finally-expr)
+        expr)))
                    
 (define (normalize-sym s)
   (if (and (list? s)
@@ -168,7 +189,7 @@
                  (if (eq? token '*close-brace*)
                      (begin (tokenizer 'next)
                             (if (zero? count)
-                                (append expr (list '#!void))
+                                (append expr (list *void*))
                                 expr))
                      (loop (append expr (list (expression/statement tokenizer)))
                            (+ 1 count))))))))
@@ -551,7 +572,7 @@
 
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (memq sym '(var import record if case try
+       (memq sym '(var import record if case try catch finally
                        function let letseq letrec))))
 
 (define (name? sym) 

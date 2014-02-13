@@ -23,9 +23,9 @@
 	                   };
 	  > var t = task (greeting);
 	  > task_run (t);
-	  > hello
-	  hello
-	  hello...</pre>
+	  >> hello
+	     hello
+	     hello...</pre>
 	<p>Running the thread causes the message "hello" to be printed every two seconds. <code>task_sleep</code> causes the
 	  current task to wait for the specified number of seconds and then continue. The argument of this function can be
 	  a decimal number to indicate sub-second timeouts. For example, the timeout <code>0.5</code> will cause the thread
@@ -60,9 +60,9 @@
 	    };
 
 	  > sender ("10 + 20");
-	  30
+	  >> 30
 	  > sender ("function (x) { x * x } (100)"); 
-	  1000</pre>
+	  >> 1000</pre>
       </div>
     </div>
   </body>

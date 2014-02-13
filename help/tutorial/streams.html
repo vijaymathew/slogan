@@ -18,10 +18,15 @@
           must be called on a stream to release all system resources held by it. The usual programming idiom to open, use and
           close a stream is: </p>
         <pre>
-          var s = stream (&lt;stream_type&gt;, &lt;stream_settings&gt;);
-          try { /* read/write stream s. */ }
-          catch (stream_exception) { /* handle stream_exception. */ };
-          if s close_stream (s);</pre>
+          var s = false;
+          try { 
+             s = stream (&lt;stream_type&gt;, &lt;stream_settings&gt;);
+             /* read/write stream s. */ 
+          } catch (stream_exception) { 
+            /* handle stream_exception. */ 
+          } finally {
+            if s close_stream (s);
+          }</pre>
         <p>The functions <code>with_stream</code>, <code>with_output_stream</code> and <code>with_input_stream</code> implements this
           idiom. The following sections briefly show how to use some of the most useful stream types provided by Slogan.</p>
         <h3>File streams</h3>

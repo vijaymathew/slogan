@@ -64,6 +64,6 @@
 (define table_at table-ref)
 (define table_set table-set!)
 (define table_search table-search)
-(define table_foreach table-for-each)
+(define table_for_each table-for-each)
 (define table_to_list table->list)
 (define table_copy table-copy)
