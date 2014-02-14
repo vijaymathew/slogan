@@ -191,9 +191,12 @@ var uncompress =
         <p>Lists can be sorted in both ascending and descending order using the <code>sort</code> function. It takes two
           optional arguments - <code>test</code> and <code>type</code>. <code>test</code> is the predicate used to compare
           the elements, and it defaults to <code>&lt;</code>. <code>type</code> is a symbol that identifies the sorting algorithm 
-          to use. The only algorithm currently supported is quick-sort identified by <code>!quick</code>.</p>
+          to use. The algorithms currently supported are quick-sort identified by <code>!quick</code> and merge-sort identified
+          by <code>!merge</code>. The default algorithm is quick-sort.</p>
         <pre>
           > sort ([10, 0, 100, 1, -1]);
+          => [-1, 0, 1, 10, 100]
+          > sort ([10, 0, 100, 1, -1], type = !merge);
           => [-1, 0, 1, 10, 100]
           > sort ([10, 0, 100, 1, -1], test = is_number_gt);
           => [100, 10, 1, 0, -1]</pre>
