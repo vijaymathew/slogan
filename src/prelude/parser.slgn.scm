@@ -156,13 +156,14 @@
         (else *void*)))
       
 (define (make-try-catch-expr try-expr catch-args catch-expr finally-expr)
-  (list 'with-exception-catcher 
-	(list 'lambda catch-args (if (not (void? finally-expr))
-				     (list 'begin finally-expr catch-expr)
-				     catch-expr))
-	(list 'lambda (list) (if (not (void? finally-expr))
-				 (list 'begin try-expr finally-expr)
-				 try-expr))))
+  (if (void? finally-expr)
+      (list 'with-exception-catcher 
+            (list 'lambda catch-args catch-expr)
+            (list 'lambda (list) try-expr))
+      (list 'let (list (list '*finally* (list 'lambda (list) finally-expr)))
+            (list 'with-exception-catcher 
+                  (list 'lambda catch-args (list 'begin '(*finally*) catch-expr))
+                  (list 'lambda (list) (list 'begin try-expr '(*finally*)))))))
                    
 (define (normalize-sym s)
   (if (and (list? s)
