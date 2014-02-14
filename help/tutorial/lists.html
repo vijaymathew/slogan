@@ -195,9 +195,9 @@ var uncompress =
         <pre>
           > sort ([10, 0, 100, 1, -1]);
           => [-1, 0, 1, 10, 100]
-          > sort ([10, 0, 100, 1, -1], test = is_number_lt);
+          > sort ([10, 0, 100, 1, -1], test = is_number_gt);
           => [100, 10, 1, 0, -1]</pre>
-        <p><code>is_number_lt</code> is a function that can stand-in for the numeric <code>&lt;</code> operator. It takes an
+        <p><code>is_number_gt</code> is a function that can stand-in for the numeric <code>&gt;</code> operator. It takes an
           arbitrary number of arguments. A predicate to check whether a list of integers is sorted can be defined by combining
           <code>apply</code> and <code>is_number_lt</code>:</p>
         <pre>

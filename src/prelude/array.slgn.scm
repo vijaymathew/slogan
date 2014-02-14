@@ -22,7 +22,7 @@
 (define subarray_move subvector-move!)
 (define array_shrink vector-shrink!)
 
-(define (array_sort arr #!key (test >) (type 'quick))
+(define (array_sort arr #!key (test <) (type 'quick))
   (let ((s (sort (vector->list arr) test: test type: type))
         (len (vector-length arr)))
     (let loop ((s s)

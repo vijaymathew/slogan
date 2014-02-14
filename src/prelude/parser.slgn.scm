@@ -33,7 +33,6 @@
                                (let loop ((args args))
                                  (if (not (null? args))
                                      (begin (display (car args))
-                                            (display " ")
                                             (loop (cdr args)))))
                                (if expr
                                    (begin (display ". Current parser state: ")
@@ -367,10 +366,19 @@
 (define (func-def-expr tokenizer)
   (if (eq? (tokenizer 'peek) 'function)
       (begin (tokenizer 'next)
-             (list 'lambda 
-                   (func-params-expr tokenizer)
-                   (func-body-expr tokenizer)))
+             (merge-lambda (list 'lambda (func-params-expr tokenizer)) 
+                           (func-body-expr tokenizer)))
       #f))
+
+(define (merge-lambda lambda-expr lambda-body)
+  (let loop ((lambda-expr lambda-expr)
+             (lambda-body (if (eq? (car lambda-body) 'begin)
+                              (cdr lambda-body)
+                              lambda-body)))
+    (if (null? lambda-body)
+        lambda-expr
+        (loop (append lambda-expr (list (car lambda-body)))
+              (cdr lambda-body)))))
 
 (define (func-body-expr tokenizer)
   (if (eq? (tokenizer 'peek) '*open-brace*)

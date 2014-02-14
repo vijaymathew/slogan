@@ -1,6 +1,7 @@
 // Examples of declarative programming in Slogan, mostly based 
 // on code from "Concepts, Techniques, and Models of Computer Programming".
 
+// Local functions:
 var sqrt = function (x) {
     let improve = function (guess) {
         (guess + x / guess) / 2.0
@@ -13,4 +14,40 @@ var sqrt = function (x) {
         else sqr_iter (improve (guess))
     }
     sqr_iter (1.0)
+};
+
+// Loop abstraction with higher-order function:
+var iterate = function (s, is_done, transform) {
+    if is_done (s) s
+    else iterate (transform (s), is_done, transform)
+};
+
+// sqrt using the loop abstraction:
+var sqrt_with_iter = function (x) {
+    iterate (1.0, 
+             function (guess) { (abs (x - guess * guess)) / x < 0.00001 },
+             function (guess) { (guess + x / guess) / 2.0 })
+};
+
+// Merge-sort:
+var merge = function (xs, ys) {
+    if is_empty (xs) && not (is_empty (ys)) ys
+    else if is_empty (ys) && not (is_empty (xs)) xs
+    else if head (xs) < head (ys) [head (xs) merge (tail (xs), ys)]
+    else [head (ys) merge (xs, tail (ys))]
+};
+
+var split = function (xs) {
+    letrec split_helper = function (xs, ys, zs) {
+        if is_empty (xs) [ys zs]
+        else if length (xs) == 1 [[head (xs) ys] zs]
+        else split_helper (tail (tail (xs)), [head (xs) ys], [head (tail (xs)) zs])
+    }
+    split_helper (xs, [], [])
+};
+
+var merge_sort = function (xs) {
+    if is_empty (xs) || length (xs) == 1 xs
+    else let parts = split (xs)
+    merge (merge_sort (head (parts)), merge_sort (tail (parts)))
 };

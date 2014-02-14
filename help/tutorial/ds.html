@@ -48,7 +48,7 @@
         <p>Sorting the array is simple - call <code>array_sort</code> with a function that orders pairs based on their first element
           which must be a string:</p>
         <pre>
-          > array_sort (contacts, test = function (a, b) { string_is_gt (head (a), head (b)) });
+          > array_sort (contacts, test = function (a, b) { string_is_lt (head (a), head (b)) });
           => #[["ankit" "38929839"], ["anna" "88499394"], ["caroline" "993002993"], 
                ["paul" "322288348"], ["sam" "98289182"], ["sean" "12122123"]]</pre>
         <p>Now that we have sorted the array, we can implement the <code>lookup</code> function. <code>lookup</code> does a binary search
