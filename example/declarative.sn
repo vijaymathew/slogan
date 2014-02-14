@@ -1,0 +1,16 @@
+// Examples of declarative programming in Slogan, mostly based 
+// on code from "Concepts, Techniques, and Models of Computer Programming".
+
+var sqrt = function (x) {
+    let improve = function (guess) {
+        (guess + x / guess) / 2.0
+    },
+    good_enough = function (guess) {
+        (abs (x - guess * guess)) / x < 0.00001
+    }
+    letrec sqr_iter = function (guess) {
+        if good_enough (guess) guess
+        else sqr_iter (improve (guess))
+    }
+    sqr_iter (1.0)
+};
