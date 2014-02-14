@@ -51,3 +51,18 @@ var merge_sort = function (xs) {
     else let parts = split (xs)
     merge (merge_sort (head (parts)), merge_sort (tail (parts)))
 };
+
+// Integer loops:
+var for = function (start, end, step, do) {
+    let cmpr = if step > 0 is_number_lteq else is_number_gteq
+    letrec loop = function (i) if cmpr (i, end) { do (i); loop (i + step) }
+    loop (start)
+};
+
+// List loop (same as the built-in for_each):
+var for_all = function (ls, do) {
+    if not (is_empty (ls)) {
+        do (head (ls));
+        for_all (tail (ls), do)
+    }
+};

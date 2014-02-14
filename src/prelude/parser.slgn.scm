@@ -371,14 +371,16 @@
       #f))
 
 (define (merge-lambda lambda-expr lambda-body)
-  (let loop ((lambda-expr lambda-expr)
-             (lambda-body (if (eq? (car lambda-body) 'begin)
-                              (cdr lambda-body)
-                              lambda-body)))
-    (if (null? lambda-body)
-        lambda-expr
-        (loop (append lambda-expr (list (car lambda-body)))
-              (cdr lambda-body)))))
+  (if (<= 1 (length lambda-body))
+      (append lambda-expr (list lambda-body))
+      (let loop ((lambda-expr lambda-expr)
+                 (lambda-body (if (eq? (car lambda-body) 'begin)
+                                  (cdr lambda-body)
+                                  lambda-body)))
+        (if (null? lambda-body)
+            lambda-expr
+            (loop (append lambda-expr (list (car lambda-body)))
+                  (cdr lambda-body))))))
 
 (define (func-body-expr tokenizer)
   (if (eq? (tokenizer 'peek) '*open-brace*)
