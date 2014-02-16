@@ -27,9 +27,9 @@
         <p>The <code>exe</code> keyword parameter instructs the compiler to assemble a standalone executable. This executable is
           created as "hello.run" and can be ran from the command line just like you run any other program.</p>
         <h3>FFI</h3>
-        <p>The Foreign Function Interface (FFI) is a set of functions that allows a Slogan script to load a shared library (or DLL)
-          and call the functions exported by it. Here is a simple shared library written in C and the Slogan function call
-          that invokes the functions in it:</p>
+        <p>The Foreign Function Interface (FFI) allows a Slogan script to load a shared library (or DLL)
+          and call the functions in it. Here is a simple shared library written in C and the Slogan script
+          that uses it:</p>
         <pre>/* mylib.c */
 #include &lt;stdio.h&gt;
 #include "slogan.h"

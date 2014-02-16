@@ -1,13 +1,13 @@
 var file_copy = function (src, dest) {
-    with_stream (!file, [[!path dest], [!direction !output]],
-                 function (out_stream) {
-                     with_stream (!file, [[!path src], [!direction !input], [!buffering true]],
-                                  function (in_stream) {
-                                      letrec loop = function () {
-                                          let buffer = byte_array (1024)
-                                          let r = read_bytes (buffer, 0, 1024, in_stream, 1024)
-                                          if r > 0 { write_bytes (buffer, 0, r, out_stream); loop () }
-                                      } loop()
-                                  })
-                 })
+    with_stream (!file, [[!path dest], [!direction !output]], 
+		 function (out_stream) {
+		     with_stream (!file, [[!path src], [!direction !input], [!buffering true]],
+				  function (in_stream) {
+				      letrec loop = function () {
+					  let buffer = byte_array (1024)
+					  let r = read_bytes (buffer, 0, 1024, in_stream, 1024)
+					  if r > 0 { write_bytes (buffer, 0, r, out_stream); loop () }
+				      } loop()
+				  })
+		 })
 };
