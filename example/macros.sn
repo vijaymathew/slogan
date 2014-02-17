@@ -1,0 +1,37 @@
+macro while ($cond, $body) {
+    letrec fn_loop = function () {
+        if $cond {
+            $body;
+            fn_loop ()
+        }
+    }
+    fn_loop ()
+};
+
+macro when ($cond, $body) {
+    if $cond $body
+};
+
+macro unless ($cond, $body) {
+    if not ($cond) $body
+};
+
+// testing the while loop:
+let i = 0
+while (i < 10, {
+    println (i);
+    i = i + 1
+});
+
+// testing when and unless:
+let i = 10
+when (i <= 10, println ("i <= 10"));
+
+let i = 100
+when (i <= 10, println ("i <= 10"));
+
+let i = 10
+unless (i <= 10, println ("i <= 10"));
+
+let i = 100
+unless (i <= 10, println ("i <= 10"));

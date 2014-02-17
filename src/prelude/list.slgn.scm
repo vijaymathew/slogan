@@ -161,3 +161,15 @@
       (if (zero? n)
           r
           (loop (cons fill-with r) (opr n 1))))))
+
+(define (replace lst a b #!key (test eq?))
+  (let loop ((lst lst)
+             (result '()))
+    (cond ((null? lst)
+           (reverse result))
+          ((list? (car lst))
+           (loop (cdr lst) (cons (replace (car lst) a b test: test) result)))
+          ((test a (car lst))
+           (loop (cdr lst) (cons b result)))
+          (else
+           (loop (cdr lst) (cons (car lst) result))))))
