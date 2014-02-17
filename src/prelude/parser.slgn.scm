@@ -77,6 +77,9 @@
 (define-structure *macro* params body)
 (define *macros* (make-table))
 
+(define (undef_macro name)
+  (table-set! *macros* name #f))
+
 (define (mk-macro-def macro-name tokenizer)
   (if (not (name? macro-name))
       (parser-error #f "invalid macro name: " macro-name))
@@ -110,6 +113,8 @@
   (var-def-set sym tokenizer #f))
 
 (define (var-def-set sym tokenizer def)
+  (if (table-ref *macros* sym #f)
+      (parser-error #f "cannot redefine macro " sym ". first call undef_macro on it."))
   (if (eq? (tokenizer 'peek) '*assignment*)
       (begin (tokenizer 'next)
              (list (if def 'define 'set!) sym (expression tokenizer)))
