@@ -459,14 +459,8 @@
            body)
           (else
            (loop (cdr params) 
-                 (replace body (car params) (normalize-symbol (car args)))
+                 (replace body (car params) (car args))
                  (cdr args))))))  
-
-(define (normalize-symbol sym)
-  (if (and (list? sym) 
-           (eq? (car sym) 'quote))
-      (cadr sym)
-      sym))
 
 (define (record-def-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'record)
