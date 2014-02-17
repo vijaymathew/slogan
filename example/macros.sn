@@ -1,3 +1,42 @@
+macro set_empty (x) { x = [] };
+
+// test:
+var x = 100;
+var y = 200;
+set_empty (y);
+println (x, y); // => 100 []
+
+macro ntimes (n, body) {
+    letrec fn_loop = function (x) {
+        if x >= 0 {
+            body;
+            fn_loop (x - 1)
+        }
+    }
+    fn_loop (n)
+};
+
+// test:
+ntimes (10, println ("hello, world!"));
+
+macro for (x, start, stop, body) {
+    let x = start
+    let cmpr = if stop > 0 is_number_lt else is_number_gt
+    let incr = if stop > 0 add else sub
+    letrec fn_loop = function () {
+        if cmpr (x, stop) {
+            body;
+            x = incr (x, 1);
+            fn_loop ()
+        }
+    }
+    fn_loop ()
+};
+
+// test:
+for (!i, 0, 10, println (i)); // => 0 ... 9
+for (!i, 0, -10, println (i)); // => 0 ... -9
+
 macro while ($cond, $body) {
     letrec fn_loop = function () {
         if $cond {
@@ -8,6 +47,13 @@ macro while ($cond, $body) {
     fn_loop ()
 };
 
+// test:
+let i = 0
+while (i < 10, {
+    println (i);
+    i = i + 1
+});
+
 macro when ($cond, $body) {
     if $cond $body
 };
@@ -16,14 +62,8 @@ macro unless ($cond, $body) {
     if not ($cond) $body
 };
 
-// testing the while loop:
-let i = 0
-while (i < 10, {
-    println (i);
-    i = i + 1
-});
 
-// testing when and unless:
+// test:
 let i = 10
 when (i <= 10, println ("i <= 10"));
 
