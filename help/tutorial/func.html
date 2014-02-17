@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>Functions</title>
+    <title>Functions and Macros</title>
     
     <link type="text/css" rel="stylesheet" href="../style/style.css">
   </head>
@@ -268,6 +268,57 @@ var geometry =
           => 3
           > f (1, 2, 3 ,4 ,5);
           => 15</pre>
+        <h2>Macros</h2>
+        <p>Macros are programs that write programs. A macro is a compile-time artifact that can be used to extend the language
+          with new control constructs. Let us get familiar with macros by writing a simple but useful macro. This macro
+          emulates the <code>while</code> loop that is common is most imperative languages. After adding this macro to Slogan,
+          we will be able to write expressions like:</p>
+        <pre>
+          while (some_condition_is_true, do_this);</pre>
+        <p>A solid example of using the while macro will be: </p>
+        <pre>
+          > let i = 0
+          > while (i < 10, {
+                       print (i, " ");
+                       i = i + 1
+                       });
+          >> 0 1 2 3 4 5 6 7 8 9</pre>
+        <p>Now for the macro definition itself: </p>
+        <pre>
+          > macro while ($cond, $body) {
+              letrec fn_loop = function () {
+                if $cond {
+                  $body;
+                  fn_loop ()
+              }
+            }
+            fn_loop ()
+          };</pre>
+        <p>The code in the macro definition is not executed. It is remembered by the compiler. Later when the macro is invoked
+          by name, the compiler will expand it using this code. During the expansion phase, the macro parameters will be 
+          replaced by the actual arguments. (Prefixing macro arguments with the '$' sign is just a convention. Any variable name
+          is valid here). The implementation of the <code>while</code> macro is quite simple: it creates and invokes a recursive function
+          that repeatedly executes <code>$body</code> until <code>$cond</code> evaluates to <code>true</code>.</p>
+        <p>As an extended example, let us try to emulate the <code>for</code> loop found in the C language:</p>
+        <pre>
+          > macro for (x, start, stop, body) {
+              let x = start
+              let cmpr = if stop > 0 is_number_lt else is_number_gt
+              let incr = if stop > 0 add else sub
+              letrec fn_loop = function () {
+               if cmpr (x, stop) {
+                body;
+                x = incr (x, 1);
+               fn_loop ()
+            }
+          }
+          fn_loop ()
+        };</pre>
+        <p>This macro is more advanced than <code>while</code> because it lets the user initialize the loop variable within the
+          macro itself and use that variable by name in its body:</p>
+        <pre>
+          > for (!i, 0, 10, println (i));
+          >> 0 ... 9</pre>
       </div>
     </div>
   </body>
