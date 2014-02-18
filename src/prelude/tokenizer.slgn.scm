@@ -234,6 +234,7 @@
            (char=? c #\$)
            (char=? c #\?)
            (char=? c #\!)
+           (char=? c #\~)
            (char=? c #\@))))
 
 (define (char-valid-in-name? c)

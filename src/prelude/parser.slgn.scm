@@ -452,7 +452,16 @@
 (define (expand-macro macro-name m args)
   (if (not (= (length (+macro-params m)) (length args)))
       (parser-error #f "macro " macro-name " expects exactly " (length (+macro-params m)) " arguments."))
-  (replace_all (+macro-body m) (+macro-params m) args))
+  (replace_all (replace_all (+macro-body m) (mk-eval-macro-params (+macro-params m)) args transform: eval)
+               (+macro-params m) args))
+
+(define (mk-eval-macro-params params)
+  (let loop ((params params)
+             (result '()))
+    (cond ((null? params)
+           (reverse result))
+          (else
+           (loop (cdr params) (cons (string->symbol (string-append "~" (symbol->string (car params)))) result))))))
 
 (define (record-def-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'record)

@@ -162,31 +162,31 @@
           r
           (loop (cons fill-with r) (opr n 1))))))
 
-(define (replace lst a b #!key (test eqv?))
+(define (replace lst a b #!key (test eqv?) (transform #f))
   (let loop ((lst lst)
              (result '()))
     (cond ((null? lst)
            (reverse result))
           ((list? (car lst))
-           (loop (cdr lst) (cons (replace (car lst) a b test: test) result)))
+           (loop (cdr lst) (cons (replace (car lst) a b test: test transform: transform) result)))
           ((test a (car lst))
-           (loop (cdr lst) (cons b result)))
+           (loop (cdr lst) (cons (if transform (transform b) b) result)))
           (else
            (loop (cdr lst) (cons (car lst) result))))))
 
-(define (replace_all lst alst blst #!key (test eqv?))
+(define (replace_all lst alst blst #!key (test eqv?) (transform #f))
   (let loop ((lst lst)
              (result '()))
     (cond ((null? lst)
            (reverse result))
           ((list? (car lst))
-           (loop (cdr lst) (cons (replace_all (car lst) alst blst test: test) result)))
+           (loop (cdr lst) (cons (replace_all (car lst) alst blst test: test transform: transform) result)))
           (else
            (let inner-loop ((alst alst)
                             (blst blst))
              (cond ((not (null? alst))
                     (if (test (car alst) (car lst))
-                        (loop (cdr lst) (cons (car blst) result))
+                        (loop (cdr lst) (cons (if transform (transform (car blst)) (car blst)) result))
                         (inner-loop (cdr alst) (cdr blst))))
                    (else 
                     (loop (cdr lst) (cons (car lst) result)))))))))
