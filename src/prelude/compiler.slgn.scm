@@ -18,7 +18,9 @@
 				(string-append script-name *slgn-extn*)
 				script-name)
 	(lambda (port)
-	  (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
+	  (let loop ((exprs (compile->scheme 
+                             (make-tokenizer 
+                              port compile-mode: (or assemble exe)))))
 	    (if (not (null? exprs))
 		(begin (write (car exprs) out-port)
 		       (newline out-port)
@@ -31,18 +33,25 @@
     (with-exception-catcher
      exception_handler
      (lambda ()
-       (let ((out-file-name (if is-scm script-name (string-append script-name *scm-extn*))))
-	 (if (not is-scm) (compile-slgn-script->scm-script script-name out-file-name assemble exe))
+       (let ((out-file-name 
+              (if is-scm 
+                  script-name 
+                  (string-append script-name *scm-extn*))))
+	 (if (not is-scm) 
+             (compile-slgn-script->scm-script 
+              script-name out-file-name 
+              assemble exe))
 	 (if (or assemble exe)
-	     (let ((build-cmd (if exe 
-				  (string-append *gsc-compiler* " " 
-						 (if cc_options cc_options "")
-						 " -o " (string-append script-name *exe-extn*)
-						 (if ld_options ld_options "")
-						 " -exe "
-						 (string-append *prelude-root* "/*.scm ")
-						 out-file-name)
-				  (string-append *gsc-compiler* " " out-file-name))))
+	     (let ((build-cmd 
+                    (if exe 
+                        (string-append *gsc-compiler* " " 
+                                       (if cc_options cc_options "")
+                                       " -o " (string-append script-name *exe-extn*)
+                                       (if ld_options ld_options "")
+                                       " -exe "
+                                       (string-append *prelude-root* "/*.scm ")
+                                       out-file-name)
+                        (string-append *gsc-compiler* " " out-file-name))))
 	       (if (zero? (shell-command build-cmd))
 		   (begin (delete-file out-file-name)
 			  #t)
@@ -63,19 +72,21 @@
   (let ((bcount 0)
         (pcount 0)
         (scount 0))
-    (string-foreach s (lambda (c)
-                        (cond ((char=? c #\{)
-                               (set! bcount (+ bcount 1)))
-                              ((char=? c #\})
-                               (set! bcount (- bcount 1)))
-                              ((char=? c #\()
-                               (set! pcount (+ pcount 1)))
-                              ((char=? c #\))
-                               (set! pcount (- pcount 1)))
-                              ((char=? c #\[)
-                               (set! scount (+ scount 1)))
-                              ((char=? c #\])
-                               (set! scount (- scount 1))))))
+    (string-foreach 
+     s 
+     (lambda (c)
+       (cond ((char=? c #\{)
+              (set! bcount (+ bcount 1)))
+             ((char=? c #\})
+              (set! bcount (- bcount 1)))
+             ((char=? c #\()
+              (set! pcount (+ pcount 1)))
+             ((char=? c #\))
+              (set! pcount (- pcount 1)))
+             ((char=? c #\[)
+              (set! scount (+ scount 1)))
+             ((char=? c #\])
+              (set! scount (- scount 1))))))
     (if (< bcount 0) (error "misplaced closing brace."))
     (if (< pcount 0) (error "misplaced closing parenthesis."))
     (if (< scount 0) (error "misplaced closing bracket."))    
@@ -102,7 +113,9 @@
                                         (loop (slogan tokenizer)))
                                  (eval expr)))))
                         (else (show-waiting-prompt prompt)
-                              (loop (string-append line (read-line port #\newline #t))))))))
+                              (loop (string-append 
+                                     line 
+                                     (read-line port #\newline #t))))))))
        (if (and (not (void? val)))
            (begin (slgn-display val)
                   (newline))))))

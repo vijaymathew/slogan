@@ -28,15 +28,16 @@
       (import-stmt tokenizer)))
 
 (define (parser-error expr msg #!rest args)
-  (error (with-output-to-string msg
-                             (lambda ()
-                               (let loop ((args args))
-                                 (if (not (null? args))
-                                     (begin (display (car args))
-                                            (loop (cdr args)))))
-                               (if expr
-                                   (begin (display ". Current parser state: ")
-                                          (display expr)))))))
+  (error (with-output-to-string 
+           msg
+           (lambda ()
+             (let loop ((args args))
+               (if (not (null? args))
+                   (begin (display (car args))
+                          (loop (cdr args)))))
+             (if expr
+                 (begin (display ". Current parser state: ")
+                        (display expr)))))))
 
 (define (assert-semicolon tokenizer expr)
   (let ((token (tokenizer 'peek)))
@@ -45,7 +46,9 @@
             (eof-object? token))
         (if (eq? token '*semicolon*)
             (tokenizer 'next))
-        (parser-error expr "statement or expression not properly terminated after " token))))
+        (parser-error 
+         expr "statement or expression not properly terminated after " 
+         token))))
 
 (define (import-stmt tokenizer)
   (cond ((eq? (tokenizer 'peek) 'import)
@@ -83,7 +86,10 @@
 (define (mk-macro-def macro-name tokenizer)
   (if (not (name? macro-name))
       (parser-error #f "invalid macro name: " macro-name))
-  (table-set! *macros* macro-name (make-+macro (macro-params tokenizer) (expression tokenizer)))
+  (table-set! 
+   *macros* 
+   macro-name 
+   (make-+macro (macro-params tokenizer) (expression tokenizer)))
   *void*)
 
 (define (macro-params tokenizer)
