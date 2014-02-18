@@ -296,8 +296,9 @@ var geometry =
           };</pre>
         <p>The code in the macro definition is not executed. It is remembered by the compiler. Later when the macro is invoked
           by name, the compiler will expand it using this code. During the expansion phase, the macro parameters will be 
-          replaced by the actual arguments. (Prefixing macro arguments with the '$' sign is just a convention. Any variable name
-          is valid here). The implementation of the <code>while</code> macro is quite simple: it creates and invokes a recursive function
+          replaced by the actual arguments. (Prefixing macro arguments with the '$' sign is just a convention that makes it easy
+          to identify variables that will be expanded in the body of the macro). The implementation of the <code>while</code> macro
+          is quite simple: it creates and invokes a recursive function
           that repeatedly executes <code>$body</code> until <code>$cond</code> evaluates to <code>true</code>.</p>
         <p>As an extended example, let us try to emulate the <code>for</code> loop found in the C language:</p>
         <pre>
@@ -319,6 +320,23 @@ var geometry =
         <pre>
           > for (i, 0, 10, println (i));
           >> 0 ... 9</pre>
+        <p>If a paremeter name is prefixed by a '~' symbol within the body of the macro, then that occurence of the parameter will be
+          treated specially during macro expansion. The argument bound to that variable will be evaluated during compile time and
+          the result of the evaluation is inserted instead of the expression itself: </p>
+        <pre>
+          > macro print_if ($cond, $expr) { 
+              if $cond print (~$expr)
+            };</pre>
+        <p>The macro <code>print_if</code> evaluates the value of <code>$expr</code> during compile-time and inserts that value 
+          as the argument to the call to <code>print</code>:</p>
+        <pre>
+          > print_if (10 < 100, 10 * 10);
+          >> 100
+          > print_if (10 < 100, 10 * x);
+          >> error: Unbound variable: x</pre>
+        <p>The "Unbound variable" error was thrown by the compiler, not the interpreter. The difference becomes more evident
+          if you put this macro and calls it from a script file and then try to compile that file. (See the chapter on
+          <a href="cmpl.html">compilation</a> on how to do this).</p>
       </div>
     </div>
   </body>
