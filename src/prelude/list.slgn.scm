@@ -162,7 +162,7 @@
           r
           (loop (cons fill-with r) (opr n 1))))))
 
-(define (replace lst a b #!key (test eq?))
+(define (replace lst a b #!key (test eqv?))
   (let loop ((lst lst)
              (result '()))
     (cond ((null? lst)
@@ -173,3 +173,20 @@
            (loop (cdr lst) (cons b result)))
           (else
            (loop (cdr lst) (cons (car lst) result))))))
+
+(define (replace_all lst alst blst #!key (test eqv?))
+  (let loop ((lst lst)
+             (result '()))
+    (cond ((null? lst)
+           (reverse result))
+          ((list? (car lst))
+           (loop (cdr lst) (cons (replace_all (car lst) alst blst test: test) result)))
+          (else
+           (let inner-loop ((alst alst)
+                            (blst blst))
+             (cond ((not (null? alst))
+                    (if (test (car alst) (car lst))
+                        (loop (cdr lst) (cons (car blst) result))
+                        (inner-loop (cdr alst) (cdr blst))))
+                   (else 
+                    (loop (cdr lst) (cons (car lst) result)))))))))

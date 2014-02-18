@@ -74,7 +74,7 @@
              (mk-macro-def (tokenizer 'next) tokenizer))
       (assignment-stmt tokenizer)))
 
-(define-structure *macro* params body)
+(define-structure +macro params body)
 (define *macros* (make-table))
 
 (define (undef_macro name)
@@ -83,7 +83,7 @@
 (define (mk-macro-def macro-name tokenizer)
   (if (not (name? macro-name))
       (parser-error #f "invalid macro name: " macro-name))
-  (table-set! *macros* macro-name (make-*macro* (macro-params tokenizer) (expression tokenizer)))
+  (table-set! *macros* macro-name (make-+macro (macro-params tokenizer) (expression tokenizer)))
   *void*)
 
 (define (macro-params tokenizer)
@@ -450,17 +450,9 @@
     (expand-macro macro-name m args)))
 
 (define (expand-macro macro-name m args)
-  (if (not (= (length (*macro*-params m)) (length args)))
-      (parser-error #f "macro " macro-name " expects exactly " (length (*macro*-params m)) " arguments."))
-  (let loop ((params (*macro*-params m))
-             (body (*macro*-body m))
-             (args args))
-    (cond ((null? args)
-           body)
-          (else
-           (loop (cdr params) 
-                 (replace body (car params) (car args))
-                 (cdr args))))))  
+  (if (not (= (length (+macro-params m)) (length args)))
+      (parser-error #f "macro " macro-name " expects exactly " (length (+macro-params m)) " arguments."))
+  (replace_all (+macro-body m) (+macro-params m) args))
 
 (define (record-def-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'record)
