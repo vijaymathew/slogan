@@ -66,3 +66,14 @@ var for_all = function (ls, do) {
         for_all (tail (ls), do)
     }
 };
+
+// List fold operations, same as the built-in reduce function.
+var foldl = function (lst, fn, init) {
+    if is_empty (lst) init
+    else foldl (tail (lst), fn, fn (init, head (lst)))
+};
+
+var foldr = function (lst, fn, init) {
+    foldl (reverse (lst), fn, init)
+};
+
