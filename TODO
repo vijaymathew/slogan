@@ -1,5 +1,4 @@
- * test msg library
- * test stream and the rest of libraries.
+ * test macros
  * u8array literals??
- * implement distributed VMs, probably using ZeroMQ/nanomsg
+
 
