@@ -89,8 +89,13 @@
   (table-set! 
    *macros* 
    macro-name 
-   (make-+macro (macro-params tokenizer) (expression tokenizer)))
+   (make-+macro (macro-params tokenizer) (macro-body-expr tokenizer)))
   *void*)
+
+(define (macro-body-expr tokenizer)
+  (if (eq? (tokenizer 'peek) '*open-brace*)
+      (block-expr tokenizer)
+      (expression tokenizer)))
 
 (define (macro-params tokenizer)
   (if (not (eq? '*open-paren* (tokenizer 'peek)))
