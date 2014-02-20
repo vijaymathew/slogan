@@ -18,9 +18,7 @@
 				(string-append script-name *slgn-extn*)
 				script-name)
 	(lambda (port)
-	  (let loop ((exprs (compile->scheme 
-                             (make-tokenizer 
-                              port compile-mode: (or assemble exe)))))
+	  (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
 	    (if (not (null? exprs))
 		(begin (write (car exprs) out-port)
 		       (newline out-port)
@@ -34,9 +32,7 @@
      exception_handler
      (lambda ()
        (let ((out-file-name 
-              (if is-scm 
-                  script-name 
-                  (string-append script-name *scm-extn*))))
+              (if is-scm script-name (string-append script-name *scm-extn*))))
 	 (if (not is-scm) 
              (compile-slgn-script->scm-script 
               script-name out-file-name 

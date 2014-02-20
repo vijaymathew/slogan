@@ -169,10 +169,7 @@
                        (tokenizer 'next))
                    (let ((result (expression tokenizer)))
                      (loop (tokenizer 'peek)
-                           (cons (list (if (or (list? expr)
-                                               (eq? expr 'else))
-                                           expr
-                                           (cons expr '())) 
+                           (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
                                        result) body))))))))
         (else (try-catch-expr tokenizer))))
 
@@ -182,16 +179,15 @@
          (let ((try-expr (expression tokenizer)))
            (case (tokenizer 'peek)
              ((catch)
-              (make-try-catch-expr try-expr 
-                                   (catch-args tokenizer)
-                                   (expression tokenizer)
+              (make-try-catch-expr try-expr (catch-args tokenizer) 
+                                   (expression tokenizer) 
                                    (finally-expr tokenizer)))
              ((finally)
-              (make-try-catch-expr try-expr
-                                   '(*e*) '(raise *e*)
+              (make-try-catch-expr try-expr '(*e*) '(raise *e*)
                                    (finally-expr tokenizer)))
              (else
-              (parser-error try-expr "expected catch or finally instead of " (tokenizer 'next))))))
+              (parser-error try-expr "expected catch or finally instead of " 
+                            (tokenizer 'next))))))
         (else #f)))
 
 (define (catch-args tokenizer)
@@ -239,16 +235,12 @@
   (if (not (eq? (tokenizer 'peek) '*open-brace*))
       (parser-error #f "expected block start instead of " (tokenizer 'next))
       (begin (tokenizer 'next)
-             (let loop ((expr (if use-let 
-				  (cons 'let (cons '() '()))
-				  (cons 'begin '())))
+             (let loop ((expr (if use-let (cons 'let (cons '() '())) (cons 'begin '())))
                         (count 0))
                (let ((token (tokenizer 'peek)))
                  (if (eq? token '*close-brace*)
                      (begin (tokenizer 'next)
-                            (if (zero? count)
-                                (append expr (list *void*))
-                                expr))
+                            (if (zero? count) (append expr (list *void*)) expr))
                      (loop (append expr (list (expression/statement tokenizer)))
                            (+ 1 count))))))))
 
@@ -307,9 +299,7 @@
                  (tokenizer 'next)
                  (let ((sub (eq? token '*minus*))
                        (expr (literal-expr tokenizer)))
-                   (if sub 
-                       (list '- expr)
-                       expr)))
+                   (if sub (list '- expr) expr)))
                 ((variable? token)
                  (if (slgn-symbol? token)
                      `(quote ,(scm-symbol->slgn-symbol (tokenizer 'next)))
@@ -324,8 +314,7 @@
                  (block-expr tokenizer #t))
                 ((eq? token '*hash*)
                  (array-literal tokenizer))
-                (else
-                 (parser-error expr "invalid literal expression: " (tokenizer 'next))))))))
+                (else (parser-error expr "invalid literal expression: " (tokenizer 'next))))))))
 
 (define (member-access/funcall-expr expr tokenizer)
   (cond ((eq? (tokenizer 'peek) '*period*)
@@ -333,8 +322,7 @@
                 (closure-member-access expr tokenizer)))
         ((eq? (tokenizer 'peek) '*open-paren*)
          (func-call-expr expr tokenizer))
-        (else 
-         expr)))
+        (else expr)))
 
 (define (list-literal tokenizer)
   (tokenizer 'next)
@@ -345,13 +333,11 @@
           (begin (tokenizer 'next)
                  (reverse result))
           (let ((expr (expression tokenizer)))
-            (let ((pl (if first
-                          (let ((t (tokenizer 'peek)))
-                            (not (or (eq? t '*comma*)
-                                     (eq? t '*close-bracket*))))
+            (let ((pl (if first (let ((t (tokenizer 'peek)))
+                                  (not (or (eq? t '*comma*)
+                                           (eq? t '*close-bracket*))))
                           #f)))
-              (if pl
-                  (pair-literal expr tokenizer)
+              (if pl (pair-literal expr tokenizer)
                   (begin (assert-comma-separator tokenizer '*close-bracket*)
                          (loop (cons expr result) #f)))))))))
 
@@ -371,10 +357,9 @@
                (cond ((eq? token '*close-bracket*)
                       (tokenizer 'next)
                       (reverse expr))
-                     (else 
-                      (let ((e (expression tokenizer)))
-                        (assert-comma-separator tokenizer '*close-bracket*)
-                        (loop (cons e expr) (tokenizer 'peek)))))))
+                     (else (let ((e (expression tokenizer)))
+                             (assert-comma-separator tokenizer '*close-bracket*)
+                             (loop (cons e expr) (tokenizer 'peek)))))))
       (parser-error #f "invalid start of array literal. " (tokenizer 'next))))
 
 (define (let-expr tokenizer)
@@ -397,8 +382,7 @@
 		       (else (append (list letkw) 
 				     (cons (append result (list (list sym expr))) 
 					   (list (func-body-expr tokenizer))))))))))
-	  (else 
-	   (func-call-expr (literal-expr tokenizer) tokenizer)))))
+	  (else (func-call-expr (literal-expr tokenizer) tokenizer)))))
 
 (define (letkw? sym)
   (if (and (symbol? sym)
@@ -446,7 +430,8 @@
                (if (eq? (tokenizer 'peek) '*close-paren*)
                    (begin (tokenizer 'next) 
                           expr)
-                   (parser-error expr "expected closing-parenthesis after function argument list instead of " (tokenizer 'next)))))
+                   (parser-error expr "expected closing-parenthesis after function argument list instead of " 
+                                 (tokenizer 'next)))))
             (else func-val))))
 
 (define (macro-call-expr macro-name tokenizer)
@@ -471,8 +456,8 @@
              (result '()))
     (cond ((null? params)
            (reverse result))
-          (else
-           (loop (cdr params) (cons (string->symbol (string-append "~" (symbol->string (car params)))) result))))))
+          (else (loop (cdr params) (cons (string->symbol (string-append "~" (symbol->string (car params)))) 
+                                         result))))))
 
 (define (record-def-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'record)
@@ -495,19 +480,16 @@
 		     ((eq? token '*close-paren*)
 		      (tokenizer 'next)
 		      (def-struct-expr name (reverse members)))
-		     (else
-		      (parser-error #f "invalid record specification. " (tokenizer 'next))))))
+		     (else (parser-error #f "invalid record specification. " (tokenizer 'next))))))
       (parser-error #f "expected record member specification. " (tokenizer 'next))))
 
 (define (def-struct-expr name members)
-  (append (list 'begin
-		(append (list 'define-structure name) members))
+  (append (list 'begin (append (list 'define-structure name) members))
 	  (mk-struct-accessors/modifiers name members)))
 
 (define (mk-record-constructor recname members)
   (list 'lambda (append (list '#!key) members)
-        (cons (string->symbol (string-append "make-" recname))
-              members)))
+        (cons (string->symbol (string-append "make-" recname)) members)))
 
 (define (mk-struct-accessors/modifiers name members)
   (let ((sname (symbol->string name)))
@@ -583,8 +565,10 @@
                         (if (eq? token '*close-paren*)
                             (begin (tokenizer 'next)
                                    (reverse params))
-                            (parser-error #f "expected closing-parenthesis after parameter list instead of " (tokenizer 'next))))))))
-      (parser-error #f "expected opening-parenthesis at the start of parameter list instead of " (tokenizer 'next))))
+                            (parser-error #f "expected closing-parenthesis after parameter list instead of " 
+                                          (tokenizer 'next))))))))
+      (parser-error #f "expected opening-parenthesis at the start of parameter list instead of " 
+                    (tokenizer 'next))))
 
 (define (param-directive? sym)
   (memq sym '(@optional @key @rest)))

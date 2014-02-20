@@ -77,3 +77,9 @@ var foldr = function (lst, fn, init) {
     foldl (reverse (lst), fn, init)
 };
 
+var good_reverse = function (lst) {
+    letrec rev = function (lst, acc) {
+        if is_empty (lst) acc
+        else rev (tail (lst), pair (head (lst), acc))
+    } rev (lst, [])
+};
