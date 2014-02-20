@@ -4,6 +4,8 @@
 (define is_integer integer?)
 (define is_real real?)
 (define is_zero zero?)
+(define is_even even?)
+(define is_odd odd?)
 (define integer_to_char integer->char)
 (define exact_to_inexact exact->inexact)
 (define inexact_to_exact inexact->exact)

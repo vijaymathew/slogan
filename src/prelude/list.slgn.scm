@@ -90,6 +90,16 @@
                (loop (cdr ls) result)
                (loop (cdr ls) (cons (car ls) result)))))))
 
+(define (remove_if ls predic)
+  (let loop ((ls ls)
+             (result '()))
+    (cond ((null? ls)
+           (reverse result))
+          (else
+           (if (predic (car ls))
+               (loop (cdr ls) result)
+               (loop (cdr ls) (cons (car ls) result)))))))
+
 (define (reduce ls fn #!key initial_value)
   (if (null? ls)
       ls
