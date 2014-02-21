@@ -209,3 +209,24 @@
               (null? lst))
           (if neg (reverse lst) lst)
           (loop (cdr lst) (- n 1))))))
+
+(define (is_all lst predic)
+  (if (null? lst)
+      #f
+      (let loop ((lst lst))
+        (cond ((null? lst)
+               #t)
+              ((not (predic (car lst)))
+               #f)
+              (else (loop (cdr lst)))))))
+
+(define (is_any lst predic)
+  (if (null? lst)
+      #f
+      (let loop ((lst lst))
+        (cond ((null? lst)
+               #f)
+              ((predic (car lst))
+               #t)
+              (else (loop (cdr lst)))))))
+                    
