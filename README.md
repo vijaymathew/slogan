@@ -10,13 +10,15 @@ Follow these steps to build Slogan:
 
     $ ./configure-platform
     $ make
-    $ cd src; ./slogan
+    $ sudo make install
+    $ slogan
 
-The last step will land you in the Slogan REPL.
+The last step will land you in the Slogan REPL. (If you don't want to install Slogan,
+you can just run `make' as the current user and launch the REPL by executing `./src/slogan').
 For the Slogan compiler to work properly, you have to point the environment variable 
-`SLOGAN_ROOT' to this folder:
+`SLOGAN_ROOT' to this directory:
 
-    $ export SLOGAN_ROOT=/full_path_to_the_slogan_folder
+    $ export SLOGAN_ROOT=/home/me/dir_where_i_checked_out_slogan
 
 Slogan is still in the very early stages of design and your feedback is highly valued.
 Please send your comments, suggestions and bug reports to vijay.the.lisper@gmail.com.
