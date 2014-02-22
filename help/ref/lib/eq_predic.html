@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Equivalence predicates</title>
+
+    <link type="text/css" rel="stylesheet" href="../../style/style.css">
+  </head>
+
+  <body>
+
+    <div id="page" class="wide">
+      <div class="container">
+
+	<h2>Equivalence predicates</h2>
+	<p>A predicate is a function that always returns a boolean value, i.e either <code>true</code> or <code>false</code>.
+	  There are three equivalence predicates in Slogan - <code>is_eqv</code>, <code>is_eq</code> and <code>is_equal</code>.</p>
+	<h5>is_eqv (obj1, obj2)</h5>
+	<p><code>is_eqv</code> returns <code>true</code> if:</p>
+	<p><ul>
+	    <li><code>obj1</code> and <code>obj2</code> are both <code>true</code> or both <code>false</code>.</li>
+	    <li><code>obj1</code> and <code>obj2</code> are both symbols with the same character sequence.</li>
+	    <li><code>obj1</code> and <code>obj2</code> are both numbers that are numerically equal.</li>
+	    <li><code>obj1</code> and <code>obj2</code> are both the same characters.</li>
+	    <li><code>obj1</code> and <code>obj2</code> are both empty lists.</li>
+	    <li><code>obj1</code> and <code>obj2</code> both denote the same location in memory.</li>
+	  </ul></p>
+	<code>is_eqv</code> will return <code>false</code> in all other cases. The equality operator (<code>==</code>) follow the
+	same rules as <code>is_eqv</code> while comparing two objects.</p>
+      </div>
+    </div>
+  </body>
+</html>
