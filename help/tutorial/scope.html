@@ -114,6 +114,50 @@
               else: &lt;else-expression&gt;
           }</pre>
         <p>Case values can be of any type for which the equality operator (<code>==</code>) works.</p>
+	<h4>When to use code blocks?</h4>
+	<p>A code block becomes necessary in the body of a <code>let*</code> or an <code>if</code> when it contains more
+	  than one expression. A code block is needed also when the body contain statements like a variable definition, assignment or a 
+	  record definition. (The same rules apply to the body of a function definition as well).</p>
+	<p>In the following <code>let</code>, the code block is necessary because of the definition of <code>y</code>: </p>
+	<pre>
+	  > let x = 10
+	    { 
+	      var y = 100;
+	      x + y 
+	    };
+	  => 110</pre>
+	<p>A more idiomatic way to write this code is:</p>
+	<pre>
+	  > let x = 10
+	    let y = 100
+	     x + y;
+	  => 110 </pre>
+	<p>Another scenario where a code block becomes necessary is when the expression in the body starts with an opening parenthesis:</p>
+	<pre>
+	  > if true 3 + 4 * 5;
+	  => 23
+	  > if true (3 + 4) * 5;
+	  >> error: invalid literal expression: *semicolon*
+	  > if true { (3 + 4) * 5 };
+	  => 35</pre>
+	<p>As functions are first-class objects in Slogan any expression can evaluate to a function. So if an expression is followed by
+	  opening parenthesis, Slogan will try to interpret it as a list of arguments and apply it to the previous value. This makes
+	  writing expressions like these possible:</p>
+	<pre>
+	  > (function (x) x * x) (100);
+	  => 10000
+	  > (function (x) function (y) x + y) (10)(20);
+	  => 30</pre>
+	<p>This feature also leads to the slight inconvenience that we observed with the second <code>if</code> expression above.
+	  The problem could have been solved by adding one more keyword to <code>if</code> and <code>let</code> as follows:
+	  <pre>
+	    let &lt;declarations&gt; in
+	        &lt;body&gt;
+
+	    if &lt;condition&gt; then
+	       &lt;expression&gt;</pre>
+	  <p>But to keep the number of reserved words to the minimum and because the problem
+	    could be cleanly solved with code blocks, I resisted the temptation to extend the syntax of these constructs.</p>
         <h3>Exceptions</h3>
         <p>Exceptions are events that change the normal flow of program execution. They are commonly used to raise a signal
           when things cannot proceed as expected. For example, a program to download some resource from a web server may raise
