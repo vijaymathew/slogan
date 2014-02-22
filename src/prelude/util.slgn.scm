@@ -1,10 +1,22 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+(define (scm-complex->slgn-repr val)
+  (with-output-to-string 
+   ""
+   (lambda ()
+     (display (real-part val))
+     (display "#")
+     (display (imag-part val)))))
+
 (define (scm-repr->slgn-repr val)
   (cond ((integer? val)
          val)
-        ((and (real? val) (exact? val))
-         (exact->inexact val))
+        ((real? val) 
+	 (if (exact? val)
+	     (exact->inexact val)
+	     val))
+	((complex? val)
+	 (scm-complex->slgn-repr val))
         ((or (number? val) 
 	     (string? val)
 	     (char? val))

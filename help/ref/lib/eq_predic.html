@@ -26,8 +26,53 @@
 	    <li><code>obj1</code> and <code>obj2</code> are both empty lists.</li>
 	    <li><code>obj1</code> and <code>obj2</code> both denote the same location in memory.</li>
 	  </ul></p>
-	<code>is_eqv</code> will return <code>false</code> in all other cases. The equality operator (<code>==</code>) follow the
-	same rules as <code>is_eqv</code> while comparing two objects.</p>
+	<p><code>is_eqv</code> will return <code>false</code> in all other cases. The equality operator (<code>==</code>) follow the
+	  same rules as <code>is_eqv</code> while comparing two objects.</p>
+	<pre>
+	  > is_eqv (!hello, !hello);
+	  => true
+	  > is_eqv (!hello, !Hello);
+	  => false
+	  > is_eqv ('a', 'a');
+	  => true
+	  > is_eqv (19899188992993999494949, 19899188992993999494949);
+	  => true
+	  > var f = function (x) x + x;
+	  > var g = f;
+	  > is_eqv (f, g);
+	  =>true
+	  > f == g; // the == operator has the same semantics as is_eqv.
+	  => true</pre>
+	<h5>is_eq (obj1, obj2)</h5>
+	<p><code>is_eq</code> has the same behavior as <code>is_eqv</code> in most cases. But <code>is_eq</code> is more
+	  efficient in that it always performs a pointer comparison. This is evident while comparing arbitrary precision
+	  numbers:</p>
+	<pre>
+	  > is_eq (10, 10);
+	  => true
+	  > is_eq (1000000000000000, 1000000000000000); // the two arbitrary precision numbers are represented by two separate objects.
+	  => false
+	  > is_eqv (1000000000000000, 1000000000000000); // unlike is_eq, is_eqv looks at the structure of numbers.
+	  => true</pre>
+	<h5>is_equal (obj1, obj2)</h5>
+	<p><code>is_equal</code> recursively compares the contents of pairs, arrays and strings applying <code>is_eqv</code> to each element:</p>
+	<pre>
+	> is_equal ("hello", "hello");
+	=> true
+	> is_equal ("hello", "Hello");
+	=> false
+	> is_equal ([1, 2, 'c'], [1, 2, 'c']);
+	=> true
+	> is_equal ([1, 2, "hello"], [1, 2, "hello"]);
+	=> true
+	> is_equal ([1, 2, [3, 4]], [1, 2, [3, 4]]);
+	=> true
+	> is_equal ([1, 2, [3, 4]], [1, 2, [3, 5]]);
+	=>false</pre>
+	<p>Other than the three predicates described here there are other comparison predicates that works with specific
+	  data types. These functions are described in the sections specific to each data type. 
+	  The specification of the standard equivalence predicates are loosely based 
+	  on <a href="http://www.schemers.org/Documents/Standards/R5RS/HTML/">R5RS</a>.</p>
       </div>
     </div>
   </body>

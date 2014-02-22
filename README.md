@@ -20,5 +20,4 @@ For the Slogan compiler to work properly, you have to point the environment vari
 
     $ export SLOGAN_ROOT=/home/me/dir_where_i_checked_out_slogan
 
-Slogan is still in the very early stages of design and your feedback is highly valued.
 Please send your comments, suggestions and bug reports to vijay.the.lisper@gmail.com.

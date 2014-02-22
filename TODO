@@ -1,3 +1,8 @@
+
+ * Add fixnum and flonum functions.
+ * Complete "Numerical operations" doc.
+
+
  * test macros
  * u8array literals??
 
