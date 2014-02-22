@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -126,20 +127,6 @@
 	      x + y 
 	    };
 	  => 110</pre>
-	<p>A more idiomatic way to write this code is:</p>
-	<pre>
-	  > let x = 10
-	    let y = 100
-	     x + y;
-	  => 110 </pre>
-	<p>Another scenario where a code block becomes necessary is when the expression in the body starts with an opening parenthesis:</p>
-	<pre>
-	  > if true 3 + 4 * 5;
-	  => 23
-	  > if true (3 + 4) * 5;
-	  >> error: invalid literal expression: *semicolon*
-	  > if true { (3 + 4) * 5 };
-	  => 35</pre>
 	<p>As functions are first-class objects in Slogan any expression can evaluate to a function. So if an expression is followed by
 	  opening parenthesis, Slogan will try to interpret it as a list of arguments and apply it to the previous value. This makes
 	  writing expressions like these possible:</p>
@@ -148,8 +135,15 @@
 	  => 10000
 	  > (function (x) function (y) x + y) (10)(20);
 	  => 30</pre>
-	<p>This feature also leads to the slight inconvenience that we observed with the second <code>if</code> expression above.
-	  The problem could have been solved by adding one more keyword to <code>if</code> and <code>let</code> as follows:
+	<p>This feature also leads to the slight inconvenience that you can observe with the second <code>if</code> expression below:</p>
+	<pre>
+	  > if true 3 + 4 * 5;
+	  => 23
+	  > if true (3 + 4) * 5;
+	  >> error: invalid literal expression: *semicolon*
+	  > if true { (3 + 4) * 5 };
+	  => 35</pre>
+	<p>The problem could have been solved by adding one more keyword to <code>if</code> and <code>let</code> as follows:</p>
 	  <pre>
 	    let &lt;declarations&gt; in
 	        &lt;body&gt;
