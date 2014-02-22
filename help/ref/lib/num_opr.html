@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>Numerical operations</title>
+    <title>Numbers</title>
 
     <link type="text/css" rel="stylesheet" href="../../style/style.css">
   </head>
@@ -13,8 +13,51 @@
     <div id="page" class="wide">
       <div class="container">
 
-	<h2>Numerical operations</h2>
-	<p></p>
+	<h2>Numbers</h2>
+	<p>Numerical operations are fundamental to most computational work. Slogan abstracts the representation of numbers
+	  while trying to keep numerical functions as efficient as possible. A Slogan number is either an <em>integer</em>,
+	  a <em>real</em> or a <em>complex</em>. An implementation of Slogan should support these three basic number types. 
+	  Integers should be of arbitrary precision.
+	  For the real type, an implementation is free to choose the exactness with which they are represented. There are no restrictions on the
+	  internal representation of numbers. An implementation may choose to use the machine dependent integer and real number representation
+	  wherever possible. In such cases, the <em>fixnum</em> and <em>flonum</em> functions allow the direct manipulation of machine dependent integer
+	  and real values respectively.</p>
+
+	<h3>Syntax of numerical constants</h3>
+	<p>Digits in the range <code>0-9</code> makes up an integer. The following are all valid integer constants:</p>
+	<pre>
+	10;
+	3499090190;
+	323921345749875598743958743598734593475934759345;</pre>	
+	<p>A number may be written in binary, octal, decimal, or hexadecimal by the use of a radix prefix. The radix prefixes are
+	  <code>0b</code> (binary), <code>0o</code> (octal), <code>0d</code> (decimal) and <code>0x</code> (hexadecimal). Here is the
+	  number <code>15</code> written using the different radix prefixes:</p>
+	<pre>
+	  > 0d15;
+	  => 15
+	  > 0b1111;
+	  => 15
+	  > 0o17;
+	  => 15
+	  > 0xf;
+	  => 15 </pre>
+	<p>Floating-point constants are usually written in decimal notation. Scientific notation may be used by adding 
+	  e or E followed by a decimal exponent:</p>
+	<pre>
+	  > 1.23
+	  => 1.23
+	  > 1.23e2
+	  => 123.</pre>
+	<p>A complex number is written with the real part and the imaginary part separated by a <code>#</code> symbol:</p>
+	<pre>
+	  > 3#4;
+	  => 3#4
+	  > real_part (3#4);
+	  => 3
+	  > imag_part (3#4);
+	  => 4</pre>
+
+	<h3>Basic arithmetics</h3>
       </div>
     </div>
   </body>

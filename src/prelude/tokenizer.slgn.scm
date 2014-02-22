@@ -200,6 +200,8 @@
                  ((char=? c #\b) "#b")
                  ((char=? c #\o) "#o")
                  ((char=? c #\d) "#d")
+                 ((char=? c #\e) "#e")
+		 ((char=? c #\i) "#i")
                  (else #f)))))
     (if (not radix-prefix)
 	(read-number port #\0)
