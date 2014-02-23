@@ -57,7 +57,50 @@
 	  > imag_part (3#4);
 	  => 4</pre>
 
-	<h3>Basic arithmetics</h3>
+	<h3>Predicates</h3>
+	<h5>is_number (obj)</h5>
+	<h5>is_integer (obj)</h5>
+	<h5>is_real (obj)</h5>
+	<h5>is_complex (obj)</h5>
+	<p>These predicates can be applied to any object. They return <code>true</code> if the object is a numeric value of
+	  the named type.</p>
+	<pre>
+	  > is_number (10#45);
+	  => true
+	  > is_integer (10#45);
+	  => false
+	  > is_real (10#45);
+	  => false
+	  > is_real (10.45);
+	  => true
+	  > is_complex (10#45);
+	  => true
+	  > is_complex (10.45); // complex is more generic than real.
+	  => true</pre>
+	<h5>is_number_eq (n1, n2, ..., nN)</h5>
+	<h5>is_number_lt (n1, n2, ..., nN)</h5>
+	<h5>is_number_gt (n1, n2, ..., nN)</h5>
+	<h5>is_number_lteq (n1, n2, ..., nN)</h5>
+	<h5>is_number_gteq (n1, n2, ..., nN</h5>
+	<p>These functions return <code>true</code> if their arguments are (respectively): equal, monotonically increasing, 
+	  monotonically decreasing, monotonically nondecreasing, or monotonically nonincreasing. The implementation dependent
+	  exactness of numeric representation can influence the result of these functions. The operators <code>==</code>,
+	  <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code> and <code>&gt;=</code> produce the same results as these 
+	  functions when called with two arguments.</p>
+	<pre>
+	  > is_number_eq (10, 10);
+	  => true
+	  > is_number_eq (10, 10.0);
+	  => true
+	  > is_number_eq (10, 10.01);
+	  => false
+	  > is_number_lt (10, 10.01, 10.001);
+	  => false
+	  > is_number_lt (10, 10.01, 10.02);
+	  => true
+	  > is_number_lt (10, 10.01, 10.02, 10.003);
+	  => false</pre>
+	<h3>Basic arithmetic</h3>
       </div>
     </div>
   </body>

@@ -8,6 +8,8 @@
 (define is_zero zero?)
 (define is_even even?)
 (define is_odd odd?)
+(define is_positive positive?)
+(define is_negative negative?)
 
 (define integer_to_char integer->char)
 (define exact_to_inexact exact->inexact)
