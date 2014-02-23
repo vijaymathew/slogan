@@ -10,6 +10,17 @@
 (define is_odd odd?)
 (define is_positive positive?)
 (define is_negative negative?)
+(define is_nan nan?)
+
+(define (is_positive_infinity n)
+  (if (not (real? n))
+      (##fail-check-real 1 is_positive_infinity n))
+  (eq? *pos-inf-sym* (string->symbol (number->string n))))
+
+(define (is_negative_infinity n)
+  (if (not (real? n))
+      (##fail-check-real 1 is_negative_infinity n))
+  (eq? *neg-inf-sym* (string->symbol (number->string n))))
 
 (define integer_to_char integer->char)
 (define exact_to_inexact exact->inexact)

@@ -48,6 +48,13 @@
 	  => 1.23
 	  > 1.23e2
 	  => 123.</pre>
+	<p>The following real constants represent values significant for IEEE floating point conformant arithmetic:</p>
+	<p><ul>
+	    <li><code>+inf.0</code> - positive infinity.</li>
+	    <li><code>-inf.0</code> - negative infinity.</li>
+	    <li><code>+nan.0</code> - not-a-number.</li>
+	    <li><code>-0.</code> - negative zero (<code>0.</code> is the positive zero).</li>
+	  </ul></p>
 	<p>A complex number is written with the real part and the imaginary part separated by a <code>#</code> symbol:</p>
 	<pre>
 	  > 3#4;
@@ -56,7 +63,6 @@
 	  => 3
 	  > imag_part (3#4);
 	  => 4</pre>
-
 	<h3>Predicates</h3>
 	<h5>is_number (obj)</h5>
 	<h5>is_integer (obj)</h5>
@@ -83,7 +89,7 @@
 	<h5>is_number_lteq (n1, n2, ..., nN)</h5>
 	<h5>is_number_gteq (n1, n2, ..., nN</h5>
 	<p>These functions return <code>true</code> if their arguments are (respectively): equal, monotonically increasing, 
-	  monotonically decreasing, monotonically nondecreasing, or monotonically nonincreasing. The implementation dependent
+	  monotonically decreasing, monotonically non-decreasing, or monotonically non-increasing. The implementation dependent
 	  exactness of numeric representation can influence the result of these functions. The operators <code>==</code>,
 	  <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code> and <code>&gt;=</code> produce the same results as these 
 	  functions when called with two arguments.</p>
@@ -100,6 +106,15 @@
 	  => true
 	  > is_number_lt (10, 10.01, 10.02, 10.003);
 	  => false</pre>
+	<h5>is_zero (n)</h5>
+	<h5>is_positive (n)</h5>
+	<h5>is_negative (n)</h5>
+	<h5>is_odd (n)</h5>
+	<h5>is_even (n)</h5>
+	<h5>is_nan (n)</h5>
+	<h5>is_positive_infinity (n)</h5>
+	<h5>is_negative_infinity (n)</h5>
+	<p>These functions check a number for a particular property identified by the function name.</p>
 	<h3>Basic arithmetic</h3>
       </div>
     </div>

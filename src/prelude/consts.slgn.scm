@@ -13,3 +13,6 @@
 (define *scheme-reprs* '((#t . true) (#f . false)))
 
 (define *void* '#!void)
+
+(define *pos-inf-sym* '|+inf.0|)
+(define *neg-inf-sym* '|-inf.0|)
