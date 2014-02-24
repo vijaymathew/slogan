@@ -198,13 +198,13 @@ var uncompress =
           => [-1, 0, 1, 10, 100]
           > sort ([10, 0, 100, 1, -1], type = !merge);
           => [-1, 0, 1, 10, 100]
-          > sort ([10, 0, 100, 1, -1], test = is_number_gt);
+          > sort ([10, 0, 100, 1, -1], test = number_is_gt);
           => [100, 10, 1, 0, -1]</pre>
-        <p><code>is_number_gt</code> is a function that can stand-in for the numeric <code>&gt;</code> operator. It takes an
+        <p><code>number_is_gt</code> is a function that can stand-in for the numeric <code>&gt;</code> operator. It takes an
           arbitrary number of arguments. A predicate to check whether a list of integers is sorted can be defined by combining
-          <code>apply</code> and <code>is_number_lt</code>:</p>
+          <code>apply</code> and <code>number_is_lt</code>:</p>
         <pre>
-          > var is_sorted = function (lst) { apply (is_number_lt, lst) };
+          > var is_sorted = function (lst) { apply (number_is_lt, lst) };
           > is_sorted (sort ([10, 0, 100, 1, -1]));
           => true</pre>
         <h4>Example: Sets</h4>

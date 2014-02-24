@@ -88,11 +88,11 @@
 	  > is_complex (10.45); // complex is more generic than real.
 	  => true</pre>
 
-	<h5>is_number_eq (n1, n2, ..., nN)</h5>
-	<h5>is_number_lt (n1, n2, ..., nN)</h5>
-	<h5>is_number_gt (n1, n2, ..., nN)</h5>
-	<h5>is_number_lteq (n1, n2, ..., nN)</h5>
-	<h5>is_number_gteq (n1, n2, ..., nN</h5>
+	<h5>number_is_eq (n1, n2, ..., nN)</h5>
+	<h5>number_is_lt (n1, n2, ..., nN)</h5>
+	<h5>number_is_gt (n1, n2, ..., nN)</h5>
+	<h5>number_is_lteq (n1, n2, ..., nN)</h5>
+	<h5>number_is_gteq (n1, n2, ..., nN</h5>
 
 	<p>These functions return <code>true</code> if their arguments are (respectively): equal, monotonically increasing, 
 	  monotonically decreasing, monotonically non-decreasing, or monotonically non-increasing. The implementation dependent
@@ -101,17 +101,17 @@
 	  functions when called with two arguments.</p>
 
 	<pre>
-	  > is_number_eq (10, 10);
+	  > number_is_eq (10, 10);
 	  => true
-	  > is_number_eq (10, 10.0);
+	  > number_is_eq (10, 10.0);
 	  => true
-	  > is_number_eq (10, 10.01);
+	  > number_is_eq (10, 10.01);
 	  => false
-	  > is_number_lt (10, 10.01, 10.001);
+	  > number_is_lt (10, 10.01, 10.001);
 	  => false
-	  > is_number_lt (10, 10.01, 10.02);
+	  > number_is_lt (10, 10.01, 10.02);
 	  => true
-	  > is_number_lt (10, 10.01, 10.02, 10.003);
+	  > number_is_lt (10, 10.01, 10.02, 10.003);
 	  => false</pre>
 
 	<h5>is_zero (n)</h5>
@@ -160,7 +160,7 @@
         <h5>sub (n1, n2, ..., nN)</h5>
         <h5>div (n1, n2, ..., nN)</h5>
         
-        <p>With two or more arguments, these procedures return the difference or quotient of their arguments, associating to the left. 
+        <p>With two or more arguments, these functions return the difference or quotient of their arguments, associating to the left. 
           With one argument, however, they return the additive or multiplicative inverse of their argument.</p>
 
         <pre>
@@ -182,8 +182,8 @@
         <h5>quotient (n1, n2)</h5>
         <h5>remainder (n1, n2)</h5>
         <h5>modulo (n1, n2)</h5>
-        <p>These procedures implement number-theoretic (integer) division. <code>n2</code> should be non-zero. 
-          All three procedures return integers. If <code>n1 / n2</code> is an integer:</p>
+        <p>These functions implement number-theoretic (integer) division. <code>n2</code> should be non-zero. 
+          All three functions return integers. If <code>n1 / n2</code> is an integer:</p>
         <pre>
           quotient (n1, n2)  ==> n1 / n2
           remainder (n1, n2) ==> 0
@@ -244,7 +244,7 @@
         <h5>ceiling (x)</h5>
         <h5>truncate (x)</h5>
         <h5>round (x)</h5>
-        <p>These procedures return integers. <code>floor</code> returns the largest integer not larger than <code>x</code>. 
+        <p>These functions return integers. <code>floor</code> returns the largest integer not larger than <code>x</code>. 
           <code>ceiling</code> returns the smallest integer not smaller than <code>x</code>. 
           <code>truncate</code> returns the integer closest to <code>x</code> whose absolute value is not larger than the absolute 
           value of <code>x</code>. <code>round</code> returns the closest integer to <code>x</code>, rounding to even when 
@@ -373,7 +373,7 @@
 
         <h5>first_bit_set (n)</h5>
         <p>Returns the bit index of the least significant bit of <code>n</code> equal to 1 (which is also the number of 0 bits 
-          that are below the least significant 1 bit). This procedure returns -1 when <code>n</code> is zero.</p>
+          that are below the least significant 1 bit). This function returns -1 when <code>n</code> is zero.</p>
 
         <h5>extract_bit_field (n1, n2, n3)</h5>
         <h5>is_bit_field_set (n1, n2, n3)</h5>
@@ -475,11 +475,11 @@
         <h5>fxmult (n1, n2, ..., nN)</h5>
         <h5>fxadd (n1, n2, ..., nN)</h5>
         <h5>fxsub (n1, n2, ..., nN)</h5>
-        <h5>is_fxlt (n1, n2, ..., nN)</h5>
-        <h5>is_fxlteq (n1, n2, ..., nN)</h5>
-        <h5>is_fxeq (n1, n2, ..., nN)</h5>
-        <h5>is_fxgt (n1, n2, ..., nN)</h5>
-        <h5>is_fxgteq (n1, n2, ..., nN)</h5>
+        <h5>fx_is_lt (n1, n2, ..., nN)</h5>
+        <h5>fx_is_lteq (n1, n2, ..., nN)</h5>
+        <h5>fx_is_eq (n1, n2, ..., nN)</h5>
+        <h5>fx_is_gt (n1, n2, ..., nN)</h5>
+        <h5>fx_is_gteq (n1, n2, ..., nN)</h5>
         <h5>fxabs (n)</h5>
         <h5>fxand (n1, n2, ..., nN)</h5>
         <h5>fxarithmetic_shift (n1, n2)</h5>
@@ -521,11 +521,11 @@
         <h5>fladd (x1, x2, ..., x3)</h5>
         <h5>flsub (x1, x2, ..., x3)</h5>
         <h5>fldiv (x1, x2, ..., x3)</h5>
-        <h5>is_fllt (x1, x2, ..., x3)</h5>
-        <h5>is_fllteq (x1, x2, ..., x3)</h5>
-        <h5>is_fleq (x1, x2, ..., x3)</h5>
-        <h5>is_flgt (x1, x2, ..., x3)</h5>
-        <h5>is_flgteq (x1, x2, ..., x3)</h5>
+        <h5>fl_is_lt (x1, x2, ..., x3)</h5>
+        <h5>fl_is_lteq (x1, x2, ..., x3)</h5>
+        <h5>fl_is_eq (x1, x2, ..., x3)</h5>
+        <h5>fl_is_gt (x1, x2, ..., x3)</h5>
+        <h5>fl_is_gteq (x1, x2, ..., x3)</h5>
         <h5>flabs (x)</h5>
         <h5>flacos (x)</h5>
         <h5>flasin (x)</h5>

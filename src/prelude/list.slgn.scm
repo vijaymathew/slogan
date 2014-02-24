@@ -172,43 +172,46 @@
           r
           (loop (cons fill-with r) (opr n 1))))))
 
-(define (replace lst a b #!key (test eqv?) (transform #f))
+(define (replace lst a b #!key (test *default-eq*) (transform #f) (drill #t))
   (let loop ((lst lst)
              (result '()))
     (cond ((null? lst)
            (reverse result))
-          ((list? (car lst))
+          ((and (list? (car lst)) drill)
            (loop (cdr lst) (cons (replace (car lst) a b test: test transform: transform) result)))
           ((test a (car lst))
-           (loop (cdr lst) (cons (if transform (transform b) b) result)))
+           (loop (cdr lst) (cons (if transform (transform (car lst) b) b) result)))
           (else
            (loop (cdr lst) (cons (car lst) result))))))
 
-(define (replace_all lst alst blst #!key (test eqv?) (transform #f))
+(define (replace_all lst alst blst #!key (test eqv?) (transform #f) (drill #t))
   (let loop ((lst lst)
              (result '()))
     (cond ((null? lst)
            (reverse result))
-          ((list? (car lst))
+          ((and (list? (car lst)) drill)
            (loop (cdr lst) (cons (replace_all (car lst) alst blst test: test transform: transform) result)))
           (else
            (let inner-loop ((alst alst)
                             (blst blst))
              (cond ((not (null? alst))
                     (if (test (car alst) (car lst))
-                        (loop (cdr lst) (cons (if transform (transform (car blst)) (car blst)) result))
+                        (loop (cdr lst) (cons (if transform (transform (car lst) (car blst)) (car blst)) result))
                         (inner-loop (cdr alst) (cdr blst))))
                    (else 
                     (loop (cdr lst) (cons (car lst) result)))))))))
 
 (define (nth_tail lst n)
   (let ((neg (< n 0)))
-    (let loop ((lst (if neg (reverse lst) lst))
-               (n (if neg (- n) n)))
-      (if (or (zero? n)
-              (null? lst))
-          (if neg (reverse lst) lst)
-          (loop (cdr lst) (- n 1))))))
+    (let ((n (if neg (- n) n)))
+      (if (>= n (length lst))
+          #f
+          (let loop ((lst (if neg (reverse lst) lst))
+                     (n n))
+            (if (or (zero? n)
+                    (null? lst))
+                (if neg (reverse lst) lst)
+                (loop (cdr lst) (- n 1))))))))
 
 (define (is_all lst predic)
   (if (null? lst)
@@ -229,4 +232,3 @@
               ((predic (car lst))
                #t)
               (else (loop (cdr lst)))))))
-                    

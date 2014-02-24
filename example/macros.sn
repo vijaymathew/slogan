@@ -21,7 +21,7 @@ ntimes (10, println ("hello, world!"));
 
 macro for (x, start, stop, body) {
     let x = start
-    let cmpr = if stop > 0 is_number_lt else is_number_gt
+    let cmpr = if stop > 0 number_is_lt else number_is_gt
     let incr = if stop > 0 add else sub
     letrec fn_loop = function () {
         if cmpr (x, stop) {
