@@ -71,6 +71,21 @@
 	=>false</pre>
 	<p>Other than the three predicates described here there are other comparison predicates that works with specific
 	  data types. These functions are described in the sections specific to each data type. </p>
+        <h3>Other operations on booleans</h3>
+        <h5>not (obj)</h5>
+        <p>Returns <code>true</code> if <code>obj</code> is <code>false</code>, and returns <code>false</code> otherwise.</p>
+        <pre>
+          > not (true);
+          => false
+          > not (false);
+          => true
+          > not (100);
+          => false
+          > not (100 == 200);
+          => true</pre>
+        <h5>is_boolean (obj)</h5>
+        <p>Returns <code>true</code> if <code>obj</code> is either <code>true</code> or <code>false</code> and returns 
+          <code>false</code> otherwise.</p>
       </div>
     </div>
   </body>

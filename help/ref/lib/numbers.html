@@ -63,13 +63,17 @@
 	  => 3
 	  > imag_part (3#4);
 	  => 4</pre>
+
 	<h3>Predicates</h3>
+
 	<h5>is_number (obj)</h5>
 	<h5>is_integer (obj)</h5>
 	<h5>is_real (obj)</h5>
 	<h5>is_complex (obj)</h5>
+
 	<p>These predicates can be applied to any object. They return <code>true</code> if the object is a numeric value of
 	  the named type.</p>
+
 	<pre>
 	  > is_number (10#45);
 	  => true
@@ -83,16 +87,19 @@
 	  => true
 	  > is_complex (10.45); // complex is more generic than real.
 	  => true</pre>
+
 	<h5>is_number_eq (n1, n2, ..., nN)</h5>
 	<h5>is_number_lt (n1, n2, ..., nN)</h5>
 	<h5>is_number_gt (n1, n2, ..., nN)</h5>
 	<h5>is_number_lteq (n1, n2, ..., nN)</h5>
 	<h5>is_number_gteq (n1, n2, ..., nN</h5>
+
 	<p>These functions return <code>true</code> if their arguments are (respectively): equal, monotonically increasing, 
 	  monotonically decreasing, monotonically non-decreasing, or monotonically non-increasing. The implementation dependent
 	  exactness of numeric representation can influence the result of these functions. The operators <code>==</code>,
 	  <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code> and <code>&gt;=</code> produce the same results as these 
 	  functions when called with two arguments.</p>
+
 	<pre>
 	  > is_number_eq (10, 10);
 	  => true
@@ -106,6 +113,7 @@
 	  => true
 	  > is_number_lt (10, 10.01, 10.02, 10.003);
 	  => false</pre>
+
 	<h5>is_zero (n)</h5>
 	<h5>is_positive (n)</h5>
 	<h5>is_negative (n)</h5>
@@ -114,8 +122,113 @@
 	<h5>is_nan (n)</h5>
 	<h5>is_positive_infinity (n)</h5>
 	<h5>is_negative_infinity (n)</h5>
+
 	<p>These functions check a number for a particular property identified by the function name.</p>
-	<h3>Basic arithmetic</h3>
+
+        <h3>Operations with numbers</h3>
+
+        <h5>max (n1, n2, ..., nN)</h5>
+        <h5>min (n1, n2, ..., nN)</h5>
+
+        <p>These functions return the maximum or minimum of their arguments.</p>
+
+        <pre>
+          > max (1, 2, 5, 3);
+          => 5
+          > min (1.001, 1.01, 1.00001);
+          => 1.00001</pre>
+
+        <h5>add (n1, n2, ..., nN)</h5>
+        <h5>mult (n1, n2, ..., nN)</h5>
+
+        <p>These functions return the sum or product of their arguments.</p>
+
+        <pre>
+          > add (3, 4, 5);
+          => 12
+          > add (3);
+          => 3
+          > mult (3, 4, 5);
+          => 60
+          > mult ();
+          => 1
+          > add();
+          => 0</pre>
+        
+        <h5>sub (n1, n2, ..., nN)</h5>
+        <h5>div (n1, n2, ..., nN)</h5>
+        
+        <p>With two or more arguments, these procedures return the difference or quotient of their arguments, associating to the left. 
+          With one argument, however, they return the additive or multiplicative inverse of their argument.</p>
+
+        <pre>
+          > sub (3, 4, 5);
+          => -6
+          > sub (3);
+          => -3
+          > div (3, 4, 5);
+          => .15
+          > div (3);
+          => .3333333333333333</pre>
+        
+        <h5>abs (n)</h5>
+        <p><code>abs</code> returns the absolute value of its argument.</p>
+        <pre>
+          > abs (-7);
+          => 7</pre>
+        
+        <h5>quotient (n1, n2)</h5>
+        <h5>remainder (n1, n2)</h5>
+        <h5>modulo (n1, n2)</h5>
+        <p>These procedures implement number-theoretic (integer) division. <code>n2</code> should be non-zero. 
+          All three procedures return integers. If <code>n1 / n2</code> is an integer:</p>
+        <pre>
+          quotient (n1, n2)  ==> n1 / n2
+          remainder (n1, n2) ==> 0
+          modulo (n1, n2)    ==> 0</pre>
+
+        <p>If <code>n1 / n2</code> is not an integer:</p>
+
+        <pre>
+          quotient (n1, n2)  ==> nq
+          remainder (n1, n2) ==> nr
+          modulo (n1, n2)    ==> nm</pre>
+
+        <p>where <code>nq</code> is <code>n1 / n2</code> rounded towards zero, <code>0 &lt; |nr| &lt; |n2|</code>, 
+          <code>0 &lt; |nm| &lt; |n2|</code>, <code>nr</code> and <code>nm</code> differ from <code>n1</code> by a multiple of <code>n2</code>, 
+          <code>nr</code> has the same sign as <code>n1</code>, and <code>nm</code> has the same sign as <code>n2</code>.</p>
+
+        <p>From this we can conclude that for integers <code>n1</code> and <code>n2</code> with <code>n2</code> not equal to <code>0</code>,</p>
+        
+        <pre>
+          n1 == (remainder (n1, n2) + n2 * quotient (n1, n2)) ==> true</pre>
+        <pre>
+          > modulo (13, 4);
+          => 1
+          > remainder (13, 4);
+          => 1
+          > modulo (-13, 4);
+          => 3
+          > remainder (-13, 4);
+          => -1
+          > -13 == (remainder (-13, 4) + 4 * quotient (-13, 4));
+          => true</pre>
+        <h5>gcd (n1, n2, ..., nN)</h5>
+        <h5>lcm (n1, n2, ..., nN)</h5>
+        <p>These procedures return the greatest common divisor or least common multiple of their arguments. The result is always non-negative.</p>
+        <pre>
+          > gcd (32, 36);
+          => 4
+          > gcd();
+          => 0
+          > lcm (32, 36);
+          => 288
+          > lcm();
+          => 1
+          > lcm (32.0, -36);
+          => 288.</pre>
+
+
       </div>
     </div>
   </body>
