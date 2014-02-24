@@ -2,22 +2,18 @@
 
 (define string make-string)
 
-(define (string_is_eq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci=? string=?) c1 c2))
+(define string_is_eq string=?)
+(define string_is_lteq string<=?)
+(define string_is_gteq string>=?)
+(define string_is_lt string<?)
+(define string_is_gt string>?)
+(define string_ci_is_eq string-ci=?)
+(define string_ci_is_lteq string-ci<=?)
+(define string_ci_is_gteq string-ci>=?)
+(define string_ci_is_lt string-ci<?)
+(define string_ci_is_gt string-ci>?)
 
-(define (string_is_lteq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci<=? string<=?) c1 c2))
-
-(define (string_is_gteq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci>=? string>=?) c1 c2))
-
-(define (string_is_lt c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci<? string<?) c1 c2))
-
-(define (string_is_gt c1 c2 #!key (ignore_case #f))
-  ((if ignore_case string-ci>? string>?) c1 c2))
-
-(define (string-map s fn)
+(define (string-map fn s)
   (let* ((len (string-length s))
          (result (make-string len)))
     (let loop ((i 0))
@@ -26,7 +22,7 @@
           (begin (string-set! result i (fn (string-ref s i)))
                  (loop (+ i 1)))))))
 
-(define (string-foreach s fn)
+(define (string-foreach fn s)
   (let ((len (string-length s)))
     (let loop ((i 0))
       (if (< i len)
@@ -34,10 +30,10 @@
                  (loop (+ i 1)))))))
 
 (define (string_upcase s)
-  (string-map s char-upcase))
+  (string-map char-upcase s))
   
 (define (string_downcase s)
-  (string-map s char-downcase))
+  (string-map char-downcase s))
 
 (define (string_replace_all s fch rch)
   (let* ((len (string-length s))
@@ -52,21 +48,21 @@
              (string-set! result i (string-ref s i))
              (loop (+ i 1)))))))
           
-(define (string-starts-with? s suffix)
+(define (string-starts-with? s suffix #!optional (eq string=?))
   (let ((slen (string-length suffix))
         (len (string-length s)))
     (if (or (zero? slen) (zero? len) 
             (> slen len))
         #f
-        (string=? (substring s 0 slen) suffix))))
+        (eq (substring s 0 slen) suffix))))
 
-(define (string-ends-with? s prefix)
+(define (string-ends-with? s prefix #!optional (eq string=?))
   (let ((plen (string-length prefix))
         (slen (string-length s)))
     (if (and (not (zero? plen)) (not (zero? slen)) 
              (<= plen slen))
         (let ((subs (substring s (- slen plen) slen)))
-          (string=? subs prefix))
+          (eq subs prefix))
         #f)))
 
 (define (string-indexof s ch)
@@ -110,8 +106,10 @@
   (string-rtrim (string-ltrim s)))
       
 (define is_string string?)
-(define string_starts_with string-starts-with?)
-(define string_ends_with string-ends-with?)
+(define (string_starts_with s suffix) (string-starts-with? s suffix))
+(define (string_ends_with s prefix) (string-ends-with? s prefix))
+(define (string_ci_starts_with s suffix) (string-starts-with? s suffix string-ci=?))
+(define (string_ci_ends_with s prefix) (string-ends-with? s prefix string-ci=?))
 (define string_to_list string->list)
 (define string_to_symbol string->symbol)
 (define string_append string-append)

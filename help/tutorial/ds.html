@@ -162,14 +162,16 @@
           => 'G'</pre>
         <p>The character comparison functions are <code>char_is_eq</code>, <code>char_is_lt</code>, <code>char_is_gt</code>, 
           <code>char_is_lteq</code> and <code>char_is_gteq</code>. Similarly, string comparison functions are <code>string_is_eq</code>,
-          <code>string_is_lt</code>, <code>string_is_gt</code>, <code>string_is_lteq</code> and <code>string_is_gteq</code>. The
-          generic sequence equality predicate <code>is_equal</code> can be used instead of <code>string_is_eq</code>.</p>
+          <code>string_is_lt</code>, <code>string_is_gt</code>, <code>string_is_lteq</code> and <code>string_is_gteq</code>. These
+          comparison predicates are complemented by a set of predicates with a <code>_ci_</code> infix in their name for doing
+          case ignorant comparisons. The generic sequence equality predicate <code>is_equal</code> can be used instead of 
+          <code>string_is_eq</code>.</p>
         <pre>
           > char_is_eq ('a', 'A');
           => false
-          > char_is_eq ('a', 'A', ignore_case = true);
+          > char_ci_is_eq ('a', 'A');
           => true
-          > char_is_eq ('a', 'B', ignore_case = true);
+          > char_ci_is_eq ('a', 'B');
           => false
           > char_is_lt ('a', 'z');
           => true
@@ -177,11 +179,11 @@
           => false
           > char_is_lt ('a', 'Z');
           => false
-          > char_is_lt ('a', 'Z', ignore_case = true);
+          > char_ci_is_lt ('a', 'Z');
           => true
           > string_is_eq ("hello", "Hello");
           => false
-          > string_is_eq ("hello", "Hello", ignore_case = true);
+          > string_ci_is_eq ("hello", "Hello");
           => true</pre>
         <p>Other useful operations on a string are finding its length and accessing individual characters using their index:</p>
         <pre>
@@ -198,9 +200,9 @@
           string where each character is the result of applying the function to each character of the original string.
         <code>string_for_each</code> is similar to <code>string_map</code> but is called for its side-effect:</p>
         <pre>
-          > string_map ("hello", function (c) { char_upcase (c) });
+          > string_map (function (c) { char_upcase (c) }, "hello");
           => "HELLO"
-          > string_for_each ("hello", function (c) { print (c) });
+          > string_for_each (function (c) { print (c) }, "hello");
           'h''e''l''l''o'</pre>
         <p>In addition to string literals, the functions <code>string</code>, <code>string_append</code> and <code>substring</code>
           can be used to create new strings: </p>

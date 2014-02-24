@@ -69,7 +69,6 @@
         (pcount 0)
         (scount 0))
     (string-foreach 
-     s 
      (lambda (c)
        (cond ((char=? c #\{)
               (set! bcount (+ bcount 1)))
@@ -82,7 +81,8 @@
              ((char=? c #\[)
               (set! scount (+ scount 1)))
              ((char=? c #\])
-              (set! scount (- scount 1))))))
+              (set! scount (- scount 1)))))
+     s)
     (if (< bcount 0) (error "misplaced closing brace."))
     (if (< pcount 0) (error "misplaced closing parenthesis."))
     (if (< scount 0) (error "misplaced closing bracket."))    

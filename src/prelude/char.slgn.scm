@@ -1,19 +1,15 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (char_is_eq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case char-ci=? char=?) c1 c2))
-
-(define (char_is_lteq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case char-ci<=? char<=?) c1 c2))
-
-(define (char_is_gteq c1 c2 #!key (ignore_case #f))
-  ((if ignore_case char-ci>=? char>=?) c1 c2))
-
-(define (char_is_lt c1 c2 #!key (ignore_case #f))
-  ((if ignore_case char-ci<? char<?) c1 c2))
-
-(define (char_is_gt c1 c2 #!key (ignore_case #f))
-  ((if ignore_case char-ci>? char>?) c1 c2))
+(define char_is_eq char=?)
+(define char_is_lt char<?)
+(define char_is_gt char>?)
+(define char_is_lteq char<=?)
+(define char_is_gteq char>=?)
+(define char_ci_is_eq char-ci=?)
+(define char_ci_is_lt char-ci<?)
+(define char_ci_is_gt char-ci>?)
+(define char_ci_is_lteq char-ci<=?)
+(define char_ci_is_gteq char-ci>=?)
 
 (define is_char char?)
 (define char_is_alphabetic char-alphabetic?)
