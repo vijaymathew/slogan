@@ -321,6 +321,81 @@
         <h5>integer_to_real (n)</h5>
         <p>These functions converts between integers and reals.</p>
 
+        <h3>Bitwise operations</h3>
+        <p>Most functions in this section are specified in terms of the binary representation of integers. 
+          The two's complement representation is assumed where an integer is composed of an infinite number of bits. 
+          The upper section of an integer (the most significant bits) are either an infinite sequence of ones when the integer is negative, 
+          or they are an infinite sequence of zeros when the integer is nonnegative.</p>
+
+        <h5>arithmetic_shift (n1, n2)</h5>
+        <p>Returns <code>n1</code> shifted to the left by <code>n2</code> bits.</p>
+
+        <h5>bitwise_merge (n1, n2, n3)</h5>
+        <p>Returns an integer whose bits combine the bits from <code>n2</code> and <code>n3</code> depending on <code>n1</code>. 
+          The bit at index <code>i</code> of the result depends only on the bits at index <code>i</code> in <code>n1</code>, <code>n2</code> 
+          and <code>n3</code>: it is equal to the bit in <code>n2</code> when the bit in <code>n1</code> is 0 and it is equal to the bit 
+          in <code>n3</code> when the bit in <code>n1</code> is 1. </p>
+
+        <h5>bitwise_and (n1, n2, ..., nN)</h5>
+        <p>Returns the bitwise "and" of the arguments.</p>
+
+        <h5>bitwise_ior (n1, n2, ..., nN)</h5>
+        <p>Returns the bitwise "inclusive-or" of the arguments.</p>
+
+        <h5>bitwise_xor (n1, n2, ..., nN)</h5>
+        <p>Returns the bitwise "exclusive-or" of the arguments.</p>
+
+        <h5>bitwise_not (n)</h5>
+        <p>Returns the bitwise complement of <code>n</code>.</p>
+
+        <h5>bit_count (n)</h5>
+        <p>Returns the number of bits in <code>n</code>. . If <code>n</code> is nonnegative, the bit count is the number of 1 bits 
+          in the two's complement representation of <code>n</code>. If <code>n</code> is negative, the bit count is the number of 0 bits 
+          in the two's complement representation of <code>n</code>.</p>
+
+        <h5>integer_length (n)</h5>
+        <p>Returns the bit length of <code>n</code>. If <code>n</code> is a positive integer the bit length is one more than the index of 
+          the highest 1 bit (the least significant bit is at index 0). If <code>n</code> is a negative integer the bit length is one more 
+          than the index of the highest 0 bit. If <code>n</code> is zero, the bit length is 0.</p>
+
+        <h5>is_bit_set (n1, n2)</h5>
+        <p>Returns a boolean indicating if the bit at index <code>n1</code> of <code>n2</code> is set (i.e. equal to 1) or not. 
+          <code>n1</code> must be nonnegative.</p>
+        <pre>
+          > map (function (i) is_bit_set (i, -23), [7, 6, 5, 4, 3, 2, 1, 0]);
+          => [true, true, true, false, true, false, false, true]</pre>
+
+        <h5>is_any_bits_set (n1, n2)</h5>
+        <p>Returns a boolean indicating if the bitwise and of <code>n1</code> and <code>n2</code> is different from zero or not.</p>
+
+        <h5>is_all_bits_set (n1, n2)</h5>
+        <p>Returns a boolean indicating if the bitwise and of <code>n1</code> and <code>n2</code> is equal to <code>n1</code> or not.</p>
+
+        <h5>first_bit_set (n)</h5>
+        <p>Returns the bit index of the least significant bit of <code>n</code> equal to 1 (which is also the number of 0 bits 
+          that are below the least significant 1 bit). This procedure returns -1 when <code>n</code> is zero.</p>
+
+        <h5>extract_bit_field (n1, n2, n3)</h5>
+        <h5>is_bit_field_set (n1, n2, n3)</h5>
+        <h5>clear_bit_field (n1, n2, n3)</h5>
+        <h5>replace_bit_field (n1, n2, n3, n4)</h5>
+        <h5>copy_bit_field (n1, n2, n3, n4)</h5>
+        <p>These functions operate on a bit-field which is <code>n1</code> bits wide starting at bit index <code>n2</code>. 
+          <code>n1</code> and <code>n2</code> must be nonnegative.</p>
+
+        <p><code>extract_bit_field</code> returns the bit-field of <code>n3</code> shifted to the right so that the least 
+          significant bit of the bit-field is the least significant bit of the result.</p>
+
+        <p><code>is_bit_field_set</code> returns <code>true</code> if any bit in the bit-field of <code>n3</code> is equal to 1.</p>
+
+        <p><code>clear_bit_field</code> returns <code>n3</code> with all bits in the bit-field replaced with 0.</p>
+        
+        <p><code>replace_bit_field</code> returns <code>n4</code> with the bit-field replaced with the 
+          least-significant <code>n1</code> bits of <code>n3</code>.</p>
+
+        <p><code>copy_bit_field</code> returns <code>n4</code> with the bit-field replaced with the (same index and size) 
+          bit-field in <code>n3</code>.</p>
+
         <h3>Pseudo random numbers</h3>
 
         <h5>random_integer (n)</h5>
@@ -346,8 +421,140 @@
           => #b[200, 53, 29, 202, 3, 85, 208, 187, 73, 219]
           > random_byte_array (10);
           => #b[113, 8, 182, 120, 138, 103, 53, 192, 40, 176]</pre>
+        
+        <h5>default_random_source ()</h5>
+        <p>Returns the global random source object which is used by the <code>random_integer</code>, <code>random_real</code>
+          and <code>random_byte_array</code> functions.</p>
+        
+        <h5>set_default_random_source (s)</h5>
+        <p>Sets the global random source to <code>s</code>.</p>
 
-        <h3>Fixnum and Flonum operations</h3>
+        <h5>random_source ()</h5>
+        <p>This function returns a new random source object initialized to a predetermined state. 
+          (To initialize to a pseudo random state the function <code>random_source_randomize</code> should be called).</p>
+
+        <h5>is_random_source (obj)</h5>
+        <p>Returns <code>true</code> if <code>obj</code> is a random source object.</p>
+        
+        <h5>random_source_state (s)</h5>
+        <h5>random_source_set_state (s, state)</h5>
+        <p><code>random_source_state</code> extracts the state of the random source object <code>s</code> and returns an array  
+          containing the state.</p>
+        <p><code>random_source_set_state</code> restores the state of the random source object <code>s</code> to state which must 
+          be an array returned from a call to <code>random_source_state</code>.</p>
+        
+        <h5>random_source_randomize (s)</h5>
+        <h5>random_source_pseudo_randomize (s, i, j)</h5>
+        <p>These functions change the state of the random source object <code>s</code>. 
+          <code>random_source_randomize</code> sets the random source object to a state that depends on the current time 
+          (which for typical uses can be considered to randomly initialize the state). 
+          <code>random_source_pseudo_randomize</code> sets the random source object to a state that is determined only 
+          by the current state and the nonnegative integers <code>i</code> and <code>j</code>. 
+          For both functions the value returned is unspecified.</p>
+        
+        <h5>random_source_for_integers (s)</h5>
+        <p>This function returns a function for generating pseudo random exact integers using the random source object <code>s</code>. 
+          The returned function accepts a single parameter <code>n</code>, a positive integer, and returns a pseudo random integer 
+          in the range 0 to n-1.</p>
+
+        <h5>random_source_for_reals (s, @optional precision)</h5>
+        <p>This function returns a function for generating pseudo random inexact reals using the random source object <code>s</code>. 
+          The returned function accepts no parameters and returns a pseudo random inexact real between, but not including, 0 and 1. 
+          The optional parameter <code>precision</code> specifies an upper bound on the minimum amount by which two generated 
+          pseudo-random numbers can be separated.</p>
+
+        <h5>random_source_for_byte_arrays (s)</h5>
+        <p>This function returns a function for generating pseudo random byte arrays using the random source object <code>s</code>. 
+          The returned function accepts a single parameter <code>n</code>, a nonnegative integer, and returns a byte array of length 
+          <code>n</code> containing pseudo random exact integers in the range 0 to 255.</p>
+
+        <h3>Fixnum operations</h3>
+        <p>Slogan has the following functions for working specifically with fixnums. All these functions are similar to their
+          similarly named functions described above.</p>
+        <h5>is_fixnum (obj)</h5>
+        <h5>fxmult (n1, n2, ..., nN)</h5>
+        <h5>fxadd (n1, n2, ..., nN)</h5>
+        <h5>fxsub (n1, n2, ..., nN)</h5>
+        <h5>is_fxlt (n1, n2, ..., nN)</h5>
+        <h5>is_fxlteq (n1, n2, ..., nN)</h5>
+        <h5>is_fxeq (n1, n2, ..., nN)</h5>
+        <h5>is_fxgt (n1, n2, ..., nN)</h5>
+        <h5>is_fxgteq (n1, n2, ..., nN)</h5>
+        <h5>fxabs (n)</h5>
+        <h5>fxand (n1, n2, ..., nN)</h5>
+        <h5>fxarithmetic_shift (n1, n2)</h5>
+        <h5>fxarithmetic_shift_left (n1, n2)</h5>
+        <h5>fxarithmetic_shift_right (n1, n2)</h5>
+        <h5>fxbit_count (n)</h5>
+        <h5>is_fxbit_set (n1, n2)</h5>
+        <h5>is_fxeven (n)</h5>
+        <h5>fxfirst_bit_set (n)</h5>
+        <h5>fxif (n1, n2, n3)</h5>
+        <h5>fxior (n1, n2, ..., nN)</h5>
+        <h5>fxlength (n)</h5>
+        <h5>fxmax (n1, n2, ..., nN)</h5>
+        <h5>fxmin (n1, n2, ..., nN)</h5>
+        <h5>fxmodulo (n1, n2)</h5>
+        <h5>is_fxnegative (n)</h5>
+        <h5>fxnot (n)</h5>
+        <h5>is_fxodd (n)</h5>
+        <h5>is_fxpositive (n)</h5>
+        <h5>fxquotient (n1, n2)</h5>
+        <h5>fxremainder (n1, n2)</h5>
+        <h5>fxwrap_mult (n1, n2, ..., n3)</h5>
+        <h5>fxwrap_add (n1, n2, ..., n3)</h5>
+        <h5>fxwrap_sub (n1, n2, ..., nN)</h5>
+        <h5>fxwrapabs (n)</h5>
+        <h5>fxwraparithmetic_shift (n1, n2)</h5>
+        <h5>fxwraparithmetic_shift_left (n1, n2)</h5>
+        <h5>fxwraplogical_shift_right (n1, n2)</h5>
+        <h5>fxwrapquotient (n1, n2)</h5>
+        <h5>fxxor (n1, n2, ..., nN)</h5>
+        <h5>is_fxzero (n)</h5>
+
+        <h3>Flonum operations</h3>
+        <p>The following functions works directly with machine dependent real value or flonums:</p>
+
+        <h5>is_flonum (ob)</h5>
+        <h5>fixnum_to_flonum (n)</h5>
+        <h5>flmult (x1, x2, ..., x3)</h5>
+        <h5>fladd (x1, x2, ..., x3)</h5>
+        <h5>flsub (x1, x2, ..., x3)</h5>
+        <h5>fldiv (x1, x2, ..., x3)</h5>
+        <h5>is_fllt (x1, x2, ..., x3)</h5>
+        <h5>is_fllteq (x1, x2, ..., x3)</h5>
+        <h5>is_fleq (x1, x2, ..., x3)</h5>
+        <h5>is_flgt (x1, x2, ..., x3)</h5>
+        <h5>is_flgteq (x1, x2, ..., x3)</h5>
+        <h5>flabs (x)</h5>
+        <h5>flacos (x)</h5>
+        <h5>flasin (x)</h5>
+        <h5>flatan (x)</h5>
+        <h5>flatan (y ,x)</h5>
+        <h5>flceiling (x)</h5>
+        <h5>flcos (x)</h5>
+        <h5>fldenominator (x)</h5>
+        <h5>is_fleven (x)</h5>
+        <h5>flexp (x)</h5>
+        <h5>flexpt (x, y)</h5>
+        <h5>is_flfinite (x)</h5>
+        <h5>flfloor (x)</h5>
+        <h5>is_flinfinite (x)</h5>
+        <h5>is_flinteger (x)</h5>
+        <h5>fllog (x)</h5>
+        <h5>flmax (x1, x2, ..., x3)</h5>
+        <h5>flmin (x1, x2, ..., x3)</h5>
+        <h5>is_flnan (x)</h5>
+        <h5>is_flnegative (x)</h5>
+        <h5>flnumerator (x)</h5>
+        <h5>is_flodd (x)</h5>
+        <h5>is_flpositive (x)</h5>
+        <h5>flround (x)</h5>
+        <h5>flsin (x)</h5>
+        <h5>flsqrt (x)</h5>
+        <h5>fltan (x)</h5>
+        <h5>fltruncate (x)</h5>
+        <h5>is_flzero (x)</h5>
       </div>
     </div>
   </body>
