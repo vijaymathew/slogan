@@ -113,7 +113,6 @@
 (define string_starts_with string-starts-with?)
 (define string_ends_with string-ends-with?)
 (define string_to_list string->list)
-(define string_to_number string->number)
 (define string_to_symbol string->symbol)
 (define string_append string-append)
 (define string_copy string-copy)
@@ -148,3 +147,10 @@
                        '() 
                        (+ i 1)))
                 (else (loop result (cons (string-ref str i) currstr) (+ i 1))))))))
+
+(define (string_to_number s #!optional (radix 10))
+  (if (>= (string-indexof s #\#) 0)
+      (let ((parts (string_split s #\#)))
+        (make-rectangular (string->number (car parts) radix)
+                          (string->number (cadr parts) radix)))
+      (string->number s radix)))

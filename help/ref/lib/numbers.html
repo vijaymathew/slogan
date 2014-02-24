@@ -122,10 +122,12 @@
 	<h5>is_nan (n)</h5>
 	<h5>is_positive_infinity (n)</h5>
 	<h5>is_negative_infinity (n)</h5>
+        <h5>is_fixnum</h5>
+        <h5>is_flonum</h5>
 
 	<p>These functions check a number for a particular property identified by the function name.</p>
 
-        <h3>Operations with numbers</h3>
+        <h3>Arithmetic and related functions</h3>
 
         <h5>max (n1, n2, ..., nN)</h5>
         <h5>min (n1, n2, ..., nN)</h5>
@@ -215,7 +217,7 @@
           => true</pre>
         <h5>gcd (n1, n2, ..., nN)</h5>
         <h5>lcm (n1, n2, ..., nN)</h5>
-        <p>These procedures return the greatest common divisor or least common multiple of their arguments. The result is always non-negative.</p>
+        <p>These functions return the greatest common divisor or least common multiple of their arguments. The result is always non-negative.</p>
         <pre>
           > gcd (32, 36);
           => 4
@@ -227,8 +229,125 @@
           => 1
           > lcm (32.0, -36);
           => 288.</pre>
+        <h5>numerator (q)</h5>
+        <h5>denominator (q)</h5>
+        <p>These functions return the numerator or denominator of their argument; the result is computed as if the argument was 
+          represented as a fraction in lowest terms. The denominator is always positive. The denominator of <code>0</code> is 
+          defined to be <code>1</code>.</p>
+        <pre>
+          > numerator (6/4);
+          => 3
+          > denominator (6/4);
+          => 2</pre>
 
+        <h5>floor (x)</h5>
+        <h5>ceiling (x)</h5>
+        <h5>truncate (x)</h5>
+        <h5>round (x)</h5>
+        <p>These procedures return integers. <code>floor</code> returns the largest integer not larger than <code>x</code>. 
+          <code>ceiling</code> returns the smallest integer not smaller than <code>x</code>. 
+          <code>truncate</code> returns the integer closest to <code>x</code> whose absolute value is not larger than the absolute 
+          value of <code>x</code>. <code>round</code> returns the closest integer to <code>x</code>, rounding to even when 
+          <code>x</code> is halfway between two integers. <code>round</code> rounds to even for consistency with the default rounding 
+          mode specified by the IEEE floating point standard.</p> 
+        <pre>
+          > floor (3.5);
+          => 3.
+          > ceiling (3.5);
+          => 4.
+          > truncate (3.5);
+          => 3.
+          > round (3.5);
+          => 4.</pre>
 
+        <h5>rationalize (x, y)</h5>
+        <p><code>rationalize</code> returns the simplest rational number differing from <code>x</code> by no more than <code>y</code>.</p>
+        <pre>
+          > rationalize (.3, 1 / 10);
+          => .3333333333333333</pre>
+
+        <h5>exp (z)</h5>
+        <h5>log (z)</h5>
+        <h5>sin (z)</h5>
+        <h5>cos (z)</h5>
+        <h5>tan (z)</h5> 
+        <h5>asin (z)</h5>
+        <h5>acos (z)</h5>
+        <h5>atan (z)</h5>
+        <h5>atan (y, x)</h5> 
+        <p>These functions compute the usual transcendental functions. <code>log</code> computes the natural logarithm of <code>z</code> 
+          (not the base ten logarithm). <code>asin</code>, <code>acos</code>, and <code>atan</code> compute 
+          arcsine (<code>sin</code><sup>-1</sup>), arccosine (<code>cos</code><sup>-1</sup>), and arctangent (<code>tan</code><sup>-1</sup>), 
+          respectively. The two-argument variant of <code>atan</code> computes 
+          <code>angle (rectangular (x, y))</code> (see below), even in implementations that don't support general complex numbers.</p>
+        
+        <h5>rectangular (x1, x2)</h5>
+        <h5>polar (x3, x4)</h5>
+        <h5>real_part (z)</h5>
+        <h5>imag_part (z)</h5>
+        <h5>magnitude (z)</h5>
+        <h5>angle (z)</h5>
+        <p>These functions are part of every implementation that supports general complex numbers. <code>magnitude</code> is the same 
+          as <code>abs</code> for a real argument, but <code>abs</code> must be present in all implementations, whereas 
+          <code>magnitude</code> need only be present in implementations that support general complex numbers.</p>
+
+        <h5>sqrt (z)</h5>
+        <p>Returns the principal square root of <code>z</code>. The result will have either positive real part, 
+          or zero real part and non-negative imaginary part.</p>
+
+        <h5>integer_sqrt (n)</h5>
+        <p>Returns the integer part of the square root of the nonnegative exact integer <code>n</code>.</p>
+
+        <h5>integer_nth_root (n1, n2)</h5>
+        <p>Returns the integer part of <code>n1</code> raised to the power <code>1/n2</code>, where <code>n1</code> is a 
+          nonnegative exact integer and <code>n2</code> is a positive exact integer.</p>
+
+        <h5>expt (z1, z2)</h5>
+        <p>Returns <code>z1</code> raised to the power <code>z2</code>.</p>
+        
+        <h3>Conversions</h3>
+
+        <h5>number_to_string (z, @optional radix)</h5>
+        <h5>string_to_number (z, @optional radix)</h5>
+        <p>These functions converts a number to its string representation and vice versa. Radix must be an exact integer, 
+          either 2, 8, 10, or 16. If omitted, <code>radix</code> defaults to 10.</p>
+
+        <h5>char_to_integer (c)</h5>
+        <h5>integer_to_char (n)</h5>
+        <p><code>char_to_integer</code> returns the unicode encoding of a character. <code>integer_to_char</code> returns the character
+          whose unicode encoding is the exact integer <code>n</code>.</p>
+
+        <h5>real_to_integer (r)</h5>
+        <h5>integer_to_real (n)</h5>
+        <p>These functions converts between integers and reals.</p>
+
+        <h3>Pseudo random numbers</h3>
+
+        <h5>random_integer (n)</h5>
+        <p>Returns a pseudo random exact integer in the range 0 to n-1. </p>
+        <pre>
+          > random_integer (10);
+          => 8
+          > random_integer (10);
+          => 2</pre>
+
+        <h5>random_real (r)</h5>
+        <p>Returns a pseudo random real between, but not including, 0 and 1.</p>
+        <pre>
+          > random_real ();
+          => .7342236104231586
+          > random_real ();
+          => .8162050798467028</pre>
+
+        <h5>random_byte_array (n)</h5>
+        <p>Returns a byte array of length <code>n</code> containing pseudo random exact integers in the range 0 to 255. </p>
+        <pre>
+          > random_byte_array (10);
+          => #b[200, 53, 29, 202, 3, 85, 208, 187, 73, 219]
+          > random_byte_array (10);
+          => #b[113, 8, 182, 120, 138, 103, 53, 192, 40, 176]</pre>
+
+        <h3>Fixnum and Flonum operations</h3>
       </div>
     </div>
   </body>

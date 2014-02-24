@@ -89,8 +89,10 @@
              (slgn-display-list val port))
             ((pair? val)
              (slgn-display-pair val port))
+            ((u8vector? val)
+             (slgn-display-array val port "#b" u8vector->list))
             ((vector? val)
-             (slgn-display-array val port))
+             (slgn-display-array val port "#" vector->list))
             ((char? val)
              (slgn-display-char val port))
             ((string? val)
@@ -135,10 +137,11 @@
   (slgn-display (cdr p) port: port)
   (display "]" port))
 
-(define (slgn-display-array a port)
-  (display "#" port)
-  (slgn-display-list (vector->list a) port))
-  
+(define (slgn-display-array a port 
+                            prefix tolist)
+  (display prefix port)
+  (slgn-display-list (tolist a) port))
+
 (define (slgn-display-char c port)
   (display "'" port)
   (scm_print port: port c)

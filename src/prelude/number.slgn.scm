@@ -51,6 +51,8 @@
 
 (define fixnum_to_flonum fixnum->flonum)
 
+(define rectangular make-rectangular)
+(define polar make-polar)
 (define real_part real-part)
 (define imag_part imag-part)
 
