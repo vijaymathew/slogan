@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Tasks</title>
+
+    <link type="text/css" rel="stylesheet" href="../../style/style.css">
+  </head>
+
+  <body>
+
+    <div id="page" class="wide">
+      <div class="container">
+
+	<h2>Tasks</h2>
+       
+        <h5>task (fn, @optional name, thread_group)</h5>
+        
+        <h5>root_task (fn, @optional name, thread_group, input_stream, output_stream)</h5>
+
+        <h5>is_task (obj)</h5>
+
+        <h5>current_task ()</h5>
+
+        <h5>task_name (task)</h5>
+
+        <h5>task_data (task)</h5>
+
+        <h5>task_set_data (task, obj)</h5>
+        
+        <h5>task_base_priority (task)</h5>
+
+        <h5>task_set_base_priority (task, p)</h5>
+
+        <h5>task_quantum (task)</h5>
+
+        <h5>task_set_quantum (task, q)</h5>
+        
+        <h5>task_run (task)</h5>
+        
+        <h5>task_yield ()</h5>
+        
+        <h5>task_sleep (timeout)</h5>
+
+        <h5>task_terminate (task)</h5>
+
+        <h5>task_join (task, @optional timeout, timeout_val)</h5>
+
+        <h5>task_send (task, msg)</h5>
+
+        <h5>task_receive (@optional timeout, default)</h5>
+
+        <h5>task_messages_next (@optional timeout, default)</h5>
+
+        <h5>task_messages_rewind (@optional remove_last_read)</h5>
+
+        <h5>mutex (@optional name)</h5>
+
+        <h5>is_mutex (obj)</h5>
+
+        <h5>mutex_data (m)</h5>
+
+        <h5>mutex_set_data (m, obj)</h5>
+
+        <h5>mutex_name (m)</h5>
+
+        <h5>mutex_state (m)</h5>
+        
+        <h5>mutex_lock (m, @optional timeout, thread)</h5>
+        
+        <h5>mutex_unlock (m, @optional condition_variable, timeout)</h5>
+
+        <h5>condition_variable (@optional name)</h5>
+        
+        <h5>is_condition_variable (obj)</h5>
+        
+        <h5>condition_variable_name (cv)</h5>
+        
+        <h5>condition_variable_data (cv)</h5>
+        
+        <h5>condition_variable_set_data (cv, obj)</h5>
+
+        <h5>condition_variable_signal (cv)</h5>
+
+        <h5>condition_variable_broadcast (cv)</h5>
+ 
+      </div>
+    </div>
+  </body>
+</html>

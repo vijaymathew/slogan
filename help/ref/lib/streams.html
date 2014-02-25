@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Streams</title>
+
+    <link type="text/css" rel="stylesheet" href="../../style/style.css">
+  </head>
+
+  <body>
+
+    <div id="page" class="wide">
+      <div class="container">
+
+	<h2>Streams</h2>
+        <h5>stream (type, settings)</h5>
+        <h5>output_stream (type, settings)</h5>
+        <h5>input_stream (type, settings)</h5>
+        <p>Returns a new stream object. <code>type</code> is a symbol that specifies the type of stream to create.
+          The stream types supported in this implementation of Slogan are: <code>!file</code>, <code>!array</code>, 
+          <code>!byte_array</code>, <code>!string</code>, <code>!process</code>, <code>!tcp_client</code>, 
+          <code>!tcp_server</code> and <code>!directory</code>.
+          <code>settings</code> can be either a string or a list of key-value settings that is dependent on the
+          stream type. A stream created by <code>stream</code> can do both output and input.</p>
+
+        <h5>with_stream (type, settings, fn)</h5>
+        <h5>with_input_stream (type, settings, fn)</h5>
+        <h5>with_output_stream (type, settings, fn)</h5>
+        <p>Creates a stream and calls <code>fn</code> with the new stream object as argument.
+          The stream is automatically closed before the function returns.</p>
+
+        
+        <h5>close_stream (stream) </h5>
+
+        <h5>close_input_stream (stream)</h5>
+
+        <h5>close_output_stream (stream)</h5>
+
+        <h5>is_stream (stream)</h5>
+
+        <h5>is_input_stream (stream)</h5>
+        
+        <h5>is_output_stream (stream)</h5>
+
+        <h5>current_input_stream ()</h5>
+
+        <h5>current_output_stream ()</h5>
+
+        <h5>read_char (@optional stream)</h5>
+
+        <h5>peek_char (@optional stream)</h5>
+
+        <h5>is_char_ready (@optional stream)</h5>
+
+        <h5>write_char (char, @optional stream)</h5>
+
+        <h5>read_line (@optional stream, separator, include_separator, max_length)</h5>
+
+        <h5>read_substring (string, start, end, @optional stream, need)</h5>
+        
+        <h5>write_substring (string, start, end, @optional stream)</h5>
+        
+        <h5>read_byte (@optional stream)</h5>
+
+        <h5>write_byte (byte, @optional stream)</h5>
+
+        <h5>get_output_string (string_stream)</h5>
+
+        <h5>get_output_byte_array (byte_stream)</h5>
+
+        <h5>get_output_array (array_stream)</h5>
+
+        <h5>read_bytes (in_byte_array, @optional start, end, stream, need)</h5>
+
+        <h5>write_bytes (out_byte_array, @optional start, end, stream)</h5>
+        
+        <h5>flush_output (@optional stream)</h5>
+
+        <h5>is_eos (stream)</h5>
+
+        <h5>input_stream_byte_position (stream, @optional, position, whence)</h5>
+
+        <h5>output_stream_byte_position (stream, @optional, position, whence)</h5>
+
+        <h5>print (@key to, @rest args)</h5>
+        <h5>println (@key to, @rest args)</h5>
+
+        <h5>write_expression (expr, @optional stream)</h5>
+        
+        <h5>stream_tokenizer (stream @key program, delimiters)</h5>
+        
+        <h5>peek_token (tokenizer)</h5>
+        
+        <h5>read_token (tokenizer)</h5>
+
+        <h5>process_pid (process_stream)</h5>
+        
+        <h5>process_status (process_status, @optional timeout, timeout_val)</h5>
+        
+        <h5>tcp_service_register (settings, fn)</h5>
+        
+        <h5>tcp_service_unregister (settings)</h5>
+
+      </div>
+    </div>
+  </body>
+</html>
