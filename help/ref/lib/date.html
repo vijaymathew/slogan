@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Date and Time</title>
+
+    <link type="text/css" rel="stylesheet" href="../../style/style.css">
+  </head>
+
+  <body>
+
+    <div id="page" class="wide">
+      <div class="container">
+
+	<h2>Date and Time</h2>
+
+        <h5>now ()</h5>
+        <p>Returns a record representing the current system time.</p>
+
+        <h5>is_time (obj)</h5>
+        <p>Returns <code>true</code> if <code>tm</code> is an object created by <code>now ()</code>.</p>
+
+        <h5>time_to_seconds (t)</h5>
+        <p>Returns the seconds since an epoch based on which the time object <code>t</code> was calculated.</p>
+        
+        <h5>seconds_to_time (s) </h5>
+        <p>Creates a new time object from the given seconds.</p>
+
+        <h5>time_second (t)</h5>
+        <p>Returns the seconds portion of a time object.</p>
+
+        <h5>time_set_second (t, s)</h5>
+        <p>Updates the seconds portion of the time object <code>t</code> to <code>s</code>.</p>
+
+        <h5>time_minute (t)</h5>
+        <p>Returns the minute portion of a time object.</p>
+
+        <h5>time_set_minute (t, m)</h5>
+        <p>Updates the minute portion of the time object <code>t</code> to <code>m</code>.</p>
+
+        <h5>time_hour (t)</h5>
+        <p>Returns the hour portion of a time object.</p>
+
+        <h5>time_set_hour (t, h)</h5>
+        <p>Updates the hour portion of the time object <code>t</code> to <code>h</code>.</p>
+
+        <h5>time_day_of_month (t)</h5>
+        <p>Returns the day-of-month portion of a time object.</p>
+
+        <h5>time_set_day_of_month (t, d)</h5>
+        <p>Updates the day-of-month portion of the time object <code>t</code> to <code>d</code>.</p>
+
+        <h5>time_month (t)</h5>
+        <p>Returns the month portion of a time object.</p>
+        
+        <h5>time_set_month (t, m)</h5>
+        <p>Updates the month portion of the time object <code>t</code> to <code>m</code>.</p>
+
+        <h5>time_year (t)</h5>
+        <p>Returns the year portion of a time object.</p>
+
+        <h5>time_set_year (t, y)</h5>
+        <p>Updates the year portion of the time object <code>t</code> to <code>y</code>.</p>
+
+        <h5>time_day_of_week (t)</h5>
+        <p>Returns the day-of-week portion of a time object.</p>
+
+        <h5>time_set_day_of_week (t, d)</h5>
+        <p>Updates the day-of-week portion of the time object <code>t</code> to <code>d</code>.</p>
+
+        <h5>time_day_of_year (t)</h5>
+        <p>Returns the day-of-year portion of a time object.</p>
+        
+        <h5>time_set_day_of_year (t, d)</h5>
+        <p>Updates the day-of-year portion of the time object <code>t</code> to <code>d</code>.</p>
+
+        <h5>time_is_dst (t)</h5>
+        <p>Returns <code>true</code> if the DST flag is set in the time object <code>t</code>.</p>
+        
+        <h5>time_set_is_dst (t, f)</h5>
+        <p>Sets the DST flag in the time object <code>t</code>.</p>
+
+        <h5>process_times ()</h5>
+        <p>Returns a three element real array containing the cpu time that has been used by the program and the real time that has 
+          elapsed since it was started. The first element corresponds to "user" time in seconds, the second element corresponds to 
+          "system" time in seconds and the third element is the elapsed real time in seconds. On operating systems that can't 
+          differentiate user and system time, the system time is zero. On operating systems that can't measure cpu time, the user 
+          time is equal to the elapsed real time and the system time is zero.</p>
+
+        <h5>cpu_time ()</h5>
+        <p>Returns the cpu time in seconds that has been used by the program (user time plus system time).</p>
+
+        <h5>real_time ()</h5>
+        <p>Returns the real time that has elapsed since the program was started.</p>
+
+      </div>
+    </div>
+  </body>
+</html>
+
+        

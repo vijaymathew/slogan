@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>Arrays, Byte arrays, Bit vectors and Tables</title>
+    <title>Arrays, Byte arrays, Bit arrays and Tables</title>
 
     <link type="text/css" rel="stylesheet" href="../../style/style.css">
   </head>
@@ -13,7 +13,7 @@
     <div id="page" class="wide">
       <div class="container">
 
-	<h2>Arrays, Byte arrays, Bit vectors and Tables</h2>
+	<h2>Arrays, Byte arrays, Bit arrays and Tables</h2>
         
         <h3>Arrays</h3>
         <p>Arrays are heterogenous structures whose elements are indexed by integers. An array typically occupies less space 
@@ -87,9 +87,110 @@
         
         <h5>byte_array_shrink (a, k)</h5>
 
-        <h3>Bit vectors</h3>
+        <h3>Bit arrays</h3>
+        <p>Bit arrays are homogeneous arrays containing only bits.</p>
+
+        <h5>bit_array (n)</h5>
+
+        <h5>is_bit_array (obj)</h5>
+
+        <h5>bit_array_set (a, i)</h5>
+
+        <h5>bit_array_is_set (a, i)</h5>
+
+        <h5>bit_array_clear (a, i)</h5>
+
+        <h5>bit_array_set_all (a)</h5>
+        <h5>bit_array_clear_all (a)</h5>
+
+        <h5>bit_array_length (a)</h5>
+
+        <h5>bit_array_map (fn, a)</h5>
+
+        <h5>bit_array_for_each (fn, a)</h5>
+
+        <h5>bit_array_is_all_set (a)</h5>
+
+        <h5>bit_array_is_any_set (a)</h5>
+
+        <h5>bit_array_to_list (a)</h5>
+
+        <h5>list_to_bit_array (lst)</h5>
+
+        <h5>bit_array_to_string (a)</h5>
+
+        <h5>string_to_bit_array (s)</h5>
+
+        <h5>bit_array_is_eq (a, b)</h5>
+
+        <h5>bit_array_blit (a, start, dest, dest-start, n)</h5>
+
+        <h5>bit_array_reduce (a, fn, @key initial_value, from_right)</h5>
+        
+        <h5>bit_array_append (a, b)</h5>
+        <h5>bit_array_concat (lst)</h5>
+
+        <h5>bit_subarray (a, start, end)</h5>
 
         <h3>Tables</h3>
+        <p>Tables are heterogenous structures whose elements are indexed by keys which are arbitrary objects. 
+          Tables are similar to association lists but are abstract and the access time for large tables is typically smaller.
+          Each key contained in the table is bound to a value. The length of the table is the number of key/value bindings 
+          it contains. New key/value bindings can be added to a table, the value bound to a key can be changed, and existing 
+          key/value bindings can be removed.</p>
+        <p>The references to the keys can either be all strong or all table-weak and the references to the values 
+          can either be all strong or all table-weak. The garbage collector removes key/value bindings from a table when 
+          <ol>
+          <li>the key is a table-weak reference and the key is unreachable or only reachable using paths from the roots
+            that traverse at least one table-weak reference, or </li>
+          <li>the value is a table-weak reference and the value is unreachable or only reachable using paths from the roots 
+            that traverse at least one table-weak reference. Key/value bindings that are removed by the garbage collector are 
+            reclaimed immediately.</li>
+          </ol></p>
+        <p>This implementation of Slogan implements tables using hashing with open-addressing. This is space efficient and 
+          provides constant-time access. Hash tables are automatically resized to maintain the load within specified bounds. 
+          The load is the number of active entries (the length of the table) divided by the total number of entries in the hash table.</p>
+        <h5>table (@key size, init, weak_keys, weak_values, test, hash, min_load, max_load)</h5>
+        <p>Returns a new table. The optional keyword parameters specify various parameters of the table.</p>
+        <p><ul>
+            <li><code>size</code> - a nonnegative integer indicating the expected length of the table. The system uses 
+              size to choose an appropriate initial size of the hash table so that it does not need to be resized too often.</li>
+            <li><code>init</code> - indicates a value that is associated to keys that are not in the table. When not specified, 
+              the boolean value <code>false</code> is associated to keys that are not in the table.</li>
+            <li><code>weak_keys</code> and <code>weak_values</code> - booleans indicating respectively whether the keys and values 
+              are table-weak references (<code>true</code>) or strong references (<code>false</code>). 
+              By default the keys and values are strong references. An implementation is free to ignore these parameters.</li>
+            <li><code>test</code> -  indicates the key comparison procedure. The default key comparison procedure is <code>is_equal</code>. 
+              The key comparison procedures <code>is_eq</code>, <code>is_eqv</code>, <code>is_equal</code>, <code>string_is_eq</code>
+              and <code>string_ci_is_eq</code> are special because the system will use a reasonably good hash procedure when none is 
+              specified.</li>
+            <li><code>hash</code> - indicates the hash procedure. This procedure must accept a single key parameter, 
+              return a fixnum, and be consistent with the key comparison procedure. When hash is not specified, 
+              a default hash procedure is used.</li>
+            <li><code>min_load</code> and <code>max_load</code> parameters are real numbers that indicate the minimum and maximum 
+              load of the table respectively. The table is resized when adding or deleting a key/value binding would bring the table's 
+              load outside of this range. The min_load parameter must be no less than 0.05 and the max_load parameter must be no 
+              greater than 0.95. Moreover the difference between min_load and max_load must be at least 0.20. When min_load is not 
+              specified, the value 0.45 is used. When max_load is not specified, the value 0.90 is used.</li>
+          </ul></p>
+
+        <h5>is_table (obj)</h5>
+        
+        <h5>table_length (table)</h5>
+        
+        <h5>table_at (table, key, @optional default)</h5>
+
+        <h5>table_set (table, key, @optional value)</h5>
+        
+        <h5>table_search (fn, table)</h5>
+
+        <h5>table_for_each (fn, table)</h5>
+        
+        <h5>table_to_list (table)</h5>
+
+        <h5>list_to_table (lst)</h5>
+
+        <h5>table_copy (table)</h5>
 
       </div>
     </div>
