@@ -120,7 +120,7 @@
 (define string_set string-set!)
 (define symbol_to_string symbol->string)
 (define string_hash string=?-hash)
-(define string_indexof string-indexof)
+(define string_index_of string-indexof)
 (define string_rtrim string-rtrim)
 (define string_ltrim string-ltrim)
 (define string_trim string-trim)

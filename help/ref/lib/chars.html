@@ -27,7 +27,7 @@
 
         <h5>symbol_to_string (s)</h5>
         <h5>string_to_symbol (s)</h5>
-        <p>Perfomrs convertions between strings and symbols.</p>
+        <p>Performs conversions between strings and symbols.</p>
         <pre>
           > symbol_to_string (!hello);
           => "hello"
@@ -76,16 +76,16 @@
         
         <h5>char_to_integer (c)</h5>
         <h5>integer_to_char (n)</h5>
-        <p><code>char_to_integer</code> returns the unicode encoding of a character. <code>integer_to_char</code> returns the character
-          whose unicode encoding is the exact integer <code>n</code>.</p>
+        <p><code>char_to_integer</code> returns the Unicode encoding of a character. <code>integer_to_char</code> returns the character
+          whose Unicode encoding is the exact integer <code>n</code>.</p>
         
         <h5>char_upcase (c)</h5>
         <h5>char_downcase (c)</h5>
-        <p>Thes functions perform case conversions of the character <code>c</code>.</p>
+        <p>These functions perform case conversions of the character <code>c</code>.</p>
 
         <h3>Strings</h3>
-        <p>Strings are sequences of characters. Strings are written as sequences of characters enclosed within doublequotes (&quot;). 
-          A doublequote can be written inside a string only by escaping it with a backslash (\), as in</p>
+        <p>Strings are sequences of characters. Strings are written as sequences of characters enclosed within double-quotes (&quot;). 
+          A double-quote can be written inside a string only by escaping it with a backslash (\), as in</p>
         
         <pre>"The word \"recursion\" has many meanings."</pre>
         
@@ -114,7 +114,7 @@
         <p>Returns a new string with all characters of <code>s</code> turned down.</p>
         
         <h5>string_replace_all (s, fch, rch)</h5>
-        <p>Returns a new string with all occurences of <code>fch</code> in <code>s</code> replaced with <code>rch</code>.</p>
+        <p>Returns a new string with all occurrences of <code>fch</code> in <code>s</code> replaced with <code>rch</code>.</p>
         
         <h5>is_string (obj)</h5>
         <p>Returns <code>true</code> if <code>obj</code> is a string.</p>
@@ -143,37 +143,93 @@
           > string_ci_ends_with ("hello, world", "LD");
           => true</pre>
 
+        <h5>substring (s, start, end)</h5>
+        <p>Returns a newly allocated string formed from the characters of string <code>s</code> beginning with 
+          index <code>start</code> (inclusive) and ending with index <code>end</code> (exclusive).
+          
           <h5>string_to_list (s)</h5>
+        <p>Returns a newly allocated list of the characters that make up the given string.</p>
+        
+        <h5>list_to_string (s)</h5>
+        <p>Returns a newly allocated string formed from the characters in the list.</p>
           
-          <h5>string_append (s1, s2, ..., s3)</h5>
+        <h5>string_append (s1, s2, ..., s3)</h5>
+        <p>Returns a newly allocated string whose characters form the concatenation of the given strings.</p>
+        
+        <h5>string_copy (s)</h5>
+        <p>Returns a newly allocated copy of the given string.</p>
+        
+        <h5>string_fill (s, char)</h5>
+        <p>Stores char in every element of the given string and returns an unspecified value.</p>
+
+        <h5>string_length (s)</h5>
+        <p>Returns the number of characters in the given string.</p>
+
+        <h5>string_at (s, i)</h5>
+        <p>Returns the character at index <code>i</code> from string <code>s</code>.</p>
           
-          <h5>string_copy (s)</h5>
+        <h5>string_set (s, i, c)</h5>
+        <p>Sets <code>c</code> as the character at index <code>i</code> of string <code>s</code>.</p>
 
-          <h5>string_fill (s, char)</h5>
+        <h5>string_hash (s)</h5>
+        <p>Returns the hash number of the string <code>s</code>. The hash number is a small exact integer (fixnum). 
+          For any two strings <code>s1</code> and <code>s2</code>, <code>string_is_eq (s1, s2)</code> implies 
+          <code>string_hash (s1) == string_hash (s2)</code>.</p>
 
-          <h5>string_length (s)</h5>
+        <h5>string_index_of (s, c)</h5>
+        <p>Returns the index of the character <code>c</code> in string <code>s</code>. Returns <code>-1</code> is the character
+          is not present in the string.</p>
+        
+        <h5>string_rtrim (s)</h5>
+        <p>Returns a new string with whitespace characters from the right of <code>s</code> removed.</p>
+        
+        <h5>string_ltrim (s)</h5>
+        <p>Returns a new string with whitespace characters from the left of <code>s</code> removed.</p>
 
-          <h5>string_at (s, i)</h5>
+        <h5>string_trim (s)</h5>
+        <p>Returns a new string with whitespace characters from both the right and left of <code>s</code> removed.</p>
           
-          <h5>string_set (s, i, c)</h5>
-
-          <h5>string_hash (s)</h5>
-
-          <h5>string_indexof (s, c)</h5>
+        <h5>string_map (fn, s)</h5>
+        <p>Applies the single-parameter function <code>fn</code> for each character of <code>s</code>. <code>fn</code> must
+          return a character. <code>string_map</code> returns a string of all characters returned by <code>fn</code>.</p>
+        <pre>
+          // Simple encryption-decryption of strings:
+          > var simple_encrypt = function (s) string_map (function (c) integer_to_char (char_to_integer (c) + 3), s);
+          > var simple_decrypt = function (s) string_map (function (c) integer_to_char (char_to_integer (c) - 3), s);
+          > simple_encrypt ("hello");
+          => "khoor"
+          > simple_decrypt ("khoor");
+          => "hello"</pre>
           
-          <h5>string_rtrim (s)</h5>
+        <h5>string_for_each (fn, s)</h5>
+        <p><code>string_for_each</code> is similar to <code>string_map</code> but <code>fn</code> is called for its side-effect.
+          <code>string_for_each</code> returns <code>void</code>.</p>
+        
+        <h5>string_split (s, @optional delim)</h5>
+        <p>Splits the string <code>s</code> using the <code>delim</code> as the delimiter. Returns the parts obtained by
+          splitting <code>s</code> as a list of strings. <code>delim</code> defaults to the <code>space</code> character (' ').
+          To use more than one delimiter, a list of characters can be passed to <code>delim</code>.</p>
+        <pre>
+          > string_split ("hello, world", ',');
+          => ["hello", " world"]
+          > > string_split ("hello, world");
+          => ["hello,", "world"]
+          > string_split ("hello, wo:rld", [',', ':']);
+          => ["hello", " wo", "rld"]</pre>
 
-          <h5>string_ltrim (s)</h5>
-
-          <h5>string_trim (s)</h5>
+          <h5>string_to_number (s, @optional radix)</h5>
+          <p>Converts the string <code>s</code> into a number and returns it. <code>s</code> should be in the format of a 
+            numeric literal. If the string cannot be converted to a number, <code>false</code> is returned. <code>radix</code>
+            should be either 2, 8, 10 or 16. The default <code>radix</code> is 10.</p>
           
-          <h5>string_map (fn, s)</h5>
-          
-          <h5>string_for_each (fn, s)</h5>
-
-          <h5>string_split (s, @optional delim)</h5>
-
-          <h5>string_to_number (s, @optional radix 10)</h5>
+          <pre>
+            > string_to_number ("45");
+            => 45
+            > string_to_number ("hello");
+            => false
+            > string_to_number ("45", 16);
+            => 69</pre>
+            
       </div>
     </div>
   </body>
