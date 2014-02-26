@@ -42,7 +42,7 @@
           => [1, 2, 3]
           > b;
           => [100, 2, 3]</pre>
-        <p>Another function useful for building new lists is <code>append</code>. It returns the concatenation of 
+        <p>Another function that can build a new list is <code>append</code>. It returns the concatenation of 
           all the lists passed to it as arguments:</p>
         <pre>
           > append ([1, 2], ["hello", "there"], [3, 4, [!good !bye]]);
@@ -55,30 +55,24 @@
           of our <code>compress</code> function:</p>
         <pre>
 var compress = 
-    function (lst) {
+    function (lst) 
         letrec ne_pair = 
-            function (e, n) {
+            function (e, n) 
                 if n > 1 pair (n, e) 
-                else e
-            },
+                else e,
         compr = 
-            function (e, n, lst) {
+            function (e, n, lst) 
                 if is_empty (lst) list (ne_pair (e, n))
-                else let next = head (lst) {
+                else let next = head (lst) 
                     if next == e compr (e, n + 1, tail (lst))
                     else pair (ne_pair (e, n), compr (next, 1, tail (lst)))
-                }
-            }
-        {
-            if is_pair (lst) compr (head (lst), 1, tail (lst))
-            else lst
-        }
-};</pre>
-        <p>As this a rather large piece of code, you might want to type it into a text editor and import the file into the
+        if is_pair (lst) compr (head (lst), 1, tail (lst))
+        else lst;</pre>
+        <p>As this is a rather large piece of code, you might want to type it into a text editor and import the file into the
           Slogan REPL. Files of Slogan scripts usually has the extension <code>.sn</code>. So you can save this file as
           <code>compress.sn</code>. To make the function definition available in the REPL, you import the script using the
           <code>import</code> statement. You don't have to provide the extension while importing the script. Once the script
-          is imported its global definitions can be accessed from the REPL:</p>
+          is imported its global definitions will be accessible in the REPL:</p>
         <pre>
           > import "/path/to/my/scripts/compress";
           > compress ([1, 1, 1, 2]);
@@ -94,24 +88,22 @@ var compress =
         <p>We need a function to recreate compressed lists:</p>
         <pre>
 var uncompress =
-  function (lst) {
+  function (lst) 
     if is_empty (lst) lst
     else let e = head (lst),
-    rest = uncompress (tail (lst)) {
+    rest = uncompress (tail (lst)) 
        if is_pair (e) append (list_of (head (e), tail (e)), rest)
-       else pair (e, rest)
-    }
-};</pre>
-        <p>The <code>uncompress</code> function makes use of the built-in function <code>list_of</code> to expand a pair into a list.
+       else pair (e, rest);</pre>
+<p>The <code>uncompress</code> function makes use of the built-in function <code>list_of</code> to expand a pair into a list.
           The first argument of <code>list_of</code> is the length of the new list and the optional second argument is the initial value
           to put in each slot.</p>
         <p>Our compression program has many limitations - it is slow, inefficient and will break for lists that contain other lists.
           But it does a good enough job at introducing the possibilities of the list data structure.</p>
         <p><div id="note">
             <em>Note:</em> The <code>example/tutorial/</code> directory contains the full source code of all example programs.
-	    Refernces to the original source of the program, if any, can be found in header comments.</div> </p>
+	    References to the original source of the program, if any, can be found in header comments.</div> </p>
         <h4>Accessing elements</h4>
-        <p>The function <code>at</code> allows list elements to be accessed based on their zero based indexed position:</p>
+        <p>The function <code>at</code> allows list elements to be accessed based on their zero based index position:</p>
         <pre>
           > at ([10, 20, 30], 1);
           => 20</pre>
@@ -120,14 +112,14 @@ var uncompress =
         function is <code>map</code> which takes a function (the transformer) and an arbitrary number of lists as its arguments. 
         The transformer must accept as many arguments as there are lists. <code>map</code> returns a list that contains the result
         of the transformations. Another mapping function is <code>for_each</code> which is similar to <code>map</code>. 
-        The only difference is that, <code>for_each</code> is called for its side-effects rather than producing a value. 
+        The only difference is that, <code>for_each</code> is called for its side-effect rather than producing a value. 
         The following examples demonstrate <code>map</code> and <code>for_each</code>:</p>
       <pre>
-        > map (function (x) { x * x}, [1, 2, 3, 4, 5]);
+        > map (function (x) x * x, [1, 2, 3, 4, 5]);
         => [1, 4, 9, 16, 25]
-        > map (function (x, y) { x * y}, [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]);
+        > map (function (x, y) x * y, [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]);
         => [10, 40, 90, 160, 250]
-        > for_each (function (x, y) { println (x + y) }, [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]);
+        > for_each (function (x, y) println (x + y), [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]);
         >> 11
            22
            33
@@ -146,14 +138,14 @@ var uncompress =
       <h4>Searching, filtering, sorting etc</h4>
         <p>There are two functions that can be used to check a list for the existence of a particular element: <code>find</code>
           and <code>is_member</code>. <code>find</code> takes a predicate that takes a single argument and returns the first 
-          element that makes it evaluate to <code>true</code>. While no element is found that satisfies this condition, <code>find</code>
+          element that makes it evaluate to <code>true</code>. When no element is found that satisfies this condition, <code>find</code>
           return <code>false</code>. This behaviour can be overridden by providing a value for the <code>default</code> parameter. </p>
         <pre>
-          > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
+          > find ([1, 2, 3, 4, 5], function (x) remainder (x, 2) == 0);
           => 2
-          > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 });
+          > find ([1, 2, 3, 4, 5], function (x) remainder (x, 10) == 0);
           => false
-          > find ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 }, default = "not found");
+          > find ([1, 2, 3, 4, 5], function (x) remainder (x, 10) == 0, default = "not found");
           => "not found"
         </pre>
         <p><code>is_member</code> returns <code>true</code> if an element exists in the list. By default it uses the <code>==</code>
@@ -170,9 +162,9 @@ var uncompress =
           => false</pre>
         <p>The <code>filter</code> function returns all elements that satisfies a predicate:</p>
         <pre>
-          > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 2) == 0 });
+          > filter ([1, 2, 3, 4, 5], function (x) remainder (x, 2) == 0);
           => [2, 4]
-          > filter ([1, 2, 3, 4, 5], function (x) { remainder (x, 10) == 0 });
+          > filter ([1, 2, 3, 4, 5], function (x) remainder (x, 10) == 0);
           => []</pre>
         <p>To delete elements from a list, use <code>remove</code>. <code>remove_duplicates</code>
           removes all duplicate elements from the list. Both these function uses the <code>==</code> operator to
@@ -204,7 +196,7 @@ var uncompress =
           arbitrary number of arguments. A predicate to check whether a list of integers is sorted can be defined by combining
           <code>apply</code> and <code>number_is_lt</code>:</p>
         <pre>
-          > var is_sorted = function (lst) { apply (number_is_lt, lst) };
+          > var is_sorted = function (lst) apply (number_is_lt, lst);
           > is_sorted (sort ([10, 0, 100, 1, -1]));
           => true</pre>
         <h4>Example: Sets</h4>
@@ -219,24 +211,21 @@ var uncompress =
           a member. Let us call this function <code>adjoin</code>. <p>Here is the implementation of <code>adjoin</code> and the 
           three set operations: <code>union</code>, <code>intersection</code> and <code>difference</code>:</p>
         <pre>
-var adjoin = function (element, set) {
-    if not (is_member (set, element)) pair (element, set) else set
-};
+var adjoin = function (element, set)
+    if not (is_member (set, element)) pair (element, set) else set;
 
 var union = function (a, b) {
     for_each (function (x) { b = adjoin (x, b) }, a);
     b
 };
 
-var intersection = function (a, b) {
+var intersection = function (a, b) 
     remove_duplicates (append (filter (a, function (x) { is_member (b, x) }),
                                filter (b, function (x) { is_member (a, x) })));
-};
 
-var difference = function (a, b) {
+var difference = function (a, b) 
     remove_duplicates (append (filter (a, function (x) { not (is_member (b, x)) }),
-                               filter (b, function (x) { not (is_member (a, x)) })));
-};</pre>
+                               filter (b, function (x) { not (is_member (a, x)) })));</pre>
 
         <p>Sample usage:</p>
         <pre>

@@ -39,7 +39,7 @@
         <h3>Data types</h3>
         <p>Slogan offers all data types found in other languages. It also has types not found in most other languages.
           We have already seen the type <i>integer</i>. Another data type is <i>string</i> which is a series of characters
-          enclosed in double-quotes. Like integers, strings evaluate to themselves:</p>
+          enclosed in double-quotes. Like an integer, a string evaluates to itself:</p>
         <pre>
           > "hello, world";
           => "hello, world"</pre>
@@ -58,7 +58,7 @@
           => []
           > [1, [2, 3], !hi];
           => [1, [2, 3], hi]</pre>
-        <p>Lists are also built using the function <code>list</code>:</p>
+        <p>Lists can also be built using the function <code>list</code>:</p>
         <pre>
           >  list (1, 2, 3);
           => [1, 2, 3]</pre>
@@ -78,7 +78,7 @@
           => [1, 2, 3, 4, 5]</pre>
         <p>The first expression creates a pair of two integers. The second and third expressions create pairs with more pairs nested within them.
           A pair is converted to a list by simply making its final element a list. This is what the last expressions does. Another way to
-          build pairs is by using the <code>pair</code> function: </p>          
+          build pairs is to use the <code>pair</code> function: </p>          
         <pre> 
           > pair (1, 2);
           => [1 2]
@@ -119,15 +119,15 @@
           => true
           > is_empty ([1, 2, 3]);
           => false</pre>
-        <p><code>not</code> is another useful function for working with truth values. It returns the inverse of its argument.</p>
+        <p>Another useful function for manipulating truth values is <code>not</code> which returns the inverse of its argument.</p>
         <pre>
           > not (true);
           => false
           > not (is_list (100));
           => true</pre>
         <p>The most commonly used conditional expression is <code>if</code>.
-          In its basic form <code>if</code> consumes an expression. If it evaluates to 
-          <code>true</code>, the expression that follows is evaluated, otherwise it is skipped.</p>
+          In its basic form <code>if</code> consumes two expressions. If the first expression evaluates to 
+          <code>true</code>, the second expression is evaluated, otherwise it is skipped.</p>
         <pre>
           > if is_list ([1, 2, 3]) 1 + 2 + 3;
           => 6
@@ -135,15 +135,20 @@
           => 600
           > if is_list (123) 1 + 2 + 3;
           ></pre>
-        <p>The last expression returns no value. (In fact, it returns a special value called <code>void</code> which has no visual 
-          representation). <code>if</code> can have an optional <code>else</code> part, the expression following which is evaluated if
-          the condition evaluates to <code>false</code>.</p>
+        <p>The last expression returns a special value called <code>void</code> which has no visual 
+          representation. (Slogan functions that are called just for their side-effects also return <code>void</code>).
+	  <code>if</code> can have an optional <code>else</code> part, the expression following which is evaluated if
+          the condition evaluates to <code>false</code>:</p>
         <pre>
-          >  if is_list (123) 1 + 2 + 3 else "not a list";
+          >  if is_list (123) 1 + 2 + 3 
+	     else "not a list";
           => "not a list"
-          > if is_list (123) 1 + 2 + 3 else if is_pair ([1, [2 3]]) 10 + 20 + 30;
+          > if is_list (123) 1 + 2 + 3 
+	    else if is_pair ([1, [2 3]]) 10 + 20 + 30;
           => 60
-          > if is_list (123) 1 + 2 + 3 else if is_pair (123) 10 + 20 + 30 else "not a list or a pair";
+          > if is_list (123) 1 + 2 + 3 
+	    else if is_pair (123) 10 + 20 + 30 
+	    else "not a list or a pair";
           => "not a list or a pair"</pre>
         <p>The logical functions <code>and</code> and <code>or</code> are often used in conditional expressions. <code>and</code>
           evaluates to <code>true</code> if all its arguments evaluates to <code>true</code>. <code>or</code> evaluates to <code>true</code>
@@ -155,8 +160,7 @@
           => false
           > or (is_list (123), is_integer (123));
           => true</pre>
-        <p>Slogan also supports the logical operators <code>&&</code> (for and) and <code>||</code> (for or) commonly found in languages of
-          the C family:</p>
+        <p>Slogan also supports the logical operators <code>&&</code> (and) and <code>||</code> (or):</p>
         <pre>
           > is_list ([1, 2, 3]) && is_integer (123);
           => true
@@ -180,9 +184,10 @@
           => 300
           > x + y;
           >> error: Unbound variable x</pre>
-        <div id="note"><p><em>Note:</em>A variable name must start with an alphabet or one of the following characters: _, @, ?, $.
+        <div id="note"><p><em>Note:</em>A variable name must start with an alphabet or one of the following characters: _, @, ?, $, ~.
             The rest of a variable name can contain numbers in addition to the previous characters. These are some examples of
-            valid variable names: <code>x, xyz, __xy@z, $age</code>.</p></div>
+            valid variable names: <code>x, xyz, __xy@z, $age</code>. (Variables starting with a <code>~</code> are treated specially
+	    in <a href="func.html#macros">macros</a>).</p></div>
         <p>Global variables are introduced with the variable declaration statement. A variable declaration starts with the keyword
           <code>var</code>. It is followed by the variable name and a value assignment. </p>
         <pre>
@@ -209,24 +214,24 @@
           evaluated sequentially. A code block returns the value of the last expression. Moreover, <code>var</code> declarations and
           assignments are statements and should always appear in a code block when used in a local context.</p>
         <h3>Functions</h3>
-        <p>Functions are code blocks that are associated with a list of variables called <i>parameters</i>. The code of the function
-          can be executed or <i>called</i> by providing values to the parameters. These values are known as <i>arguments</i>. Slogan
-          treats functions themselves as normal values. This means that a function can be bound to a variable. It also means that
-          a function can receive a function as its argument. A function can also evaluate to produce another function as its value.</p>
+        <p>A function is an expressions that is associated with a list of variables called <i>parameters</i>. The expression or body of the function
+          can be evaluated or <i>called</i> by providing values to the parameters. These values are known as <i>arguments</i>. Slogan
+          treats functions as normal values. This means that a function can be bound to a variable. It also means that
+          a function can receive a function as its argument. The body of a function can evaluate to produce another function as its value.</p>
         <p>The <code>function</code> keyword creates a new function. A function expression is similar to <code>let</code>. 
-          It has two parts - a parenthesized list of parameters and a code block that becomes the function body. Unlike <code>let</code>
+          It has two parts - a parenthesized list of parameters and an expression that becomes the function body. Unlike <code>let</code>
           the values of the variables are provided only when the function is called. This enables the same function to be
           invoked multiple times with different values bound to its parameters.</p>
         <p>The following code shows how to define and use a function that calculates the area of a circle with radius <code>r</code>:</p>
         <pre>
-          > var area_of_circle = function(r) { 3.14 * r * r };
+          > var area_of_circle = function(r) 3.14 * r * r;
           > area_of_circle (10);
           => 314.
           > area_of_circle (14.23);
           => 635.827706</pre>
         <p>Here is one more example of a function. This one takes a list as argument and returns its third element.</p>
         <pre>
-          > var third = function (list) { head (tail (tail (list))) };
+          > var third = function (list) head (tail (tail (list)));
           > third ([1, 2, 3, 4, 5]);
           => 3
           > third (["what", "is", "your", "name?"]);
@@ -237,11 +242,11 @@
           a list or not:</p>
         <pre>
           > var list_has_object = 
-                  function (list, object) {
+                  function (list, object)
                      if is_empty (list) false
                      else if object == head (list) true
-                     else list_has_object (tail (list), object)
-                  };</pre>
+                     else list_has_object (tail (list), object);
+        </pre>
         <p>The only new feature this function introduces is the <code>==</code> operator. It returns <code>true</code>
           if both its operands are normally regarded as same. Let us use our new function: </p>
         <pre>
