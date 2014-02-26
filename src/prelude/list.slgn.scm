@@ -40,7 +40,28 @@
 (define set_tail set-cdr!)
 (define list_to_string list->string)
 (define list_to_array list->vector)
-(define list_to_table list->table)
+
+(define (list_to_table lst #!key size init 
+                       weak_keys weak_values 
+                       (test equal?) hash 
+                       (min_load 0.45)
+                       (max_load 0.90))
+  (cond ((and size init hash)
+         (list->table lst size: size init: init weak-keys: weak_keys
+                      weak-values: weak_values test: test
+                      hash: hash min-load: min_load max-load: max_load))
+        ((and size init)
+         (list->table lst size: size init: init weak-keys: weak_keys
+                      weak-values: weak_values test: test
+                      min-load: min_load max-load: max_load))
+        (size
+         (list->table lst size: size weak-keys: weak_keys
+                      weak-values: weak_values test: test
+                      min-load: min_load max-load: max_load))
+        (else 
+         (list->table lst weak-keys: weak_keys
+                      weak-values: weak_values test: test
+                      min-load: min_load max-load: max_load))))
 
 (define (filter ls fn)
   (let loop ((ls ls)

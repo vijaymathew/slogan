@@ -67,3 +67,5 @@
 (define table_for_each table-for-each)
 (define table_to_list table->list)
 (define table_copy table-copy)
+(define table_merge_in_place table-merge!)
+(define table_merge table-merge)

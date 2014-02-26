@@ -25,7 +25,7 @@
 
 (define bit_array make-bitvector)
 
-(define is_bit_array u32vector?)
+(define is_bit_array %bitvector?)
 
 (define (bitvector-set! self i)
   (let ((vec (%bitvector-vector self))
@@ -150,8 +150,6 @@
      (string->list s))
     b))
 
-(define bit_array_to_string bitvector->string)
-
 (define (bitvector->string self)
   (let ((s (make-string (%bitvector-size self) #\0))
         (i 0))
@@ -163,6 +161,7 @@
      self)
     s))
 
+(define bit_array_to_string bitvector->string)
 (define string_to_bit_array string->bitvector)
 
 (define (bitvector=? self that)

@@ -187,10 +187,11 @@
 
         <h5>list_to_string (list)</h5>
         <h5>list_to_array (list)</h5>
-        <h5>list_to_table (list)</h5>
+        <h5>list_to_table (list, @key size, init, weak_keys, weak_values, test, hash, min_load, max_load)</h5>
         <p><code>list_to_string</code> converts a list of characters into a new string.</p>
         <p><code>list_to_array</code> creates a new single dimensional array from the elements of the list.</p>
-        <p><code>list_to_table</code> creates a new table from an association list.</p>
+        <p><code>list_to_table</code> creates a new table from an association list. (See the constructor of
+          <a href="arrays.html#tables">tables</a> for more information on the optional keyword parameters).</p>
         <pre>
           > list_to_string (['h', 'e', 'l', 'l', 'o']);
           => "hello"
