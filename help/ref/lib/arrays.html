@@ -18,42 +18,103 @@
         <h3>Arrays</h3>
         <p>Arrays are heterogenous structures whose elements are indexed by integers. An array typically occupies less space 
           than a list of the same length, and the average time required to access a randomly chosen element is typically less 
-          for the array than for the list. Arrays can have multiple dimensions. Array literals are encolsed in a <code>#[</code>
-          and a <code>]</code>.</p>
+          for the array than for the list. Arrays can have multiple dimensions. Array literals are encolsed in a <code>#[ ]</code>.</p>
 
         <h5>array (dim, @key fill)</h5>
-        
+        <p>Creates a new array of dimension <code>dim</code> with all elements initialized to <code>fill</code>.
+          The dimension can be an integer or a list of integers.
+          If it is an integer a single-dimensional array is returned, otherwise a multi-dimensional array is returned.
+          There are no implicit limits to the number of dimensions, except for available memory.
+          <code>fill</code> defaults to <code>false</code>. If <code>fill</code> is a procedure it is called for each
+          slot in the array and the slot is filled-up with the result.</p>
+
+        <pre>
+          > array (10);
+          => #[false, false, false, false, false, false, false, false, false, false]
+          > array (10, fill = 'a');
+          #['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']
+          > array ([2, 4], fill = 0); // as array of two rows and four columns.
+          #[#[0, 0, 0, 0], #[0, 0, 0, 0]]</pre>
+
         <h5>is_array (obj)</h5>
+        <p>Return <code>true</code> if <code>obj</code> is an array.</p>
 
         <h5>array_length (a)</h5>
+        <p>Returns the number of elements in the array <code>a</code>.</p>
 
         <h5>array_at (a, i)</h5>
+        <p>Returns the element in array <code>a</code> at index <code>i</code></p>
         
         <h5>array_set (a, i, obj)</h5>
+        <p>Sets the element in array <code>a</code> at index <code>i</code> to <code>obj</code>.</p>
+
+        <pre>
+          > var a = array ([2, 4]);
+          > a;
+          => #[#[false, false, false, false], #[false, false, false, false]]
+          > array_set (array_at (a, 1), 0, "hello");
+          > a;
+          => #[#[false, false, false, false], #["hello", false, false, false]]</pre>
 
         <h5>array_to_list (a)</h5>
+        <p>Retruns a new list with the elements in the array as its members.</p>
 
         <h5>array_copy (a)</h5>
+        <p>Returns a newly allocated array with the same content as the array <code>a</code>. 
+          Note that the elements are not recursively copied.</p>
         
         <h5>subarray (a, start, end)</h5>
+        <p>This function is the array analog of the <code>substring</code> function. It returns a newly allocated array 
+          formed from the elements of the array <code>a</code> beginning with index <code>start</code> (inclusive) and 
+          ending with index <code>end</code> (exclusive).</p>        
 
         <h5>array_append (a1, a2, ..., aN)</h5>
+        <p>This function is the array analog of the <code>string_append</code> function. It returns a newly allocated array 
+          whose elements form the concatenation of the given arrays.</p>
         
-        <h5>subarray_fill (a, start, end, fill)</h5>
+        <h5>array_fill (a, fill)</h5>
+        <p>Stores <code>fill</code> in every element of the array <code>a</code>.</p>
 
-        <h5>subarray_move (src-a, src-start, src-end, dst-a, dst-start)</h5>
+        <h5>subarray_fill (a, start, end, fill)</h5>
+        <p>This function is like <code>array_fill</code>, but fills a selected part of the given array. It sets the elements 
+          of the array <code>a</code>, beginning with index <code>start</code> (inclusive) and ending with index <code>end</code> 
+          (exclusive) to <code>fill</code>.</p>
+
+        <h5>subarray_move (src_a, src_start, src_end, dst_a, dst_start)</h5>
+        <p>This function replaces part of the contents of array  <code>dst_a</code> with part of the contents of array
+          <code>src_a</code>. It copies elements from <code>src_a</code>, beginning with index <code>src_start</code> (inclusive) 
+          and ending with index <code>src_end </code>(exclusive) to <code>dst_a</code> beginning with index <code>dst_start</code>
+          (inclusive). </p>
 
         <h5>array_shrink (a, k)</h5>
+        <p>Sortens the array <code>a</code> so that its new size is <code>k</code>.</p>
 
         <h5>array_sort (a, @key test, type)</h5>
+        <p>Sorts the array <code>a</code> by using <code>test</code> as the comparison predicate. 
+          <code>test</code> defaults to <code>number_is_lt</code>.
+          <code>type</code> specifies the sorting algorithm to use. An implementation is free to use any sorting algorithm. This implementation
+          support quicksort and mergesort. So <code>type</code> can be either <code>!quick</code> or <code>!merge</code> and it defaults to
+          <code>!quick</code>.</p>
 
         <h5>array_map (fn, a)</h5>
+        <p>Applies the function <code>fn</code> to each element of the array <code>a</code>. Returns a new array that contains the
+          results of calling <code>fn</code>.</p>
+
+        <pre>
+          > array_map (function (x) x * x, #[1, 2, 3, 4, 5]);
+          => #[1, 4, 9, 16, 25]</pre>
 
         <h5>array_for_each (fn, a)</h5>
+        <p>Similar to <code>array_map</code> but calls <code>fn</code> for its side-effect. Returns <code>void</code>.</p>
 
-        <h5>array_reduce (a, fn)</h5>
+        <h5>array_reduce (a, fn, @key initial_value)</h5>
+        <p>Compresses or folds the array <code>a</code> into a single value by recursively applying <code>fn</code> to 
+          each element and the compressed result computed so far. If <code>initial_value</code> is not specified, 
+          the first element of the array is treated as initial_value.</p>
         
         <h5>array_index_of (a, obj, @key test)</h5>
+        <p>Returns the index of the element <code>obj</code> in the array <code>a</code>. <code>test</code> should be a
+          equality predicate and it defaults to <code>is_eqv</code>. Returns -1 if <code>obj</code> is not present in the array.</p>
 
         <h3>Byte arrays</h3>
         <p>Byte arrays are homogeneous arrays containing only byte values. A byte value is in the range 0-255.
