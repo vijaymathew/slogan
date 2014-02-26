@@ -16,6 +16,11 @@
 	<h2>Interpretation and compilation</h2>
         
         <h5>compile (script_name, @key assemble, exe, ld_options, cc_options, exception_handler)</h5>
+        <p>Compiles a file that contains Slogan code into machine code. If <code>exe</code> is <code>true</code>
+          the object files are linked to produce a standalone executable. <code>ld_options</code> is a string
+          that contains the command-line options for the linker and <code>cc_options</code> is a string that contains
+          the command-line options for the compiler. The compiler defaults to gcc. <code>exception_handler</code>
+          is a function that takes a single exception object as argument. It defaults to <code>display_exception</code>.</p>
         
         <h5>eval (compiled_expr)</h5>
 	<p>Evaluates an expression or statement returned by the functions - <code>slogan</code>, <code>statement</code>

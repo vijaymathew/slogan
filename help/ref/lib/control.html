@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Control</title>
+
+    <link type="text/css" rel="stylesheet" href="../../style/style.css">
+  </head>
+
+  <body>
+
+    <div id="page" class="wide">
+      <div class="container">
+
+	<h2>Control</h2>
+        <p>This section lists some function that can affect and control the normal flow of Slogan programs.</p>
+        <h5>is_function (obj)</h5>
+        <p>Returns <code>true</code> is <code>obj</code> is a function.</p>
+
+        <h5>exit (status)</h5>
+        <p>Causes the process to terminate with the status <code>status</code> which must be an integer in the range 0 to 255. 
+          If it is not specified, <code>status</code> defaults to 0.</p>
+        
+        <h5>delay (expr)</h5>
+        <h5>force (promise)</h5>
+        <p><code>delay</code> and <code>force</code> are used together to implement lazy evaluation or <em>call by need</em>. 
+          <code>delay (expression)</code> returns an object called a <em>promise</em> which at some point in the future may be 
+          asked by <code>force</code> to evaluate <code>expression</code>, and deliver the resulting value. 
+          The value of the promise is cached (or "memoized") so that if it is forced a second time, the previously computed value is returned.</p>
+        <pre>
+          > var p = delay (1 + 2);
+          > force (p);
+          => 3
+          
+          // an infinite stream that produces integers on demand.
+          > var lazy_int_stream = 
+                letrec next = function (n) [n delay (next (n + 1))]
+                next (0);
+
+          > var lazy_head = head;
+          > var lazy_tail = function (li_stream) force (tail (li_stream));
+          > lazy_head (lazy_tail (lazy_tail (lazy_int_stream)));
+          => 2</pre>
+    
+        <h5>callcc (fn)</h5>
+        <p><code>fn</code> must be a function of one argument. <code>callcc</code> packages up the current continuation as an "escape function"
+          and passes it as an argument to <code>fn</code>. The escape function is a function that, if it is later called, will 
+          abandon whatever continuation is in effect at that later time and will instead use the continuation that was in effect 
+          when the escape function was created. Calling the escape function may cause the invocation of before and after thunks 
+          installed using <code>dynamic_wind</code>.</p>
+
+        <p>An implementation may choose not to support <code>callcc</code>.</p>
+
+          <pre>
+            > var product = function (ls) {
+                callcc (function (break) {
+                    letrec f = function(ls) {
+                       if is_empty (ls) { 1 }
+                       else if head (ls) == 0 { break (!breaking_at_zero) }
+                       else { head (ls) * f (tail (ls)) }
+                    } { f (ls) } 
+                 })
+              };
+
+            > println (product ([1, 2, 3, 4, 5])); 
+            >> 120
+            > println (product ([7, 3, 8, 0, 1, 9, 5])); 
+            >> !breaking_at_zero</pre>
+
+          <h5>dynamic_wind (before, fn, after)</h5>
+          <p>Calls <code>fn</code> without arguments, returning the result(s) of this call. <code>before</code> and <code>after</code>
+            are called, also without arguments, as required by the following rules (note that in the absence of calls to continuations 
+            captured using <code>callcc</code> the three arguments are called once each, in order). <code>before</code> is called 
+            whenever execution enters the dynamic extent of the call to <code>fn</code> and after is called whenever it exits that 
+            dynamic extent. The dynamic extent of a function call is the period between when the call is initiated and when it returns. 
+            In Slogan, because of <code>callcc</code>, the dynamic extent of a call may not be a single, connected time period. 
+            It is defined as follows:</p>
+          <p><ul>
+              <li>The dynamic extent is entered when execution of the body of the called function begins.</li>
+              <li>The dynamic extent is also entered when execution is not within the dynamic extent and a continuation 
+                is invoked that was captured (using <code>callcc</code>) during the dynamic extent.</li>
+              <li>It is exited when the called function returns.</li>
+              <li>It is also exited when execution is within the dynamic extent and a continuation is invoked that 
+                was captured while not within the dynamic extent.</li>
+              </ul></p>
+          <p>If a second call to <code>dynamic_wind</code> occurs within the dynamic extent of the call to <code>fn</code>
+            and then a continuation is invoked in such a way that the <code>after</code>s from these two invocations of 
+            <code>dynamic_wind</code> are both to be called, then the <code>after</code> associated with the second (inner) call 
+            to <code>dynamic_wind</code> is called first.</p>
+
+          <p>If a second call to <code>dynamic_wind</code> occurs within the dynamic extent of the call to <code>fn</code> and 
+            then a continuation is invoked in such a way that the <code>before</code>s from these two invocations of <code>dynamic_wind</code>
+            are both to be called, then the before associated with the first (outer) call to <code>dynamic_wind</code> is called first.</p>
+
+        <p>If invoking a continuation requires calling the <code>before</code> from one call to <code>dynamic_wind</code>
+          and the <code>after</code> from another, then the <code>after</code> is called first.</p>
+
+        <p>The effect of using a captured continuation to enter or exit the dynamic extent of a call to before or after is undefined.</p>
+        <p>(For more information on <code>callcc</code> and <code>dynamic_wind</code> see the 
+          <a href="http://www.schemers.org/Documents/Standards/R5RS/HTML/">R5RS</a> or some other reference on the
+          Scheme programming language).</p>
+
+        <h3>Errors and exceptions</h3>
+        <h5>current_exception_handler ()</h5>
+        <p>Returns the current global exception handler function. An exception handler takes a single error or exception object as argument.
+          The default global exception handler is <code>display_exception</code>, which prints the details of the error to the
+          current output stream.</p>
+
+        <h5>set_current_exception_handler (handler)</h5>
+        <p>Updates the global exception handler.</p>
+
+        <h5>error (message, arg1, arg2, ..., argN)</h5>
+        <p>Raises an error object whose message field is <code>message</code> and parameters field is the list of values
+          starting with <code>arg1</code>.</p>
+        <pre>
+          > try error ("this is an error", 1, 2, !hey)
+            catch (e) display_exception (e);
+          >> this is an error 1 2 hey</pre>
+        
+        <h5>is_error (obj)</h5>
+        <p>Returns <code>true</code> if <code>obj</code> is an error object.</p>
+
+        <h5>error_message (e)</h5>
+        <p>Returns the message from the error object <code>e</code>.</p>
+
+        <h5>error_args (e)</h5>
+        <p>Returns the list of arguments from the error object <code>e</code>.</p>
+        
+        <pre>
+          > try error ("this is an error", 1, 2, !hey)
+            catch (e) {
+              println (error_message (e));
+              println (error_args (e))
+          };
+          >> this is an error
+          >> [1, 2, hey]</pre>
+        
+        <h5>display_exception (e)</h5>
+        <p>A convenience function for printing an error object to the standard output stream.</p>        
+      </div>
+    </div>
+  </body>
+</html>
+        

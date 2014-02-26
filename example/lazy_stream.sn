@@ -1,0 +1,10 @@
+var lazy_int_stream = 
+    letrec next = function (n) [n delay (next (n + 1))]
+    next (0);
+
+var lazy_head = head;
+var lazy_tail = function (li_stream) force (tail (li_stream));
+
+
+
+        

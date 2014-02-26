@@ -16,5 +16,7 @@
 (define is_error error-exception?)
 (define error_message error-exception-message)
 (define error_args error-exception-parameters)
+(define display_exception display-exception)
 
 (define callcc call/cc)
+(define dynamic_wind dynamic-wind)
