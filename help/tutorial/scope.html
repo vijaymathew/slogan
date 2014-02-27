@@ -220,8 +220,85 @@
           => 6</pre>
         <p>As you can see from the last expression, the continuations captured by <code>callcc</code> are <em>abortive</em> in that
           invoking them will always lead to abandoning the rest of the current computation. </p>
-        <h4>Advanced examples of continuations</h4>
-        <p>TO BE DONE!</p>
+        <h4>Example: Restarting a function.</h4>
+        <p>Continuations can be used to add sophisticated flow control to programs. Imagine that you want to write a function that
+          saves a list of values to a database. The function needs to take care of the situation when a database write fails. 
+          There are a couple of ways to approach this problem:</p>
+        <p><ul>
+          <li>Do nothing. This will propagate the exception up the caller stack where it may or may not be handled.</li>
+          <li>Catch the exception locally, log it and return from the function.</li>
+          <li>Catch the exception locally, log and then re-throw it - giving the caller an opportunity to handle it further.</li>
+          <li>Catch the exception locally, log it and continue processing the rest of the list.</li>
+        </ul>
+        <p>In most languages that has an exception handling mechanism (e.g. Java, C++, Python), we are pretty much limited to the above options.
+          The decision on whether to terminate processing the list or to continue with the rest of the items lies completely with
+          the function itself. There is no way to propagate that decision making power to the caller of the function.
+          Continuations make this possible. With continuations we can add one more item to the above list: </p>
+        <ul>
+          <li>Catch the exception locally, log it and re-throw it along with a function that allows the user to restart
+            the function from where it had been paused by the database error.</li>
+        </ul>
+        <p>Now the caller can inspect the error, rectify the problem that caused it and continue processing the rest of the list.
+          (if he wishes to!).
+          The following code demonstrates the whole idea of <em>restartable</em> functions: </p>
+        <pre>
+// A generic function that applies `fn' to each element in
+// `lst'. If an exception happens in the call to `fn' that exception
+// is re-thrown along with the current continuation. The caller
+// can use this continuation to restart the function from the next item
+// in the list. 
+// Returns a list of booleans that indicates the items that 
+// were successfully processed (true) and those which have failed (false).
+var process_list = function (lst, fn) {
+    let mapper_with_restart = function (e) {
+        println ("processing item ", e);
+        callcc (function (k) { 
+            try fn (e) 
+            catch (ex) { 
+                println (ex); 
+                raise ([e k]) 
+            };
+            true
+        });
+    }
+    map (mapper_with_restart, lst)
+};
+
+// Saves a list of values to a database.
+// This function can raise a DB error at any time!
+var save_to_db = function (e) {
+    println ("saving item to db ", e);
+    if is_zero (random_integer (2)) raise ("DB error!")
+};
+
+// Test:
+// Call save_to_db on a list of numbers. On error, restart processing.
+// Output will vary across invocations of process_list.
+try process_list ([1, 2, 3, 4, 5], save_to_db)
+catch (e) {
+    println ("failed to save ", head (e));
+    println ("restarting process_list ...");
+    (tail (e)) (false);
+};
+
+>> processing item 1
+saving item to db 1
+processing item 2
+saving item to db 2
+DB error!
+failed to save 2
+restarting process_list ...
+processing item 3
+saving item to db 3
+processing item 4
+saving item to db 4
+processing item 5
+saving item to db 5
+DB error!
+failed to save 5
+restarting process_list ...
+[true, false, true, true, false]</pre>
+
       </div>
     </div>
   </body>
