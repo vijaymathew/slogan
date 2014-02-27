@@ -15,10 +15,11 @@
         <p>In the <a href="./lists.html">last chapter</a> we saw how to use the list data structure. 
           In this chapter we will meet the other Slogan data structures: arrays, strings, tables and records.</p>
         <h3>Arrays</h3>
-        <p><i>Arrays</i> are structures similar to lists but they occupy less space and the average time required to access a random
-          element by index is typically less than that required for a list. The <code>array</code> function is used to create an array
-          of a specified length. By default, all elements are initialized to <code>false</code>. This behaviour can be overridden by
-          specifying a value for the <code>fill</code> keyword parameter. Array literals are enclosed in <code>#[]</code>.
+        <p>Arrays are structures similar to lists but they occupy less space and the average time required to access a random
+          element by index is typically less than that required for a list. Array literals are enclosed in <code>#[]</code>. 
+          Arrays can also be created using The <code>array</code> function. By default, all elements are initialized to 
+          <code>false</code>. This behaviour can be overridden by
+          specifying a value for the <code>fill</code> keyword parameter. 
           The functions <code>array_at</code> and <code>array_set</code> are used to access and update elements by index. 
           <code>array_set</code> is a destructive operation because it updates the array in-place:</p>
         <pre>
@@ -37,18 +38,17 @@
           => 5</pre>
         <h4>Example: Phone book</h4>
         <p>This example shows how to search for an object in a sorted array. Each entry in the array contains a pair representing
-          the name and phone number of a person. First we will see how such an array can be sorted. The we will write a function
-          that does a fast number look-up in the array, given the name of the contact person. First let us define the array
-          to hold our contacts:<p>
+          the name and phone number of a person. First we will see how such an array can be sorted. Then we will write a function
+          that does a fast number look-up in the array, given the name of the contact person. Here is the array to hold our contacts:<p>
           <pre>
           > var contacts = #[["sam" "98289182"], ["anna" "88499394"],
-                 ["caroline" "993002993"], ["ankit" "38929839"],
-                 ["paul" "322288348"], ["sean" "12122123"]];</pre>
+                             ["caroline" "993002993"], ["ankit" "38929839"],
+                             ["paul" "322288348"], ["sean" "12122123"]];</pre>
 
         <p>Sorting the array is simple - call <code>array_sort</code> with a function that orders pairs based on their first element
           which must be a string:</p>
         <pre>
-          > array_sort (contacts, test = function (a, b) { string_is_lt (head (a), head (b)) });
+          > array_sort (contacts, test = function (a, b) string_is_lt (head (a), head (b)));
           => #[["ankit" "38929839"], ["anna" "88499394"], ["caroline" "993002993"], 
                ["paul" "322288348"], ["sam" "98289182"], ["sean" "12122123"]]</pre>
         <p>Now that we have sorted the array, we can implement the <code>lookup</code> function. <code>lookup</code> does a binary search
@@ -57,7 +57,7 @@
           right half is searched. So on each iteration, the array is halved until either the name is found or the array is exhausted, in which
           case <code>false</code> is returned.</p>
         <pre>
-        > var lookup = function (name, contacts) {
+        > var lookup = function (name, contacts)
             let len = array_length (contacts)
             if len == 0 false
             else 
@@ -65,8 +65,7 @@
               let entry = array_at (contacts, mid)
                 if string_is_eq (name, head (entry)) tail (entry)
                 else if string_is_lt (name, head (entry)) lookup (name, subarray (contacts, 0, mid))
-                else lookup (name, subarray (contacts, mid + 1, array_length (contacts)))
-          };
+                else lookup (name, subarray (contacts, mid + 1, array_length (contacts)));
 
         > lookup ("anna", contacts);
         => "88499394"
@@ -87,7 +86,7 @@
           > array ([2, 3], fill = !hi);
           => #[#[hi, hi, hi], #[hi, hi, hi]]</pre>
         <h4>Example: Date conversion</h4>
-        <p>This sections shows the definition of two date conversion functions: <code>day_of_year</code> and <code>month_day</code>.
+        <p>This example shows the definition of two date conversion functions: <code>day_of_year</code> and <code>month_day</code>.
           <code>day_of_year</code> takes two arguments - <code>month</code> and <code>day</code> - and converts them into the day of the year.
           For example, the arguments <code>month = 3</code> (March) and <code>day = 1</code> will return <code>60</code> for a non-leap year.
           <code>month_day</code> will convert the day of the year into a pair of month and day. <code>month_day (year = 1987, day = 60)</code>
@@ -98,30 +97,23 @@
                                 #[0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] ];</pre>
         <p>We also need to define a helper function <code>is_leap</code> to check if the given year is a leap year or not:</p>
         <pre>
-          > var is_leap = 
-              function (year) { 
+          > var is_leap = function (year) 
                 and (is_zero (remainder (year, 4)),
-                     or (not (is_zero (remainder (year, 100))),
-                         is_zero (remainder (year, 400))))
-            };</pre>
+                    or (not (is_zero (remainder (year, 100))),
+                        is_zero (remainder (year, 400))));</pre>
         <p>Now we are ready to define the two date conversion functions:</p>
         <pre>
-          > var day_of_year = 
-              function (year, month, day) {
+          > var day_of_year = function (year, month, day)
                 array_reduce (array_at (day_table, if is_leap (year) 1 else 0),
                               add, start = 1, end = month, 
-                              initial_value = day)
-            };
+                              initial_value = day);
 
-          > var month_day = 
-              function (year, yday) {
-                letrec loop = function (month, yday, mdays) { 
+          > var month_day = function (year, yday)
+                letrec loop = function (month, yday, mdays)
                                 let days_in_month = array_at (mdays, month)
                                   if yday > days_in_month loop (month + 1, yday - days_in_month, mdays)
                                   else [month yday]
-                             }
-                   loop (1, yday, array_at (day_table, if is_leap (year) 1 else 0))
-            };</pre>
+                   loop (1, yday, array_at (day_table, if is_leap (year) 1 else 0));</pre>
         <p><code>day_of_year</code> makes use of the array mapping function <code>array_reduce</code> which calls
           a function for each element of the array. Here we add the days of all months up to <code>month</code> to
           find the day of the year:</p>
@@ -200,9 +192,9 @@
           string where each character is the result of applying the function to each character of the original string.
         <code>string_for_each</code> is similar to <code>string_map</code> but is called for its side-effect:</p>
         <pre>
-          > string_map (function (c) { char_upcase (c) }, "hello");
+          > string_map (function (c) char_upcase (c), "hello");
           => "HELLO"
-          > string_for_each (function (c) { print (c) }, "hello");
+          > string_for_each (function (c) print (c), "hello");
           'h''e''l''l''o'</pre>
         <p>In addition to string literals, the functions <code>string</code>, <code>string_append</code> and <code>substring</code>
           can be used to create new strings: </p>
@@ -226,32 +218,26 @@
                            !OCT, !NOV, !DEC];
 
           > var parse_date = 
-              function (str_date) {
+              function (str_date)
                 let parts = string_split (str_date)
                   if not (length (parts) == 3) {
                      println ("Date should be in DD MON YYYY format.");
                      false
-                  } else {
+                  } else 
                      let mon = array_index_of (months, string_to_symbol (at (parts, 1)))
                        if mon == -1 {
                          println ("Invalid month. ", at (parts, 1));
                          false
-                       } else {
-                         let year = string_to_number (at (parts, 2)), month = mon + 1
-                           [validate_mday (month, year, string_to_number (at (parts, 0))),
-                            month,
-                           year]
-                       }
-                  }
-               };
+                       } else let year = string_to_number (at (parts, 2)), month = mon + 1
+                              [validate_mday (month, year, string_to_number (at (parts, 0))),
+                               month, year];
 
           > var validate_mday =
-              function (month, year, mday) {
+              function (month, year, mday)
                  if (mday &gt; 0 && mday &lt;= (array_at (array_at (day_table, if is_leap (year) 1 else 0), month))) mday
-                 else false
-            };
+                 else false;
           
-          // Some tests:
+          // tests:
           > parse_date ("02 AUG 2012");
           => [2, 8, 2012]
           > parse_date ("31 DEC 2014");
@@ -285,7 +271,7 @@
         <p>The <code>parse_date</code> function does not do a lot of data validation. It just checks if the month is valid and the day
           falls within that month. As an extended exercise, you can add more validation code to <code>parse_date</code> and make 
           it robust. Instead of printing an error message, you may want to try the <code>error</code> function to raise
-          exceptions. In a later chapter we will cover exceptions in more detail.</p>
+          exceptions. In a later chapter we will cover <a href="scope.html#except">exceptions</a> in more detail.</p>
         <h3>Tables</h3>
         <p>In the chapter on <a href="./lists.html">lists</a>, we saw how to use lists as tables of key-value pairs. We used the
           <code>assoc_***</code> functions to store and retrieve values from these structures. But lists can get inefficient for 
@@ -310,7 +296,7 @@
           => green
           > table_length (fruit_colors);
           => 3
-          > table_for_each (function (key, value) { println (key, ": ", value) }, fruit_colors);
+          > table_for_each (function (key, value) println (key, ": ", value), fruit_colors);
           >> orange": "orange
              apple": "green
              apricot": "yellow </pre>
@@ -319,7 +305,7 @@
           key hashes are created, you can provide the table constructor with a hash function which takes a key
           object as parameter and returns an integer that uniquely identifies the key:</p>
         <pre>
-          > var coords = table (hash = function (p) { real_to_integer (head (p) + tail (p) * 31) });
+          > var coords = table (hash = function (p) real_to_integer (head (p) + tail (p) * 31));
           > table_set (coords, [12.9667 77.5667], "Bangalore");
           > table_set (coords, [13.0839 80.2700], "Chennai");
           > table_at (coords, [13.0839 80.2700]);
@@ -356,12 +342,11 @@
         </ol>
         <p>Once defined, a record gets the same status as the built-in types of the language - it can be passed as arguments to
           functions and it can be returned as results of functions. For example, here is a function that adds two points together
-          to create a new point:</p>
+          to create a new one:</p>
         <pre>
           > var add_points = 
-              function (p1, p2) {
-                point (x = point_x (p1) + point_x (p2), y = point_y (p1) + point_y (p2))
-            };
+              function (p1, p2)
+                point (x = point_x (p1) + point_x (p2), y = point_y (p1) + point_y (p2));
           > add_points (point (x = 10, y = 20), point (x = 12, y = 15));
           => #&lt;point #3 x: 22 y: 35&gt;</pre>
       </div>

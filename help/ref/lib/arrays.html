@@ -107,10 +107,12 @@
         <h5>array_for_each (fn, a)</h5>
         <p>Similar to <code>array_map</code> but calls <code>fn</code> for its side-effect. Returns <code>void</code>.</p>
 
-        <h5>array_reduce (a, fn, @key initial_value)</h5>
+        <h5>array_reduce (a, fn, @key initial_value, start, end)</h5>
         <p>Compresses or folds the array <code>a</code> into a single value by recursively applying <code>fn</code> to 
           each element and the compressed result computed so far. If <code>initial_value</code> is not specified, 
-          the first element of the array is treated as initial_value.</p>
+          the first element of the array is treated as initial_value. The range of values that is folded can be limited by
+          specifying the <code>start</code> and <code>end</code> indexes. They default to <code>0</code> and the length of the
+          array respectively.</p>
         
         <h5>array_index_of (a, obj, @key test)</h5>
         <p>Returns the index of the element <code>obj</code> in the array <code>a</code>. <code>test</code> should be a
