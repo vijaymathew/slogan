@@ -273,11 +273,9 @@
         <h5>copy_list (list)</h5>
         <p>Returns a new list which is an exact copy of the argument.</p>
 
-        <h5>replace (list, a, b, @key test, transform, drill)</h5>
+        <h5>replace (list, a, b, @key test, drill)</h5>
         <p>Returns a new list with all elements that are equal to <code>a</code>, as per the comparison predicate <code>test</code>,
-          with <code>b</code>. <code>test</code> defaults to <code>is_eqv</code>. If <code>transform</code> is specified,
-          it should be a function that accepts two arguments and return a single value. If <code>transform</code> is specified,
-          it is applied with the element being replaced and <code>b</code> as arguments and the result is used as replacement value.
+          with <code>b</code>. <code>test</code> defaults to <code>is_eqv</code>. 
           <code>replace</code> applies itself recursively to any element that itself is a list. To prevent this behavior, pass
           <code>false</code> to the <code>drill</code> parameter.</p>
         
@@ -293,7 +291,8 @@
 
         <h5>replace_all (list, a, b, @key test, transform, drill)</h5>
         <p>This is similar to <code>replace</code> except that <code>a</code> and <code>b</code> are lists and all elements in
-          <code>a</code> are replaced with the elements is <code>b</code>.</p>
+          <code>a</code> are replaced with the elements is <code>b</code>. If the function <code>transform</code> is specified
+          it is called with the element from <code>b</code> and the result is used for replacement.</p>
         <pre>
           > replace_all ([1, 2, 3, 4, 3, 2], [3, 2], [100, 400]);
           => [1, 400, 100, 4, 100, 400]

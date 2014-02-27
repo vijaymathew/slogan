@@ -110,6 +110,13 @@
         <h5>set_current_exception_handler (handler)</h5>
         <p>Updates the global exception handler.</p>
 
+        <h5>raise (obj)</h5>
+        <p>Raises an exception. The current exception handler will recieve <code>obj</code> as the exception object.</p>
+        <pre>
+          > try raise (123)
+            catch (e) println ("exception raised: ", e);
+          >> exception raised: 123</pre>
+
         <h5>error (message, arg1, arg2, ..., argN)</h5>
         <p>Raises an error object whose message field is <code>message</code> and parameters field is the list of values
           starting with <code>arg1</code>.</p>

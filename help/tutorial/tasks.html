@@ -31,7 +31,7 @@
 	  a decimal number to indicate sub-second timeouts. For example, the timeout <code>0.5</code> will cause the thread
 	  to sleep for 500 milliseconds. To stop the running task, call <code>task_terminate</code> on it.</p>
 	<p>Tasks can communicate with each other using messages. Any Slogan object can become a message for a task. 
-	  Each task has an associated message queue where it receives messages from other threads. The following
+	  Each task has an associated message queue where it receive messages from other threads. The following
 	  examples shows a task that waits for a message to arrive in its message queue. The message is formatted as a pair.
 	  The head of the pair points to the sender task and the tail is a string containing a Slogan program. The task
 	  function parses and evaluates this Slogan program and returns the result to the sender.</p>
@@ -62,7 +62,9 @@
 	  > sender ("10 + 20");
 	  >> 30
 	  > sender ("function (x) { x * x } (100)"); 
-	  >> 1000</pre>
+	  >> 10000</pre>
+        <p>This implementation of Slogan makes use of the Gambit thread system which can spawn and execute tens of thousands of threads
+          efficiently.</p>
       </div>
     </div>
   </body>

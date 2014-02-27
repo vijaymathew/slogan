@@ -65,7 +65,8 @@ int c_add_two_ints (___slogan_obj i, ___slogan_obj j)
           be called using FFI. The functions <code>ffi_call_with_void_pointer_1</code> and <code>ffi_call_void_pointer_with_void_pointer_1</code>
           are used for this. A C library function to be called using the FFI should not have more that 8 parameters. For passing more
           values from Slogan to C, we can make use of lists and arrays. A C function can return the following types into Slogan:
-          <code>int</code>, <code>int64</code>, <code>float</code>, <code>double</code>, <code>char*</code> and <code>void*</code>.</p>
+          <code>int</code>, <code>int64</code>, <code>float</code>, <code>double</code>, <code>char*</code>, <code>void*</code>
+          and <code>___slogan_obj</code>.</p>
         <p>See the samples <code>./example/tutorial/egdlib.c</code> and 
           <code>./example/tutorial/ffi.sn</code> for more usage scenarios of FFI.</p>
       </div>

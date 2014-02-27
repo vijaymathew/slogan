@@ -49,7 +49,7 @@
         <p><code>read_line</code> reads characters from an input stream until a specific separator or the end-of-stream is encountered.
           The characters read are returned as a string. The separator can be specified as the second argument and it defaults to the
           <code>newline</code> character.</p>
-        <p>To prevent new content from overwriting old content, the file has to be opened by specifying the <code>append</code>
+        <p>To prevent new content from overwriting old content, the file has to be opened with the <code>append</code>
           flag turned on:</p>
         <pre>
           > with_output_stream (!file, [[!path "hello.txt"], [!append true]], function (s) { println (to = s, "this is some new text") });

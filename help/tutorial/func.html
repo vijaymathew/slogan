@@ -12,14 +12,14 @@
     <div id="page" class="wide">
       <div class="container">
         <h2>Functions</h2>
-        <p>Functions are at the core of Slogan. They are the primary means of abstraction provided by the language. Functions have first-class
+        <p>Functions are the primary means of abstraction in Slogan. Functions have first-class
           status - they can be assigned to variables, passed to other functions as arguments and returned as results. 
           The <code>function</code> keyword is used to introduce a function literal:</p>
         <pre>
-          function (&lt;param1&gt;, &lt;param2&gt; ...) {
-              // function body
-          }</pre>
-        <p>The function object has a pointer to the environment in which it was created. So in addition to its parameters, its body
+          function (&lt;param1&gt;, &lt;param2&gt; ...)
+              &lt;function_body_expression&gt;</pre>
+
+        <p>The function object has a pointer to the environment in which it was created. So in addition to the parameters, a function's body
           can refer to variables in the defining environment. Just like the <code>let*</code> expressions, a function can shadow
           definitions in this environment with definitions of its own:</p>
         <pre>
@@ -41,25 +41,21 @@
         <h4>Functions as arguments</h4>
         <p>Consider the following two functions. The first one adds all integers in a given range:</p>
         <pre>
-          > var sum_integers =
-              function (a, b) {
+          > var sum_integers = function (a, b)
                 if a > b 0
-                else a + sum_integers (a + 1, b)
-            }; 
+                else a + sum_integers (a + 1, b);
 
           > sum_integers (1, 5);
           => 15</pre>
-        <p>The second finds the sum of all alternative elements in a sequence after doubling each elements value:</p>
+        <p>The second function finds the sum of all alternative elements in a sequence after doubling each element's value:</p>
         <pre>
-           > var sum_alternate_doubles =
-              function (a, b) {
+           > var sum_alternate_doubles = function (a, b)
                 if a > b 0
-                else (a + a) + sum_alternate_doubles (a + 2, b)
-             };
+                else (a + a) + sum_alternate_doubles (a + 2, b);
 
            > sum_alternate_doubles (1, 10);
            => 50</pre>
-        <p>Both functions share a some common pattern. This pattern can be abstracted into a single function that does the following:
+        <p>Both functions share a common pattern. This pattern can be abstracted into a single function that does the following:
           <ol>
             <li>Return <code>0</code> when <code>a</code> is greater than <code>b</code>.</li>
             <li>Transform <code>a</code> in some way and add the result to the value of a recursive call to itself.</li>
@@ -69,22 +65,16 @@
           the way <code>a</code> is transformed and how its successor is obtained. These custom behaviors can be passed to <code>sum</code>
           as function arguments. Here is the definition of <code>sum</code>:</p>
         <pre>
-          > var sum = 
-             function (a, b, transformer, successor) {
+          > var sum = function (a, b, transformer, successor)
                if a > b 0
-               else transformer (a) + sum (successor (a), b, transformer, successor)
-            };</pre>
+               else transformer (a) + sum (successor (a), b, transformer, successor);</pre>
         <p>Now we can redefine <code>sum_integers</code> and <code>sum_alternate_doubles</code> using <code>sum</code>:</p>
         <pre>
-          > sum_integers = 
-               function (a, b) { 
-                sum (a, b, function (x) { x }, function (x) { x + 1 })
-            };
+          > sum_integers = function (a, b) 
+                sum (a, b, function (x) x, function (x) x + 1);
 
-          > sum_alternate_doubles = 
-              function (a, b) {
-               sum (a, b, function (x) { x + x }, function (x) { x + 2 })
-          };
+          > sum_alternate_doubles = function (a, b)
+               sum (a, b, function (x) x + x, function (x) x + 2);
 
           > sum_integers (1, 5);
           => 15
@@ -95,10 +85,8 @@
           concrete instances of <code>sum</code>. You can think of more, like
           a function that sums the cubes of all numbers in a sequence: </p>
         <pre>
-          > var sum_cubes = 
-              function (a, b) {
-                sum (a, b, function (x) { x * x * x }, function (x) { x + 1})
-            };
+          > var sum_cubes = function (a, b) 
+                sum (a, b, function (x) x * x * x, function (x) x + 1);
           
           > sum_cubes (1, 3);
           => 36</pre>
@@ -108,7 +96,7 @@
           to create a new version of <code>sum_cubes</code>. <code>apply</code> takes a function and a list of values as its arguments.
           The function is called with the elements of the list as its arguments:</p>
         <pre>
-          > sum_cubes = function (numbers) { apply (add, map (function (x) { x * x * x }, numbers)) };
+          > sum_cubes = function (numbers) apply (add, map (function (x)  x * x * x, numbers));
           > sum_cubes ([1, 2, 3]);
           => 36</pre>
         <h4>Functions as returned values</h4>
@@ -117,12 +105,10 @@
           that accept the range as additional parameters. The new function can refer to the transformer and successor implicitly
           as they are available in its defining environment. Our constructor of summations is called <code>make_summation</code>:</p>
         <pre>
-          > var make_summation = 
-              function (transformer, successor) {
-                function (a, b) { sum (a, b, transformer, successor) }
-            };
+          > var make_summation = function (transformer, successor) 
+                function (a, b) sum (a, b, transformer, successor);
           
-          > sum_integers = make_summation (function (x) { x }, function (x) { x + 1 });
+          > sum_integers = make_summation (function (x) x, function (x) x + 1);
           > sum_integers (1, 5);
           => 15</pre>
         <h4>Closures</h4>
@@ -148,15 +134,14 @@
         <p>Objects in an Object Oriented language can respond to messages. Using closures and symbols we can define such 
           <em>message-aware</em> objects:</p>
         <pre>
-          > var make_circle = function (radius) {
-                function (message) {
+          > var make_circle = function (radius)
+                function (message)
                   case message {
                     !radius: radius
                     !area: 3.14 * radius * radius
                     !set_radius: function (r) { radius = r }
-                 }
-              }
-          };
+                 };
+
           > var c = make_circle (2.4);
           > c (!radius);
           => 2.4
@@ -165,7 +150,7 @@
           > c (!set_radius) (3);
           > c (!radius);
           => 3</pre>
-        <p>Slogan provides a convenient dot-notation for passing messages to closures: </p>
+        <p>Slogan also provides a more convenient dot-notation for passing messages to closures: </p>
         <pre>
           > c = make_circle (10.5);
           > c.radius;
@@ -183,8 +168,7 @@
           These objects can be described as sharing a common base type because all of them respond to
           two common messages: <code>area</code> and <code>show</code>.</p>
         <pre>
-var geometry = 
-    function (message) {
+var geometry = function (message) {
         let make_circle = function (radius) {
             function (message) {
             case message {
@@ -238,11 +222,9 @@ var geometry =
         <h4>Keyword, optional and rest parameters</h4>
         <p>Function parameters can be marked as optional with the special marker <code>@optional</code>.
           A function definition can also specify a default value for the optional parameter. If no default value is
-          specified, an optional parameter will contain the value <code>false</code>.</p>
+          given, an optional parameter will contain the value <code>false</code>.</p>
         <pre>
-          > var f = function (a, b, @optional c = 100) {
-                       a + b + c
-                    };
+          > var f = function (a, b, @optional c = 100) a + b + c;
           > f (1, 2);
           => 103
           > f (1, 2, 3);
@@ -251,9 +233,7 @@ var geometry =
           Keyword parameters make the order of parameters irrelevant. Like optional parameters, keyword parameters
           can be assigned a default value. Keyword parameters are introduced with the marker <code>@key</code>.</p>
         <pre>
-          > f = function (a, @key b, c) {
-                  a + b + c;
-                };
+          > f = function (a, @key b, c) a + b + c;
           > f (10, c = 100, b = 20);
           => 130
           > f (10, b = 90, c = 100);
@@ -261,9 +241,7 @@ var geometry =
         <p>Functions can be made to accept variable number of arguments using the <code>@rest</code> marker. All
           arguments that follow this marker will be made available to the function as elements of a list: </p>
         <pre>
-          > f = function (a, b, @rest c) {
-                  apply (add, append (list (a, b), c))
-                };
+          > f = function (a, b, @rest c) apply (add, append (list (a, b), c));
           > f (1, 2);
           => 3
           > f (1, 2, 3 ,4 ,5);
@@ -275,7 +253,7 @@ var geometry =
           we will be able to write expressions like:</p>
         <pre>
           while (some_condition_is_true, do_this);</pre>
-        <p>A solid example of using the while macro will be: </p>
+        <p>Here is an example of using the <code>while</code> macro: </p>
         <pre>
           > let i = 0
           > while (i < 10, {
@@ -285,36 +263,32 @@ var geometry =
           >> 0 1 2 3 4 5 6 7 8 9</pre>
         <p>Now for the macro definition itself: </p>
         <pre>
-          > macro while ($cond, $body) {
-              letrec fn_loop = function () {
+          > macro while ($cond, $body)
+              letrec fn_loop = function ()
                 if $cond {
                   $body;
                   fn_loop ()
               }
-            }
-            fn_loop ()
-          };</pre>
+            fn_loop ();</pre>
         <p>The code in the macro definition is not executed. It is remembered by the compiler. Later when the macro is invoked
-          by name, the compiler will expand it using this code. During the expansion phase, the macro parameters will be 
+          by name, the compiler will use this code to <em>expand</em> that call. During the expansion phase, the macro parameters will be 
           replaced by the actual arguments. (Prefixing macro arguments with the '$' sign is just a convention that makes it easy
           to identify variables that will be expanded in the body of the macro). The implementation of the <code>while</code> macro
           is quite simple: it creates and invokes a recursive function
           that repeatedly executes <code>$body</code> until <code>$cond</code> evaluates to <code>true</code>.</p>
         <p>As an extended example, let us try to emulate the <code>for</code> loop found in the C language:</p>
         <pre>
-          > macro for (x, start, stop, body) {
+          > macro for (x, start, stop, body) 
               let x = start
               let cmpr = if stop > 0 number_is_lt else number_is_gt
               let incr = if stop > 0 add else sub
-              letrec fn_loop = function () {
+              letrec fn_loop = function () 
                if cmpr (x, stop) {
-                body;
-                x = incr (x, 1);
-               fn_loop ()
-            }
-          }
-          fn_loop ()
-        };</pre>
+                 body;
+                 x = incr (x, 1);
+                 fn_loop ()
+               }
+          fn_loop ();</pre>
         <p>This macro is more advanced than <code>while</code> because it lets the user initialize the loop variable within the
           macro itself and use that variable by name in its body:</p>
         <pre>
@@ -324,9 +298,7 @@ var geometry =
           treated specially during macro expansion. The argument bound to that variable will be evaluated during compile time and
           the result of the evaluation is inserted instead of the expression itself: </p>
         <pre>
-          > macro print_if ($cond, $expr) { 
-              if $cond print (~$expr)
-            };</pre>
+          > macro print_if ($cond, $expr) if $cond print (~$expr);</pre>
         <p>The macro <code>print_if</code> evaluates the value of <code>$expr</code> during compile-time and inserts that value 
           as the argument to the call to <code>print</code>:</p>
         <pre>

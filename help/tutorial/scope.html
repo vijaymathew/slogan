@@ -56,7 +56,7 @@
           is evaluated with the variable bindings at the beginning of <code>let</code>. Here we have two expressions - <code>x</code> and
           <code>200</code>. <code>x</code> evaluates to <code>10</code> and <code>200</code> evaluates to itself. As the next step, a new
           <em>environment</em> of variable bindings is created for <code>let</code> and two slots named <code>x</code> and <code>y</code> are
-          created there. <code>10</code> is assigned to the new <code>x</code> and <code>200</code> to the new <code>y</code>. 
+          created there. <code>10</code> is assigned to the <code>x</code> slot and <code>200</code> to the <code>y</code> slot. 
           The body of <code>let</code>
           always refers to its local environment when it has to find the value of a variable. Only if it cannot find the variable there it will
           refer to the environment in which <code>let</code> was evaluated. This behavior is what causes the <em>shadowing</em> that we
@@ -65,21 +65,21 @@
           sequentially. In our earlier example, this means that <code>y</code> is bound in an environment which already has a valid binding
           for <code>x</code>. So initialization expressions can refer to local variables bound previously:</p>
         <pre>
-          > letseq a = 10, b = a * 100 a + b;
+          > letseq x = 10, y = x * 100 x + y;
           => 1010</pre>
         <p><code>letrec</code> initializes all local bindings to empty slots in the new environment. This makes it possible for all
           initialization expressions to refer to other local variables despite of their position in the declaration sequence. <code>letrec</code>
           can be used for defining local functions that make recursive calls to each other: </p>
         <pre>
-          > letrec is_even = function (n) { if is_zero (n) true else is_odd (n - 1) },
-                   is_odd = function (n) { if is_zero (n) false else is_even (n - 1) }
+          > letrec is_even = function (n) if is_zero (n) true else is_odd (n - 1),
+                   is_odd = function (n) if is_zero (n) false else is_even (n - 1)
             is_even (88);
           => true </pre>
         <h3>Conditionals</h3>
         <p>We have already encountered the <code>if</code> conditional expression. Unlike its counterparts in other languages, <code>if</code>
           in Slogan is an expression that evaluates to a value. It has the following general form: </p>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;if &lt;condition&gt; &lt;expression1&gt; else &lt;expression2&gt;</code>
-        <p>If <code>condition</code> evaluates to <code>true</code> <code>expression1</code> is evaluated otherwise <code>expression2</code>
+        <p>If <code>condition</code> evaluates to <code>true</code>, <code>expression1</code> is evaluated otherwise <code>expression2</code>
           is evaluated. The <code>else</code> part is optional. If <code>else</code> is not specified and <code>condition</code> evaluates
           to <code>false</code>, <code>if</code> returns the special <code>void</code> value. Multiple conditions are checked by 
           nesting more <code>if</code> expressions in the <code>else</code> clause:</p>
@@ -92,16 +92,16 @@
           => greater</pre>
         <p>The <code>case</code> expression is used to compare the value of an expression with a list of constants: </p>
         <pre>
-          > var signal = function () { array_at (#[!red, !green, !amber], random (3)) };
+          > var signal = function () array_at (#[!red, !green, !amber], random_integer (3));
           > var check_signal = 
-             function () {
+             function ()
                case signal () {
                  red: "Stop!"
                  green: "Go!"
                  Amber: "Watch!"
                  else: "Invalid signal!"
-               }
-            };
+               };
+
           > check_signal();
           => "Watch!"
           > check_signal();
@@ -157,7 +157,7 @@
           when things cannot proceed as expected. For example, a program to download some resource from a web server may raise
           an exception when a connection to the server cannot be established. An exception is raised by calling the <code>raise</code>
           function. Exceptions cause program control to break out of the current context and invoke a 
-          special function called the <code>exception handler</code>. </p>
+          special function called the <em>exception handler</em>. </p>
         <p>Another function for raising exceptions is <code>error</code>. It takes an error message as the first argument and an
           arbitrary number of optional arguments that will provide more information to the exception handler. The following session
           reviews all the concepts we have learned so far:</p>
@@ -168,7 +168,8 @@
           >> error: oh! 1 2 3</pre>
         <p>The <code>try</code> expression lets us handle exceptions locally. The syntax of <code>try</code> is:</p>
         <pre>
-          try &lt;expression&gt; catch (&lt;exception&gt;) &lt;exception_handler&gt;</pre>
+          try &lt;expression&gt; 
+          catch (&lt;exception&gt;) &lt;exception_handler&gt;</pre>
         <p>If code in the <code>try</code> block raises an exception, it is passed to the <code>catch</code> block
           where it is handled.</p>
         <pre>
@@ -178,9 +179,11 @@
         <p>A <code>try</code> expression can also have a <code>finally</code> clause which is always executed, whether or not
           an exception is raised. So the full syntax of <code>try-catch</code> is:</p>
         <pre>
-          try &lt;expression1&gt; catch (&lt;exception&gt;) &lt;exception_handler&gt; finally &lt;expression2&gt</pre>
+          try &lt;expression1&gt; 
+          catch (&lt;exception&gt;) &lt;exception_handler&gt; 
+          finally &lt;expression2&gt</pre>
         <p>A common usage scenario of <code>finally</code> is where we want to ensure that some "cleanup" happens, even if an exception
-          happens. If <code>finally</code> is specified, <code>catch</code> becomes optional. In this case the exception is 
+          is raised. If <code>finally</code> is specified, <code>catch</code> becomes optional. In this case the exception is 
           re-thrown after executing the <code>finally</code> clause:</p>
         <pre>
           > try raise ("oh!")
