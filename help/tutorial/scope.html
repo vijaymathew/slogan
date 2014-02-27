@@ -225,7 +225,7 @@
           saves a list of values to a database. The function needs to take care of the situation when a database write fails. 
           There are a couple of ways to approach this problem:</p>
         <p><ul>
-          <li>Do nothing. This will propagate the exception up the caller stack where it may or may not be handled.</li>
+          <li>Do nothing. This will propagate the exception up the caller stack and hope it will be handled somewhere up there.</li>
           <li>Catch the exception locally, log it and return from the function.</li>
           <li>Catch the exception locally, log and then re-throw it - giving the caller an opportunity to handle it further.</li>
           <li>Catch the exception locally, log it and continue processing the rest of the list.</li>
@@ -236,10 +236,10 @@
           Continuations make this possible. With continuations we can add one more item to the above list: </p>
         <ul>
           <li>Catch the exception locally, log it and re-throw it along with a function that allows the user to restart
-            the function from where it had been paused by the database error.</li>
+            the processing from where it had been interrupted by the exception.</li>
         </ul>
-        <p>Now the caller can inspect the error, rectify the problem that caused it and continue processing the rest of the list.
-          (if he wishes to!).
+        <p>Now the caller can inspect the error, rectify the problem that caused it (if that is possible) and continue 
+          processing the rest of the list. (If he wishes to!).
           The following code demonstrates the whole idea of <em>restartable</em> functions: </p>
         <pre>
 // A generic function that applies `fn' to each element in
