@@ -39,8 +39,8 @@
   (eq? *neg-inf-sym* (string->symbol (number->string n))))
 
 (define integer_to_char integer->char)
-(define exact_to_inexact exact->inexact)
-(define inexact_to_exact inexact->exact)
+(define rational_to_real exact->inexact)
+(define real_to_rational inexact->exact)
 (define number_to_string number->string)
 
 (define (real_to_integer n)

@@ -394,6 +394,8 @@
 (define (char->special c)
   (cond ((char=? c #\n)
          #\newline)
+        ((char=? c #\")
+         #\")
         ((char=? c #\t)
          #\tab)
         ((char=? c #\r)
