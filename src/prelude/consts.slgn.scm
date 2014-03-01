@@ -2,7 +2,7 @@
 (define *slgn-extn* ".sn")
 (define *exe-extn* ".run")
 
-(define *slogan-root* (getenv "SLOGAN_ROOT" "/usr/slogan"))
+(define *slogan-root* (getenv "SLOGAN_ROOT" "."))
 (define *prelude-root* (string-append *slogan-root* "/src/prelude"))
 
 (define *gsc-compiler* (string-append *slogan-root* "/platform/gsc/gsc/gsc"))

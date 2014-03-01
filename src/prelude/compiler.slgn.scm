@@ -25,7 +25,7 @@
 		       (loop (cdr exprs))))))))))
 
 (define (compile script-name #!key assemble exe
-		 ld_options cc_options
+		 ld_options cc_options output
                  (exception_handler display-exception))
   (let ((is-scm (string-ends-with? script-name *scm-extn*)))
     (with-exception-catcher
@@ -42,7 +42,7 @@
                     (if exe 
                         (string-append *gsc-compiler* " " 
                                        (if cc_options cc_options "")
-                                       " -o " (string-append script-name *exe-extn*)
+                                       " -o " (if output output (path-strip-extension script-name))
                                        (if ld_options ld_options "")
                                        " -exe "
                                        (string-append *prelude-root* "/*.scm ")
