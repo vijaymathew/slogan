@@ -152,3 +152,12 @@
         (make-rectangular (string->number (car parts) radix)
                           (string->number (cadr parts) radix)))
       (string->number s radix)))
+
+(define (string_join infix slist)
+  (let loop ((slist slist)
+             (result #f))
+    (if (null? slist)
+        result
+        (loop (cdr slist) (if result 
+                              (string-append result infix (car slist))
+                              (car slist))))))

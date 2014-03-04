@@ -125,6 +125,7 @@
           => ["hello", 2, 3]</pre>
 
         <h5>assoc_get (alist, key, @key test, default_value)</h5>
+        <h5>assoc_at (alist, key, @key test, default_value)</h5>
         <h5>assoc_put (alist, key, value)</h5>
         <h5>assoc_set (alist, key, value, @key test)</h5>
         <p>These functions manipulate an <em>association list</em>, i.e a list of key-value pairs. The head of each pair
@@ -133,6 +134,8 @@
           <code>test</code> is the predicate used to compare <code>key</code> to the head of each pair. 
           If the head of a pair returns <code>true</code> for the comparison, its tail is returned, otherwise <code>default_value</code>
           is returned. If <code>default_value</code> is not specified, <code>false</code> is returned.</p>
+
+        <p><code>assoc_at</code> is similar to <code>assoc_get</code> but returns on the mapped value, not the entire pair.</p>
 
         <p><code>assoc_put</code> returns a new association list obtained after adding the mapping from <code>key</code> to <code>value</code>
           to <code>alist</code>.</p>
@@ -146,6 +149,8 @@
           => [[class "Sport bike"], [engine "1352cc"], [transmission "6-speed"]]
           > assoc_get (a, !class);
           => [class "Sport bike"]
+          > assoc_at (a, !class);
+          => "Sport bike"
           > assoc_get (a, !engine);
           => [engine "1352cc"]
           > assoc_get (a, !manufacturer);

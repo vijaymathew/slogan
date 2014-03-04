@@ -156,6 +156,16 @@
         <h5>string_append (s1, s2, ..., s3)</h5>
         <p>Returns a newly allocated string whose characters form the concatenation of the given strings.</p>
         
+        <h5>string_join (infix, slist)</h5>
+        <p>Returns a new string obtained by appending all strings in <code>slist</code> together, each separated by the 
+          <code>infix</code>.</p>
+        
+        <pre>
+          > string_join (" ", ["a", "b", "c"]);
+          => "a b c"
+          > string_join (",", ["a", "b", "c"]);
+          => "a,b,c"</pre>
+
         <h5>string_copy (s)</h5>
         <p>Returns a newly allocated copy of the given string.</p>
         
@@ -228,8 +238,8 @@
             > string_to_number ("hello");
             => false
             > string_to_number ("45", 16);
-            => 69</pre>
-            
+            => 69</pre>            
+
       </div>
     </div>
   </body>

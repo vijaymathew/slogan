@@ -29,6 +29,12 @@
            (car alist))
           (else (loop (cdr alist))))))
 
+(define (assoc_at alist key #!key
+                  (test *default-eq*)
+                  (default_value #f))
+  (let ((val (assoc_get alist key test: test default_value: default_value)))
+    (if val (cdr val) val)))
+
 (define (assoc_put alist key value)
   (cons (cons key value) alist))
 
