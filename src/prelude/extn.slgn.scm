@@ -20,3 +20,13 @@
 
 (define callcc call/cc)
 (define dynamic_wind dynamic-wind)
+
+(define (compose #!rest fns)
+  (let ((fns (reverse fns)))
+    (lambda (#!rest args)
+      (let loop ((fns (cdr fns))
+                 (result (apply (car fns) args)))
+        (if (not (null? fns))
+            (loop (cdr fns) ((car fns) result))
+            result)))))
+    
