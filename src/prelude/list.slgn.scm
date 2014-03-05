@@ -20,7 +20,7 @@
   (list-ref seq i))
 
 (define (assoc_get alist key #!key 
-                   (test *default-eq*)
+                   (test equal?)
                    (default_value #f))
   (let loop ((alist alist))
     (cond ((null? alist)
@@ -30,7 +30,7 @@
           (else (loop (cdr alist))))))
 
 (define (assoc_at alist key #!key
-                  (test *default-eq*)
+                  (test equal?)
                   (default_value #f))
   (let ((val (assoc_get alist key test: test default_value: default_value)))
     (if val (cdr val) val)))
@@ -38,7 +38,7 @@
 (define (assoc_put alist key value)
   (cons (cons key value) alist))
 
-(define (assoc_set alist key value #!key (test *default-eq*))
+(define (assoc_set alist key value #!key (test equal?))
   (set-cdr! (assoc_get alist key test: test) value))
 
 (define for_each for-each)

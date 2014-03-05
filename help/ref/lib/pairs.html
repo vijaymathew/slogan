@@ -131,7 +131,7 @@
         <p>These functions manipulate an <em>association list</em>, i.e a list of key-value pairs. The head of each pair
           is treated as the key and its tail is treated as the associated value.</p>
         <p><code>assoc_get</code> returns the value mapped to <code>key</code> in <code>alist</code>. 
-          <code>test</code> is the predicate used to compare <code>key</code> to the head of each pair. 
+          <code>test</code> is the predicate used to compare <code>key</code> to the head of each pair and it defaults to <code>is_equal</code>.
           If the head of a pair returns <code>true</code> for the comparison, its tail is returned, otherwise <code>default_value</code>
           is returned. If <code>default_value</code> is not specified, <code>false</code> is returned.</p>
 
