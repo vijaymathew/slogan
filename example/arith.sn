@@ -17,4 +17,23 @@ var quadratic_formula =
         }
     };
 
-println (quadratic_formula (2, -4, -6)) // => (3  -1)
+println (quadratic_formula (2, -4, -6)); // => (3  -1)
+
+// square root by Newton's method:
+
+
+var square  = function (x) x * x;
+var average = function (x, y) (x + y) / 2;
+var sqrt = function (x) 
+    let improve = function (guess) average (guess, (x / guess))
+    let is_good_enough = function (guess) abs (square (guess) - x) < 0.001
+    let sqrt_iter = function (guess)
+         if is_good_enough (guess) guess
+         else sqrt_iter (improve (guess))
+     sqrt_iter (1.0, x);
+
+println (sqrt (10)); // 3.162277665175675
+println (sqrt (9)); // 3.00009155413138
+println (sqrt (100 + 37)); // 11.704699917758145
+println (sqrt (sqrt (2) + sqrt (3))); // 1.7739279023207892
+println (square (sqrt (1000))); // 1000.000369924366
