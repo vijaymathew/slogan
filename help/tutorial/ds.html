@@ -349,6 +349,16 @@
                 point (x = point_x (p1) + point_x (p2), y = point_y (p1) + point_y (p2));
           > add_points (point (x = 10, y = 20), point (x = 12, y = 15));
           => #&lt;point #3 x: 22 y: 35&gt;</pre>
+        <p>All members of a record defaults to <code>false</code>. This can be overridden by specifying default values in the
+          record definition itself:</p>
+        <pre>
+          > record employee(id, name, salary = 3000);
+          > var e01 = employee(id = 1, name = "sam"); // salary will default to 3000 instead of false.
+          > var e02 = employee(id = 2, name = "sean", salary = 5000);
+          > employee_salary (e01);
+          => 3000
+          > employee_salary (e02);
+          => 5000</pre>
       </div>
     </div>
     
