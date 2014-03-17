@@ -1,3 +1,46 @@
 var m_pi = 3.141592653589793;
 var infinity = +inf.0;
 
+record vec3 (x = 0.0, y = 0.0, z = 0.0);
+
+var vec3_normalize = function (self)
+    let nor2 = vec3_length2 (self)
+    if nor2 > 0 vec3_mult_f (self, 1 / sqrt (nor2));
+
+var vec3_mult_f = function (self, f)
+    vec3 (x = vec3_x (self) * f,
+          y = vec3_y (self) * f,
+          z = vec3_z (self) * f);
+
+var vec3_arith = function (self, v, fn)
+    vec3 (x = fn (vec3_x (self), vec3_x (v)),
+          y = fn (vec3_y (self), vec3_y (v)),
+          z = fn (vec3_z (self), vec3_z (v)));
+
+var vec3_mult = function (self, v) vec3_arith (self, v, mult);
+var vec3_add = function (self, v) vec3_arith (self, v, add);
+var vec3_sub = function (self, v) vec3_arith (self, v, sub);
+
+var vec3_dot = function (self, v) 
+    vec3_x (self) * vec3_x (v) + vec3_y (self) * vec3_y (v) + vec3_z (self) * vec3_z (v);
+
+var vec3_neg = function (self) 
+    vec3 (-vec3_x (self), -vec3_y (self), -vec3_z (self));
+
+var vec3_length2 = function (self)
+    let x = vec3_x (self),
+        y = vec3_y (self),
+        z = vec3_z (self)
+    x * x + y * y + z * z;
+
+var vec3_length = function (self) sqrt (length2 (self));
+
+var vec3_print = function (self, out = current_output_stream ())
+    print (to = out, "[", vec3_x (self), " ", vec3_y (self), " ", vec3_z (self), "]");
+
+
+
+
+    
+
+

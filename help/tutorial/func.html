@@ -229,6 +229,9 @@ var geometry = function (message) {
           => 103
           > f (1, 2, 3);
           => 6</pre>
+        <div id="note"><p><em>Note:</em>The directive <code>@optional</code> itself is optional. The above function can also
+            be defined as <code>var f = function (a, b, c = 100) a + b + c;</code>.</p></div>
+
         <p>Keyword parameters let arguments be explicitly assigned to specific parameters while calling the function.
           Keyword parameters make the order of parameters irrelevant. Like optional parameters, keyword parameters
           can be assigned a default value. Keyword parameters are introduced with the marker <code>@key</code>.</p>
