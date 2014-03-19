@@ -1,0 +1,33 @@
+record v3d (x = 0.0, y = 0.0, z = 0.0);
+
+var v3d_add = function (v1, v2) v3d (x = v3d_x (v1) + v3d_x (v2),
+                                     y = v3d_y (v1) + v3d_y (v2),
+                                     z = v3d_z (v1) + v3d_z (v2));
+
+var v3d_sub = function (v1, v2) v3d (x = v3d_x (v1) - v3d_x (v2),
+                                     y = v3d_y (v1) - v3d_y (v2),
+                                     z = v3d_z (v1) - v3d_z (v2));
+
+var v3d_mult_real = function (v1, r) v3d (x = v3d_x (v1) * r,
+                                          y = v3d_y (v1) * r,
+                                          z = v3d_z (v1) * r);
+
+var v3d_div_real = function (v1, r) v3d (x = v3d_x (v1) / r,
+                                         y = v3d_y (v1) / r,
+                                         z = v3d_z (v1) / r);
+
+var v3d_length = function (v) expt (v3d_x (v) + v3d_y (v) + v3d_z (v), 1/2);
+var v3d_length2 = function (v) expt (v3d_length(v), 2);
+
+var v3d_dot_product = function (v1, v2) add (v3d_x (v1) * v3d_x (v2),
+                                             v3d_y (v1) * v3d_y (v2),
+                                             v3d_z (v1) * v3d_z (v2));
+
+var v3d_cross_product = function (v1, v2) v3d (x = v3d_y (v1) * v3d_z (v2) - v3d_z (v1) * v3d_y (v2),
+                                               y = v3d_z (v1) * v3d_x (v2) - v3d_x (v1) * v3d_z (v2),
+                                               z = v3d_x (v1) * v3d_y (v2) - v3d_y (v1) * v3d_x (v2));
+
+var v3d_neg = function (v) v3d (x = sub(v3d_x (v)), y = sub(v3d_y (v)), z = sub(v3d_z (v)));
+
+var v3d_print = function (v) print ("[", v3d_x (v), ", ", v3d_y (v), ", ", v3d_z (v), "]");
+var v3d_println = function (v) { v3d_print (v); println () };
