@@ -61,6 +61,9 @@
 (define mult *)
 (define div /)
 
+(define (safe_div a b)
+  (if (zero? b) +inf.0 (/ a b)))
+
 (define fxadd fx+)
 (define fxsub fx-)
 (define fxmult fx*)

@@ -16,8 +16,9 @@ var v3d_div_real = function (v1, r) v3d (x = v3d_x (v1) / r,
                                          y = v3d_y (v1) / r,
                                          z = v3d_z (v1) / r);
 
-var v3d_length = function (v) expt (v3d_x (v) + v3d_y (v) + v3d_z (v), 1/2);
-var v3d_length2 = function (v) expt (v3d_length(v), 2);
+var v3d_length = function (v) expt (v3d_length2 (v), 1/2);
+
+var v3d_length2 = function (v) add (expt (v3d_x (v), 2), expt (v3d_y (v), 2), expt (v3d_z (v), 2));
 
 var v3d_dot_product = function (v1, v2) add (v3d_x (v1) * v3d_x (v2),
                                              v3d_y (v1) * v3d_y (v2),
@@ -29,5 +30,89 @@ var v3d_cross_product = function (v1, v2) v3d (x = v3d_y (v1) * v3d_z (v2) - v3d
 
 var v3d_neg = function (v) v3d (x = sub(v3d_x (v)), y = sub(v3d_y (v)), z = sub(v3d_z (v)));
 
-var v3d_print = function (v) print ("[", v3d_x (v), ", ", v3d_y (v), ", ", v3d_z (v), "]");
+var v3d_print = function (v) print ("#v[", v3d_x (v), ", ", v3d_y (v), ", ", v3d_z (v), "]");
 var v3d_println = function (v) { v3d_print (v); println () };
+
+record p3d (x = 0.0, y = 0.0, z = 0.0);
+
+var p3d_add_v3d = function (p, v) p3d (x = p3d_x (p) + v3d_x (v),
+                                       y = p3d_y (p) + v3d_y (v),
+                                       z = p3d_z (p) + v3d_z (v));
+
+var p3d_sub_v3d = function (p, v) p3d (x = p3d_x (p) - v3d_x (v),
+                                       y = p3d_y (p) - v3d_y (v),
+                                       z = p3d_z (p) - v3d_z (v));
+
+var p3d_sub = function (p1, p2) v3d (x = p3d_x (p1) - p3d_x (p2),
+                                     y = p3d_y (p1) - p3d_y (p2),
+                                     z = p3d_z (p1) - p3d_z (p2));
+
+var p3d_mult_real = function (p, r) p3d (x = p3d_x (p) * r,
+                                         y = p3d_y (p) * r,
+                                         z = p3d_z (p) * r);
+
+var p3d_diff = function (p1, p2) expt (p3d_diff2 (p1, p2), 1/2);
+
+var p3d_diff2 = function (p1, p2) add (expt (p3d_x (p1) - p3d_x (p2), 2),
+                                       expt (p3d_y (p1) - p3d_y (p2), 2),
+                                       expt (p3d_z (p1) - p3d_z (p2), 2));
+
+var p3d_print = function (p) print ("#p[", p3d_x (p), ", ", p3d_y (p), ", ", p3d_z (p), "]");
+var p3d_println = function (p) { p3d_print (p); println () };
+
+record n3d (x = 0.0, y = 0.0, z = 0.0);
+
+var n3d_neg = function (n) n3d (x = sub (n3d_x (n)),
+                                y = sub (n3d_y (n)),
+                                z = sub (n3d_z (n)));
+                                       
+var n3d_add = function (n1, n2) n3d (x = n3d_x (n1) + n3d_x (n2),
+                                     y = n3d_y (n1) + n3d_y (n2),
+                                     z = n3d_z (n1) + n3d_z (n2));
+
+var n3d_mult_v3d = function (n, v) add (n3d_x (n) * v3d_x (v),
+                                        n3d_y (n) * v3d_y (v),
+                                        n3d_z (n) * v3d_z (v));
+
+var v3d_mult_n3d = function (v, n) n3d_mult_v3d (n, v);
+
+var n3d_mult_real = function (n, r) n3d (x = n3d_x (n) * r,
+                                         y = n3d_y (n) * r,
+                                         z = n3d_z (n) * r);
+
+var real_mult_n3d = function (r, n) n3d_mult_real (n, r);
+
+var n3d_add_v3d = function (n, v) v3d (x = n3d_x (n) + v3d_x (v),
+                                       y = n3d_y (n) + v3d_y (v),
+                                       z = n3d_z (n) + v3d_z (v));
+
+var v3d_add_n3d = function (v, n) n3d_add_v3d (n, v);
+                                        
+record ray (origin, direction);
+
+record shade (hit_an_object, local_hit_point,
+              normal, color = !black, world);
+
+var default_hit_fn = function (geo_obj, ray, shade_rec) 
+    error ("hit function not implemented!", geo_obj);
+    
+record geometric_object (color = !black, data, hit_fn = default_hit_fn);
+
+record plane_data (point, normal, kepsilon = 0.0);
+
+var plane_hit_fn = function (plane_obj, ray, shade_rec)
+    let data = geometric_object_data (plane_obj)
+    let point = plane_data_point (data), 
+        normal = plane_data_normal (data),
+        rorigin = ray_origin (ray),
+        rdir = ray_direction (ray)
+    let t = (point - rorigin) * safe_div (normal, (rdir * normal))
+    if t > plane_data_kepsilon (data) {
+        shade_set_normal (shade_rec, normal);
+        shade_set_local_hit_point (shade_rec, rorigin + t  * rdir);
+        t
+    } else false;
+
+var mk_plane_object = function (point, normal)
+    let data = plane_data (point = point, normal = normal)
+    geometric_object (data = data, hit_fn = plane_hit_fn);
