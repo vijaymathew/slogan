@@ -277,8 +277,6 @@
        (or (char-numeric? c)
            (char=? #\e c)
            (char=? #\E c)
-           (char=? c #\+)
-           (char=? c #\-)
            (char=? #\. c))))
 
 (define (char-hex-alpha? c)
