@@ -35,11 +35,11 @@
                  (print " [line: "(tokenizer 'line) ", column: " (tokenizer 'column) "]. "))
              (let loop ((args args))
                (if (not (null? args))
-                   (begin (display (car args))
+                   (begin (slgn-display (car args))
                           (loop (cdr args)))))
              (if expr
                  (begin (display ". Current parser state: ")
-                        (display expr)))))))
+                        (slgn-display expr)))))))
 
 (define (assert-semicolon tokenizer expr)
   (let ((token (tokenizer 'peek)))
@@ -243,11 +243,14 @@
              (let loop ((expr (if use-let (cons 'let (cons '() '())) (cons 'begin '())))
                         (count 0))
                (let ((token (tokenizer 'peek)))
-                 (if (eq? token '*close-brace*)
-                     (begin (tokenizer 'next)
-                            (if (zero? count) (append expr (list *void*)) expr))
-                     (loop (append expr (list (expression/statement tokenizer)))
-                           (+ 1 count))))))))
+                 (cond ((eq? token '*close-brace*)
+                        (tokenizer 'next)
+                        (if (zero? count) (append expr (list *void*)) expr))
+                       ((eof-object? token)
+                        (parser-error tokenizer #f "unexpected end of input. missing closing brace?"))
+                       (else
+                        (loop (append expr (list (expression/statement tokenizer)))
+                              (+ 1 count)))))))))
 
 (define (binary-expr tokenizer)
   (let loop ((expr (cmpr-expr tokenizer)))
