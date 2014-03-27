@@ -5,13 +5,11 @@ lst = pair ([1, 2, 3], "hello, world");
 println (head (lst));
 println (tail (lst));
 
-letrec list_copy = function (ls) {
-    if is_empty (ls) [] else pair (head (ls), list_copy (tail (ls))) } 
-{
-    println (list_copy ([1, 2, 3])); // [1, 2, 3]
-};
+letrec list_copy = function (ls) 
+   if is_empty (ls) [] else pair (head (ls), list_copy (tail (ls)))
+println (list_copy ([1, 2, 3])); // [1, 2, 3]
 
-println (map (function (x) { x * x }, [1, 2, 3, 4, 5])); // => [1, 4, 9, 16, 25]
+println (map (function (x) x * x, [1, 2, 3, 4, 5])); // => [1, 4, 9, 16, 25]
 
 lst = [1, 89, 0, 100, 23];
 println (sort (lst)); // => [0, 1, 23, 89, 100]
