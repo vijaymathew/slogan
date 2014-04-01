@@ -6,6 +6,7 @@
 (define is_boolean boolean?)
 (define is_function procedure?)
 (define is_symbol symbol?)
+(define is_promise ##promise?)
 
 (define (current_exception_handler) 
   (current-exception-handler))
