@@ -2,19 +2,12 @@
 // on code from "Concepts, Techniques, and Models of Computer Programming".
 
 // Local functions:
-var sqrt = function (x) {
-    let improve = function (guess) {
-        (guess + x / guess) / 2.0
-    },
-    good_enough = function (guess) {
-        (abs (x - guess * guess)) / x < 0.00001
-    }
-    letrec sqr_iter = function (guess) {
-        if good_enough (guess) guess
-        else sqr_iter (improve (guess))
-    }
-    sqr_iter (1.0)
-};
+var sqrt = let improve = function (guess, x) (guess + x / guess) / 2.0,
+               good_enough = function (guess, x) (abs (x - guess * guess)) / x < 0.00001
+           letrec sqr_iter = function (x, guess)
+                               if good_enough (guess, x) guess
+                               else sqr_iter (x, improve (guess,x))
+           function (x) sqr_iter (x, 1.0);
 
 // Loop abstraction with higher-order function:
 var iterate = function (s, is_done, transform) {
@@ -83,3 +76,20 @@ var good_reverse = function (lst) {
         else rev (tail (lst), pair (head (lst), acc))
     } rev (lst, [])
 };
+
+// Amortized constant-time ephemeral queue
+
+var new_queue = function () [[] []];
+
+var queue_check = function (q)
+    if is_empty (head (q)) [reverse (tail (q)) []]
+    else q;
+
+var queue_insert = function (q, e) 
+    queue_check ([head (q) [e tail (q)]]);
+
+var queue_delete = function (q)
+    let q = queue_check (q)
+    if is_empty (head (q)) q
+    else [tail (head (q)) tail (q)];
+    
