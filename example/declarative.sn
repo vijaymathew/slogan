@@ -2,12 +2,13 @@
 // on code from "Concepts, Techniques, and Models of Computer Programming".
 
 // Local functions:
-var sqrt = let improve = function (guess, x) (guess + x / guess) / 2.0,
-               good_enough = function (guess, x) (abs (x - guess * guess)) / x < 0.00001
-           letrec sqr_iter = function (x, guess)
-                               if good_enough (guess, x) guess
-                               else sqr_iter (x, improve (guess,x))
-           function (x) sqr_iter (x, 1.0);
+var sqrt = 
+let improve = function (guess, x) (guess + x / guess) / 2.0,
+    good_enough = function (guess, x) (abs (x - guess * guess)) / x < 0.00001
+    letrec sqr_iter = function (x, guess)
+                          if good_enough (guess, x) guess
+                          else sqr_iter (x, improve (guess,x))
+    function (x) sqr_iter (x, 1.0);
 
 // Loop abstraction with higher-order function:
 var iterate = function (s, is_done, transform) {
