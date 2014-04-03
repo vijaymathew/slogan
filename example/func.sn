@@ -53,3 +53,47 @@ println (c1.read); // => 3
 c5.bump;
 println (c5.read); // => 6
 
+// secure ADTs.
+
+var wrapper = function ()
+    let key = gensym ()
+    let wrap = function (value) function (k) if k == key value else false
+    let unwrap = function (w) w (key)
+    function (msg)
+    case msg {
+        !wrap: wrap
+        !unwrap: unwrap
+        else: error ("invalid message. ", msg)
+    };
+
+var secure_stack = 
+    let w = wrapper ()
+    let new_stack = function () w.wrap ([])
+    let push = function (s, e) w.wrap ([e w.unwrap (s)])
+    let top = function (s) let stk = w.unwrap (s) 
+                           if not (is_empty (stk)) head (stk)
+                           else false
+    let pop = function (s) let stk = w.unwrap (s)
+                           if not (is_empty (stk)) w.wrap (tail (stk))
+                           else false
+    let is_stk_empty = function (s) is_empty (w.unwrap (s))
+    function (msg)
+    case msg {
+        !new: new_stack
+        !push: push
+        !pop: pop
+        !top: top
+        !is_empty: is_stk_empty
+        else: error ("invalid message. ", msg)
+    };
+
+// testing secure_stack:
+
+var ss = secure_stack.new ();
+ss = secure_stack.push (ss, 10);
+ss = secure_stack.push (ss, 20);
+println (secure_stack.top (ss)); // => 20
+ss = secure_stack.pop (ss);
+println (secure_stack.top (ss)); // => 10
+ss = secure_stack.pop (ss);
+println (secure_stack.top (ss)); // => false
