@@ -1,0 +1,8 @@
+var get_dbconn = function (connection_info)
+    let dbconn = [!dbconn connection_info] {
+        get_dbconn = function () dbconn;
+        dbconn
+    };
+
+var db_execute = function (dbconn, sql) 
+    println ("executing \"", sql, "\" on ", dbconn);
