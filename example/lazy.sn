@@ -4,7 +4,3 @@ var lazy_int_stream =
 
 var lazy_head = head;
 var lazy_tail = function (li_stream) force (tail (li_stream));
-
-
-
-        
