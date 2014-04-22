@@ -23,11 +23,10 @@ println (quadratic_formula (2, -4, -6)); // => (3  -1)
 
 var square  = function (x) x * x;
 var average = function (x, y) (x + y) / 2;
-var sqrt = function (x) 
-    let improve = function (guess) average (guess, (x / guess))
-    let is_good_enough = function (guess) abs (square (guess) - x) < 0.001
-    letrec sqrt_iter = function (guess) if is_good_enough (guess) guess else sqrt_iter (improve (guess))
-    sqrt_iter (1.0);
+var sqrt = let improve = function (x, guess) average (guess, (x / guess))
+           let is_good_enough = function (x, guess) abs (square (guess) - x) < 0.001
+           letrec sqrt_iter = function (x, guess) if is_good_enough (x, guess) guess else sqrt_iter (x, improve (x, guess))
+           function (x) sqrt_iter (x, 1.0);
 
 println (sqrt (10)); // 3.162277665175675
 println (sqrt (9)); // 3.00009155413138
