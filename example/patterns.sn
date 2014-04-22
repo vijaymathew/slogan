@@ -1,0 +1,46 @@
+// Singleton
+
+var get_dbconn = function () {
+    println ("Initializing database connection...");
+    let dbconn = [!DatabaseConnection "dbhost:dbport/dbname"] {
+        get_dbconn = function () dbconn;
+        dbconn
+    }
+};
+
+// test
+var dbconn01 = get_dbconn ();
+var dbconn02 = get_dbconn (); // Returns same object as dbconn01.
+println (dbconn01);
+println (dbconn02);
+
+
+// Abstract factory
+
+var make_gui_factory = function (button_maker) 
+    function (msg) 
+        case msg {
+	    !create_button: button_maker ()
+	};
+
+var windows_button_maker = function ()
+    function (msg)
+        case msg {
+	    !draw: println ("this is a windows button!")
+	};
+
+var x_button_maker = function ()
+    function (msg)
+        case msg {
+	    !draw: println ("this is a X button!")
+	};
+
+// test
+var windows_gui = make_gui_factory (windows_button_maker);
+var x_gui = make_gui_factory (x_button_maker);
+
+var windows_button = windows_gui.create_button;
+var x_button = x_gui.create_button;
+windows_button.draw;
+x_button.draw;
+
