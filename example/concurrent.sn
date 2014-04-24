@@ -1,15 +1,37 @@
+// Sample code from the talk "Go Concurrency Patterns" (http://www.youtube.com/watch?v=f6kdp27TYZs)
+
 var boring = function (dest) {
     task_send (dest, "boring!");
     task_sleep (random_integer (5));
     boring (dest)
 };
 
-var boring_task = task (boring, current_task ());
-task_run (boring_task);
-letrec loop = function (n) {
+var recv_n = function (n) {
     if n >= 0 {
         println ("You say: ", task_receive ());
-        loop (n - 1)
+        recv_n (n - 1)
     }
-} loop (5);
+};
+
+var test_boring = function () {
+    let boring_task = task (boring, current_task ()) {
+        task_run (boring_task);
+        recv_n (5)
+    }
+};
         
+// Generator (with implicit "fan-in") pattern.
+
+var message_generator = function (msg, dest) {
+    letrec generator = function () {
+        task_send (dest, msg);
+        task_sleep (random_integer (5));
+        generator ()
+    } task_run (task (generator))
+};
+
+var test_message_generator = function () {
+    message_generator ("hello", current_task ());
+    message_generator ("hi", current_task ());
+    recv_n (10)
+};
