@@ -78,3 +78,17 @@ println (is_balanced (b)); // => false
 var c = make_mobile (make_branch (5, a), make_branch (3, b));
 println (total_weight (c)); // => 14
 println (is_balanced (c)); // => false
+
+var foldr = function (op, initial, seq) {
+    if is_empty (seq) initial
+    else op (head (seq), foldr (op, initial, tail (seq)))
+};
+
+var foldl = function (op, initial, seq) {
+    if is_empty (seq) initial
+    else foldl (op, op (initial, head (seq)), tail (seq))
+};
+
+// list reverse using foldr and foldl:
+var rev_r = function (seq) foldr (function (x, y) append (y, [x]), [], seq);
+var rev_l = function (seq) foldl (function (x, y) [y x], [], seq);
