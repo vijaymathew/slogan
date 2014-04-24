@@ -1,0 +1,15 @@
+var boring = function (dest) {
+    task_send (dest, "boring!");
+    task_sleep (random_integer (5));
+    boring (dest)
+};
+
+var boring_task = task (boring, current_task ());
+task_run (boring_task);
+letrec loop = function (n) {
+    if n >= 0 {
+        println ("You say: ", task_receive ());
+        loop (n - 1)
+    }
+} loop (5);
+        

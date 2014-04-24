@@ -1,6 +1,8 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define task make-thread)
+(define (task fn #!rest args)
+  (make-thread (lambda () (apply fn args))))
+
 (define root_task make-root-thread)
 (define is_task thread?)
 (define current_task current-thread)
