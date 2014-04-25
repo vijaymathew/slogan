@@ -1,7 +1,19 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (task fn #!rest args)
-  (make-thread (lambda () (apply fn args))))
+(define (task fn #!optional args name group)
+  (if args 
+      (task-with-args fn args name group)
+      (task-with-no-args fn name group)))
+
+(define (task-with-args fn args name group)
+  (if group
+      (make-thread (lambda () (apply fn args)) name group)
+      (make-thread (lambda () (apply fn args)) name)))
+
+(define (task-with-no-args fn name group)
+  (if group
+      (make-thread fn name)
+      (make-thread fn)))
 
 (define root_task make-root-thread)
 (define is_task thread?)

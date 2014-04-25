@@ -14,7 +14,7 @@ var recv_n = function (n) {
 };
 
 var test_boring = function () {
-    let boring_task = task (boring, current_task ()) {
+    let boring_task = task (boring, [current_task ()]) {
         task_run (boring_task);
         recv_n (5)
     }
