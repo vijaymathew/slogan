@@ -142,3 +142,12 @@
 (define random_source_for_reals random-source-make-reals)
 (define random_source_for_byte_arrays random-source-make-u8vectors)
 
+(define (prime? n)
+  (if (< n 4) (> n 1)
+      (and (odd? n)
+	   (let loop ((k 3))
+	     (or (> (* k k) n)
+		 (and (positive? (remainder n k))
+		      (loop (+ k 2))))))))
+
+(define is_prime prime?)

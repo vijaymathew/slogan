@@ -1,0 +1,43 @@
+// Streams from SICP.
+
+macro pair_stream (a, b) pair (a, delay (b));
+
+var stream_head = function (s) head (s);
+
+var stream_tail = function (s) force (tail (s));
+
+var is_stream_null = function (s) s == !the_empty_stream;
+
+var stream_ref = function (s, n) {
+    if n == 0 stream_head (s)
+    else stream_ref (stream_tail (s), n - 1)
+};
+
+var stream_map = function (fn, s) {
+    if is_stream_null (s) !the_empty_stream
+    else pair_stream (fn (stream_head (s)), stream_map (fn, stream_tail (s)));
+};
+
+var stream_for_each = function (fn, s) {
+    if is_stream_null (s) !done
+    else { fn (stream_head (s)); stream_for_each (fn, stream_tail (s)) }
+};
+
+var stream_filter = function (pred, s) {
+    if is_stream_null (s) !the_empty_stream
+    else if pred (stream_head (s)) pair_stream (stream_head (s), stream_filter (pred, stream_tail (s)))
+    else stream_filter (pred, stream_tail (s))
+};
+
+// tests:
+var print_stream = function (s) stream_for_each (println, s);
+
+var stream_enumerate_interval = function (low, high) {
+    if low > high !the_empty_stream
+    else pair_stream (low, stream_enumerate_interval (low + 1, high))
+};
+
+println (stream_head 
+         (stream_tail 
+          (stream_filter (is_prime, stream_enumerate_interval (10000, 1000000))))); // => 10009
+    

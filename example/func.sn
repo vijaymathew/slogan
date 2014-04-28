@@ -97,3 +97,49 @@ ss = secure_stack.pop (ss);
 println (secure_stack.top (ss)); // => 10
 ss = secure_stack.pop (ss);
 println (secure_stack.top (ss)); // => false
+
+// currying:
+
+var sum = function(fn, a, b) {
+    letrec loop = function(a, acc)
+    if a > b acc
+    else loop (a + 1, acc + fn (a))
+    loop (a, 0)
+};
+
+var sum_sqrts = function(a, b) sum(sqrt, a, b);
+println (sum_sqrts (10,20)); // => 42.35997728538408
+
+// sum function redefined for currying:
+sum = function (fn) {
+    function (a, b) {
+        letrec loop = function (a, acc)
+        if a > b acc
+        else loop (a + 1, acc + fn (a))
+        loop (a, 0)
+    }
+};
+
+println (sum (sqrt) (10 ,20)); // => 42.35997728538408
+
+var map_reduce = function (fn, combiner, unit) {
+    function (a, b) {
+        if a > b unit
+        else combiner (fn (a), map_reduce (fn, combiner, unit) (a + 1, b))
+    }
+};
+
+sum = function (fn) {
+    function (a, b) {
+        map_reduce (fn, add, 0) (a, b)
+    }
+};
+
+var product = function (fn) {
+    function (a, b) {
+        map_reduce (fn, mult, 1) (a, b)
+    }
+};
+
+println (sum (sqrt) (10, 20)); // => 42.35997728538408
+println (product (sqrt) (10, 20)); // => 2589290.5839244844
