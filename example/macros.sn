@@ -75,3 +75,64 @@ unless (i <= 10, println ("i <= 10"));
 
 let i = 100
 unless (i <= 10, println ("i <= 10"));
+
+macro for_in_pair (x, seq, body) {
+    let x = false 
+    for_each (function ($e) {
+        x = $e;
+        body
+    }, seq)
+};
+
+macro for_in_table (x, seq, body) {
+    let x = false 
+    table_for_each (function ($k, $v) {
+        x = [$k $v];
+        body
+    }, seq)
+};
+
+macro for_in_iterable (x, seq, body) {
+    let x = false
+    letrec loop = function ($s) {
+        if $s.has_more {
+            x = $s.next;
+            body;
+            loop ($s)
+        }
+    }
+    loop (seq)
+};
+
+macro for_in (x, seq, body) {
+    if is_pair (seq) for_in_pair (x, seq, body)
+    else if is_table (seq) for_in_table (x, seq, body)
+    else for_in_iterable (x, seq, body)
+};
+
+for_in (x, [1, 2, 3], { println (x * 10) }); // => 10  20  30
+
+var tbl = table ();
+table_set (tbl, !name, "vijay");
+table_set (tbl, !place, "bangalore");
+
+for_in (x, tbl, { println (head (x), ": ", tail (x)) }); // => name: vijay  place: bangalore
+
+var iterable = function (data) {
+    function (msg) {
+    case msg {
+        !has_more: not (is_empty (data))
+        !next: {
+            let h = head (data) {
+                data = tail (data);
+                h
+            }
+        }
+    }
+    }
+};
+  
+for_in (x, iterable([1, "hello", 19201.323]), { println (x) }); // => 1 hello 19201.323
+   
+       
+        
