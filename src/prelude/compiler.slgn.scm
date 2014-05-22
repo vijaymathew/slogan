@@ -104,6 +104,7 @@
                               (braces-matches? line))
                          (let ((tokenizer (make-tokenizer (open-input-string line))))
                            (let loop ((expr (slogan tokenizer)))
+                             (display expr) (newline)
                              (if (not (eof-object? (tokenizer 'peek)))
                                  (begin (eval expr)
                                         (loop (slogan tokenizer)))

@@ -161,7 +161,7 @@
          (tokenizer 'next)
          (let ((value (expression tokenizer)))
            (if (not (eq? (tokenizer 'peek) '*open-brace*))
-               (parser-error tokenizer value "expected case body" (tokenizer 'next))
+               (parser-error tokenizer value "expected opening brace before case expressions" (tokenizer 'next))
                (tokenizer 'next))
            (let loop ((token (tokenizer 'peek))
                       (body '()))
@@ -176,6 +176,27 @@
                      (loop (tokenizer 'peek)
                            (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
                                        result) body))))))))
+        (else (match-expr tokenizer))))
+
+(define (match-expr tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'match)
+         (tokenizer 'next)
+         (let ((value (expression tokenizer)))
+           (if (not (eq? (tokenizer 'peek) '*open-brace*))
+               (parser-error tokenizer value "expected opening brace before match expressions" (tokenizer 'next))
+               (tokenizer 'next))
+           (let loop ((token (tokenizer 'peek))
+                      (body '()))
+             (if (eq? token '*close-brace*)
+                 (begin (tokenizer 'next)
+                        (cons 'cond body))
+                 (let ((pattern (expression tokenizer)))
+                   (if (not (eq? (tokenizer 'peek) '*colon*))
+                       (parser-error tokenizer pattern "expected colon after pattern" (tokenizer 'next))
+                       (tokenizer 'next))
+                   (let ((consequent (expression tokenizer)))
+                     (loop (tokenizer 'peek)
+                           (cons (match-pattern pattern value consequent tokenizer) body))))))))
         (else (try-catch-expr tokenizer))))
 
 (define (try-catch-expr tokenizer)
@@ -685,7 +706,7 @@
 
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (memq sym '(var import record if case try catch finally
+       (memq sym '(var import record if case match try catch finally
                        function let letseq letrec macro))))
 
 (define (name? sym) 
