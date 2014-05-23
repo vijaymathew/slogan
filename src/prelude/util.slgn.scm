@@ -52,6 +52,10 @@
   (and (symbol? s)
        (char=? (string-ref (symbol->string s) 0) #\!)))
 
+(define (slgn-symbol-quote? s)
+  (and (list? s) (not (null? s))
+       (eq? (car s) 'quote)))
+
 (define (scm-symbol->slgn-symbol s)
   (let ((str (symbol->string s)))
     (string->symbol (substring str 1 (string-length str)))))
@@ -97,12 +101,14 @@
              (if display-string
                  (display val port)
                  (write val port)))
+            ((slgn-symbol? val)
+             (display (scm-symbol->slgn-symbol val) port))
 	    ((thread? val)
 	     (slgn-display-task val port))
             ((error-exception? val)
              (display-exception val port))
             ((eof-object? val)
-             (display '!end-of-stream))
+             (display '!end-of-stream port))
             (else
              (display (scm-repr->slgn-repr val) port)))))
 

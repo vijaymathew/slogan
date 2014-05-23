@@ -1,4 +1,4 @@
- * Fix list pattern matcher
+ * Test list matcher with _ and __ patterns.
  * Implement matcher for records.
 
 
