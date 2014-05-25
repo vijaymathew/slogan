@@ -1,0 +1,35 @@
+match [1,2,3] {
+    [a,b]: [b,a]
+    [a,b,c]: [c,b,a]
+};
+
+match 1 {
+    "hello": "ok"
+    1: 1 + 2
+};
+
+match "hello" {
+    "hello" : "ok"
+    1: 1 + 2
+};
+
+record person (name, age);
+
+var a = person(name="bill", age=36);
+
+match a {
+    person(name="bill", age=36): "bill"
+    person(name="susan"): "susan"
+};
+
+record point(x, y);
+
+var p = point(x=10, y=20);
+
+var f = function(r) {
+    match r {
+	person(name, age): name
+	point(x, y): x + y
+    }
+};
+    

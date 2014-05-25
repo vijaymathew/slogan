@@ -1,4 +1,4 @@
+ * Exhaustive test of the pattern matcher - literals, lists and records.
  * Test list matcher with _ and __ patterns.
- * Test record matcher.
 
 

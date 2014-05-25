@@ -6,21 +6,20 @@
           (list->record-pattern lst))
       lst))
 
-(define-structure record-pattern name accessors values)
+(define-structure record-pattern name members)
 
 (define (list->record-pattern lst)
   (let ((name (symbol->string (car lst))))
     (let loop ((lst (cdr lst))
-               (accessors '())
-               (values '()))
+               (members '()))
       (cond ((null? lst)
-             (make-record-pattern name
-                                  (reverse accessors)
-                                  (reverse values)))
+             (make-record-pattern name (reverse members)))
             (else 
-             (loop (cddr lst)
-                   (cons (keyword->string (car lst)) accessors)
-                   (cons (cadr lst) values)))))))
+	     (if (keyword? (car lst))
+		 (loop (cddr lst)
+		       (cons (cons (keyword->string (car lst)) (cadr lst)) members))
+		 (loop (cdr lst)
+		       (cons (car lst) members))))))))
 
 (define (match-pattern pattern value consequent tokenizer)
   (set! pattern (normalize-list-for-matching pattern))
@@ -45,7 +44,28 @@
                                 (bind-pattern-vars (cdr pattern)
                                                    (cdr value)
                                                    body))))
+	((record-pattern? pattern)
+	 (bind-record-pattern-vars (record-pattern-name pattern)
+				   (record-pattern-members pattern)
+				   value body))
         (else body)))
+
+(define (bind-record-pattern-vars name members value body)
+  (cond ((null? members)
+	 body)
+	((list? members)
+	 (bind-record-pattern-vars 
+	  name (car members) value
+	  (bind-record-pattern-vars 
+	   name (cdr members) value body)))
+	(else (if (and (not (pair? members))
+		       (not (eq? members '_)))
+		  (let ((accessor (string->symbol (string-append 
+						   name "-" 
+						   (symbol->string members)))))
+		    (let ((v ((eval accessor) value)))
+		      `(let ((,members ,v)) ,body)))
+		  body))))
 
 (define (match? pattern value)
   (cond ((symbol? pattern) #t)
@@ -64,17 +84,16 @@
 (define (match-record-pattern? pattern value)
   (let ((predic (eval (string->symbol (string-append (record-pattern-name pattern) "?")))))
     (cond ((predic value)
-           (let loop ((accessors (record-pattern-accessors pattern))
-                      (values (record-pattern-values pattern)))
-             (if (null? accessors)
+           (let loop ((members (record-pattern-members pattern)))
+             (if (null? members)
                  #t
-                 (if (eq? (car values) '_)
-                     (loop (cdr accessors) (cdr values))
+		 (if (pair? (car members))
                      (let ((afn (eval (string->symbol (string-append 
                                                        (record-pattern-name pattern) 
                                                        "-" 
-                                                       (car accessors))))))
-                       (if (equal? (car values) (afn value))
-                           (loop (cdr accessors) (cdr values))
-                           #f))))))
+                                                       (car (car members)))))))
+                       (if (equal? (cdr (car members)) (afn value))
+                           (loop (cdr members))
+                           #f))
+		     (loop (cdr members))))))
            (else #f))))
