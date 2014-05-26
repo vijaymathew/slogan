@@ -28,7 +28,15 @@
                                      ,value
                                      ',consequent))))
 
+(define (normalize-list-pattern pattern)
+  (if (and (list? pattern)
+           (not (null? pattern)))
+      (if (eq? (car pattern) 'list)
+          (set! pattern (cdr pattern))))
+  pattern)
+
 (define (bind-pattern-vars pattern value body)
+  (set! pattern (normalize-list-pattern pattern))
   (cond ((or (null? pattern) 
              (null? value))
          body)
@@ -68,6 +76,7 @@
 		  body))))
 
 (define (match? pattern value)
+  (set! pattern (normalize-list-pattern pattern))
   (cond ((symbol? pattern) #t)
         ((and (null? pattern) (null? value)) #t)
         ((and (list? pattern) (list? value))
