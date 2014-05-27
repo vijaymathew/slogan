@@ -1,4 +1,4 @@
- * Exhaustive test of the pattern matcher - literals, lists and records.
- * Test list matcher with _ and __ patterns.
+ * Complete reimplementation of pattern matcher. Compile pattern during compile time into a call to some kind of record constructor
+   and do the complete pattern matching during runtime.
 
 

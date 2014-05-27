@@ -1,0 +1,33 @@
+record jseq(elems);
+record jobj(bindings);
+record jnum(num);
+record jstr(str);
+record jbool(bool);
+record jnull();
+
+var json_to_string = function(json) {
+    println(json);
+    match json {
+        jseq(elems): {
+            let s = "[" {
+                for_each(elems, function(e) { s = string_append(s, json_to_string(e)); });
+                s = string_append(s, "]");
+                s
+            }
+        }
+        jobj(bindings): {
+            let s = "{" {
+                for_each(bindings, function(e) { s = string_append(json_to_string(head(e)), ":", json_to_string(tail(e))); });
+                s = string_append(s, "}");
+                s
+            }
+        }
+        jnum(num): num
+        jstr(str): string_append("\"", str, "\"")
+        jbool(bool): bool
+        jnull(): ""
+    }
+};
+    
+var json = jobj(bindings = [[jstr(str = "name") jstr(str = "vijay")]]);
+println(json_to_string(jseq(elems = [jstr(str="name"), jstr(str="vijay")])));

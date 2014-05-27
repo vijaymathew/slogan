@@ -6,6 +6,13 @@
           (list->record-pattern lst))
       lst))
 
+(define (normalize-list-pattern pattern)
+  (if (and (list? pattern)
+           (not (null? pattern)))
+      (if (eq? (car pattern) 'list)
+          (set! pattern (cdr pattern))))
+  pattern)
+
 (define-structure record-pattern name members)
 
 (define (list->record-pattern lst)
@@ -22,18 +29,11 @@
 		       (cons (car lst) members))))))))
 
 (define (match-pattern pattern value consequent tokenizer)
-  (set! pattern (normalize-list-for-matching pattern))
-  `((match? ',pattern ,value) (eval (bind-pattern-vars 
-                                     ',pattern 
-                                     ,value
-                                     ',consequent))))
-
-(define (normalize-list-pattern pattern)
-  (if (and (list? pattern)
-           (not (null? pattern)))
-      (if (eq? (car pattern) 'list)
-          (set! pattern (cdr pattern))))
-  pattern)
+  `((match? (normalize-list-for-matching ',pattern) ,value)
+    (eval (bind-pattern-vars 
+           (normalize-list-for-matching ',pattern)
+           ,value
+           ',consequent))))
 
 (define (bind-pattern-vars pattern value body)
   (set! pattern (normalize-list-pattern pattern))
