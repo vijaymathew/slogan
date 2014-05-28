@@ -16,6 +16,7 @@
 (define (make-tokenizer port #!key (compile-mode #f))
   (let ((current-token #f)
         (port (make-port-pos port 1 0))
+        (pattern-mode #f)
         (lookahead-stack '()))
     (lambda (msg . args)
       (case msg
@@ -50,6 +51,9 @@
         ((column)
          (port-pos-col port))
         ((compile-mode?) compile-mode)
+        ((pattern-mode-on) (set! pattern-mode #t))
+        ((pattern-mode-off) (set! pattern-mode #f))
+        ((pattern-mode?) pattern-mode)
         (else (error "tokenizer received unknown message: " msg))))))
 
 (define (next-token port)

@@ -1,26 +1,32 @@
-match [1,2,3] {
+println(match [1,2,3] {
     [a,b]: [b,a]
     [a,b,c]: [c,b,a]
-};
+}); //=> [3, 2, 1]
 
-match 1 {
+println(match 1 {
     "hello": "ok"
     1: 1 + 2
-};
+}); // => 3
 
-match "hello" {
+println(match "hello" {
     "hello" : "ok"
     1: 1 + 2
-};
+}); // => "ok"
+
+println(match [1, "hello"] {
+    [2, "hello"]: 1
+    [1, "hi"]: 2
+    [1, "hello"]: 3
+}); //=> 3
 
 record person (name, age);
 
 var a = person(name="bill", age=36);
 
-match a {
+println(match a {
     person(name="bill", age=36): "bill"
     person(name="susan"): "susan"
-};
+}); // => "bill"
 
 record point(x, y);
 
@@ -33,3 +39,5 @@ var f = function(r) {
     }
 };
     
+println(f(a)); // => "bill"
+println(f(p)); // => 30

@@ -52,6 +52,9 @@
   (and (symbol? s)
        (char=? (string-ref (symbol->string s) 0) #\!)))
 
+(define (scm-symbol? s)
+  (and (symbol? s) (not (slgn-symbol? s))))
+
 (define (slgn-symbol-quote? s)
   (and (list? s) (not (null? s))
        (eq? (car s) 'quote)))
