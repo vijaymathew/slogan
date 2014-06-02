@@ -1,3 +1,7 @@
+println(match [1, 2, 3] {
+    [head tail]: { println ("head=", head, " tail=", tail) }
+});
+
 println(match [1,2,3] {
     [a,b]: [b,a]
     [a,b,c]: [c,b,a]
@@ -41,3 +45,33 @@ var f = function(r) {
     
 println(f(a)); // => "bill"
 println(f(p)); // => 30
+
+// Pascals triangle with pattern matching:
+
+var shift_left = function (lst) {
+    match lst { 
+        [h t]: [h shift_left (t)] 
+        else: [0] 
+    }
+};
+
+var shift_right = function (lst) [0 lst];
+
+var add_lists = function(lst1, lst2) {
+    match lst1 {
+        [h1 t1]: match lst2 {
+            [h2 t2]: [h1 + h2 add_lists(t1, t2)]
+        }
+        else: []
+    }
+};
+
+var pascal = function (n) {
+    if n == 1 [1]
+    else add_lists(shift_left (pascal (n - 1)), shift_right (pascal (n - 1)))
+};
+
+println(pascal(10));
+// => [1, 9, 36, 84, 126, 126, 84, 36, 9, 1]
+println(pascal(20));
+// => [1, 19, 171, 969, 3876, 11628, 27132, 50388, 75582, 92378, 92378, 75582, 50388, 27132, 11628, 3876, 969, 171, 19, 1]
