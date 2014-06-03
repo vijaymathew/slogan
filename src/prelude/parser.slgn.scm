@@ -58,8 +58,18 @@
          (tokenizer 'next)
          (import tokenizer (tokenizer 'next)))
         (else
-         (record-def-stmt tokenizer))))
+         (func-def-stmt tokenizer))))
 
+(define (func-def-stmt tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'function)
+         (tokenizer 'next)
+         (let ((name (tokenizer 'next)))
+           (if (not (variable? name))
+               (parser-error tokenizer '() "expected function name" name)
+               (list 'define name (merge-lambda (list 'lambda (func-params-expr tokenizer)) 
+                                                (func-body-expr tokenizer))))))
+        (else (record-def-stmt tokenizer))))
+         
 (define (assignment-stmt tokenizer)
   (if (name? (tokenizer 'peek))
       (let ((sym (tokenizer 'next)))
