@@ -63,7 +63,8 @@
         (let ((opr (single-char-operator? c)))
           (if opr
               (begin (port-pos-read-char! port)
-                     (if (char-comment-part? (port-pos-peek-char port))
+                     (if (and (char-comment-start? c) 
+                              (char-comment-part? (port-pos-peek-char port)))
                          (begin (skip-comment port)
                                 (next-token port))
                          (read-special-number port opr)))

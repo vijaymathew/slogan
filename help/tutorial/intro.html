@@ -177,15 +177,15 @@
         <p>Variables play a similar role in Slogan. The <code>let</code> expression is used to introduce new local variables.
           <code>let</code> has two parts. First comes the declarations part which binds variable names to values. It is followed by 
           an expression which becomes the <em>body</em> of the <code>let</code>. The body is evaluated in a new <em>context</em>
-          where the variable introduced by <code>let</code> is visible. </p>
+          where the variablea introduced by <code>let</code> are visible. </p>
         <pre>
           > let x = 100, y = 200 
             x + y;
           => 300
           > x + y;
           >> error: Unbound variable x</pre>
-        <div id="note"><p><em>Note:</em>A variable name must start with an alphabet or one of the following characters: _, @, ?, $, ~.
-            The rest of a variable name can contain numbers in addition to the previous characters. These are some examples of
+        <div id="note"><p><em>Note: </em>A variable name must start with an alphabet or one of the following characters: _, @, ?, $, ~.
+            The rest of a variable name can also contain numbers. These are some examples of
             valid variable names: <code>x, xyz, __xy@z, $age</code>. (Variables starting with a <code>~</code> are treated specially
 	    in <a href="func.html#macros">macros</a>).</p></div>
         <p>Global variables are introduced with the variable declaration statement. A variable declaration starts with the keyword
@@ -195,6 +195,9 @@
           > var y = 200;
           > x + y;
           => 300</pre>
+        <div id="note"><p><em>Note: </em>Slogan is dynamically typed. It means types are 
+            associated with values not variables. As the program runs, a variable can point to values of any type.</p></div>
+
         <p>The value of a variable can be changed using the assignment statement.</p> 
         <pre>
           > x = 500;
@@ -204,10 +207,6 @@
           => 600
           > x + y;
           => 700</pre>        
-
-        <div id="note"><p><em>Note:</em>Slogan is dynamically typed. It means types are 
-            associated with values not variables. As the program runs, a variable can point to values of any type.</p></div>
-
         <p>Assignment changes the value of the variable bound in the immediate context. The <code>x</code> getting assigned in the
           <code>let</code> body is the local <code>x</code>, not the global one. Also you might have noticed that the body of the <code>let</code>
           is enclosed in braces (<code>{ }</code>). This is known as a code block. It is used to group together expressions that should be
