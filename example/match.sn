@@ -68,7 +68,9 @@ var add_lists = function(lst1, lst2) {
 
 var pascal = function (n) {
     if n == 1 [1]
-    else add_lists(shift_left (pascal (n - 1)), shift_right (pascal (n - 1)))
+    else let p = pascal (n - 1) {
+        add_lists(shift_left (p), shift_right (p))
+    }
 };
 
 println(pascal(10));
