@@ -1,4 +1,3 @@
- * Complete reimplementation of pattern matcher. Compile pattern during compile time into a call to some kind of record constructor
-   and do the complete pattern matching during runtime.
+ * Fix tutorial starting from intro->functions. (Use new function syntax.)
 
 
