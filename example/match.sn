@@ -78,10 +78,46 @@ println (pascal (10));
 println (pascal (20));
 // => [1, 19, 171, 969, 3876, 11628, 27132, 50388, 75582, 92378, 92378, 75582, 50388, 27132, 11628, 3876, 969, 171, 19, 1]
 
-function my_append (a, b)
+/* Some traditional list functions using patterns matching: */
+
+function m_append (a, b) {
     match a {
         []: b
-        else: [head (a) my_append (tail (a), b)]
-    };
+        [head tail]: [head m_append (tail, b)]
+    }
+};
 
-println (my_append ([1, 2], [3, 4, 5])); // => [1, 2, 3, 4, 5]
+println (m_append ([1, 2], [3, 4, 5])); // => [1, 2, 3, 4, 5]
+
+function m_length (lst) {
+    match lst {
+        []: 0
+        [_ tail]: 1 + m_length (tail)
+    }
+};
+
+println (m_length ([1,2,3])); // => 3
+
+// length as an iterative process:
+
+var m_length = 
+    letrec iter_len = function (lst, i) {
+        match lst {
+            []: i
+            [_ tail]: iter_len (tail, i + 1)
+        }
+    }
+    function (lst) iter_len (lst, 0);
+
+println (m_length ([1,2,3])); // => 3
+
+var m_reverse =
+    letrec iter_rev = function (lst, rlst) {
+        match lst {
+            []: rlst
+            [h t]: iter_rev (t, [h rlst])
+        }
+    }
+    function (lst) iter_rev (lst, []);
+
+println (m_reverse ([1,2,3,4,5])); // => [5,4,3,2,1]
