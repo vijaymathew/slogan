@@ -73,7 +73,15 @@ var pascal = function (n) {
     }
 };
 
-println(pascal(10));
+println (pascal (10));
 // => [1, 9, 36, 84, 126, 126, 84, 36, 9, 1]
-println(pascal(20));
+println (pascal (20));
 // => [1, 19, 171, 969, 3876, 11628, 27132, 50388, 75582, 92378, 92378, 75582, 50388, 27132, 11628, 3876, 969, 171, 19, 1]
+
+function my_append (a, b)
+    match a {
+        []: b
+        else: [head (a) my_append (tail (a), b)]
+    };
+
+println (my_append ([1, 2], [3, 4, 5])); // => [1, 2, 3, 4, 5]

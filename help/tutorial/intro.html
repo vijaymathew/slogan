@@ -235,16 +235,18 @@
           => 3
           > third (["what", "is", "your", "name?"]);
           => "your"</pre>
+        <p>There is a short-hand syntax for defining a function and assigning it to a variable:</p>
+        <pre>
+          > function area_of_circle (r) 3.14 * r * r;</pre>
         <h4>Recursion and Iteration</h4>
         <p>The function <code>third</code> calls other functions to get its work done. A function can also call itself. Such a
           function is said to be <i>recursive</i>. The following recursive function checks whether an object is the member of 
           a list or not:</p>
         <pre>
-          > var list_has_object = 
-                  function (list, object)
-                     if is_empty (list) false
-                     else if object == head (list) true
-                     else list_has_object (tail (list), object);
+          > function list_has_object (list, object)
+                 if is_empty (list) false
+                 else if object == head (list) true
+                 else list_has_object (tail (list), object);
         </pre>
         <p>The only new feature this function introduces is the <code>==</code> operator. It returns <code>true</code>
           if both its operands are normally regarded as same. Let us use our new function: </p>
@@ -259,10 +261,10 @@
           <li>Else if the first element of the list is equal to <code>object</code>, return <code>true</code>.</li>
           <li>Else ignore the first element and continue the search with the rest of the elements.</li>
         </ol>
-        <p>The <code>list_has_object</code> is also a special case of a recursive function, in that it is <i>iterative</i>.
+        <p>The <code>list_has_object</code> is also a special case of a recursive function in that it is <i>iterative</i>.
           This is because the recursive call to <code>list_has_object</code> is a <i>tail call</i>, i.e, it happens as the final
           action that the function performs. As a consequence, <code>list_has_object</code> need not keep track of any state in between
-          calls to itself. As Slogan has optimized tail calls, it do not need special looping constructs like 
+          calls to itself. As Slogan has optimized tail calls it do not need special looping constructs like 
           <code>for</code> and <code>while</code>. In effect, the <code>list_has_object</code> function is equal to the following function written 
           in an imperative language:</p>
         <pre>

@@ -1,3 +1,7 @@
- * Fix tutorial starting from intro->functions. (Use new function syntax.)
+
+  - Long term
+    
+    * Rewrite tutorial
+    * Cleanup pattern matcher implemntation.
 
 

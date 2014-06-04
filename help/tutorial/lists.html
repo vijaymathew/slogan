@@ -29,7 +29,7 @@
           => [100, 2, 3]</pre>
         <p>The destructive function <code>set_head</code> changes both <code>a</code> and <code>b</code> because the assignment
           operation simply points <code>b</code> to the same memory location as <code>a</code>. To actually copy the contents of
-          the list to a new memory location and point <code>b</code> to that, we can use <code>copy_list</code>:</p>
+          the list to a new memory location and point <code>b</code> to that we have to use <code>copy_list</code>:</p>
         <pre>
           > a = [1, 2, 3];
           > b = copy_list (a);
@@ -79,10 +79,10 @@ var compress =
           => [[3 1], 2]
           > compress ([1, 1, 1, 2, 0, 2, 2]);
           => [[3 1], 2, 0, [2 2]]</pre>
-        <p>Now some explanation on the implementation. <code>compress</code> makes use of two internal functions - <code>ne_pair</code>
+        <p><code>compress</code> makes use of two internal functions - <code>ne_pair</code>
           and <code>compr</code>. They are introduced using a <code>letrec</code> (let-recursive) expression
-          because the <code>compr</code> makes recursive calls to itself and <code>ne_pair</code>. (More on <code>letrec</code> later).
-          <code>ne_pair</code> is called to pack an element and its number of occurrences in the list to a pair. For each subsequent
+          because <code>compr</code> makes recursive calls to itself and <code>ne_pair</code>. (More on <code>letrec</code> later).
+          <code>ne_pair</code> is called to pack an element and its number of occurrences as a pair. For each subsequent
           occurrence of the same element in the list, <code>compr</code> calls itself. On finding a new element or at the end of the
           list <code>compr</code> call <code>ne_pair</code> to get the compressed representation.</p>
         <p>We need a function to recreate compressed lists:</p>
@@ -131,11 +131,11 @@ var uncompress =
         => 15
         > reduce ([1, 2, 3, 4, 5], add, initial_value = 100);
         => 115</pre>
-        <p><code>apply</code> is used to invoke a function by using a list to provide its actual arguments:</p>
+        <p><code>apply</code> applies a list of arguments to a function:</p>
         <pre>
           > apply (add, [1,2,3,4,5]);
           => 15</pre>
-      <h4>Searching, filtering, sorting etc</h4>
+      <h4>Searching, sorting and filtering</h4>
         <p>There are two functions that can be used to check a list for the existence of a particular element: <code>find</code>
           and <code>is_member</code>. <code>find</code> takes a predicate that takes a single argument and returns the first 
           element that makes it evaluate to <code>true</code>. When no element is found that satisfies this condition, <code>find</code>
