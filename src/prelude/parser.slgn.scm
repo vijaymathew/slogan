@@ -194,6 +194,8 @@
     (tokenizer 'pattern-mode-off)
     expr))
 
+(define (unbound? r) (eq? r '*unbound*))
+
 (define (match-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'match)
          (tokenizer 'next)
@@ -209,7 +211,7 @@
                                (*match-found* #f)
                                (*result* '*unbound*))
                            ,@(reverse body)
-                           (if (equal? *result* '*unbound*)
+                           (if (unbound? *result*)
                                (error "No match found.")
                                *result*)))
                  (let ((pattern (pattern-expression tokenizer)))
