@@ -179,3 +179,12 @@
 
 (define (read_token tokenizer)
   (tokenizer 'next))
+
+(define (tcp_server #!key (server_address "")
+                    (port_number 0)
+                    (backlog  128)
+                    (reuse_address #t))
+  (stream 'tcp_server `((server_address . ,server_address)
+                        (port_number . ,port_number)
+                        (backlog . ,backlog)
+                        (reuse_address . ,reuse_address))))

@@ -355,7 +355,7 @@
                    (if sub (list '- expr) expr)))
                 ((variable? token)
                  (if (slgn-symbol? token)
-                     `(quote ,(tokenizer 'next))
+                     `(quote ,(scm-symbol->slgn-symbol (tokenizer 'next)))
                      (let ((var (tokenizer 'next)))
                        (if (eq? (tokenizer 'peek) '*period*)
                            (begin (tokenizer 'next)
