@@ -21,7 +21,12 @@ println(match [1, "hello"] {
     [2, "hello"]: 1
     [1, "hi"]: 2
     [1, "hello"]: 3
-}); //=> 3
+}); // => 3
+
+println(match[1, 2, 3] {
+    [a, _, _] and a == 2: !no
+    [a, _, _] and a == 1: !yes
+}); // => yes
 
 record person (name, age);
 
@@ -121,3 +126,60 @@ var m_reverse =
     function (lst) iter_rev (lst, []);
 
 println (m_reverse ([1,2,3,4,5])); // => [5,4,3,2,1]
+
+// recursive list length.
+function mr_length (lst) {
+    match lst {
+        []: 0
+        [h t]: if is_list (h) mr_length (h) + mr_length (t)
+        else 1 + mr_length (t)
+    }
+};
+
+var x = [[1, 2], 4, [], [[5], 10]];
+println (mr_length (x)); // => 5
+println (mr_length ([x, x])); // => 10
+
+// merge sort
+function merge (xs, ys) {
+    match [xs ys] {
+        [[] ys]: ys
+        [xs []]: xs
+        [[x xr] [y yr]]: {
+            if x < y [x merge (xr, ys)]
+            else [y merge (xs, yr)]
+        }
+    }
+};
+
+function split (xs) {
+    match xs {
+        []: [[] []]
+        [x]: [[x] []]
+        [x1 [x2 xr]]: let r = split (xr) { 
+            [[x1 head (r)] [x2 tail (r)]]
+        }
+    }
+};
+
+function merge_sort (xs) {
+    match xs {
+        []: []
+        [x]: [x]
+        else: let r = split (xs) {
+            merge (merge_sort (head (r)), merge_sort (tail (r)))
+        }
+    }
+};
+
+println(merge_sort([1, 10, 5, 0, 2])); // => [0, 1, 2, 5, 10]
+
+function m_flatten (lst) {
+    match lst {
+        []: []
+        [h t]: if is_list (h) append (m_flatten (h), m_flatten (t))
+        else [h m_flatten (t)]
+    }
+};
+
+println(m_flatten ([[1, 2], [[3], [4]], [], [5, [6]]])); // => [1, 2, 3, 4, 5, 6]            
