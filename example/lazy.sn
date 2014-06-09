@@ -1,6 +1,12 @@
-var lazy_int_stream = 
-    letrec next = function (n) [n delay (next (n + 1))]
-    next (0);
+function generate (n) [n delay (generate (n + 1))];
 
-var lazy_head = head;
-var lazy_tail = function (li_stream) force (tail (li_stream));
+function sum (xs, a, limit) {
+    if limit > 0 
+        match xs {
+            [x xr]: sum (force (xr), a + x, limit - 1)
+        }
+    else a
+};
+ 
+println (sum (generate (10), 100, 5)); // => 160
+println (sum (generate (0), 0, 150000)); // => 11249925000   
