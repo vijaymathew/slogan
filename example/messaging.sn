@@ -1,0 +1,50 @@
+// These samples uses a combination of task communication, pattern matching and reactive variables.
+
+// Synchronous, sequential RMI.
+var server = task_run (task (function () {
+    letrec loop = function () {
+        match (task_receive ()) {
+            [x result]: { ?result = x * x + 2.0 * x + 2.0 }
+        };
+        loop ();
+    } loop ();
+}));
+
+// A synchronous client for the above server:
+let result = rvar () {
+    task_send (server, [10 result]);
+    println (?result)
+};
+
+// An asynchronous client for the above server:
+let y1 = rvar (), y2 = rvar () {
+    task_send (server, [100 y1]);
+    task_send (server, [300 y2]);
+    println (?y1); println (?y2);
+};
+
+
+// RMI with callbacks, the server needs to call the client to get work done.    
+server = task_run (task (function () {
+    letrec loop = function () {
+        match (task_receive ()) {
+            [x, result, client]: {
+                let delta = rvar () {
+                    task_send (client, delta);
+                    let x1 = x + ?delta
+                    { ?result = x1 * x1 + 2.0 * x1 + 2.0 }
+                }
+            }
+        };
+        loop ();
+    } loop ()
+}));
+
+// Client for the above server:
+let r = rvar () {
+    task_send (server, [100, r, current_task ()]);
+    let delta = task_receive () {
+            ?delta = 34;
+    };
+    println (?r)
+};

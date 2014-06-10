@@ -55,3 +55,23 @@
 (define condition_variable_set_data condition-variable-specific-set!)
 (define condition_variable_signal condition-variable-signal!)
 (define condition_variable_broadcast condition-variable-broadcast!)
+
+;; reactive or dataflow variables.
+(define (rvar)
+  (let ((cv (make-condition-variable)))
+    (condition-variable-specific-set! cv '*unbound*)
+    (cons cv (make-mutex))))
+
+(define (rbind dfv value)
+  (let ((cv (car dfv)))
+    (if (unbound? (condition-variable-specific cv))
+        (begin (condition-variable-specific-set! cv value)
+               (condition-variable-broadcast! cv))
+        (error "cannot rebind reactive variable."))))
+
+(define (rget dfv)
+  (let ((cv (car dfv))
+        (m (cdr dfv)))
+    (if (unbound? (condition-variable-specific cv))
+        (mutex-unlock! m cv))
+    (condition-variable-specific cv)))

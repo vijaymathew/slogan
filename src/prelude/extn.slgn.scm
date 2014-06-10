@@ -30,4 +30,3 @@
         (if (not (null? fns))
             (loop (cdr fns) ((car fns) result))
             result)))))
-    
