@@ -161,8 +161,7 @@
      (display-exception e s))))
 
 (define (slgn-display-task task port)
-  (display "[task" port)
-  (if (not (null? (thread-name task)))
-      (begin (display " " port)
-             (slgn-display (thread-name task) port: port)))
-  (display "]" port))
+  (display "[task]" port)
+  (display " " port)
+  (slgn-display (thread-name task) port: port))
+
