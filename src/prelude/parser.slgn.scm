@@ -711,7 +711,7 @@
   (swap-operands (cons '/ (list (factor-expr tokenizer)))))
 
 (define (eq-expr tokenizer)
-  (swap-operands (cons 'eqv? (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'equal? (list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
   (swap-operands (cons '< (list (addsub-expr tokenizer)))))
