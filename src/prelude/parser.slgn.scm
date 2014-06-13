@@ -29,16 +29,17 @@
 
 (define (parser-error tokenizer expr msg #!rest args)
   (error (with-output-to-string 
-           msg
+           '()
            (lambda ()
              (if tokenizer
-                 (print " [line: "(tokenizer 'line) ", column: " (tokenizer 'column) "]. "))
+                 (println " at [line: "(tokenizer 'line) ", column: " (tokenizer 'column) "]. " msg "."))
              (let loop ((args args))
                (if (not (null? args))
                    (begin (slgn-display (car args))
+                          (println)
                           (loop (cdr args)))))
              (if expr
-                 (begin (display ". Current parser state: ")
+                 (begin (display "In expression: ")
                         (slgn-display expr)))))))
 
 (define (assert-semicolon tokenizer expr)
