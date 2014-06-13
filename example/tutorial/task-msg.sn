@@ -11,13 +11,12 @@ var parser = function () {
 };
 
 var parser_task = task (parser);
-task_run (parser_task);
 
 var sender = function (program) {
-    task_run (task (function () {
+    task (function () {
 	task_send (parser_task, [current_task() program]);
 	println (task_receive ())
-    }))
+    })
 };
 
 sender ("10 + 20"); // => 30

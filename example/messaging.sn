@@ -1,13 +1,13 @@
 // These samples uses a combination of task communication, pattern matching and reactive variables.
 
 // Synchronous, sequential RMI.
-var server = task_run (task (function () {
+var server = task (function () {
     loop (function () {
         match (task_receive ()) {
             [x result]: { ?result = x * x + 2.0 * x + 2.0 }
         }
     })
-}));
+});
 
 // A synchronous client for the above server:
 let result = ? {
@@ -24,7 +24,7 @@ let y1 = ?, y2 = ? {
 
 
 // RMI with callbacks, the server needs to call the client to get work done.    
-server = task_run (task (function () {
+server = task (function () {
     loop (function () {
         match (task_receive ()) {
             [x, result, client]: {
@@ -36,7 +36,7 @@ server = task_run (task (function () {
             }
         }
     })
-}));
+});
 
 // Client for the above server:
 let r = ? {

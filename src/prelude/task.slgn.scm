@@ -1,9 +1,12 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (task fn #!optional args name group)
-  (if args 
-      (task-with-args fn args name group)
-      (task-with-no-args fn name group)))
+(define (task fn #!key args suspended name group)
+  (let ((t (if args 
+               (task-with-args fn args name group)
+               (task-with-no-args fn name group))))
+    (if (not suspended)
+        (thread-start! t))
+    t))
 
 (define (task-with-args fn args name group)
   (if group

@@ -14,10 +14,8 @@ var recv_n = function (n) {
 };
 
 var test_boring = function () {
-    let boring_task = task (boring, [current_task ()]) {
-        task_run (boring_task);
-        recv_n (5)
-    }
+    task (boring, args = [current_task ()]);
+    recv_n (5)
 };
         
 // Generator (with implicit "fan-in") pattern.
@@ -27,7 +25,7 @@ var message_generator = function (msg, dest) {
         task_send (dest, msg);
         task_sleep (random_integer (5));
         generator ()
-    } task_run (task (generator))
+    } task (generator)
 };
 
 var test_message_generator = function () {
