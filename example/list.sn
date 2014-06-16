@@ -92,3 +92,13 @@ var foldl = function (op, initial, seq) {
 // list reverse using foldr and foldl:
 var rev_r = function (seq) foldr (function (x, y) append (y, [x]), [], seq);
 var rev_l = function (seq) foldl (function (x, y) [y x], [], seq);
+
+function range (s, e) {
+    function loop (s, e, ns) {
+        if s > e reverse (ns)
+        else loop (s + 1, e, [s ns])
+    };
+    loop (s, e, [])
+};
+
+println (foldl (add, 0, range (1, 1000))); // => 500500
