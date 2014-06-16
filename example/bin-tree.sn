@@ -11,33 +11,33 @@ function mk_tree (key, value, @optional left = default_leaf, right = default_lea
 function tree_search (t, x) {
     match t {
         leaf (): !notfound
-        tree (key, value, _, _) and x == key: value
-        tree (key, _, left, _) and x < key: tree_search (left, x)
-        tree (key, _, _, right) and x > key: tree_search (right, x)
+        tree (key, value, _, _) with x == key: value
+        tree (key, _, left, _) with x < key: tree_search (left, x)
+        tree (key, _, _, right) with x > key: tree_search (right, x)
     }
 };
 
 function tree_insert (t, k, v) {
     match t {
         leaf (): mk_tree (k, v)
-        tree (key, _, left, right) and k == key: mk_tree (k, v, left, right)
-        tree (key, value, left, right) and k < key: mk_tree (key, value, tree_insert (left, k, v), right)
-        tree (key, value, left, right) and k > key: mk_tree (key, value, left, tree_insert (right, k, v))
+        tree (key, _, left, right) with k == key: mk_tree (k, v, left, right)
+        tree (key, value, left, right) with k < key: mk_tree (key, value, tree_insert (left, k, v), right)
+        tree (key, value, left, right) with k > key: mk_tree (key, value, left, tree_insert (right, k, v))
     }
 };
 
 function tree_delete (t, k) {
     match t {
         leaf (): default_leaf
-        tree (key, value, left, right) and key == k: {
+        tree (key, value, left, right) with key == k: {
             let r = remove_smallest (right)
             match r {
                 !none: left
                 [kp, vp, tp]: mk_tree (kp, vp, left, tp)
             }
         }
-        tree (key, value, left, right) and k < key: mk_tree (key, value, tree_delete (left, k), right)
-        tree (key, value, left, right) and k > key: mk_tree (key, value, left, tree_delete (right, k))
+        tree (key, value, left, right) with k < key: mk_tree (key, value, tree_delete (left, k), right)
+        tree (key, value, left, right) with k > key: mk_tree (key, value, left, tree_delete (right, k))
     }
 };
 

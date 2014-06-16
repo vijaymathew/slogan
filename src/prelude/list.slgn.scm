@@ -282,3 +282,18 @@
           (loop (cdr lst) 
                 (- n 1) 
                 (cons (car lst) result))))))
+
+(define (split lst predic)
+  (let loop ((lst lst)
+             (prefix '())
+             (suffix '())
+             (found (predic (car lst))))
+    (cond ((null? lst)
+           (cons (reverse prefix) (reverse suffix)))
+          (else
+           (if found
+               (loop (cdr lst) prefix (cons (car lst) suffix) found)
+               (loop (cdr lst) (cons (car lst) prefix) suffix 
+                     (if (null? (cdr lst)) found 
+                         (predic (cadr lst)))))))))
+    

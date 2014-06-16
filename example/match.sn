@@ -24,8 +24,8 @@ println(match [1, "hello"] {
 }); // => 3
 
 println(match[1, 2, 3] {
-    [a, _, _] and a == 2: !no
-    [a, _, _] and a == 1: !yes
+    [a, _, _] with a == 2: !no
+    [a, _, _] with a == 1: !yes
 }); // => yes
 
 record person (name, age);
@@ -152,11 +152,11 @@ function merge (xs, ys) {
     }
 };
 
-function split (xs) {
+function my_split (xs) {
     match xs {
         []: [[] []]
         [x]: [[x] []]
-        [x1 [x2 xr]]: let r = split (xr) { 
+        [x1 [x2 xr]]: let r = my_split (xr) { 
             [[x1 head (r)] [x2 tail (r)]]
         }
     }
@@ -166,7 +166,7 @@ function merge_sort (xs) {
     match xs {
         []: []
         [x]: [x]
-        else: let r = split (xs) {
+        else: let r = my_split (xs) {
             merge (merge_sort (head (r)), merge_sort (tail (r)))
         }
     }
@@ -187,10 +187,44 @@ println(m_flatten ([[1, 2], [[3], [4]], [], [5, [6]]])); // => [1, 2, 3, 4, 5, 6
 function m_filter (lst, predic) {
     match lst {
         []: []
-        [h t] and predic (h): [h m_filter (t, predic)]
+        [h t] with predic (h): [h m_filter (t, predic)]
         [_ t]: m_filter (t, predic)
     }
 };
 
 println (m_filter ([1,2,3,4,5], is_odd)); // => [1, 3, 5]
 println (m_filter ([1,2,3,4,5], is_even)); // => [2, 4]
+
+// List drop-n-elements:
+function my_drop (n, xs) {
+    match [n xs] {
+        [n xs] with n <= 0: xs
+        [_ []]: []
+        [n [x xs]]: my_drop (n - 1, xs)
+    }
+};
+
+println (my_drop (3, [1, 2, 3, 4, 5])); // => [4, 5]
+
+// The splitLines sample from RWH (Real World Haskell).
+function split_lines (cs) map (list_to_string, split_lines_helper (string_to_list (cs)));
+
+function split_lines_helper (cs) {
+    if cs == [] []
+    else let pre_suf = split (cs, is_line_terminator) {
+        [head (pre_suf) match tail (pre_suf) {
+            ['\r', ['\n' rest]]: split_lines_helper (rest)
+            ['\r' rest]: split_lines_helper (rest)
+            ['\n' rest]: split_lines_helper (rest)
+            else: []
+        }]
+    }
+};
+
+function is_line_terminator (c) c == '\r' || c == '\n';
+        
+println (split_lines ("hello world")); // => ["hello world"]
+println (split_lines ("hello \nwor\rld")); // => ["hello ", "wor", "ld"]
+println (split_lines ("hello \r\nworld")); // => ["hello ", "", "world"]
+
+            
