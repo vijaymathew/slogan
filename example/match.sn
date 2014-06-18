@@ -1,3 +1,39 @@
+function m_not (b) {
+    match b {
+        true: false
+        false: true
+    }
+};
+
+println (m_not (1 == 2)); // => true
+println (m_not (1 == 1)); // => false
+
+function conjunction (a, b) {
+    match [a b] {
+        [true true]: true
+        else: false
+    }
+};
+
+println (conjunction (1 == 2, 2 == 2)); // => false
+println (conjunction (1 == 1, 2 == 2)); // => true
+println (conjunction (1 == 2, 2 == 1)); // => false
+
+function fst (p) {
+    match p {
+        [a _]: a
+    }
+};
+
+function snd (p) {
+    match p {
+        [_ b]: b
+    }
+};
+
+println (fst ([1,2,3,4,5])); // => 1
+println (snd ([1,2,3,4,5])); // => [2,3,4,5]
+
 println(match [1, 2, 3] {
     [head tail]: { println ("head=", head, " tail=", tail) }
 });
