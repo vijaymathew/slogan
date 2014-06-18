@@ -297,3 +297,10 @@
                      (if (null? (cdr lst)) found 
                          (predic (cadr lst)))))))))
     
+(define (range start end #!key (next +) (by 1) (compare >=))
+  (let loop ((start start)
+             (result '()))                     
+    (cond ((compare start end)
+           (reverse (cons start result)))
+          (else (loop (next start by) 
+                      (cons start result))))))
