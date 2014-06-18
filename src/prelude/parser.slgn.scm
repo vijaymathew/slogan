@@ -232,7 +232,7 @@
                                  *result*))))
                  (let ((pattern (pattern-expression tokenizer))
                        (guard #t))
-                   (if (eq? (tokenizer 'peek) 'with)
+                   (if (eq? (tokenizer 'peek) 'where)
                        (begin (tokenizer 'next)
                               (set! guard (expression tokenizer))))
                    (if (not (eq? (tokenizer 'peek) '*colon*))

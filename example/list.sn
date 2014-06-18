@@ -102,3 +102,18 @@ function range (s, e) {
 };
 
 println (foldl (add, 0, range (1, 1000))); // => 500500
+
+function pairs (xs) zip (xs, tail (xs));
+
+function is_sorted (xs) reduce (map (function (p) head (p) <= tail (p), pairs (xs)), 
+                                function (a, b) a && b);
+
+println (is_sorted ([1, 2, 3, 4, 5])); // => true
+println (is_sorted ([1, 2, 0, 3, 4, 5])); // => false
+
+function positions (xs, v) map (function (p) tail (p), filter (zip (xs, range (0, length (xs))),
+                                                               function (p) head (p) == v));
+
+println (positions ([true, false, true], false)); // => [1]
+println (positions ([true, false, true, false], false)); // => [1, 3]
+println (positions ([true, false, true, false], !false)); // => []
