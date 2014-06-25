@@ -32,7 +32,7 @@
            '()
            (lambda ()
              (if tokenizer
-                 (println " at [line: "(tokenizer 'line) ", column: " (tokenizer 'column) "]. " msg "."))
+                 (println "at [line: "(tokenizer 'line) ", column: " (tokenizer 'column) "]. " msg "."))
              (let loop ((args args))
                (if (not (null? args))
                    (begin (slgn-display (car args))
@@ -155,7 +155,7 @@
       (begin (tokenizer 'next)
              (if (rvar? sym)
                  (if def
-                     (parser-error tokenizer #f "variable name cannot start with @.")
+                     (parser-error tokenizer #f "invalid character in variable name")
                      (list 'rbind (normalize-rvar sym) (expression tokenizer)))
                  (list (if def 'define 'set!) sym (expression tokenizer))))
       (parser-error tokenizer #f "expected assignment" (tokenizer 'peek))))
