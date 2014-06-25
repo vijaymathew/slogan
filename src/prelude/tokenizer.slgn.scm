@@ -81,7 +81,7 @@
                     ((char=? c #\")
                      (read-string port))
 		    ((char=? c #\')
-		     (port-pos-read-char!acter port))
+		     (port-pos-read-character port))
                     ((char=? c #\.)
                      (port-pos-read-char! port)
                      (if (char-numeric? (port-pos-peek-char port))
@@ -168,12 +168,23 @@
              suffix-opr)
       opr))
 
+(define (tokenizer-error msg #!rest args)
+  (error (with-output-to-string 
+           '()
+           (lambda ()
+             (slgn-display msg display-string: #t)
+             (let loop ((args args))
+               (if (not (null? args))
+                   (begin (slgn-display (car args) display-string: #t)
+                          (display " ")
+                          (loop (cdr args)))))))))
+
 (define (fetch-same-operator port c opr)
   (port-pos-read-char! port)
   (if (char=? (port-pos-peek-char port) c)
       (begin (port-pos-read-char! port)
 	     opr)
-      (error "invalid character in operator. " (port-pos-read-char! port))))
+      (tokenizer-error "invalid character in operator. " (port-pos-read-char! port))))
 
 (define (read-multi-char-operator port)
   (let ((c (port-pos-peek-char port)))
@@ -187,7 +198,7 @@
 	       (char=? c #\|))
 	   (fetch-same-operator port c (if (char=? c #\&) '*and* '*or*)))
           (else
-           (error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
+           (tokenizer-error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
 
 (define (read-number port prefix)
   (let loop ((c (port-pos-peek-char port))
@@ -202,7 +213,7 @@
 		   (read-complex-number port result))
 	    (let ((n (string->number (list->string (reverse result)))))
 	      (if (not n)
-		  (error "read-number failed. invalid number format.")
+		  (tokenizer-error "read-number failed. invalid number format.")
 		  n))))))
 
 (define (read-complex-number port prefix)
@@ -214,7 +225,7 @@
 		     (cons c result)))
 	(let ((n (string->number (list->string (reverse (cons #\i result))))))
 	  (if (not n)
-	      (error "read-complex-number failed. invalid number format.")
+	      (tokenizer-error "read-complex-number failed. invalid number format.")
 	      n)))))
     
 (define (read-number-with-radix-prefix port)
@@ -239,7 +250,7 @@
 				  (cons c result)))
 		     (let ((n (string->number (string-append radix-prefix (list->string (reverse result))))))
 		       (if (not n)
-			   (error "read-number-with-radix-prefix failed. invalid number format.")
+			   (tokenizer-error "read-number-with-radix-prefix failed. invalid number format.")
 			   n))))))))
 
 (define (read-special-number port opr)
@@ -274,7 +285,7 @@
                      (cons c result)))
 	(let ((n (string->number (list->string (reverse result)))))
 	  (if (not n)
-	      (error "read-special-number-helper failed. invalid number format.")
+	      (tokenizer-error "read-special-number-helper failed. invalid number format.")
 	      n)))))
 
 (define (char-valid-in-number? c)
@@ -327,7 +338,7 @@
                    (loop (port-pos-peek-char port)
                          (cons c result)))
             (string->symbol (list->string (reverse result)))))
-      (error "read-name failed at " (port-pos-read-char! port))))
+      (tokenizer-error "read-name failed at " (port-pos-read-char! port))))
 
 (define (read-string port)
   (let ((c (port-pos-read-char! port)))
@@ -345,8 +356,8 @@
                     (else 
                      (set! c (port-pos-read-char! port))
                      (loop (port-pos-peek-char port) (cons c result))))
-              (error "string not terminated.")))
-        (error "read-string failed at " c))))
+              (tokenizer-error "string not terminated.")))
+        (tokenizer-error "read-string failed at " c))))
 
 (define (char-comment-start? c) (and (char? c) (char=? c #\/)))
 (define (char-comment-part? c) (and (char? c)
@@ -375,7 +386,7 @@
                        (loop (port-pos-peek-char port)))
                    (loop (port-pos-peek-char port)))))))
 
-(define (port-pos-read-char!acter port)
+(define (port-pos-read-character port)
   (if (char=? (port-pos-read-char! port) #\')
       (let ((c (if (char=? (port-pos-peek-char port) #\\)
                    (read-special-character port)
@@ -383,10 +394,10 @@
         (if (not (char=? (port-pos-peek-char port) #\'))
             (if (char=? c #\') 
                 #\nul
-                (error "character constant not terminated. " c))
+                (tokenizer-error "character constant not terminated. " c))
             (begin (port-pos-read-char! port)
                    c)))
-      (error "not a character literal.")))
+      (tokenizer-error "not a character literal.")))
 
 (define (read-special-character port)
   (port-pos-read-char! port)
@@ -412,7 +423,7 @@
          "#\\u")
         ((= len 8)
          "#\\U")
-        (else (error "invalid hex encoded character length. " len))))
+        (else (tokenizer-error "invalid hex encoded character length. " len))))
 
 (define (char->special c)
   (cond ((char=? c #\n)
@@ -435,7 +446,7 @@
          #\esc)
         ((char=? c #\d)
          #\delete)
-        (else (error "invalid escaped character " c))))
+        (else (tokenizer-error "invalid escaped character " c))))
 
 (define (is_operator_token token)
   (or (single-char-operator? token)
