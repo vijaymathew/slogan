@@ -406,8 +406,6 @@
 		 (cond ((eq? token '?)
 			(tokenizer 'next)
 			(list 'rvar))
-		       ;((slgn-symbol? token)
-			;`(quote ,(scm-symbol->slgn-symbol (tokenizer 'next))))
 		       (else
 			(let ((var (tokenizer 'next)))
 			  (if (eq? (tokenizer 'peek) '*period*)

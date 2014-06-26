@@ -45,23 +45,9 @@
 (define (slgn-symbol->scm-keyword s)
   (slgn-symbol->scm-sym/kw s string->keyword))
 
-(define (slgn-symbol->scm-symbol s)
-  (slgn-symbol->scm-sym/kw s string->symbol))
-
-(define (slgn-symbol? s)
-  (and (symbol? s)
-       (char=? (string-ref (symbol->string s) 0) #\!)))
-
-(define (scm-symbol? s)
-  (and (symbol? s) (not (slgn-symbol? s))))
-
 (define (slgn-symbol-quote? s)
   (and (list? s) (not (null? s))
        (eq? (car s) 'quote)))
-
-(define (scm-symbol->slgn-symbol s)
-  (let ((str (symbol->string s)))
-    (string->symbol (substring str 1 (string-length str)))))
 
 (define (slgn-path/settings->scm-path/settings path-or-settings)
   (if (string? path-or-settings)
@@ -72,13 +58,8 @@
             result
             (loop (cdr settings)
                   (append (list (slgn-symbol->scm-keyword (car (car settings)))
-                                (slgn-setting->scm-setting (cdr (car settings))))
+                                (cdr (car settings)))
                           result))))))
-
-(define (slgn-setting->scm-setting s)
-  (if (symbol? s)
-      (slgn-symbol->scm-symbol s)
-      s))
 
 (define (repr-convert val reprs)
   (let ((r (assq val reprs)))
@@ -104,8 +85,6 @@
              (if display-string
                  (display val port)
                  (write val port)))
-            ((slgn-symbol? val)
-             (display (scm-symbol->slgn-symbol val) port))
 	    ((thread? val)
 	     (slgn-display-task val port))
             ((error-exception? val)

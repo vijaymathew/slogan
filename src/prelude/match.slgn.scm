@@ -79,7 +79,7 @@
                     (set! *match-found* #f)))))
         ((record-pattern? pattern)
          (match-record-pattern pattern))
-        ((scm-symbol? pattern)
+        ((symbol? pattern)
          (if (not (eq? pattern '_))
              (pattern-vars-bindings-set! bindings (cons (list pattern #f) (pattern-vars-bindings bindings))))
          `(set! *match-found* #t))
@@ -129,7 +129,7 @@
                 ,(expand-consequent (cdr pattern) consequent))))
         ((record-pattern? pattern)
          (expand-rec-consequent pattern consequent))
-        ((scm-symbol? pattern)
+        ((symbol? pattern)
          (if (eq? pattern '_)
              consequent
              `(begin (set! ,pattern *value*)
