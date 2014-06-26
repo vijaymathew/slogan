@@ -102,6 +102,7 @@
                                       (cons #\# '*hash*)
                                       (cons #\, '*comma*)
                                       (cons #\: '*colon*)                                      
+                                      (cons #\! '*bang*)
                                       (cons #\; '*semicolon*)))
 
 (define *single-char-operators-strings* (list (cons "+" '*plus*)
@@ -117,6 +118,7 @@
                                               (cons "#" '*hash*)
                                               (cons "," '*comma*)
                                               (cons ":" '*colon*)                                      
+                                              (cons "!" '*bang*)
                                               (cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (list (cons "==" '*equals*)
