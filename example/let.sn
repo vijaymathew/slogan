@@ -1,0 +1,13 @@
+println (let x = [[!a, !b], !c]
+         [let x = tail (x) head (x)
+          let x = head (x)
+          [let x = tail (x) head (x)
+           [let x = head (x) x
+            tail (x)]]]); // => [c, b, a, b]
+
+println (let x0 = [[!a, !b], !c]
+         [let x1 = tail (x0) head (x1)
+          let x2 = head (x0)
+          [let x3 = tail (x2) head (x3)
+           [let x4 = head (x2) x4
+            tail (x0)]]]); // => [c, b, a, b]
