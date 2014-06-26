@@ -420,7 +420,10 @@
                  (array-literal tokenizer))
                 ((eq? token '*bang*)
                  (tokenizer 'next)
-                 `(quote ,(expression tokenizer)))
+		 (tokenizer 'quote-mode-on)
+                 (let ((qe `(quote ,(expression tokenizer))))
+		   (tokenizer 'quote-mode-off)
+		   qe))
                 (else (parser-error tokenizer expr "Invalid literal expression." (tokenizer 'next))))))))
 
 (define (member-access/funcall-expr expr tokenizer)
@@ -433,7 +436,7 @@
 
 (define (list-literal tokenizer)
   (tokenizer 'next)
-  (let loop ((result (list 'list))
+  (let loop ((result (if (tokenizer 'quote-mode?) (list) (list 'list)))
              (first #t))
     (let ((token (tokenizer 'peek)))
       (if (eq? token '*close-bracket*)
@@ -449,7 +452,9 @@
                          (loop (cons expr result) #f)))))))))
 
 (define (pair-literal expr tokenizer)
-  (let ((result (list 'cons expr (expression tokenizer))))
+  (let ((result (if (tokenizer 'quote-mode?) 
+		    (list expr (expression tokenizer))
+		    (list 'cons expr (expression tokenizer)))))
     (if (not (eq? (tokenizer 'peek) '*close-bracket*))
         (parser-error tokenizer expr "Pair not terminated." (tokenizer 'next))
         (begin (tokenizer 'next)
