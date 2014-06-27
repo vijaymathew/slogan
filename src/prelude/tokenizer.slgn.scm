@@ -13,8 +13,12 @@
 
 (define (port-pos-peek-char port) (peek-char (port-pos-port port)))
 
-(define (make-tokenizer port #!key (compile-mode #f))
+(define (make-tokenizer port program-text 
+                        #!key (compile-mode #f))
   (let ((current-token #f)
+        (program-text (if (string? program-text)
+                          (string_split program-text #\newline #t)
+                          '()))
         (port (make-port-pos port 1 0))
         (pattern-mode #f)
 	(quote-mode #f)
@@ -58,6 +62,7 @@
 	((quote-mode-on) (set! quote-mode #t))
 	((quote-mode-off) (set! quote-mode #f))
 	((quote-mode?) quote-mode)
+        ((program-text) program-text)
         (else (error "tokenizer received unknown message: " msg))))))
 
 (define (next-token port)

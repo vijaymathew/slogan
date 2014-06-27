@@ -127,7 +127,8 @@
 (define string_map string-map)
 (define string_for_each string-foreach)
 
-(define (string_split str #!optional (delim #\space))
+(define (string_split str #!optional (delim #\space)
+                      (include-empty-strings #f))
   (if (not (or (char? delim)
                (list? delim)))
       str
@@ -141,7 +142,9 @@
                      (reverse (cons (list->string (reverse currstr)) result))))
                 ((or (and (list? delim) (member (string-ref str i) delim))
                      (and (char? delim) (char=? (string-ref str i) delim)))
-                 (loop (if (null? currstr) result (cons (list->string (reverse currstr)) result))
+                 (loop (if (and (null? currstr) (not include-empty-strings))
+                           result 
+                           (cons (list->string (reverse currstr)) result))
                        '() 
                        (+ i 1)))
                 (else (loop result (cons (string-ref str i) currstr) (+ i 1))))))))

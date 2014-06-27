@@ -10,19 +10,33 @@
             (loop (slogan tokenizer) exprs))
         (reverse exprs))))
 
-(define (compile-slgn-script->scm-script script-name out-file-name
+(define (read-script-file script-name)
+  (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
+                            (string-append script-name *slgn-extn*)
+                            script-name)
+    (lambda (port)
+      (with-output-to-string 
+        '()
+        (lambda ()
+          (let loop ((c (read-char port)))
+            (if (not (eof-object? c))
+                (begin (write-char c)
+                       (loop (read-char port))))))))))
+
+(define (compile-slgn-script->scm-script script-name 
+                                         out-file-name
 					 assemble exe)
   (call-with-output-file out-file-name
     (lambda (out-port)
-      (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
-				(string-append script-name *slgn-extn*)
-				script-name)
-	(lambda (port)
-	  (let loop ((exprs (compile->scheme (make-tokenizer port compile-mode: (or assemble exe)))))
-	    (if (not (null? exprs))
-		(begin (write (car exprs) out-port)
-		       (newline out-port)
-		       (loop (cdr exprs))))))))))
+      (let ((program-text (read-script-file script-name)))
+        (let loop ((exprs (compile->scheme (make-tokenizer 
+                                            (open-input-string program-text) 
+                                            program-text
+                                            compile-mode: (or assemble exe)))))
+          (if (not (null? exprs))
+              (begin (write (car exprs) out-port)
+                     (newline out-port)
+                     (loop (cdr exprs)))))))))
 
 (define (compile script-name #!key assemble exe
 		 ld_options cc_options output
@@ -102,7 +116,8 @@
      (let ((val (let loop ((line (read-line port #\newline #t)))
                   (cond ((and (string-ends-with? (string-rtrim line) ";")
                               (braces-matches? line))
-                         (let ((tokenizer (make-tokenizer (open-input-string line))))
+                         (let ((tokenizer (make-tokenizer (open-input-string line) 
+                                                          line)))
                            (let loop ((expr (slogan tokenizer)))
                              (if (not (eof-object? (tokenizer 'peek)))
                                  (begin (eval expr)

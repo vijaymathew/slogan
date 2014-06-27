@@ -171,7 +171,7 @@
 (define (stream_tokenizer stream #!key program
                           (delimiters #\space))
   (if program
-      (make-tokenizer stream)
+      (make-tokenizer stream '())
       (make-delimited-tokenizer stream delimiters)))
 
 (define (peek_token tokenizer)
