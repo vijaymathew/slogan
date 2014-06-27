@@ -143,3 +143,12 @@ var product = function (fn) {
 
 println (sum (sqrt) (10, 20)); // => 42.35997728538408
 println (product (sqrt) (10, 20)); // => 2589290.5839244844
+
+// A function that takes all arguments in
+// a single list parameter:
+function add_all x {
+    apply (add, x)
+};
+
+println (add_all ()); // => 0
+println (add_all (10, 20, 30)); // => 60
