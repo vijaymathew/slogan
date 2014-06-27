@@ -3,30 +3,29 @@
 // sets as unordered lists:
 
 var is_element_of_set = function (x, set) {
-    if is_empty (set) false
-    else if x == head (set) true
+    if is_empty (set) then false
+    else if x == head (set) then true
     else is_element_of_set (x, tail (set))
 };
 
 var adjoin_set = function (x, set) {
-    if is_element_of_set (x, set) set
+    if is_element_of_set (x, set) then set
     else [x set]
 };
 
 var intersection_set = function (set1, set2) {
-    if is_empty (set1) || is_empty (set2) []
-    else if is_element_of_set (head (set1), set2) {
-        [head (set1) intersection_set (tail (set1), set2)]
-    } else intersection_set (tail (set1), set2)
+    if is_empty (set1) || is_empty (set2) then []
+    else if is_element_of_set (head (set1), set2) then [head (set1) intersection_set (tail (set1), set2)]
+    else intersection_set (tail (set1), set2)
 };
     
 var union_set = function (set1, set2) {
     letrec loop = function (set, result_set) {
-        if is_empty (set) result_set
-        else if not (is_element_of_set (head (set), result_set)) {
+        if is_empty (set) then result_set
+        else if not (is_element_of_set (head (set), result_set)) then
             loop (tail (set), [head (set) result_set])
-        } else loop (tail (set), result_set)
-    } loop (set2, loop (set1, []))
+        else loop (tail (set), result_set)
+    } in loop (set2, loop (set1, []))
 };
 
 // tests:
@@ -46,53 +45,53 @@ var right_branch = function (tree) head (tail (tail (tree)));
 var make_tree = function (entry, left, right) [entry, left, right];
 
 var is_element_of_set = function (x, set) {
-    if is_empty (set) false
-    else if x == entry (set) true
-    else if x < entry (set) is_element_of_set (x, left_branch (set))
+    if is_empty (set) then false
+    else if x == entry (set) then true
+    else if x < entry (set) then is_element_of_set (x, left_branch (set))
     else is_element_of_set (x, right_branch (set))
 };
 
 var adjoin_set = function (x, set) {
-    if is_empty (set) make_tree (x, [], [])
-    else if x == entry (set) set
-    else if x < entry (set) make_tree (entry (set), 
-                                       adjoin_set (x, left_branch (set)),
-                                       right_branch (set))
+    if is_empty (set) then make_tree (x, [], [])
+    else if x == entry (set) then set
+    else if x < entry (set) then make_tree (entry (set), 
+                                            adjoin_set (x, left_branch (set)),
+                                            right_branch (set))
     else make_tree (entry (set),
                     left_branch (set),
                     adjoin_set (x, right_branch (set)))
 };
 
 var set_to_list = function (tree) {
-    if is_empty (tree) []
+    if is_empty (tree) then []
     else append (tree_to_list (left_branch (tree)),
                  [entry (tree) tree_to_list (right_branch (tree))])
 };
 
 var list_to_set = function (lst) {
     letrec loop = function (lst, set) {
-        if is_empty (lst) set
+        if is_empty (lst) then set
         else loop (tail (lst), adjoin_set (head (lst), set))
-    } loop (lst, [])
+    } in loop (lst, [])
 };
 
 var intersection_set = function (set1, set2) {
     letrec loop = function (s1, s2, set2, result) {
-        if is_empty (s1) || is_empty (s2) result
-        else if is_element_of_set (head (s1), set2) loop (tail (s1), 
-                                                          tail (s2), 
-                                                          set2, 
-                                                          adjoin_set (head (s1), result))
-        else if head (s1) > head (s2) result
+        if is_empty (s1) || is_empty (s2) then result
+        else if is_element_of_set (head (s1), set2) then loop (tail (s1), 
+                                                               tail (s2), 
+                                                               set2, 
+                                                               adjoin_set (head (s1), result))
+        else if head (s1) > head (s2) then result
         else loop (tail (s1), s2, set2, result)
-    } loop (set_to_list (set1), set_to_list (set2), set2, [])
+    } in loop (set_to_list (set1), set_to_list (set2), set2, [])
 };
 
 var union_set = function (set1, set2) {
     letrec loop = function (s, result) {
-        if is_empty (s) result
+        if is_empty (s) then result
         else loop (tail (s), adjoin_set (head (s), result))
-    } loop (set_to_list (set2), loop (set_to_list (set1), []))
+    } in loop (set_to_list (set2), loop (set_to_list (set1), []))
 };
 
 // tests:

@@ -3,10 +3,10 @@
 var product = function (ls) {
     callcc (function (break) {
         letrec f = function(ls) {
-            if is_empty (ls) { 1 }
-            else if head (ls) == 0 { break (!breaking_at_zero) }
+            if is_empty (ls) then { 1 }
+            else if head (ls) == 0 then { break (!breaking_at_zero) }
             else { head (ls) * f (tail (ls)) }
-        } { f (ls) } 
+        } in { f (ls) } 
     })
 };
 
@@ -15,13 +15,13 @@ println (product ([7, 3, 8, 0, 1, 9, 5])); // => !breaking_at_zero
 
 // simple nonpreemptive multi-tasking:
 
-let lwp_list = [] {
+let lwp_list = [] in {
     var lwp = function (thunk) {
         lwp_list = append (lwp_list, list (thunk));
     };
 
     var start = function () {
-        let p = head (lwp_list) {
+        let p = head (lwp_list) in {
             lwp_list = tail (lwp_list);
             p()
         }
@@ -34,10 +34,10 @@ let lwp_list = [] {
         })
     };
     
-    lwp (function () { letrec f = function () { pause (); display ("h"); f () } { f () } });
-    lwp (function () { letrec f = function () { pause (); display ("e"); f () } { f () } });
-    lwp (function () { letrec f = function () { pause (); display ("y"); f () } { f () } });
-    lwp (function () { letrec f = function () { pause (); display ("!"); f () } { f () } });
-    lwp (function () { letrec f = function () { pause (); newline (); f () } { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("h"); f () } in { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("e"); f () } in { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("y"); f () } in { f () } });
+    lwp (function () { letrec f = function () { pause (); display ("!"); f () } in { f () } });
+    lwp (function () { letrec f = function () { pause (); newline (); f () } in { f () } });
     start ();
 };

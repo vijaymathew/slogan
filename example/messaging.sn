@@ -10,13 +10,13 @@ var server = task (function () {
 });
 
 // A synchronous client for the above server:
-let result = ? {
+let result = ? in {
     task_send (server, [10 result]);
     println (?result)
 };
 
 // An asynchronous client for the above server:
-let y1 = ?, y2 = ? {
+let y1 = ?, y2 = ? in {
     task_send (server, [100 y1]);
     task_send (server, [300 y2]);
     println (?y1); println (?y2);
@@ -28,9 +28,9 @@ server = task (function () {
     loop (function () {
         match (task_receive ()) {
             [x, result, client]: {
-                let delta = ? {
+                let delta = ?  in {
                     task_send (client, delta);
-                    let x1 = x + ?delta
+                    let x1 = x + ?delta in 
                     { ?result = x1 * x1 + 2.0 * x1 + 2.0 }
                 }
             }
@@ -39,9 +39,9 @@ server = task (function () {
 });
 
 // Client for the above server:
-let r = ? {
+let r = ?  in {
     task_send (server, [100, r, current_task ()]);
-    let delta = task_receive () {
+    let delta = task_receive ()  in {
             ?delta = 34;
     };
     println (?r)

@@ -1,9 +1,6 @@
 var len = function (lst) {
-    if is_empty (lst) {
-        0
-    } else {
-        1 + (len (tail (lst)))
-    }
+    if is_empty (lst) then 0
+    else 1 + (len (tail (lst)))
 };
 
 println (len ([1, 2, 3])); // => 3
@@ -11,8 +8,8 @@ println (len ([])); // => 0
 println (len (["hello"])); // => 1
 
 var factorial = function (n) {
-    if n == 0 { 1 }
-    else { n * factorial (n - 1) }
+    if n == 0 then 1
+    else n * factorial (n - 1)
 };
 
 println (factorial (1));
@@ -24,9 +21,9 @@ println (factorial (10));
 
 factorial = function (n) {
     letrec fact = function (i, a) {
-        if i == 0 { a }
-        else { fact (i - 1, a * i) }
-    } { fact (n, 1) }
+        if i == 0 then a
+        else fact (i - 1, a * i)
+    } in fact (n, 1)
 };
 
 println (factorial (1));
@@ -35,7 +32,7 @@ println (factorial (3));
 println (factorial (10));
 
 var binary = function (n)
-    if n == 0 || n == 1 number_to_string (n)
+    if n == 0 || n == 1 then number_to_string (n)
     else string_append (binary (quotient (n, 2)), number_to_string (remainder (n, 2)));
 
 println (binary (1)); // => "1"

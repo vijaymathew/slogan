@@ -8,14 +8,14 @@ record jnull();
 var json_to_string = function(json) {
     match json {
         jseq(elems): {
-            let s = "[", delim = "" {
+            let s = "[", delim = "" in {
                 for_each(function(e) { s = string_append(s, delim, json_to_string(e)); delim = ", " }, elems);
                 s = string_append(s, "]");
                 s
             }
         }
         jobj(bindings): {
-            let s = "{" {
+            let s = "{" in {
                 for_each(function(e) { s = string_append(s, json_to_string(head(e)), ":", json_to_string(tail(e))) }, 
                          bindings);
                 s = string_append(s, "}");
@@ -24,7 +24,7 @@ var json_to_string = function(json) {
         }
         jnum(num): number_to_string(num)
         jstr(str): string_append("\"", str, "\"")
-        jbool(bool): if bool "true" else "false"
+        jbool(bool): if bool then "true" else "false"
         jnull(): ""
     }
 };

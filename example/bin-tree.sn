@@ -30,7 +30,7 @@ function tree_delete (t, k) {
     match t {
         leaf (): default_leaf
         tree (key, value, left, right) where key == k: {
-            let r = remove_smallest (right)
+            let r = remove_smallest (right) in
             match r {
                 !none: left
                 [kp, vp, tp]: mk_tree (kp, vp, left, tp)
@@ -45,7 +45,7 @@ function remove_smallest (t) {
     match t {
         leaf (): !none
         tree (key, value, left, right): {
-            let r = remove_smallest (left)
+            let r = remove_smallest (left) in
             match r {
                 !none: [key, value, right]
                 [kp, vp, tp]: [kp, vp, mk_tree (key, value, tp, right)]

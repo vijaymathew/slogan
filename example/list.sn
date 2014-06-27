@@ -6,8 +6,8 @@ println (head (lst));
 println (tail (lst));
 
 letrec list_copy = function (ls) 
-   if is_empty (ls) [] else pair (head (ls), list_copy (tail (ls)))
-println (list_copy ([1, 2, 3])); // [1, 2, 3]
+   if is_empty (ls) then [] else pair (head (ls), list_copy (tail (ls)))
+in println (list_copy ([1, 2, 3])); // [1, 2, 3]
 
 println (map (function (x) x * x, [1, 2, 3, 4, 5])); // => [1, 4, 9, 16, 25]
 
@@ -20,18 +20,17 @@ println (sort (lst, test = char_is_lt)); // => [a, e, f, x]
 // trees as lists.
 
 var count_leaves = function (tree) {
-    if is_empty (tree) 0
-    else if not (is_pair (tree)) 1
+    if is_empty (tree) then 0
+    else if not (is_pair (tree)) then 1
     else count_leaves (head (tree)) + count_leaves (tail (tree))
 };
 
 var fringe = function (tree) {
     letrec helper = function (tree, result) {
-        if is_empty (tree) reverse (result)
-        else if not (is_pair (tree)) pair (tree, result)
+        if is_empty (tree) then reverse (result)
+        else if not (is_pair (tree)) then pair (tree, result)
         else append (helper (head (tree), result), helper (tail (tree), result))
-    }
-    helper (tree, [])
+    } in helper (tree, [])
 };
 
 // tests:
@@ -48,12 +47,12 @@ var make_branch = function (length, structure) [length, structure];
 var branch_length = function (branch) head (branch);
 var branch_structure = function (branch) head (tail (branch));
 var branch_weight = function (branch) {
-    if is_pair (branch_structure (branch)) total_weight (branch_structure (branch))
+    if is_pair (branch_structure (branch)) then total_weight (branch_structure (branch))
     else branch_structure (branch)
 };
 var branch_torque = function (branch) branch_length (branch) * branch_weight (branch);
 var is_branch_balanced = function (branch) {
-    if is_pair (branch_structure (branch)) is_balanced (branch_structure (branch))
+    if is_pair (branch_structure (branch)) then is_balanced (branch_structure (branch))
     else true
 };
 
@@ -80,12 +79,12 @@ println (total_weight (c)); // => 14
 println (is_balanced (c)); // => false
 
 var foldr = function (op, initial, seq) {
-    if is_empty (seq) initial
+    if is_empty (seq) then initial
     else op (head (seq), foldr (op, initial, tail (seq)))
 };
 
 var foldl = function (op, initial, seq) {
-    if is_empty (seq) initial
+    if is_empty (seq) then initial
     else foldl (op, op (initial, head (seq)), tail (seq))
 };
 
@@ -95,7 +94,7 @@ var rev_l = function (seq) foldl (function (x, y) [y x], [], seq);
 
 function range (s, e) {
     function loop (s, e, ns) {
-        if s > e reverse (ns)
+        if s > e then reverse (ns)
         else loop (s + 1, e, [s ns])
     };
     loop (s, e, [])

@@ -8,29 +8,27 @@ println (x, y); // => 100 []
 
 macro ntimes (n, body) {
     letrec fn_loop = function (x) {
-        if x >= 0 {
+        if x >= 0 then {
             body;
             fn_loop (x - 1)
         }
-    }
-    fn_loop (n)
+    } in fn_loop (n)
 };
 
 // test:
 ntimes (10, println ("hello, world!"));
 
 macro for (x, start, stop, body) {
-    let x = start
-    let cmpr = if stop > 0 number_is_lt else number_is_gt
-    let incr = if stop > 0 add else sub
+    let x = start in
+    let cmpr = if stop > 0 then number_is_lt else number_is_gt in
+    let incr = if stop > 0 then add else sub in
     letrec fn_loop = function () {
-        if cmpr (x, stop) {
+        if cmpr (x, stop) then {
             body;
             x = incr (x, 1);
             fn_loop ()
         }
-    }
-    fn_loop ()
+    } in fn_loop ()
 };
 
 // test:
@@ -39,45 +37,44 @@ for (i, 0, -10, println (i)); // => 0 ... -9
 
 macro while ($cond, $body) {
     letrec fn_loop = function () {
-        if $cond {
+        if $cond then {
             $body;
             fn_loop ()
         }
-    }
-    fn_loop ()
+    } in fn_loop ()
 };
 
 // test:
-let i = 0
+let i = 0 in
 while (i < 10, {
     println (i);
     i = i + 1
 });
 
 macro when ($cond, $body) {
-    if $cond $body
+    if $cond then $body
 };
 
 macro unless ($cond, $body) {
-    if not ($cond) $body
+    if not ($cond) then $body
 };
 
 
 // test:
-let i = 10
+let i = 10 in
 when (i <= 10, println ("i <= 10"));
 
-let i = 100
+let i = 100 in
 when (i <= 10, println ("i <= 10"));
 
-let i = 10
+let i = 10 in
 unless (i <= 10, println ("i <= 10"));
 
-let i = 100
+let i = 100 in
 unless (i <= 10, println ("i <= 10"));
 
 macro for_in_pair (x, seq, body) {
-    let x = false 
+    let x = false in
     for_each (function ($e) {
         x = $e;
         body
@@ -85,7 +82,7 @@ macro for_in_pair (x, seq, body) {
 };
 
 macro for_in_table (x, seq, body) {
-    let x = false 
+    let x = false in
     table_for_each (function ($k, $v) {
         x = [$k $v];
         body
@@ -93,20 +90,19 @@ macro for_in_table (x, seq, body) {
 };
 
 macro for_in_iterable (x, seq, body) {
-    let x = false
+    let x = false in
     letrec loop = function ($s) {
-        if $s.has_more {
+        if $s.has_more then {
             x = $s.next;
             body;
             loop ($s)
         }
-    }
-    loop (seq)
+    } in loop (seq)
 };
 
 macro for_in (x, seq, body) {
-    if is_pair (seq) for_in_pair (x, seq, body)
-    else if is_table (seq) for_in_table (x, seq, body)
+    if is_pair (seq) then for_in_pair (x, seq, body)
+    else if is_table (seq) then for_in_table (x, seq, body)
     else for_in_iterable (x, seq, body)
 };
 
@@ -123,7 +119,7 @@ var iterable = function (data) {
     case msg {
         !has_more: not (is_empty (data))
         !next: {
-            let h = head (data) {
+            let h = head (data) in {
                 data = tail (data);
                 h
             }

@@ -198,11 +198,16 @@
           (loop (func-call-expr expr tokenizer))
           expr))))
 
+(define (then-expr tokenizer)
+  (if (not (eq? (tokenizer 'next) 'then))
+      (parser-error tokenizer "Expected keyword: then"))
+  (expression tokenizer))
+
 (define (if-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'if)
          (tokenizer 'next)
          (let ((expr (cons 'if (list (expression tokenizer)
-                                     (expression tokenizer)))))
+                                     (then-expr tokenizer)))))
            (if (eq? (tokenizer 'peek) 'else)
                (begin (tokenizer 'next)
                       (if (eq? (tokenizer 'peek) 'if)
@@ -488,6 +493,11 @@
                                (loop (cons e expr) (tokenizer 'peek)))))))
         (parser-error tokenizer "Invalid start of array literal."))))
 
+(define (let-body-expr tokenizer)
+  (if (not (eq? (tokenizer 'next) 'in))
+      (parser-error tokenizer "Expected keyword: in"))
+  (func-body-expr tokenizer))
+
 (define (let-expr tokenizer)
   (let ((letkw (letkw? (tokenizer 'peek))))
     (cond (letkw
@@ -517,7 +527,7 @@
 			(loop (append result (list (list sym expr)))))
 		       (else (append (list letkw) 
 				     (cons (append result (list (list sym expr))) 
-					   (list (func-body-expr tokenizer))))))))))
+					   (list (let-body-expr tokenizer))))))))))
 	  (else (func-call-expr (literal-expr tokenizer) tokenizer)))))
 
 (define (letkw? sym)
@@ -835,10 +845,16 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
+(define *reserved-names* '(var record function 
+                               if then else 
+                               case match 
+                               try catch finally
+                               let letseq letrec in
+                               macro import))
+
 (define (reserved-name? sym)
   (and (symbol? sym)
-       (memq sym '(var import record if case match try catch finally
-                       function let letseq letrec macro))))
+       (memq sym *reserved-names*)))
 
 (define (name? sym) 
   (or (variable? sym)

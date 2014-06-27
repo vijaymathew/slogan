@@ -34,16 +34,14 @@ var make_pair = function (x, y) {
            0: x
            1: y
         }
-    }
-    dispatch
+    } in dispatch
 };
 
 var pair_head = function (p) p (0);
 var pair_tail = function (p) p (1);
 
 var make_rat = function (n, d) {
-    let g = gcd (n, d)
-    make_pair (n/g, d/g)
+    let g = gcd (n, d) in make_pair (n/g, d/g)
 };
 var numer = function (x) pair_head (x);
 var denom = function (x) pair_tail (x);

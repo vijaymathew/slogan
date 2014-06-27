@@ -108,10 +108,8 @@ var add_lists = function(lst1, lst2) {
 };
 
 var pascal = function (n) {
-    if n == 1 [1]
-    else let p = pascal (n - 1) {
-        add_lists(shift_left (p), shift_right (p))
-    }
+    if n == 1 then [1]
+    else let p = pascal (n - 1) in add_lists(shift_left (p), shift_right (p))
 };
 
 println (pascal (10));
@@ -147,8 +145,7 @@ var m_length =
             []: i
             [_ tail]: iter_len (tail, i + 1)
         }
-    }
-    function (lst) iter_len (lst, 0);
+    } in function (lst) iter_len (lst, 0);
 
 println (m_length ([1,2,3])); // => 3
 
@@ -158,8 +155,7 @@ var m_reverse =
             []: rlst
             [h t]: iter_rev (t, [h rlst])
         }
-    }
-    function (lst) iter_rev (lst, []);
+    } in function (lst) iter_rev (lst, []);
 
 println (m_reverse ([1,2,3,4,5])); // => [5,4,3,2,1]
 
@@ -167,7 +163,7 @@ println (m_reverse ([1,2,3,4,5])); // => [5,4,3,2,1]
 function mr_length (lst) {
     match lst {
         []: 0
-        [h t]: if is_list (h) mr_length (h) + mr_length (t)
+        [h t]: if is_list (h) then mr_length (h) + mr_length (t)
         else 1 + mr_length (t)
     }
 };
@@ -182,7 +178,7 @@ function merge (xs, ys) {
         [[] ys]: ys
         [xs []]: xs
         [[x xr] [y yr]]: {
-            if x < y [x merge (xr, ys)]
+            if x < y then [x merge (xr, ys)]
             else [y merge (xs, yr)]
         }
     }
@@ -192,7 +188,7 @@ function my_split (xs) {
     match xs {
         []: [[] []]
         [x]: [[x] []]
-        [x1 [x2 xr]]: let r = my_split (xr) { 
+        [x1 [x2 xr]]: let r = my_split (xr) in { 
             [[x1 head (r)] [x2 tail (r)]]
         }
     }
@@ -202,7 +198,7 @@ function merge_sort (xs) {
     match xs {
         []: []
         [x]: [x]
-        else: let r = my_split (xs) {
+        else: let r = my_split (xs) in {
             merge (merge_sort (head (r)), merge_sort (tail (r)))
         }
     }
@@ -224,7 +220,7 @@ println(quick_sort([1, 10, 5, 0, 2])); // => [0, 1, 2, 5, 10]
 function m_flatten (lst) {
     match lst {
         []: []
-        [h t]: if is_list (h) append (m_flatten (h), m_flatten (t))
+        [h t]: if is_list (h) then append (m_flatten (h), m_flatten (t))
         else [h m_flatten (t)]
     }
 };
@@ -257,8 +253,8 @@ println (my_drop (3, [1, 2, 3, 4, 5])); // => [4, 5]
 function split_lines (cs) map (list_to_string, split_lines_helper (string_to_list (cs)));
 
 function split_lines_helper (cs) {
-    if cs == [] []
-    else let pre_suf = split (cs, is_line_terminator) {
+    if cs == [] then []
+    else let pre_suf = split (cs, is_line_terminator) in {
         [head (pre_suf) match tail (pre_suf) {
             ['\r', ['\n' rest]]: split_lines_helper (rest)
             ['\r' rest]: split_lines_helper (rest)

@@ -2,7 +2,7 @@
 
 var get_dbconn = function () {
     println ("Initializing database connection...");
-    let dbconn = [!DatabaseConnection "dbhost:dbport/dbname"] {
+    let dbconn = [!DatabaseConnection "dbhost:dbport/dbname"]  in {
         get_dbconn = function () dbconn;
         dbconn
     }
