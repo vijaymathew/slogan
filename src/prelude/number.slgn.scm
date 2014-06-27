@@ -28,15 +28,14 @@
 (define is_flnegative flnegative?)
 (define is_flpositive flpositive?)
 
-(define (is_positive_infinity n)
-  (if (not (real? n))
-      (##fail-check-real 1 is_positive_infinity n))
-  (eq? *pos-inf-sym* (string->symbol (number->string n))))
+(define inf +inf.0)
+(define _inf -inf.0)
+(define nan +nan.0)
+(define _zero -0.)
+(define zero 0.)
 
-(define (is_negative_infinity n)
-  (if (not (real? n))
-      (##fail-check-real 1 is_negative_infinity n))
-  (eq? *neg-inf-sym* (string->symbol (number->string n))))
+(define (is_positive_infinity n) (= n +inf.0))
+(define (is_negative_infinity n) (= n -inf.0))
 
 (define integer_to_char integer->char)
 (define rational_to_real exact->inexact)
