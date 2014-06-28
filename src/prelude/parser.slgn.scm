@@ -78,7 +78,7 @@
          (func-def-stmt tokenizer))))
 
 (define (func-def-stmt tokenizer)
-  (cond ((eq? (tokenizer 'peek) 'function)
+  (cond ((eq? (tokenizer 'peek) 'fn)
          (tokenizer 'next)
          (let ((name (tokenizer 'peek)))
            (if (not (variable? name))
@@ -541,7 +541,7 @@
       #f))
 
 (define (func-def-expr tokenizer)
-  (if (eq? (tokenizer 'peek) 'function)
+  (if (eq? (tokenizer 'peek) 'fn)
       (begin (tokenizer 'next)
              (merge-lambda (list 'lambda (func-params-expr tokenizer)) 
                            (func-body-expr tokenizer)))
@@ -845,9 +845,9 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(var record function 
+(define *reserved-names* '(var record fn 
                                if then else 
-                               case match 
+                               case match where
                                try catch finally
                                let letseq letrec in
                                macro import))
