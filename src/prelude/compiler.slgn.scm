@@ -106,7 +106,10 @@
 
 (define (repl-exception-handler ex)
   (display "error: ")
-  (display-exception ex))
+  (let ((lines (string_split (exception_to_string ex) #\newline)))
+    (if (not (null? lines))
+        (display (car lines))))
+  (newline))
 
 (define (repl port #!key (prompt "slogan> "))
   (display prompt) 

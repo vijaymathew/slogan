@@ -201,7 +201,7 @@
 (define (then-expr tokenizer)
   (if (not (eq? (tokenizer 'next) 'then))
       (parser-error tokenizer "Expected keyword: then"))
-  (expression tokenizer))
+  (func-body-expr tokenizer))
 
 (define (if-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'if)
@@ -232,7 +232,7 @@
                    (if (not (eq? (tokenizer 'peek) '*colon*))
                        (parser-error tokenizer "Missing colon after case expression.")
                        (tokenizer 'next))
-                   (let ((result (expression tokenizer)))
+                   (let ((result (func-body-expr tokenizer)))
                      (loop (tokenizer 'peek)
                            (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
                                        result) body))))))))
@@ -274,7 +274,7 @@
                    (if (not (eq? (tokenizer 'peek) '*colon*))
                        (parser-error tokenizer "Missing colon after pattern.")
                        (tokenizer 'next))
-                   (let ((consequent (expression tokenizer)))
+                   (let ((consequent (func-body-expr tokenizer)))
                      (if (not (eq? guard #t))
                          (set! consequent `(if ,guard 
                                                ,consequent 
@@ -470,7 +470,7 @@
 
 (define (pair-literal expr tokenizer)
   (let ((result (if (tokenizer 'quote-mode?) 
-		    (list expr (expression tokenizer))
+		    (cons expr (expression tokenizer))
 		    (list 'cons expr (expression tokenizer)))))
     (if (not (eq? (tokenizer 'peek) '*close-bracket*))
         (parser-error tokenizer "Pair not terminated.")
@@ -564,7 +564,10 @@
 (define (func-body-expr tokenizer)
   (if (eq? (tokenizer 'peek) '*open-brace*)
       (block-expr tokenizer)
-      (expression tokenizer)))
+      (let ((expr (statement tokenizer)))
+        (if (not expr)
+            (expression tokenizer)
+            expr))))
 
 (define (func-call-expr func-val tokenizer)
   (if (and (name? func-val)
