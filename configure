@@ -5,5 +5,3 @@ SLOGAN_HOME=`pwd`
 cd ${SLOGAN_HOME}/platform/gsc
 ./configure --enable-single-host --bindir=${SLOGAN_HOME}/platform/gsc/bin --includedir=${SLOGAN_HOME}/platform/gsc/include --libdir=${SLOGAN_HOME}/platform/gsc/lib
 make
-
-cd ../../

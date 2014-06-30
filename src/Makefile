@@ -3,7 +3,7 @@ SLOGAN_ROOT=/usr/slogan
 GSC=../platform/gsc/gsc/gsc
 
 all:
-	${GSC} -o slogan -exe ./prelude/*.scm repl.scm 
+	${GSC} -o slogan -exe -ld-options "-lzmq" ./prelude/*.scm repl.scm
 
 install:
 	cp slogan ${INSTALL_DIR}
