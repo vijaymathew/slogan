@@ -130,9 +130,7 @@
   *void*)
 
 (define (macro-body-expr tokenizer)
-  (if (eq? (tokenizer 'peek) '*open-brace*)
-      (block-expr tokenizer)
-      (expression tokenizer)))
+  (func-body-expr tokenizer #t))
 
 (define (macro-params tokenizer)
   (if (not (eq? '*open-paren* (tokenizer 'peek)))
@@ -201,7 +199,7 @@
 (define (then-expr tokenizer)
   (if (not (eq? (tokenizer 'next) 'then))
       (parser-error tokenizer "Expected keyword: then"))
-  (func-body-expr tokenizer))
+  (func-body-expr tokenizer #t))
 
 (define (if-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'if)
@@ -232,7 +230,7 @@
                    (if (not (eq? (tokenizer 'peek) '*colon*))
                        (parser-error tokenizer "Missing colon after case expression.")
                        (tokenizer 'next))
-                   (let ((result (func-body-expr tokenizer)))
+                   (let ((result (func-body-expr tokenizer #t)))
                      (loop (tokenizer 'peek)
                            (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
                                        result) body))))))))
@@ -274,7 +272,7 @@
                    (if (not (eq? (tokenizer 'peek) '*colon*))
                        (parser-error tokenizer "Missing colon after pattern.")
                        (tokenizer 'next))
-                   (let ((consequent (func-body-expr tokenizer)))
+                   (let ((consequent (func-body-expr tokenizer #t)))
                      (if (not (eq? guard #t))
                          (set! consequent `(if ,guard 
                                                ,consequent 
@@ -561,9 +559,9 @@
                 (loop (append lambda-expr (list (car lambda-body)))
                       (cdr lambda-body)))))))
 
-(define (func-body-expr tokenizer)
+(define (func-body-expr tokenizer #!optional (use-let #f))
   (if (eq? (tokenizer 'peek) '*open-brace*)
-      (block-expr tokenizer)
+      (block-expr tokenizer use-let)
       (let ((expr (statement tokenizer)))
         (if (not expr)
             (expression tokenizer)
@@ -598,6 +596,15 @@
         (parser-error tokenizer "Missing closing parenthesis after macro arguments."))
     (expand-macro macro-name m args tokenizer)))
 
+(define (replace-macro-var var params args)
+  (let loop ((params params)
+             (args args))
+    (cond ((null? params)
+           var)
+          ((eq? (car params) var)
+           (car args))
+          (else (loop (cdr params) (cdr args))))))
+  
 (define (expand-macro macro-name m args tokenizer)
   (if (not (= (length (+macro-params m)) (length args)))
       (parser-error tokenizer (with-output-to-string 
@@ -608,8 +615,17 @@
                                   (display " expects exactly ")
                                   (display (length (+macro-params m)))
                                   (display " arguments.")))))
-  (replace_all (replace_all (+macro-body m) (mk-eval-macro-params (+macro-params m)) args transform: eval)
-               (+macro-params m) args))
+  (let ((body (+macro-body m))
+        (mparams (+macro-params m)))
+    (if (list? body)
+        (replace_all (replace_all body 
+                                  (mk-eval-macro-params mparams)
+                                  args 
+                                  transform: eval)
+                     mparams args)
+        (if (variable? body)
+            (replace-macro-var body mparams args)
+            body))))
 
 (define (mk-eval-macro-params params)
   (let loop ((params params)
