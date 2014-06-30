@@ -1,1 +1,0 @@
-var say_hello = function () { println ("hello, world") };

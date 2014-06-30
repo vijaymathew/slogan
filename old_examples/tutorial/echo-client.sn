@@ -1,5 +1,0 @@
-var client = stream (!tcp_client, [[!server_address "localhost"], [!port_number 5000]]);
-println (to = client, "hello");
-flush_output (client);
-println (read_line (client));
-close_stream (close_stream);

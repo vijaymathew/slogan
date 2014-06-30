@@ -8,7 +8,7 @@ generating platform specific executable binaries.
 
 Follow these steps to build Slogan:
 
-    $ ./configure-platform
+    $ ./configure
     $ make
     $ sudo make install
     $ slogan
