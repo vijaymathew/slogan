@@ -1,3 +1,5 @@
+  * Test new macro expansion that takes care of non-free variables.
+  * Implement functions with lazy arguments.	
 
   - Long term
     

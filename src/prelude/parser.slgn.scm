@@ -109,25 +109,6 @@
              (mk-macro-def (tokenizer 'next) tokenizer))
       (assignment-stmt tokenizer)))
 
-(define-structure +macro params body)
-(define *macros* (list (make-table)))
-
-(define (undef_macro name)
-  (table-set! (car *macros*) name #f))
-
-(define (def-macro name mcr)
-  (table-set! (car *macros*) name mcr)
-  *void*)
-
-(define (get-macro-def name)
-  (let loop ((macros *macros*))
-    (if (null? macros) 
-        #f
-        (let ((mcr (table-ref (car macros) name #f)))
-          (if mcr
-              mcr
-              (loop (cdr macros)))))))
-
 (define (mk-macro-def macro-name tokenizer)
   (if (not (name? macro-name))
       (parser-error tokenizer
@@ -626,15 +607,6 @@
         (parser-error tokenizer "Missing closing parenthesis after macro arguments."))
     (expand-macro macro-name m args tokenizer)))
 
-(define (replace-macro-var var params args)
-  (let loop ((params params)
-             (args args))
-    (cond ((null? params)
-           var)
-          ((eq? (car params) var)
-           (car args))
-          (else (loop (cdr params) (cdr args))))))
-  
 (define (expand-macro macro-name m args tokenizer)
   (if (and (list? (+macro-params m))
            (not (= (length (+macro-params m)) (length args))))
@@ -652,11 +624,7 @@
         (begin (set! args (list `(list ,@args)))
                (set! mparams (list mparams))))
     (if (list? body)
-        (replace_all (replace_all body 
-                                  (mk-eval-macro-params mparams)
-                                  args 
-                                  transform: eval)
-                     mparams args)
+	(replace-macro-args mparams args body)
         (if (variable? body)
             (replace-macro-var body mparams args)
             body))))

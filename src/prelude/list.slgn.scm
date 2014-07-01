@@ -312,3 +312,22 @@
     (if (or (null? a) (null? b))
         (reverse result)
         (loop (cdr a) (cdr b) (cons (cons (car a) (car b)) result)))))
+
+(define (index_of x lst)
+  (let loop ((lst lst)
+	     (i 0))
+    (cond ((null? lst) -1)
+	  ((equal? x (car lst)) i)
+	  (else (loop (cdr lst) (+ i 1))))))
+
+(define (transpose a b)
+  (if (not (= (length a) (length b)))
+      #f
+      (let loop ((a a)
+		 (b b)
+		 (result '()))
+	(cond ((null? a)
+	       (reverse result))
+	      (else (loop (cdr a)
+			  (cdr b)
+			  (cons (cons (car a) (car b)) result)))))))
