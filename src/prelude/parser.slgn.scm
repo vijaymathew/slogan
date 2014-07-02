@@ -768,7 +768,7 @@
 (define (check-func-param tokenizer) 
   (check-if-reserved-name (tokenizer 'next) tokenizer))
 
-(define (func-params-expr tokenizer #!optional is-lazy)
+(define (func-params-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) '*open-paren*)
          (tokenizer 'next)
          (let loop ((params '())
@@ -781,7 +781,6 @@
                             ((eq? (tokenizer 'peek) '*assignment*)
                              (tokenizer 'next)
                              (let ((expr (expression tokenizer)))
-			       (if is-lazy (set! expr (expr-lazify expr)))
                                (assert-comma-separator tokenizer '*close-paren*)
                                (if directives-found
                                    (loop (cons (list sym expr) params) directives-found)
