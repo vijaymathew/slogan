@@ -768,7 +768,7 @@
 (define (check-func-param tokenizer) 
   (check-if-reserved-name (tokenizer 'next) tokenizer))
 
-(define (func-params-expr tokenizer)
+(define (func-params-expr tokenizer #!optional is-lazy)
   (cond ((eq? (tokenizer 'peek) '*open-paren*)
          (tokenizer 'next)
          (let loop ((params '())
@@ -781,6 +781,7 @@
                             ((eq? (tokenizer 'peek) '*assignment*)
                              (tokenizer 'next)
                              (let ((expr (expression tokenizer)))
+			       (if is-lazy (set! expr (expr-lazify expr)))
                                (assert-comma-separator tokenizer '*close-paren*)
                                (if directives-found
                                    (loop (cons (list sym expr) params) directives-found)
@@ -886,7 +887,7 @@
                                case match where
                                try catch finally
                                let letseq letrec in
-                               macro import))
+                               macro lazy import))
 
 (define (reserved-name? sym)
   (and (symbol? sym)

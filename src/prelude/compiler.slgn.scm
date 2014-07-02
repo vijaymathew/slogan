@@ -112,6 +112,11 @@
                (newline)
                (loop (cdr lines))))))
 
+(define *repl-show-il* #f)
+
+(define (repl_show_il)
+  (set! *repl-show-il* (not *repl-show-il*)))
+
 (define (repl port #!key (prompt "slogan> "))
   (display prompt) 
   (with-exception-catcher
@@ -123,6 +128,7 @@
                          (let ((tokenizer (make-tokenizer (open-input-string line) 
                                                           line)))
                            (let loop ((expr (slogan tokenizer)))
+			     (if *repl-show-il* (begin (display expr) (newline)))
                              (if (not (eof-object? (tokenizer 'peek)))
                                  (begin (eval expr)
                                         (loop (slogan tokenizer)))
