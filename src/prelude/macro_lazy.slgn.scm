@@ -2,29 +2,62 @@
 
 (define-structure +macro+ params body)
 (define make-macro make-+macro+)
+(define make-lazy make-+macro+)
 (define macro-params +macro+-params)
 (define macro-body +macro+-body)
 
 (define *macros* (list (make-table)))
+(define *lazy-fns* (list (make-table)))
 
 (define (def-macro name macro)
   (table-set! (car *macros*) name macro))
 
+(define (def-lazy name lazy)
+  (table-set! (car *lazy-fns*) name lazy))
+
 (define (undef-macro name)
   (table-set! (car *macros*) name #f))
+
+(define (undef-lazy name)
+  (table-set! (car *lazy-fns*) name #f))
 
 (define (remove-macro-def name)
   (if (get-macro-def name)
       (undef-macro name)))
 
+(define (remove-lazy-def name)
+  (if (get-lazy-def name)
+      (undef-lazy name)))
+
 (define (push-macros)
   (set! *macros* (cons (make-table) *macros*)))
+
+(define (push-lazy-fns)
+  (set! *lazy-fns* (cons (make-table) *lazy-fns*)))
 
 (define (pop-macros)
   (set! *macros* (cdr *macros*)))
 
-(define (get-macro-def name)
-  (let loop ((macros *macros*))
+(define (pop-lazy-fns)
+  (set! *lazy-fns* (cdr *lazy-fns*)))
+
+(define (push-macros-lazy-fns)
+  (push-macros)
+  (push-lazy-fns))
+
+(define (pop-macros-lazy-fns)
+  (pop-macros)
+  (pop-lazy-fns))
+
+(define (remove-macro-lazy-fns-def name)
+  (remove-macro-def name)
+  (remove-lazy-def name))
+
+(define (get-macro-def name) (get-macro-lazy-def name *macros*))
+(define (get-lazy-def name) (get-macro-lazy-def name *lazy-fns*))
+
+(define (get-macro-lazy-def name tables)
+  (let loop ((macros tables))
     (if (null? macros)
         #f
         (let ((m (table-ref (car macros) name #f)))
@@ -130,3 +163,11 @@
         (let ((v (replace-macro-args-helper (cadar expr) env)))
           (loop (cdr expr) 
                 (append result (cons (caar expr) (list v))))))))
+
+(define (expr-lazify lazy-fn expr)
+  (if lazy-fn
+      (list 'delay expr)
+      expr))
+
+(define (expr-forcify expr params)
+  (replace-macro-args params (map (lambda (x) (list 'force x)) params) expr))
