@@ -1,9 +1,9 @@
-  * Test new macro expansion that takes care of non-free variables.
-  * Implement functions with lazy arguments.	
 
+   * Exhaustive testing of basic syntax, macros, lazy functions, records, pattern matching and modules.        
+     
   - Long term
     
-    * Rewrite tutorial (based on "Computer Sceience Logo Style" ???).
-    * Extensive testing of pattern matcher.
+    * Rewrite tutorial, docs, samples.
+
 
 

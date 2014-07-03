@@ -3,7 +3,7 @@
 (define (slogan tokenizer)
   (expression/statement tokenizer))
 
-(define (import tokenizer script-name)
+(define (slgn-load tokenizer script-name)
   (if (compile (if (symbol? script-name) 
                    (symbol->string script-name) 
                    script-name) 
@@ -25,7 +25,7 @@
 (define (statement tokenizer)
   (if (eq? (tokenizer 'peek) '*semicolon*)
       *void*
-      (import-stmt tokenizer)))
+      (load-stmt tokenizer)))
 
 (define (highligted-line colno)
   (with-output-to-string
@@ -70,10 +70,10 @@
         (parser-error tokenizer
                       "Statement or expression not properly terminated."))))
 
-(define (import-stmt tokenizer)
-  (cond ((eq? (tokenizer 'peek) 'import)
+(define (load-stmt tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'load)
          (tokenizer 'next)
-         (import tokenizer (tokenizer 'next)))
+         (slgn-load tokenizer (tokenizer 'next)))
         (else
          (func-def-stmt tokenizer))))
 
@@ -123,16 +123,77 @@
   (if (eq? (tokenizer 'peek) 'lazy)
       (begin (tokenizer 'next)
              (func-def-stmt-from-name tokenizer #t))
+      (module-stmt tokenizer)))
+
+(define (module-stmt tokenizer)
+  (if (eq? (tokenizer 'peek) 'module)
+      (begin (tokenizer 'next)
+             (module-def-stmt tokenizer))
       (assignment-stmt tokenizer)))
 
+(define (module-def-stmt tokenizer)
+  (let ((name (tokenizer 'next))
+        (params '())
+        (exports '()))
+    (if (not (variable? name))
+        (parser-error tokenizer "Module must have a name."))
+    (check-if-reserved-name name tokenizer)
+    (if (eq? (tokenizer 'peek) '*open-paren*)
+        (set! params (func-params-expr tokenizer)))
+    (if (eq? (tokenizer 'peek) 'exports)
+        (set! exports (module-exports tokenizer)))
+    (let ((body (merge-lambda (list 'lambda (list '*message*))
+                              (append (func-body-expr tokenizer)
+                                      (module-exports->case exports name)))))
+      (list 'define name (merge-lambda (list 'lambda params) body)))))
+
+(define (module-exports tokenizer)
+  (tokenizer 'next)
+  (if (not (eq? (tokenizer 'next) '*open-paren*))
+      (parser-error tokenizer "Missing opening parenthesis before exports list."))
+  (let loop ((token (tokenizer 'next))
+             (result '()))
+    (cond ((eq? token '*close-paren*)
+           (reverse result))
+          ((name? token)
+           (check-if-reserved-name token tokenizer)
+           (let ((expr (if (eq? (tokenizer 'peek) '*colon*)
+                           (begin (tokenizer 'next)
+                                  (func-body-expr tokenizer #t))
+                           token)))
+             (let ((case-expr (cons token expr)))
+               (if (eq? (tokenizer 'peek) '*comma*)
+                   (tokenizer 'next)
+                   (if (not (eq? (tokenizer 'peek) '*close-paren*))
+                       (parser-error tokenizer "Expected comma or closing parenthesis.")))
+               (loop (tokenizer 'next)
+                     (cons case-expr result)))))
+          (else (parser-error tokenizer (with-output-to-string
+                                          "Expected name to export instead of: "
+                                          (lambda ()
+                                            (display token)
+                                            (display "."))))))))
+
+(define (module-exports->case exports name)
+  (if (null? exports) 
+      '()
+      (let loop ((exports exports)
+                 (body (list `(else (error (string-append 
+                                            "'" (symbol->string *message*)
+                                            "' not found in module '" (symbol->string ',name)
+                                            "'."))))))
+        (cond ((null? exports)
+               (list (append '(case *message*) body)))
+              (else 
+               (let ((expr (caar exports))
+                     (result (cdar exports))) 
+                 (loop (cdr exports)
+                       (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
+                                   result) body))))))))
+            
 (define (mk-macro-def macro-name tokenizer)
   (if (not (name? macro-name))
-      (parser-error tokenizer
-                    (with-output-to-string 
-                      '() 
-                      (lambda () 
-                        (display "Invalid macro name: ") 
-                        (display macro-name)))))
+      (parser-error tokenizer (string-append "Invalid macro name: " (symbol->string macro-name) ".")))
   (def-macro macro-name (make-macro 
                          (macro-params-exprs tokenizer) 
                          (macro-body-expr tokenizer))))
@@ -168,7 +229,7 @@
 (define (define-stmt tokenizer)
   (if (variable? (tokenizer 'peek))
       (if (reserved-name? (tokenizer 'peek))
-          (parser-error tokenizer "Reserved name cannot be used as identifier.")
+          (parser-error tokenizer "Keyword cannot be used as identifier.")
           (var-def-set (tokenizer 'next) tokenizer #t))
       (parser-error tokenizer "Invalid variable name.")))
 
@@ -188,11 +249,9 @@
       (begin (tokenizer 'next)
              (if (rvar? sym)
                  (if def
-                     (parser-error tokenizer (with-output-to-string 
-                                               '()
-                                               (lambda ()
-                                                 (display "Invalid character in variable name: ")
-                                                 (display sym))))
+                     (parser-error tokenizer (string-append 
+                                              "Invalid character in variable name: "
+                                              (symbol->string sym) "."))
                      (list 'rbind (normalize-rvar sym) (expression tokenizer)))
                  (list (if def 'define 'set!) sym (expression tokenizer))))
       (parser-error tokenizer "Expected assignment.")))
@@ -513,19 +572,10 @@
 	   (let loop ((result '()))
 	     (let ((sym (tokenizer 'next)))
 	       (if (not (name? sym))
-		   (parser-error tokenizer (with-output-to-string 
-                                             '()
-                                             (lambda ()
-                                               (display "Expected name instead of ")
-                                               (display sym) 
-                                               (display ".")))))
-	       (if (reserved-name? sym)
-		   (parser-error tokenizer (with-output-to-string
-                                             '()
-                                             (lambda ()
-                                               (display "Invalid variable name: ")
-                                               (display sym) 
-                                               (display ".")))))
+		   (parser-error tokenizer (string-append 
+                                            "Expected name instead of "
+                                            (symbol->string sym) ".")))
+               (check-if-reserved-name sym tokenizer)
 	       (if (eq? (tokenizer 'peek) '*assignment*)
 		   (tokenizer 'next)
 		   (parser-error tokenizer "Expected assignment."))
@@ -552,7 +602,7 @@
 (define (func-def-expr tokenizer)
   (if (eq? (tokenizer 'peek) 'fn)
       (begin (tokenizer 'next)
-             (merge-lambda (list 'lambda (func-params-expr tokenizer)) 
+             (merge-lambda (list 'lambda (func-params-expr tokenizer))
                            (func-body-expr tokenizer)))
       #f))
 
@@ -757,12 +807,8 @@
 
 (define (check-if-reserved-name sym tokenizer)
   (if (reserved-name? sym)
-      (parser-error tokenizer (with-output-to-string 
-                                '()
-                                (lambda ()
-                                  (display "Invalid use of reserved name: ") 
-                                  (display sym) 
-                                  (display "."))))
+      (parser-error tokenizer (string-append "Invalid use of keyword: "
+                                             (symbol->string sym) "."))
       sym))
   
 (define (check-func-param tokenizer) 
@@ -886,7 +932,8 @@
                                case match where
                                try catch finally
                                let letseq letrec in
-                               macro lazy import))
+                               module exports
+                               macro lazy load))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
