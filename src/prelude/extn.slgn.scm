@@ -30,14 +30,3 @@
         (if (not (null? fns))
             (loop (cdr fns) ((car fns) result))
             result)))))
-
-(define (loop-forever fn)
-  (fn)
-  (loop-forever fn))
-
-(define (loop fn #!optional c)
-  (if (not c) (loop-forever fn))
-  (let *loop* ((cont (c)))
-    (if cont
-	(begin (fn)
-	       (loop (c))))))

@@ -2,13 +2,13 @@
 
 (define-structure port-pos port line col)
 
-(define (port-pos-read-char! port)
-  (let ((c (read-char (port-pos-port port))))
+(define (port-pos-read-char! pp)
+  (let ((c (read-char (port-pos-port pp))))
     (cond ((and (char? c) (char=? c #\newline))
-           (port-pos-line-set! port (+ 1 (port-pos-line port)))
-           (port-pos-col-set! port 0))
+           (port-pos-line-set! pp (+ 1 (port-pos-line pp)))
+           (port-pos-col-set! pp 0))
           (else
-           (port-pos-col-set! port (+ 1 (port-pos-col port)))))
+           (port-pos-col-set! pp (+ 1 (port-pos-col pp)))))
     c))
 
 (define (port-pos-peek-char port) (peek-char (port-pos-port port)))
