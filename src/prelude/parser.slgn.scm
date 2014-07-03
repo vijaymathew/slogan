@@ -158,7 +158,7 @@
            (reverse result))
           ((name? token)
            (check-if-reserved-name token tokenizer)
-           (let ((expr (if (eq? (tokenizer 'peek) '*colon*)
+           (let ((expr (if (eq? (tokenizer 'peek) '*assignment*)
                            (begin (tokenizer 'next)
                                   (func-body-expr tokenizer #t))
                            token)))
