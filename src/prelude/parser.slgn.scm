@@ -265,13 +265,15 @@
           expr))))
 
 (define (then-expr tokenizer)
-  (if (not (eq? (tokenizer 'next) 'then))
-      (parser-error tokenizer "Expected keyword: then"))
+  (if (not (eq? (tokenizer 'next) '*close-paren*))
+      (parser-error tokenizer "Expected closing parenthesis."))
   (func-body-expr tokenizer #t))
 
 (define (if-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'if)
          (tokenizer 'next)
+         (if (not (eq? (tokenizer 'next) '*open-paren*))
+             (parser-error tokenizer "Expected opening parenthesis."))         
          (let ((expr (cons 'if (list (expression tokenizer)
                                      (then-expr tokenizer)))))
            (if (eq? (tokenizer 'peek) 'else)
@@ -561,34 +563,48 @@
                                (loop (cons e expr) (tokenizer 'peek)))))))
         (parser-error tokenizer "Invalid start of array literal."))))
 
-(define (let-body-expr tokenizer)
-  (if (not (eq? (tokenizer 'next) 'in))
-      (parser-error tokenizer "Expected keyword: in"))
-  (func-body-expr tokenizer))
-
 (define (let-expr tokenizer)
   (let ((letkw (letkw? (tokenizer 'peek))))
-    (cond (letkw
-	   (tokenizer 'next)
-	   (let loop ((result '()))
-	     (let ((sym (tokenizer 'next)))
-	       (if (not (name? sym))
-		   (parser-error tokenizer (string-append 
-                                            "Expected name instead of "
-                                            (symbol->string sym) ".")))
-               (check-if-reserved-name sym tokenizer)
-	       (if (eq? (tokenizer 'peek) '*assignment*)
-		   (tokenizer 'next)
-		   (parser-error tokenizer "Expected assignment."))
-               (remove-macro-lazy-fns-def sym)
-	       (let ((expr (expression tokenizer)))
-		 (cond ((eq? (tokenizer 'peek) '*comma*)
-			(tokenizer 'next)
-			(loop (append result (list (list sym expr)))))
-		       (else (append (list letkw) 
-				     (cons (append result (list (list sym expr))) 
-					   (list (let-body-expr tokenizer))))))))))
-	  (else (func-call-expr (literal-expr tokenizer) tokenizer)))))
+    (if letkw
+        (begin (tokenizer 'next)
+               (if (name? (tokenizer 'peek))
+                   (named-let-expr letkw tokenizer)
+                   (normal-let-expr letkw tokenizer)))
+        (func-call-expr (literal-expr tokenizer) tokenizer))))
+
+(define (normal-let-expr letkw tokenizer)
+  (list letkw (let-bindings tokenizer) (func-body-expr tokenizer)))
+
+(define (named-let-expr letkw tokenizer)
+  (if (not (eq? letkw 'let))
+      (parser-error tokenizer (string-append "Cannot define "
+                                             (symbol->string letkw)
+                                             " as a named let.")))
+  (let ((name (tokenizer 'next)))
+    (check-if-reserved-name name tokenizer)
+    (remove-macro-lazy-fns-def name)
+    (list letkw name (let-bindings tokenizer) (func-body-expr tokenizer))))
+
+(define (let-bindings tokenizer)
+  (if (not (eq? (tokenizer 'next) '*open-paren*))
+      (parser-error tokenizer "Expected let variable bindings list."))
+  (let loop ((token (tokenizer 'next))
+             (bindings '()))
+    (cond ((eq? token '*close-paren*)
+           bindings)
+          ((name? token)
+           (check-if-reserved-name token tokenizer)
+           (if (not (eq? (tokenizer 'next) '*assignment*))
+               (parser-error tokenizer "Expected assignment."))
+           (remove-macro-lazy-fns-def token)
+           (let ((expr (func-body-expr tokenizer)))
+             (let ((next (tokenizer 'peek)))
+               (if (eq? next '*comma*) 
+                   (tokenizer 'next)
+                   (if (not (eq? next '*close-paren*))
+                       (parser-error tokenizer "Expected comma or closing parenthesis."))))
+             (loop (tokenizer 'next) (append bindings (list (list token expr))))))
+          (else (parser-error tokenizer "Expected variable declaration.")))))
 
 (define (letkw? sym)
   (if (and (symbol? sym)
@@ -932,13 +948,12 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(var record fn 
-                               if then else 
-                               case match where
-                               try catch finally
-                               let letseq letrec in
-                               module exports
-                               macro lazy load))
+(define *reserved-names* '(fn var if record
+                              let letseq letrec
+                              case match where
+                              try catch finally
+                              module exports
+                              macro lazy load))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
