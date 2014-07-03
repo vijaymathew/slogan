@@ -69,11 +69,13 @@
                       weak-values: weak_values test: test
                       min-load: min_load max-load: max_load))))
 
-(define (filter ls fn)
+(define (filter ls fn #!key drill)
   (let loop ((ls ls)
              (result '()))
     (cond ((null? ls)
            (reverse result))
+          ((and (list? (car ls)) drill)
+           (loop (cdr ls) (cons (filter (car ls) fn drill: drill) result)))
           ((fn (car ls))
            (loop (cdr ls) (cons (car ls) result)))
           (else

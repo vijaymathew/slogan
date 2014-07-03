@@ -1,8 +1,19 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+(define *compiler-log* #f)
+
+(define (compiler_log)
+  (set! *compiler-log* (not *compiler-log*)))
+
+(define (eliminate-voids exprs)
+  (if (list? exprs)
+      (filter exprs (lambda (x) (not (void? x))) drill: #t)
+      exprs))
+
 (define (compile->scheme tokenizer)
-  (let loop ((v (slogan tokenizer))
+  (let loop ((v (eliminate-voids (slogan tokenizer)))
              (exprs '()))
+    (if *compiler-log* (begin (display v) (newline)))
     (if (not (eof-object? v))
         (if (not (void? v)) 
             (loop (slogan tokenizer)
@@ -112,11 +123,6 @@
                (newline)
                (loop (cdr lines))))))
 
-(define *repl-log* #f)
-
-(define (repl_log)
-  (set! *repl-log* (not *repl-log*)))
-
 (define (repl port #!key (prompt "slogan> "))
   (display prompt) 
   (with-exception-catcher
@@ -128,7 +134,7 @@
                          (let ((tokenizer (make-tokenizer (open-input-string line) 
                                                           line)))
                            (let loop ((expr (slogan tokenizer)))
-			     (if *repl-log* (begin (display expr) (newline)))
+			     (if *compiler-log* (begin (display expr) (newline)))
                              (if (not (eof-object? (tokenizer 'peek)))
                                  (begin (eval expr)
                                         (loop (slogan tokenizer)))

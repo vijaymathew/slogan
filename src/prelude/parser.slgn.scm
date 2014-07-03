@@ -116,7 +116,8 @@
 (define (macro-def-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'macro)
       (begin (tokenizer 'next)
-             (mk-macro-def (tokenizer 'next) tokenizer))
+             (mk-macro-def (tokenizer 'next) tokenizer)
+             *void*)
       (lazy-fn-stmt tokenizer)))
 
 (define (lazy-fn-stmt tokenizer)
