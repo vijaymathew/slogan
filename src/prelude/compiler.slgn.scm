@@ -93,7 +93,7 @@
   (let ((bcount 0)
         (pcount 0)
         (scount 0))
-    (string-foreach 
+    (string-for-each 
      (lambda (c)
        (cond ((char=? c #\{)
               (set! bcount (+ bcount 1)))

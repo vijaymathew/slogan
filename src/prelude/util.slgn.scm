@@ -158,3 +158,28 @@
   (display " " port)
   (slgn-display (thread-name task) port: port))
 
+
+(define (generic-map1! f result vec len reff setf)
+  (let loop ((i 0))
+    (if (>= i len) 
+        (if result result *void*)
+        (let ((res (f (reff vec i))))
+          (if result (setf result i res))
+          (loop (+ i 1))))))
+
+(define (generic-map2+! f result vecs len reff setf)
+  (let loop ((i 0))
+    (if (>= i len) 
+        (if result result *void*)
+        (let ((res (apply f (reff vecs i)))) 
+          (if result (setf result i res))
+          (loop (+ i 1))))))
+
+(define (assert-equal-lengths vec rest #!optional (lenf length))
+  (let ((len (lenf vec)))
+    (for-each (lambda (ls) 
+                (if (not (eq? (lenf vec) len))
+                    (error (with-output-to-string 
+                             "Object is not of proper length: " 
+                             (lambda () (slgn-display vec))))))
+              rest)))

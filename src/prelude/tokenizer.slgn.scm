@@ -70,13 +70,12 @@
     (if (eof-object? c)
         c
         (let ((opr (single-char-operator? c)))
-          (if opr
-              (begin (port-pos-read-char! port)
-                     (if (and (char-comment-start? c) 
-                              (char-comment-part? (port-pos-peek-char port)))
-                         (begin (skip-comment port)
-                                (next-token port))
-                         (cdr opr)))
+          (if opr (begin (port-pos-read-char! port)
+                         (if (and (char-comment-start? c) 
+                                  (char-comment-part? (port-pos-peek-char port)))
+                             (begin (skip-comment port)
+                                    (next-token port))
+                             (cdr opr)))
               (cond ((char-whitespace? c)
                      (skip-whitespace port)
                      (next-token port))
@@ -238,7 +237,7 @@
 	  (if (not n)
 	      (tokenizer-error "read-complex-number failed. invalid number format.")
 	      n)))))
-    
+
 (define (read-number-with-radix-prefix port)
   (let ((radix-prefix 
          (let ((c (char-downcase (port-pos-peek-char port))))

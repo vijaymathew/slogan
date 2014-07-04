@@ -22,6 +22,7 @@
 
 (define array_length vector-length)
 (define array_at vector-ref)
+(define arrays_at vectors-ref)
 (define array_set vector-set!)
 (define array_to_list vector->list)
 (define array_copy vector-copy)
@@ -40,49 +41,24 @@
           (begin (vector-set! arr i (car s))
                  (loop (cdr s) (+ i 1)))))))
     
-(define (assert-vec-equal-lengths vec rest)
-  (let ((len (vector-length vec)))
-    (for-each (lambda (ls) 
-                (if (not (eq? (vector-length vec) len))
-                    (error (with-output-to-string 
-                             "Vector is not of proper length: " 
-                             (lambda () (slgn-display vec))))))
-              rest)))
-
 (define (vectors-ref vectors i)
   (map (lambda (v) (vector-ref v i)) vectors))
 
-(define (vector-map1! f result vec len)
-  (let loop ((i 0))
-    (if (>= i len) 
-        (if result result *void*)
-        (let ((res (f (vector-ref vec i))))
-          (if result (vector-set! result i res))
-          (loop (+ i 1))))))
-
-(define (vector-map2+! f result vecs len)
-  (let loop ((i 0))
-    (if (>= i len) 
-        (if result result *void*)
-        (let ((res (apply f (vectors-ref vecs i)))) 
-          (if result (vector-set! result i res))
-          (loop (+ i 1))))))
-
 (define (vector-map f vec . vectors)
   (if (not (null? vectors))
-      (assert-vec-equal-lengths vec vectors))
+      (assert-equal-lengths vec vectors vector-length))
   (let ((len (vector-length vec)))
     (if (null? vectors)
-        (vector-map1! f (make-vector len) vec len)
-        (vector-map2+! f (make-vector len) (cons vec vectors) len))))
+        (generic-map1! f (make-vector len) vec len vector-ref vector-set!)
+        (generic-map2+! f (make-vector len) (cons vec vectors) len vectors-ref vector-set!))))
 
 (define (vector-for-each f vec . vectors)
   (if (not (null? vectors))
-      (assert-vec-equal-lengths vec vectors))
+      (assert-equal-lengths vec vectors vector-length))
   (let ((len (vector-length vec)))
     (if (null? vectors)
-        (vector-map1! f #f vec len)
-        (vector-map2+! f #f (cons vec vectors) len))))
+        (generic-map1! f #f vec len vector-ref vector-set!)
+        (generic-map2+! f #f (cons vec vectors) len vectors-ref vector-set!))))
 
 (define array_map vector-map)
 (define array_for_each vector-for-each)
@@ -93,8 +69,6 @@
       (cond ((>= i len) -1)
             ((test (vector-ref arr i) obj) i)
             (else (loop (+ i 1)))))))
-
-(define arrays_ref vectors-ref)
 
 ;; byte arrays.
 

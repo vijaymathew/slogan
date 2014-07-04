@@ -17,14 +17,12 @@
   (if (eof-object? (tokenizer 'peek))
       (tokenizer 'next)
       (let ((v (statement tokenizer)))
-        (if (not v)
-            (set! v (expression tokenizer)))
+        (if (not v) (set! v (expression tokenizer)))
         (assert-semicolon tokenizer v)
         v)))
 
 (define (statement tokenizer)
-  (if (eq? (tokenizer 'peek) '*semicolon*)
-      *void*
+  (if (eq? (tokenizer 'peek) '*semicolon*) *void*
       (load-stmt tokenizer)))
 
 (define (highligted-line colno)
@@ -32,14 +30,12 @@
     '()
     (lambda ()
       (let loop ((n 1))
-        (if (= n colno)
-            (display #\^)
+        (if (= n colno) (display #\^)
             (begin (display #\space)
                    (loop (+ n 1))))))))
 
 (define (highligted-error-line tokenizer)
-  (let loop ((line-no (tokenizer 'line))
-             (n 1)
+  (let loop ((line-no (tokenizer 'line)) (n 1)
              (program-text (tokenizer 'program-text)))
     (if (not (null? program-text))
         (if (= n line-no)
@@ -56,9 +52,8 @@
                           ", column: " (tokenizer 'column) "]. " 
                           msg))
              (let ((hl (highligted-error-line tokenizer)))
-               (if hl
-                   (begin (println (car hl))
-                          (println (cdr hl)))))))))
+               (if hl (begin (println (car hl))
+                             (println (cdr hl)))))))))
 
 (define (assert-semicolon tokenizer expr)
   (let ((token (tokenizer 'peek)))
@@ -67,30 +62,26 @@
             (eof-object? token))
         (if (eq? token '*semicolon*)
             (tokenizer 'next))
-        (parser-error tokenizer
-                      "Statement or expression not properly terminated."))))
+        (parser-error tokenizer "Statement or expression not properly terminated."))))
 
 (define (load-stmt tokenizer)
   (cond ((eq? (tokenizer 'peek) 'load)
          (tokenizer 'next)
          (slgn-load tokenizer (tokenizer 'next)))
-        (else
-         (func-def-stmt tokenizer))))
+        (else (func-def-stmt tokenizer))))
 
 (define (func-def-stmt-from-name tokenizer #!optional is-lazy)
   (let ((name (tokenizer 'peek)))
     (if (not (variable? name))
-        (if is-lazy
-            (parser-error tokenizer "lazy function must have a name.")
+        (if is-lazy (parser-error tokenizer "lazy function must have a name.")
             (merge-lambda (list 'lambda (func-params-expr tokenizer))
                           (func-body-expr tokenizer)))
         (begin (tokenizer 'next)
                (remove-macro-lazy-fns-def name)
                (let ((params (func-params-expr tokenizer))
                      (body (func-body-expr tokenizer)))
-                 (if is-lazy
-                     (begin (set! body (expr-forcify body params))
-                            (def-lazy name (make-lazy params body))))
+                 (if is-lazy (begin (set! body (expr-forcify body params))
+                                    (def-lazy name (make-lazy params body))))
                  (list 'define name (merge-lambda (list 'lambda params) body)))))))
 
 (define (func-def-stmt tokenizer)
@@ -133,9 +124,7 @@
       (assignment-stmt tokenizer)))
 
 (define (module-def-stmt tokenizer)
-  (let ((name (tokenizer 'next))
-        (params '())
-        (exports '()))
+  (let ((name (tokenizer 'next)) (params '()) (exports '()))
     (if (not (variable? name))
         (parser-error tokenizer "Module must have a name."))
     (check-if-reserved-name name tokenizer)
@@ -152,8 +141,7 @@
   (tokenizer 'next)
   (if (not (eq? (tokenizer 'next) '*open-paren*))
       (parser-error tokenizer "Missing opening parenthesis before exports list."))
-  (let loop ((token (tokenizer 'next))
-             (result '()))
+  (let loop ((token (tokenizer 'next)) (result '()))
     (cond ((eq? token '*close-paren*)
            (reverse result))
           ((name? token)
@@ -185,12 +173,11 @@
                                             "'."))))))
         (cond ((null? exports)
                (list (append '(case *message*) body)))
-              (else 
-               (let ((expr (caar exports))
-                     (result (cdar exports))) 
-                 (loop (cdr exports)
-                       (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
-                                   result) body))))))))
+              (else (let ((expr (caar exports))
+                          (result (cdar exports))) 
+                      (loop (cdr exports)
+                            (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
+                                        result) body))))))))
             
 (define (mk-macro-def macro-name tokenizer)
   (if (not (name? macro-name))
@@ -205,27 +192,23 @@
 (define (macro-params-exprs tokenizer)
   (let ((nxt (tokenizer 'next)))
     (if (eq? '*open-paren* nxt)
-        (let loop ((p (tokenizer 'peek))
-                   (params '()))
+        (let loop ((p (tokenizer 'peek)) (params '()))
           (cond ((name? p)
                  (check-if-reserved-name p tokenizer)
                  (tokenizer 'next)
                  (assert-comma-separator tokenizer '*close-paren*)
                  (loop (tokenizer 'peek) (append params (list p))))
-                (else 
-                 (if (eq? '*close-paren* (tokenizer 'peek))
-                     (begin (tokenizer 'next)
-                            params)
-                     (parser-error tokenizer "Expected closing parenthesis after macro parameters.")))))
+                (else (if (eq? '*close-paren* (tokenizer 'peek))
+                          (begin (tokenizer 'next)
+                                 params)
+                          (parser-error tokenizer "Expected closing parenthesis after macro parameters.")))))
         (if (variable? nxt)
             (check-if-reserved-name nxt tokenizer)
             (parser-error tokenizer "Invalid macro parameter specification.")))))
 
-(define (enter-scope)
-  (push-macros-lazy-fns))
+(define (enter-scope) (push-macros-lazy-fns))
 
-(define (leave-scope)
-  (pop-macros-lazy-fns))
+(define (leave-scope) (pop-macros-lazy-fns))
 
 (define (define-stmt tokenizer)
   (if (variable? (tokenizer 'peek))
@@ -234,8 +217,7 @@
           (var-def-set (tokenizer 'next) tokenizer #t))
       (parser-error tokenizer "Invalid variable name.")))
 
-(define (set-stmt sym tokenizer)
-  (var-def-set sym tokenizer #f))
+(define (set-stmt sym tokenizer) (var-def-set sym tokenizer #f))
 
 (define (normalize-rvar sym)
   (let ((s (symbol->string sym)))
@@ -249,10 +231,9 @@
   (if (eq? (tokenizer 'peek) '*assignment*)
       (begin (tokenizer 'next)
              (if (rvar? sym)
-                 (if def
-                     (parser-error tokenizer (string-append 
-                                              "Invalid character in variable name: "
-                                              (symbol->string sym) "."))
+                 (if def (parser-error tokenizer (string-append 
+                                                  "Invalid character in variable name: "
+                                                  (symbol->string sym) "."))
                      (list 'rbind (normalize-rvar sym) (expression tokenizer)))
                  (list (if def 'define 'set!) sym (expression tokenizer))))
       (parser-error tokenizer "Expected assignment.")))
@@ -292,9 +273,7 @@
          (let ((value (expression tokenizer)))
            (if (not (eq? (tokenizer 'next) '*close-paren*))
                (parser-error tokenizer "Missing closing parenthesis after case clause."))
-           (let loop ((token (tokenizer 'peek))
-                      (last-expr #f)
-                      (body '()))
+           (let loop ((token (tokenizer 'peek)) (last-expr #f) (body '()))
              (if last-expr
                  (begin (tokenizer 'next)
                         (append `(case ,value) (reverse body)))
@@ -308,8 +287,7 @@
                      (if (eq? next '*comma*)
                          (tokenizer 'next)
                          (set! le #t))
-                     (loop (tokenizer 'peek)
-                           le
+                     (loop (tokenizer 'peek) le
                            (cons (list (if (or (list? expr) (eq? expr 'else)) expr (cons expr '()))
                                        result) body))))))))
         (else (match-expr tokenizer))))
@@ -330,20 +308,17 @@
          (let ((value (expression tokenizer)))
            (if (not (eq? (tokenizer 'next) '*close-paren*))
                (parser-error tokenizer "Missing closing parenthesis after match clause."))
-           (let loop ((token (tokenizer 'peek))
-                      (last-expr #f)
-                      (body '()))
-             (if last-expr
-                 (begin (tokenizer 'next)
-                        `(let ((*match-expr* ,value))
-                           (let ((*value* *match-expr*)
-                                 (*orig-value* *match-expr*)
-                                 (*match-found* #f)
-                                 (*result* '*unbound*))
-                             ,@(reverse body)
-                             (if (unbound? *result*)
-                                 (error "No match found.")
-                                 *result*))))
+           (let loop ((token (tokenizer 'peek)) (last-expr #f) (body '()))
+             (if last-expr (begin (tokenizer 'next)
+                                  `(let ((*match-expr* ,value))
+                                     (let ((*value* *match-expr*)
+                                           (*orig-value* *match-expr*)
+                                           (*match-found* #f)
+                                           (*result* '*unbound*))
+                                       ,@(reverse body)
+                                       (if (unbound? *result*)
+                                           (error "No match found.")
+                                           *result*))))
                  (let ((pattern (pattern-expression tokenizer))
                        (guard #t))
                    (if (eq? (tokenizer 'peek) 'where)
@@ -381,8 +356,7 @@
              ((finally)
               (make-try-catch-expr try-expr '(*e*) '(raise *e*)
                                    (finally-expr tokenizer)))
-             (else
-              (parser-error tokenizer "Expected catch or finally clauses.")))))
+             (else (parser-error tokenizer "Expected catch or finally clauses.")))))
         (else #f)))
 
 (define (catch-args tokenizer)
@@ -482,8 +456,7 @@
                      (begin (tokenizer 'next)
                             (member-access/funcall-expr expr tokenizer)))))
         (let ((expr (if-expr tokenizer)))
-          (if expr
-              expr
+          (if expr expr
               (let-expr tokenizer))))))
 
 (define (handle-rvar-access sym)
@@ -509,12 +482,11 @@
 		 (cond ((eq? token '?)
 			(tokenizer 'next)
 			(list 'rvar))
-		       (else
-			(let ((var (tokenizer 'next)))
-			  (if (eq? (tokenizer 'peek) '*period*)
-			      (begin (tokenizer 'next)
-				     (closure-member-access var tokenizer))
-			      (handle-rvar-access (slgn-repr->scm-repr var)))))))
+		       (else (let ((var (tokenizer 'next)))
+                               (if (eq? (tokenizer 'peek) '*period*)
+                                   (begin (tokenizer 'next)
+                                          (closure-member-access var tokenizer))
+                                   (handle-rvar-access (slgn-repr->scm-repr var)))))))
                 ((eq? token '*open-bracket*)
                  (list-literal tokenizer))
                 ((eq? token '*open-brace*)
@@ -964,12 +936,8 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(fn var if record
-                              let letseq letrec
-                              case match where
-                              try catch finally
-                              module exports
-                              macro lazy load))
+(define *reserved-names* '(fn var if record let letseq letrec case match where try catch finally
+                              module exports macro lazy load))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
