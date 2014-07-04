@@ -170,7 +170,7 @@
                (loop (tokenizer 'next)
                      (cons case-expr result)))))
           (else (parser-error tokenizer (with-output-to-string
-                                          "Expected name to export instead of: "
+                                          "Expected identifier to export instead of: "
                                           (lambda ()
                                             (display token)
                                             (display "."))))))))
@@ -891,9 +891,9 @@
 	    (begin (tokenizer 'next)
 		   (if (variable? (tokenizer 'peek))
 		       (loop (cons expr `(',(tokenizer 'next))))
-		       (parser-error tokenizer "Expected name.")))
+		       (parser-error tokenizer "Expected identifier.")))
 	    expr))
-      (parser-error tokenizer "Expected name.")))
+      (parser-error tokenizer "Expected identifier.")))
 
 (define (add-expr tokenizer)
   (swap-operands (cons '+ (list (term-expr tokenizer)))))

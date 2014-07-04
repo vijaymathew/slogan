@@ -129,18 +129,6 @@
                (loop (cdr ls) result)
                (loop (cdr ls) (cons (car ls) result)))))))
 
-(define (reduce ls fn #!key initial_value)
-  (if (null? ls)
-      ls
-      (begin (if (not initial_value)
-		 (begin (set! initial_value (car ls))
-			(set! ls (cdr ls))))
-	     (let loop ((ls (cdr ls))
-			(result (fn initial_value (car ls))))
-	       (if (null? ls)
-		   result
-		   (loop (cdr ls) (fn result (car ls))))))))
-
 ;; sorting
 
 (define (quicksort l #!optional (test <))
@@ -242,26 +230,6 @@
                 (if neg (reverse lst) lst)
                 (loop (cdr lst) (- n 1))))))))
 
-(define (is_all lst predic)
-  (if (null? lst)
-      #f
-      (let loop ((lst lst))
-        (cond ((null? lst)
-               #t)
-              ((not (predic (car lst)))
-               #f)
-              (else (loop (cdr lst)))))))
-
-(define (is_any lst predic)
-  (if (null? lst)
-      #f
-      (let loop ((lst lst))
-        (cond ((null? lst)
-               #f)
-              ((predic (car lst))
-               #t)
-              (else (loop (cdr lst)))))))
-
 (define (drop lst n)
   (let ((neg (< n 0)))
     (let loop ((lst (if neg (reverse lst) lst))
@@ -314,3 +282,71 @@
     (if (or (null? a) (null? b))
         (reverse result)
         (loop (cdr a) (cdr b) (cons (cons (car a) (car b)) result)))))
+
+(define (assert-equal-lengths ls rest)
+  (let ((len (length ls)))
+    (for-each (lambda (ls) 
+                (if (not (eq? (length ls) len))
+                    (error (with-output-to-string 
+                             "List is not of proper length: " 
+                             (lambda () (slgn-display ls))))))
+              rest)))
+
+(define (exists f ls . more)
+  (if (not (null? more)) 
+      (assert-equal-lengths ls more))
+  (and (not (null? ls))
+       (let exists ((x (car ls)) (ls (cdr ls)) (more more))
+         (if (null? ls)
+             (apply f x (map car more))
+             (or (apply f x (map car more))
+                 (exists (car ls) (cdr ls) (map cdr more)))))))
+
+(define (for_all f obj ls . more)
+  (if (not (null? more)) 
+      (assert-equal-lengths ls more))
+  (or (null? ls)
+      (let for-all ((x (car ls)) (ls (cdr ls)) (more more))
+        (if (null? ls)
+            (apply f x (map car more))
+            (and (apply f x (map car more))
+                 (for-all (car ls) (cdr ls) (map cdr more)))))))
+
+(define (fold_left f obj ls . more)
+  (if (not (null? more))
+      (assert-equal-lengths ls more))
+  (let fold-left ((obj obj) (ls ls) (more more))
+    (if (null? ls) obj
+        (fold-left (apply f obj (car ls) (map car more)) 
+                   (cdr ls) 
+                   (map cdr more)))))
+
+
+;; Taken from http://srfi.schemers.org/srfi-1/srfi-1-reference.scm:
+(define (%cdrs lists)
+  (call-with-current-continuation
+    (lambda (abort)
+      (let recur ((lists lists))
+	(if (pair? lists)
+	    (let ((lis (car lists)))
+	      (if (null? lis) (abort '())
+		  (cons (cdr lis) (recur (cdr lists)))))
+	    '())))))
+
+(define (%cars+ lists last-elt)	; (append! (map car lists) (list last-elt))
+  (let recur ((lists lists))
+    (if (pair? lists) (cons (caar lists) (recur (cdr lists))) (list last-elt))))
+
+(define (fold_right f obj ls . more)
+  (if (not (null? more))
+      (assert-equal-lengths ls more))
+  (if (pair? more)
+      (let recur ((lists (cons ls more)))
+	(let ((cdrs (%cdrs lists)))
+	  (if (null? cdrs) obj
+	      (apply f (%cars+ lists (recur cdrs))))))
+      (let recur ((ls ls))
+	(if (null? ls) obj
+	    (let ((head (car ls)))
+	      (f head (recur (cdr ls))))))))
+; :~
