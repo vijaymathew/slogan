@@ -36,6 +36,8 @@
 (define _zero -0.)
 (define zero 0.)
 
+(define is_finite finite?)
+(define is_infinite infinite?)
 (define (is_positive_infinity n) (= n +inf.0))
 (define (is_negative_infinity n) (= n -inf.0))
 
