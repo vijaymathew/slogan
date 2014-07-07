@@ -7,7 +7,7 @@
 
 (define (eliminate-voids exprs)
   (if (list? exprs)
-      (filter exprs (lambda (x) (not (void? x))) drill: #t)
+      (filter (lambda (x) (not (void? x))) exprs drill: #t)
       exprs))
 
 (define (compile->scheme tokenizer)

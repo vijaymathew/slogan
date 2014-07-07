@@ -53,7 +53,7 @@
     (cond ((null? ls)
            (reverse result))
           ((and (list? (car ls)) drill)
-           (loop (cdr ls) (cons (filter (car ls) fn drill: drill) result)))
+           (loop (cdr ls) (cons (filter fn (car ls) drill: drill) result)))
           ((fn (car ls))
            (loop (cdr ls) (cons (car ls) result)))
           (else
@@ -85,11 +85,16 @@
 ;; sorting
 
 (define (quicksort l #!optional (test <))
-  (if (null? l)
-      '()
-      (append (quicksort (filter (cdr l) (lambda (x) (not (test (car l) x)))) test)
+  (if (null? l) '()
+      (append (quicksort (filter 
+                          (lambda (x) (not (test (car l) x)))
+                          (cdr l)) 
+                         test)
               (list (car l))
-              (quicksort (filter (cdr l) (lambda (x) (test (car l) x))) test))))
+              (quicksort (filter 
+                          (lambda (x) (test (car l) x))
+                          (cdr l))
+                         test))))
 
 (define (+merge+ xs ys test) 
   (cond ((and (is_empty xs) 
@@ -105,21 +110,24 @@
          (cons (head ys) (+merge+ xs (tail ys) test)))))
 
 (define (+split+ xs)
-  (letrec ((split_helper (lambda (xs ys zs) 
-                           (cond ((is_empty xs) 
-                                  (cons ys zs))
-                                 ((eqv? (length xs) 1) 
-                                  (cons (cons (head xs) ys) zs))
-                                 (else (split_helper (tail (tail xs)) 
-                                                     (cons (head xs) ys) 
-                                                     (cons (head (tail xs)) zs)))))))
+  (letrec ((split_helper 
+            (lambda (xs ys zs) 
+              (cond ((is_empty xs) 
+                     (cons ys zs))
+                    ((eqv? (length xs) 1) 
+                     (cons (cons (head xs) ys) zs))
+                    (else (split_helper 
+                           (tail (tail xs)) 
+                           (cons (head xs) ys) 
+                           (cons (head (tail xs)) zs)))))))
     (split_helper xs '() '())))
 
 (define (mergesort xs #!optional (test <))
   (if (or (is_empty xs) (eqv? (length xs) 1)) 
       xs 
       (let ((parts (+split+ xs))) 
-        (+merge+ (mergesort (head parts) test) (mergesort (tail parts) test) test))))
+        (+merge+ (mergesort (head parts) test) 
+                 (mergesort (tail parts) test) test))))
 
 (define (sort ls #!key (test <) (type 'quick))
   (case type
