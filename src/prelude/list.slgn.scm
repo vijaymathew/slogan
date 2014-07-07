@@ -19,28 +19,6 @@
 (define (at seq i)
   (list-ref seq i))
 
-(define (assoc_get alist key #!key 
-                   (test equal?)
-                   (default_value #f))
-  (let loop ((alist alist))
-    (cond ((null? alist)
-           default_value)
-          ((test (caar alist) key)
-           (car alist))
-          (else (loop (cdr alist))))))
-
-(define (assoc_at alist key #!key
-                  (test equal?)
-                  (default_value #f))
-  (let ((val (assoc_get alist key test: test default_value: default_value)))
-    (if val (cdr val) val)))
-
-(define (assoc_put alist key value)
-  (cons (cons key value) alist))
-
-(define (assoc_set alist key value #!key (test equal?))
-  (set-cdr! (assoc_get alist key test: test) value))
-
 (define for_each for-each)
 (define set_head set-car!)
 (define set_tail set-cdr!)
@@ -69,7 +47,7 @@
                       weak-values: weak_values test: test
                       min-load: min_load max-load: max_load))))
 
-(define (filter ls fn #!key drill)
+(define (filter fn ls #!key drill)
   (let loop ((ls ls)
              (result '()))
     (cond ((null? ls)
@@ -81,10 +59,10 @@
           (else
            (loop (cdr ls) result)))))
 
-(define (memf f ls)
-  (cond ((null? ls) #f)
-        ((f (car ls)) ls)
-        (else (memf f (cdr ls)))))
+(define (memp predic ls #!key (default '()))
+  (cond ((null? ls) default)
+        ((predic (car ls)) ls)
+        (else (memp predic (cdr ls) default: default))))
 
 (define (rem-helper obj ls predic)
   (let loop ((ls ls)
@@ -97,11 +75,11 @@
 (define (remv obj ls) (rem-helper obj ls eqv?))
 (define (remove obj ls) (rem-helper obj ls equal?))
 
-(define (remf f ls) 
+(define (remp predic ls) 
   (let loop ((ls ls)
              (r '()))
     (cond ((null? ls) (reverse r))
-          ((f (car ls)) (loop (cdr ls) r))
+          ((predic (car ls)) (loop (cdr ls) r))
           (else (loop (cdr ls) (cons (car ls) r))))))
 
 ;; sorting
@@ -228,32 +206,33 @@
                 (- n 1) 
                 (cons (car lst) result))))))
 
-(define (split lst predic)
-  (let loop ((lst lst)
-             (prefix '())
-             (suffix '())
-             (found (predic (car lst))))
-    (cond ((null? lst)
-           (cons (reverse prefix) (reverse suffix)))
-          (else
-           (if found
-               (loop (cdr lst) prefix (cons (car lst) suffix) found)
-               (loop (cdr lst) (cons (car lst) prefix) suffix 
-                     (if (null? (cdr lst)) found 
-                         (predic (cadr lst)))))))))
-    
+(define (partition predic ls)
+  (let loop ((ls ls) (first '()) (second '()))
+    (cond ((null? ls) (cons (reverse first) (reverse second)))
+          ((predic (car ls)) (loop (cdr ls) (cons (car ls) first) second))
+          (else (loop (cdr ls) first (cons (car ls) second))))))
+
+(define (find predic ls #!key default)
+  (let loop ((ls ls))
+    (cond ((null? ls) default)
+          ((predic (car ls)) (car ls))
+          (else (loop (cdr ls))))))
+
+(define (assp predic ls #!key default)
+  (let loop ((ls ls))
+    (cond ((null? ls) default)
+          ((predic (caar ls)) (car ls))
+          (else (loop (cdr ls))))))
+
 (define (range start end #!key (next +) (by 1) (compare >=))
-  (let loop ((start start)
-             (result '()))                     
+  (let loop ((start start) (result '()))                     
     (if (compare start end)
         (reverse (cons start result))
         (loop (next start by) 
               (cons start result)))))
 
 (define (zip a b)
-  (let loop ((a a)
-             (b b)
-             (result '()))
+  (let loop ((a a) (b b) (result '()))
     (if (or (null? a) (null? b))
         (reverse result)
         (loop (cdr a) (cdr b) (cons (cons (car a) (car b)) result)))))
