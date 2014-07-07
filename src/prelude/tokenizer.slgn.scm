@@ -251,15 +251,20 @@
 (define (char-valid-in-number? c prev-c)
   (and (char? c)
        (or (char-numeric? c)
-           (char=? #\e c)
-           (char=? #\E c)
            (char=? #\. c)
+           (exponent-marker? c)
            (sign-in-number-valid? c prev-c))))
+
+(define (exponent-marker? c)
+  (let ((c (char-downcase c)))
+    (or (char=? c #\e) (char=? c #\s)
+        (char=? c #\f) (char=? c #\d)
+        (char=? c #\l))))
 
 (define (sign-in-number-valid? c prev-c)
   (let ((prev-c (char-downcase prev-c)))
     (and (or (char=? #\+ c) (char=? #\- c))
-         (or (char=? #\e prev-c) (char=? #\@ prev-c)))))
+         (exponent-marker? prev-c))))
 
 (define (char-hex-alpha? c)
   (if (char? c)
