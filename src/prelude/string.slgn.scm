@@ -138,12 +138,21 @@
                 (else (loop result (cons (string-ref str i) currstr) (+ i 1))))))))
 
 (define (string_to_number s #!optional (radix 10))
-  (if (>= (string-indexof s #\#) 0)
-      (let ((parts (string_split s #\#)))
-        (make-rectangular (string->number (car parts) radix)
-                          (string->number (cadr parts) radix)))
-      (string->number s radix)))
-
+  (let ((tokenizer (make-tokenizer (open-input-string s) s)))
+    (let ((port (tokenizer 'port-pos)))
+      (let ((c (port-pos-peek-char port)))
+        (cond ((char-numeric? c)
+               (if (char=? c #\0)
+                   (begin (port-pos-read-char! port)
+                          (read-number-with-radix-prefix port radix))
+                   (read-number port #f radix)))
+              ((char=? c #\.)
+               (port-pos-read-char! port)
+               (if (char-numeric? (port-pos-peek-char port))
+                   (read-number port #\. radix)
+                   (error "Invalid number format." s)))
+              (else (error "Failed to parse numeric string." s)))))))
+              
 (define (string_join infix slist)
   (let loop ((slist slist) (result #f))
     (if (null? slist) result
