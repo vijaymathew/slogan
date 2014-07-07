@@ -41,17 +41,16 @@
 (define (is_positive_infinity n) (= n +inf.0))
 (define (is_negative_infinity n) (= n -inf.0))
 
+(define (exact num)
+  (if (exact? num) num
+      (inexact->exact num)))
+
+(define (inexact num)
+  (if (inexact? num) num
+      (exact->inexact num)))
+
 (define integer_to_char integer->char)
-(define rational_to_real exact->inexact)
-(define real_to_rational inexact->exact)
 (define number_to_string number->string)
-
-(define (real_to_integer n)
-  (inexact->exact (round n)))
-
-(define (integer_to_real n)
-  (exact->inexact n))
-
 (define fixnum_to_flonum fixnum->flonum)
 
 (define rectangular make-rectangular)
@@ -63,6 +62,9 @@
 (define sub -)
 (define mult *)
 (define div /)
+
+(define (sub1 n) (- n 1))
+(define (add1 n) (+ n 1))
 
 (define (safe_div a b)
   (if (zero? b) +inf.0 (/ a b)))
@@ -79,23 +81,80 @@
 (define flmult fl*)
 (define fldiv fl/)
 
-(define arithmetic_shift arithmetic-shift)
+(define bitwise_arithmetic_shift arithmetic-shift)
 (define bitwise_merge bitwise-merge)
 (define bitwise_and bitwise-and)
 (define bitwise_ior bitwise-ior)
 (define bitwise_xor bitwise-xor)
 (define bitwise_not bitwise-not)
-(define bit_count bit-count)
-(define integer_length integer-length)
-(define is_bit_set bit-set?)
+
+(define (bitwise_if i1 i2 i3)
+  (bitwise-ior 
+   (bitwise-and i1 i2)
+   (bitwise-and (bitwise-not i1) i3)))
+
+(define (bitwise_bit_count i)
+  (if (>= i 0) (bit-count i)
+      (bitwise-not (bitwise_bit_count (bitwise-not i)))))
+
+(define (is_bit_set i n) (bit-set? n i))
+
+(define bitwise_length integer-length)
+
+(define (bitwise_copy_bit i index bit)
+  (if (not (or (= bit 1) (= bit 0)))
+      (error "Bit flag must be either 0 or 1."))
+  (if (= bit 1)
+      (bitwise-ior i (arithmetic-shift 1 index))
+      (bitwise-and i (bitwise-not (arithmetic-shift 1 index)))))
+
+(define (assert-nonneg-int i msg)
+  (if (or (not (integer? i)) (< i 0))
+      (error msg i)))
+
+(define (assert-bw-range start end)
+  (assert-nonneg-int start "Start index must be a nonnegative integer.")
+  (assert-nonneg-int end "End index must be a nonnegative integer.")
+  (if (> start end)
+      (error "End index is less that start index." start end)))
+  
+(define (bitwise_bit_field i start end)
+  (assert-bw-range start end)
+  (extract-bit-field (- end start) start i))
+
+(define (bitwise_copy_bit_field to start end from)
+  (assert-bw-range start end)
+  (let* ((mask1 (arithmetic-shift -1 start))
+         (mask2 (bitwise-not (arithmetic-shift -1 end)))
+         (mask (bitwise-and mask1 mask2)))
+    (bitwise_if mask (arithmetic-shift from start) to)))
+
+(define (bitwise_rotate_bit_field n start end count)
+  (assert-bw-range start end)
+  (assert-nonneg-int count "Count field must be a nonnegative integer.")
+  (let* ((width (- end start))
+         (count (modulo count width))
+         (field0 (bitwise_bit_field n start end))
+         (field1 (arithmetic-shift field0 count))
+         (field2 (arithmetic-shift field0 (- count width)))
+         (field (bitwise-ior field1 field2)))
+    (bitwise_copy_bit_field n start end field)))
+
+(define (bitwise_reverse_bit_field n start end)
+  (assert-bw-range start end)
+  (let ((field (bitwise_bit_field n start end))
+        (width (- end start)))
+    (let loop ((old field)(new 0)(width width))
+      (cond
+       ((zero? width) (bitwise_copy_bit_field n start end new))
+       (else (loop (arithmetic-shift old -1)
+                   (bitwise-ior (arithmetic-shift new 1)
+                                (bitwise-and old 1))
+                   (sub1 width)))))))
+
 (define is_any_bits_set any-bits-set?)
 (define is_all_bits_set all-bits-set?)
-(define first_bit_set first-bit-set)
-(define extract_bit_field extract-bit-field)
-(define is_bit_field_set test-bit-field?)
-(define clear_bit_field clear-bit-field)
-(define replace_bit_field replace-bit-field)
-(define copy_bit_field copy-bit-field)
+(define bitwise_first_bit_set first-bit-set)
 
 (define is_fxbit_set fxbit-set?)
 (define fxarithmetic_shift fxarithmetic-shift)
@@ -154,3 +213,5 @@
 		      (loop (+ k 2))))))))
 
 (define is_prime prime?)
+
+(define (logb x b) (/ (log x) (log b)))
