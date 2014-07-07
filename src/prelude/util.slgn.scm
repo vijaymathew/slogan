@@ -1,26 +1,11 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (scm-complex->slgn-repr val)
-  (with-output-to-string 
-   ""
-   (lambda ()
-     (display (real-part val))
-     (display "#")
-     (display (imag-part val)))))
-
 (define (scm-repr->slgn-repr val)
-  (cond ((integer? val)
-         val)
-        ((real? val) 
-         val)
-	((complex? val)
-	 (scm-complex->slgn-repr val))
-        ((or (number? val) 
-	     (string? val)
-	     (char? val))
-         val)
-        (else
-         (repr-convert val *scheme-reprs*))))
+  (if (or (number? val) 
+          (string? val)
+          (char? val)) 
+      val
+      (repr-convert val *scheme-reprs*)))
 
 (define (slgn-repr->scm-repr val)
   (repr-convert val *slogan-reprs*))

@@ -218,27 +218,9 @@
         (begin (port-pos-read-char! port)
                (loop (port-pos-peek-char port) c
                      (cons c result)))
-	(if (and (not (eof-object? c))
-                 (char=? c #\#))
-	    (begin (port-pos-read-char! port)
-		   (read-complex-number port result))
-	    (let ((n (string->number (list->string (reverse result)))))
-	      (if (not n)
-		  (tokenizer-error "read-number failed. invalid number format.")
-		  n))))))
-
-(define (read-complex-number port prefix)
-  (let loop ((c (port-pos-peek-char port))
-             (prev-c #\0)
-	     (result (cons #\+ prefix)))
-    (if (char-valid-in-number? c prev-c)
-	(begin (port-pos-read-char! port)
-	       (loop (port-pos-peek-char port) c
-		     (cons c result)))
-	(let ((n (string->number (list->string (reverse (cons #\i result))))))
-	  (if (not n)
-	      (tokenizer-error "read-complex-number failed. invalid number format.")
-	      n)))))
+        (let ((n (string->number (list->string (reverse result)))))
+          (if n n
+              (tokenizer-error "read-number failed. invalid number format."))))))
 
 (define (read-number-with-radix-prefix port)
   (let ((radix-prefix 
@@ -277,7 +259,7 @@
 (define (sign-in-number-valid? c prev-c)
   (let ((prev-c (char-downcase prev-c)))
     (and (or (char=? #\+ c) (char=? #\- c))
-         (char=? #\e prev-c))))
+         (or (char=? #\e prev-c) (char=? #\@ prev-c)))))
 
 (define (char-hex-alpha? c)
   (if (char? c)
