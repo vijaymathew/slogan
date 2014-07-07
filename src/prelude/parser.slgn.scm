@@ -476,7 +476,7 @@
                 ((add-sub-opr? token)
                  (tokenizer 'next)
                  (let ((sub (eq? token '*minus*))
-                       (expr (literal-expr tokenizer)))
+                       (expr (expression tokenizer)))
                    (if sub (list '- expr) expr)))
                 ((variable? token)
 		 (cond ((eq? token '?)

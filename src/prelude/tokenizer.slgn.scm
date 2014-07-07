@@ -236,7 +236,7 @@
               (else #f)))
       #f))
   
-(define (read-number-with-radix-prefix port radix)
+(define (read-number-with-radix-prefix port #!optional (radix 10))
   (let ((radix-prefix (radix-prefix? (port-pos-peek-char port))))
     (if (not radix-prefix)
 	(read-number port #\0 radix)
