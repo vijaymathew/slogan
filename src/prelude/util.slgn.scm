@@ -129,7 +129,15 @@
 
 (define (slgn-display-char c port)
   (display "'" port)
-  (scm_print port: port c)
+  (with-exception-catcher
+   (lambda (ex)
+     (let ((s (with-output-to-string
+                '()
+                (lambda () (write c)))))
+       (if (char=? #\# (string-ref s 0))
+           (display (substring s 1 (string-length s)) port)
+           (display s port))))
+   (lambda () (scm_print port: port c)))
   (display "'" port))
 
 (define (exception_to_string e)

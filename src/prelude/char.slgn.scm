@@ -14,7 +14,7 @@
 (define is_char char?)
 (define is_char_alphabetic char-alphabetic?)
 (define is_char_numeric char-numeric?)
-(define is_char_whitepsace char-whitespace?)
+(define is_char_whitespace char-whitespace?)
 (define is_char_upper_case char-upper-case?)
 (define is_char_lower_case char-lower-case?)
 (define char_to_integer char->integer)
