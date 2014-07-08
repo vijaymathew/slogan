@@ -16,7 +16,8 @@
              (make-array (car dim) (lambda () (make-array (cdr dim) fill constructor)) constructor)))
         (else (error "invalid array dimension. " dim))))
 
-(define (array dim #!key fill) (make-array dim fill make-vector))
+(define array vector)
+(define (make_array dim #!key fill) (make-array dim fill make-vector))
 
 (define is_array vector?)
 
@@ -72,7 +73,8 @@
 
 ;; byte arrays.
 
-(define (byte_array dim #!key (fill 0)) (make-u8vector dim fill))
+(define byte_array u8vector)
+(define (make_byte_array dim #!key (fill 0)) (make-u8vector dim fill))
 (define is_byte_array u8vector?)
 (define byte_array_length u8vector-length)
 (define byte_array_at u8vector-ref)

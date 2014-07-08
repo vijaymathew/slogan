@@ -1,6 +1,6 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define string make-string)
+(define make_string make-string)
 
 (define is_string_eq string=?)
 (define is_string_lteq string<=?)
@@ -158,3 +158,20 @@
     (if (null? slist) result
         (loop (cdr slist) (if result (string-append result infix (car slist))
                               (car slist))))))
+
+(define (string_titlecase s)
+  (let* ((len (string-length s))
+         (result (make-string len)))
+    (let loop ((word-start #t) (i 0))
+      (if (>= i len) result
+          (let ((c (string-ref s i)))
+            (cond 
+             (word-start 
+              (if (not (char-whitespace? c))
+                  (begin (string-set! result i (char-upcase c))
+                         (loop #f (+ i 1)))
+                  (begin (string-set! result i (char-downcase c))
+                         (loop word-start (+ i 1)))))
+             (else (string-set! result i (char-downcase c))
+                   (loop (char-whitespace? c) (+ i 1)))))))))
+          
