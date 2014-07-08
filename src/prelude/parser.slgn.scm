@@ -541,7 +541,7 @@
     (if is-byte-array (tokenizer 'next))
     (if (eq? (tokenizer 'peek) '*open-bracket*)
         (begin (tokenizer 'next)
-               (let loop ((expr (list (if is-byte-array 'u8vector 'vector)))
+               (let loop ((expr (list (if is-byte-array 's8vector 'vector)))
                           (token (tokenizer 'peek)))
                  (cond ((eq? token '*close-bracket*)
                         (tokenizer 'next)
