@@ -60,8 +60,8 @@
              (slgn-display-list val port))
             ((pair? val)
              (slgn-display-pair val port))
-            ((s8vector? val)
-             (slgn-display-array val port "#b" s8vector->list))
+            ((u8vector? val)
+             (slgn-display-array val port "#b" u8vector->list))
             ((vector? val)
              (slgn-display-array val port "#" vector->list))
             ((char? val)
@@ -75,7 +75,7 @@
             ((error-exception? val)
              (display-exception val port))
             ((eof-object? val)
-             (display '!end-of-stream port))
+             (display '!eof port))
             ((reactive-var? val)
              (slgn-display-rvar val port))
             (else
@@ -137,7 +137,7 @@
        (if (char=? #\# (string-ref s 0))
            (display (substring s 1 (string-length s)) port)
            (display s port))))
-   (lambda () (scm_print port: port c)))
+   (lambda () (print port: port c)))
   (display "'" port))
 
 (define (exception_to_string e)

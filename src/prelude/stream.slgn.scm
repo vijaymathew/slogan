@@ -1,141 +1,313 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define (stream type path-or-settings)
-  ((case type
-     ((file) open-file)
-     ((array) open-vector)
-     ((byte_array) open-u8vector)
-     ((string) open-string)
-     ((process) open-process)
-     ((tcp_client) open-tcp-client)
-     ((tcp_server) open-tcp-server)
-     ((directory) open-directory)
-     (else invalid-stream-type))
-   (slgn-path/settings->scm-path/settings path-or-settings)))
+(define-structure text-transcoder codec eol-style error-handling-mode)
 
-(define (output_stream type path-or-settings)
-  ((case type
-     ((file) open-output-file)
-     ((array) open-output-vector)
-     ((byte_array) open-output-u8vector)
-     ((string) open-output-string)
-     ((process) open-output-process)
-     ((tcp_client) open-tcp-client)
-     ((tcp_server) open-tcp-server)
-     ((directory) open-directory)
-     (else invalid-stream-type))
-   (slgn-path/settings->scm-path/settings path-or-settings)))
+(define *supported-codecs* '(ISO-8859-1 
+                             ASCII UTF-8 UTF-16 UTF-16LE
+                             UTF-16BE UCS-2 UCS-2LE UCS-2BE UCS-4 UCS-4LE UCS-4BE))
 
-(define (input_stream type path-or-settings)
-  ((case type
-     ((file) open-input-file)
-     ((array) open-input-vector)
-     ((byte_array) open-input-u8vector)
-     ((string) open-input-string)
-     ((process) open-input-process)
-     ((tcp_client) open-tcp-client)
-     ((tcp_server) open-tcp-server)
-     ((directory) open-directory)
-     (else invalid-stream-type))
-   (slgn-path/settings->scm-path/settings path-or-settings)))
+(define (validate-codec codec)
+  (if (not (symbol? codec))
+      (error "Codec must be a symbol."))
+  (if (not (memq (string->symbol (string_upcase (symbol->string codec)))
+                 *supported-codecs*))
+      (error "Unsupported codec." codec))
+  codec)
 
-(define (with_stream type path-or-settings fn)
-  (let ((s (stream type path-or-settings)))
-    (with-exception-catcher 
-     (lambda (e)
-       (if s (close-port s))
-       (raise e))
-     (lambda ()
-       (let ((val (fn s)))
-         (close-port s)
-         (set! s #f)
-         val)))))
-    
-(define (with_input_stream type path-or-settings fn)
-  ((case type
-     ((file) call-with-input-file)
-     ((process) call-with-input-process)
-     ((array) call-with-input-vector)
-     ((byte_array) call-with-input-u8vector)
-     ((string) call-with-input-string)
-     (else invalid-stream-type))
-   (slgn-path/settings->scm-path/settings path-or-settings)
-   fn))
+(define (validate-error-handling-mode mode)
+  (if (or (eq? mode 'replace) (eq? mode 'raise)) mode
+      (error "Invalid error handling mode." mode)))
 
-(define (with_output_stream type path-or-settings fn)
-  ((case type
-     ((file) call-with-output-file)
-     ((process) call-with-output-process)
-     ((array) call-with-output-vector)
-     ((byte_array) call-with-output-u8vector)
-     ((string) call-with-output-string)
-     (else invalid-stream-type))
-   (slgn-path/settings->scm-path/settings path-or-settings)
-   fn))
+(define *eol-styles* '(lf cr crlf))
 
-(define (invalid-stream-type #!rest args)
-  (error "not a supported stream type. " args))
+(define (validate-eol-style eol-style)
+  (if (memq eol-style *eol-styles*) eol-style
+      (error "Unsupported eol-style." eol-style)))
+
+(define (error-handling-mode->boolean mode) (eq? mode 'replace))
+
+(define (eol-style->encoding eol-style)
+  (if (eq? eol-style 'crlf) 'cr-lf
+      eol-style))
+
+(define (transcoder codec #!optional (eol-style 'crlf) (error-handling-mode #t))
+  (make-text-transcoder (validate-codec codec) (validate-eol-style eol-style) 
+                        (validate-error-handling-mode error-handling-mode)))
+
+(define (trancoder_codec t) (text-transcoder-codec t))
+(define (transcoder_eol_style t) (text-transcoder-eol-style t))
+(define (transcoder_error_handling_mode t) (text-transcoder-error-handling-mode t))
+
+(define (get-port-option options key #!optional default)
+  (if (list? options)
+      (if (memq key options) #t
+          default)
+      default))
+
+(define (get-codec-from-transcoder tcoder)
+  (if tcoder (text-transcoder-codec tcoder)
+      #f))
+
+(define (get-error-handling-mode-from-transcoder tcoder)
+  (if tcoder (error-handling-mode->boolean (text-transcoder-error-handling-mode tcoder))
+      #f))
+
+(define (get-eol-encoding-from-transcoder tcoder)
+  (if tcoder (eol-style->encoding (text-transcoder-eol-style tcoder))
+      'cr-lf))
+
+(define (get-buffering-for-port bmode)
+  (if bmode
+      (case bmode
+        ((block) #t)
+        ((none) #f)
+        ((line) 'line)
+        (else (error "Invalid buffer-mode." bmode)))
+      bmode))
+
+(define (open-file-port-helper path direction options buffer-mode tcoder permissions)
+  (let ((settings (list path: path direction: direction)))
+    (let ((opt (get-port-option options 'append)))
+      (if opt (set! settings (append settings (list append: opt)))))
+    (if (not (eq? direction 'input))
+        (let ((opt (get-port-option options 'create 'maybe)))
+          (if opt (set! settings (append settings (list create: opt))))))
+    (let ((opt (get-port-option options 'truncate)))
+      (if opt (set! settings (append settings (list truncate: opt)))))
+    (let ((opt (get-codec-from-transcoder tcoder)))
+      (if opt (set! settings (append settings (list char-encoding: opt)))))
+    (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
+      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+    (let ((opt (get-eol-encoding-from-transcoder tcoder)))
+      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+    (if permissions (set! settings (append settings (list permissions: permissions))))
+    (open-file (append settings (list buffering: (get-buffering-for-port buffer-mode))))))
+
+(define (open_file_input_port path #!optional options buffer-mode tcoder)
+  (open-file-port-helper path 'input options buffer-mode tcoder #f))
+
+(define (open_file_output_port path #!optional options buffer-mode tcoder (permissions #o666))
+  (open-file-port-helper path 'output options buffer-mode tcoder permissions))
+
+(define (open_file_input_output_port path #!optional options buffer-mode tcoder (permissions #o666))
+  (open-file-port-helper path 'input-output options buffer-mode tcoder permissions))
+
+(define open_input_file open-input-file)
+(define open_output_file open-output-file)
+
+(define current_input_port current-input-port)
+(define current_output_port current-output-port)
+(define current_error_port current-error-port)
+
+(define (open-byte-port-helper openfn invalue tcoder)
+  (if (not tcoder)
+      (openfn invalue)
+      (let ((settings (list init: invalue)))
+        (let ((opt (get-codec-from-transcoder tcoder)))
+          (if opt (set! settings (append settings (list char-encoding: opt)))))
+        (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
+          (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+        (let ((opt (get-eol-encoding-from-transcoder tcoder)))
+          (if opt (set! settings (append settings (list eol-encoding: opt)))))
+        (openfn settings))))
+
+(define (open_byte_array_input_port #!optional byte_array tcoder)
+  (open-byte-port-helper 
+   open-input-u8vector 
+   (if byte_array byte_array (make-u8vector 0)) 
+   tcoder))
+
+(define (open_byte_array_output_port #!optional byte_array tcoder)
+  (open-byte-port-helper 
+   open-output-u8vector 
+   (if byte_array byte_array (make-u8vector 0)) 
+   tcoder))
+
+(define (open_string_input_port #!optional str)
+  (open-byte-port-helper 
+   open-input-string 
+   (if str str (make-string 0)) 
+   #f))
+
+(define (open_string_output_port #!optional str)
+  (open-byte-port-helper
+   open-output-string
+   (if str str (make-string 0))
+   #f))
+
+(define is_port port?)
+(define is_input_port input-port?)
+(define is_output_port output-port?)
+(define close_port close-port)
+(define close_input_port close-input-port)
+(define close_output_port close-output-port)
+
+(define (port_position p)
+  (if (input-port? p)
+      (input-port-byte-position p)
+      (output-port-byte-position p)))
+
+(define (port_has_port_position p)
+  (with-exception-catcher 
+   (lambda (e) #f)
+   (lambda () (if (port_position p) #t #f))))
+
+(define (whence->integer w)
+  (case w
+    ((beginning) 0)
+    ((current) 1)
+    ((end) 2)
+    (else (error "Invalid whence for port position change." w))))
+
+(define (set_port_position p pos #!optional (whence 'beginning))
+  (if (input-port? p)
+      (input-port-byte-position p pos (whence->integer whence))
+      (output-port-byte-position p pos (whence->integer whence))))
+
+(define (safely-close-port p)
+  (if (port? p)
+      (with-exception-catcher
+       (lambda (e) #f)
+       (lambda () (close-port p)))))
+
+(define (call_with_port p proc)
+  (with-exception-catcher
+   (lambda (e)
+     (safely-close-port p)
+     (raise e))
+   (lambda () (proc p))))
+
+(define (eof_object) #!eof)
+(define is_eof_object eof-object?)
+
+(define *def-buf-sz* 1024)
+
+(define read_byte read-u8)
+
+(define (read-n-helper p n initfn rdfn subfn)
+  (let ((r (initfn n)))
+    (let ((n (rdfn r 0 n p n)))
+      (if (zero? n) #f
+          (subfn r 0 n)))))
+  
+(define (read_byte_n p n)
+  (read-n-helper p n make-u8vector read-subu8vector subu8vector))
+
+(define (read-all-helper p init rdfn apndfn bufsz)
+  (let loop ((r init)
+             (nr (rdfn p bufsz)))
+    (if (not nr) r
+        (loop (apndfn r nr)
+              (rdfn p bufsz)))))
+
+(define (read_byte_all p #!optional (bufsz *def-buf-sz*))
+  (read-all-helper p (make-u8vector 0) read_byte_n u8vector-append bufsz))
+
+(define read_char read-char)
+(define peek_char peek-char)
+
+(define (read_char_n p n)
+  (read-n-helper p n make-string read-substring substring))
+
+(define (read_char_all p #!optional (bufsz *def-buf-sz*))
+  (read-all-helper p "" read_char_n string-append bufsz))
+
+(define read_line read-line)
+
+(define read_datum read)
+
+(define write_byte write-u8)
+(define (write_byte_n p bytes)
+  (write-subu8vector bytes 0 (u8vector-length bytes) p))
+
+(define write_char write-char)
+(define (write_char_n p str)
+  (write-substring str 0 (string-length str) p))
+
+(define write_datum write)
+
+(define flush_output_port force-output)
+
+(define file_exists file-exists?)
+(define delete_file delete-file)
+
+(define (open-process-port-helper path direction arguments environment
+                                  directory stdin_redirection
+                                  stdout_redirection stderr_redirection
+                                  pseudo_terminal show_console
+                                  tcoder)
+  (let ((settings (list path: path 
+                        direction: direction
+                        arguments: arguments 
+                        environment: environment
+                        directory: directory 
+                        stdin-redirection: stdin_redirection
+                        stdout-redirection: stdout_redirection 
+                        stderr-redirection: stderr_redirection 
+                        pseudo-terminal: pseudo_terminal
+                        show-console: show_console)))
+    (let ((opt (get-codec-from-transcoder tcoder)))
+      (if opt (set! settings (append settings (list char-encoding: opt)))))
+    (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
+      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+    (let ((opt (get-eol-encoding-from-transcoder tcoder)))
+      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+    (open-process settings)))
+
+(define (open_process_output_port path #!key (arguments '()) environment
+                                  directory stdin_redirection stdout_redirection
+                                  stderr_redirection pseudo_terminal
+                                  show_console transcoder)
+  (open-process-port-helper path 'output arguments environment directory stdin_redirection
+                            stdout_redirection stderr_redirection pseudo_terminal show_console
+                            transcoder))
+
+(define (open_process_input_port path #!key (arguments '()) environment
+                                 directory stdin_redirection stdout_redirection
+                                 stderr_redirection pseudo_terminal
+                                 show_console transcoder)
+  (open-process-port-helper path 'input arguments environment directory stdin_redirection
+                            stdout_redirection stderr_redirection pseudo_terminal show_console
+                            transcoder))
 
 (define process_pid process-pid)
 (define process_status process-status)
 
-(define (tcp_service_register path-or-settings fn) 
-  (tcp-service-register! (slgn-path/settings->scm-path/settings path-or-settings) fn))
+(define (open_tcp_client_port addr #!key port_number keep_alive (coalesce #t) transcoder)
+  (let ((settings (list)))
+    (if (string? addr)
+        (set! settings (append settings (list server-address: addr)))
+        (set! port_number addr))
+    (if (integer? port_number)
+        (set! settings (append settings (list port-number: port_number))))
+    (set! settings (append settings (list keep-alive: keep_alive coalesce: coalesce)))
+    (let ((opt (get-codec-from-transcoder transcoder)))
+      (if opt (set! settings (append settings (list char-encoding: opt)))))
+    (let ((opt (get-error-handling-mode-from-transcoder transcoder)))
+      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+    (let ((opt (get-eol-encoding-from-transcoder transcoder)))
+      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+    (open-tcp-client settings)))
 
-(define (tcp_service_unregister path-or-settings)
-  (tcp-service-unregister! (slgn-path/settings->scm-path/settings path-or-settings)))
+(define (open-tcp-server-helper fn addr port_number backlog reuse_address transcoder #!optional cbfn)
+  (let ((settings (list)))
+    (if (string? addr)
+        (set! settings (append settings (list server-address: addr)))
+        (set! port_number addr))
+    (if (integer? port_number)
+        (set! settings (append settings (list port-number: port_number))))
+    (set! settings (append settings (list backlog: backlog reuse-address: reuse_address)))
+    (let ((opt (get-codec-from-transcoder transcoder)))
+      (if opt (set! settings (append settings (list char-encoding: opt)))))
+    (let ((opt (get-error-handling-mode-from-transcoder transcoder)))
+      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+    (let ((opt (get-eol-encoding-from-transcoder transcoder)))
+      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+    (if cbfn (fn settings cbfn)
+        (fn settings))))
 
-(define (close_stream port) 
-  (if (port? port)
-      (close-port port)))
-
-(define is_input_stream input-port?)
-(define is_output_stream output-port?)
-(define is_stream port?)
-(define current_input_stream current-input-port)
-(define current_output_stream current-output-port)
-(define close_input_stream close-input-port)
-(define close_output_stream close-output-port)
-(define read_char read-char)
-(define peek_char peek-char)
-(define is_char_ready char-ready?)
-(define write_char write-char)
-(define read_line read-line)
-(define read_substring read-substring)
-(define write_substring write-substring)
-(define read_byte read-u8)
-(define write_byte write-u8)
-(define get_output_string get-output-string)
-(define get_output_byte_array get-output-u8vector)
-(define get_output_array get-output-vector)
-
-(define (read_bytes bytes #!optional (start 0) end 
-                    (port (current-input-port)) 
-                    need)
-  (if (not end) (set! end (u8vector-length bytes))) 
-  (read-subu8vector bytes start end port need))
-
-(define (write_bytes bytes #!optional (start 0) end 
-                     (port (current-output-port)))
-  (if (not end) (set! end (u8vector-length bytes)))
-  (write-subu8vector bytes start end port))
-
-(define flush_output force-output)
-(define is_eos eof-object?)
-(define input_stream_byte_position input-port-byte-position)
-(define output_stream_byte_position output-port-byte-position)
-(define scm_print print)
-(define scm_println println)
-
-(define (print #!key (to (current-output-port)) #!rest args)
-  (let loop ((args args))
-    (if (not (null? args))
-        (begin (slgn-display (car args) display-string: #t port: to)
-               (loop (cdr args))))))
-
-(define (println #!key (to (current-output-port)) #!rest args)
-  (apply print (append (list to: to) args))
-  (newline to))
+(define (open_tcp_server_port addr #!key port_number (backlog 128) (reuse_address #t) transcoder)
+  (open-tcp-server-helper open-tcp-server addr port_number backlog reuse_address transcoder))
 
 (define (write_expression obj #!optional (to (current-output-port)))
   (slgn-display obj port: to))
@@ -179,12 +351,3 @@
 
 (define (read_token tokenizer)
   (tokenizer 'next))
-
-(define (tcp_server #!key (server_address "")
-                    (port_number 0)
-                    (backlog  128)
-                    (reuse_address #t))
-  (stream 'tcp_server `((server_address . ,server_address)
-                        (port_number . ,port_number)
-                        (backlog . ,backlog)
-                        (reuse_address . ,reuse_address))))
