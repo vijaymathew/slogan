@@ -431,15 +431,17 @@
          #\delete)
         (else (tokenizer-error "invalid escaped character " c))))
 
-(define (is_operator_token token)
-  (or (single-char-operator? token)
-      (multi-char-operator? token)))
-
-(define (operator_token_to_string token)
-  (cond ((single-char-operator? token)
-         (fetch-single-char-operator-string token))
-        ((multi-char-operator? token)
-         (fetch-multi-char-operator-string token))
-        (else #f)))
-
 (define is_keyword_token reserved-name?)
+
+(define (is_special_token token)
+  (if (or (eq? token '*assignment*)
+          (memp (lambda (p) (eq? token (cdr p))) *single-char-operators*)
+          (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)) #t #f))
+
+(define (special_token_to_string token)
+  (if (eq? token '*assignment*) "="
+      (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
+        (if t (caar t)
+            (let ((t (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)))
+              (if t (caar t)
+                  (error "Not a special token." token)))))))

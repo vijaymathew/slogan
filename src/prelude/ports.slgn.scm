@@ -214,8 +214,6 @@
 
 (define read_line read-line)
 
-(define read_datum read)
-
 (define write_byte write-u8)
 (define (write_byte_n p bytes)
   (write-subu8vector bytes 0 (u8vector-length bytes) p))
@@ -223,8 +221,6 @@
 (define write_char write-char)
 (define (write_char_n p str)
   (write-substring str 0 (string-length str) p))
-
-(define write_datum write)
 
 (define flush_output_port force-output)
 
@@ -309,45 +305,46 @@
 (define (open_tcp_server_port addr #!key port_number (backlog 128) (reuse_address #t) transcoder)
   (open-tcp-server-helper open-tcp-server addr port_number backlog reuse_address transcoder))
 
-(define (write_expression obj #!optional (to (current-output-port)))
-  (slgn-display obj port: to))
-
-(define (make-delimited-tokenizer stream delimiters)
+(define (make-delimited-tokenizer port delimiters)
   (let ((current-token #f))
     (lambda (msg)
       (case msg
         ((next)
          (if (not current-token)
-             (next-delimited-token stream delimiters)
+             (next-delimited-token port delimiters)
              (let ((tmp current-token))
                (set! current-token #f)
                tmp)))
         ((peek)
          (if (not current-token)
-             (set! current-token (next-delimited-token stream delimiters)))
+             (set! current-token (next-delimited-token port delimiters)))
          current-token)
         (else (error "Invalid message received by delimited-tokenizer. " msg))))))
 
-(define (next-delimited-token stream delimiters)
-  (if (eof-object? (peek-char stream))
-      (read-char stream)
+(define (next-delimited-token port delimiters)
+  (if (eof-object? (peek-char port))
+      (read-char port)
       (let ((cmpr (if (list? delimiters) memv char=?)))
         (let loop ((str '())
-                   (c (peek-char stream)))
+                   (c (peek-char port)))
           (if (or (eof-object? c)
                   (cmpr c delimiters))
-              (begin (read-char stream)
+              (begin (read-char port)
                      (list->string (reverse str)))
-              (loop (cons (read-char stream) str) (peek-char stream)))))))
+              (loop (cons (read-char port) str) (peek-char port)))))))
 
-(define (stream_tokenizer stream #!key program
-                          (delimiters #\space))
-  (if program
-      (make-tokenizer stream '())
-      (make-delimited-tokenizer stream delimiters)))
+(define (port_tokenizer port #!key with_delimiters) 
+  (if with_delimiters (make-delimited-tokenizer port with_delimiters)
+      (make-tokenizer port '())))
 
 (define (peek_token tokenizer)
   (tokenizer 'peek))
 
-(define (read_token tokenizer)
+(define (get_token tokenizer)
   (tokenizer 'next))
+
+(define (get_datum tokenizer)
+  (slogan tokenizer))
+
+(define (write_datum obj #!optional (to (current-output-port)))
+  (slgn-display obj port: to))

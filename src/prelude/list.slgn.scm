@@ -59,7 +59,7 @@
           (else
            (loop (cdr ls) result)))))
 
-(define (memp predic ls #!key (default '()))
+(define (memp predic ls #!key default)
   (cond ((null? ls) default)
         ((predic (car ls)) ls)
         (else (memp predic (cdr ls) default: default))))
