@@ -367,4 +367,15 @@
 (define copy_file copy-file)
 (define delete_file delete-file)
 
+(define path_expand path-expand)
+(define path_normalize path-normalize)
+
+(define path_extension path-extension)
+(define path_strip_extension path-strip-extension)
+(define path_directory path-directory)
+(define path_strip_directory path-strip-directory)
+(define path_strip_trailing_directory_separator path-strip-trailing-directory-separator)
+(define path_volume path-volume)
+(define path_strip_volume path-strip-volume)
+
 (define system shell-command)
