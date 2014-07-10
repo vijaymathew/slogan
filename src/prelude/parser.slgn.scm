@@ -84,8 +84,10 @@
                                     (def-lazy name (make-lazy params body))))
                  (list 'define name (merge-lambda (list 'lambda params) body)))))))
 
+(define (func-def? token) (or (eq? 'fn token) (eq? 'function token)))
+
 (define (func-def-stmt tokenizer)
-  (cond ((eq? (tokenizer 'peek) 'fn)
+  (cond ((func-def? (tokenizer 'peek))
          (tokenizer 'next)
          (func-def-stmt-from-name tokenizer))
         (else (record-def-stmt tokenizer))))
@@ -605,7 +607,7 @@
       #f))
 
 (define (func-def-expr tokenizer)
-  (if (eq? (tokenizer 'peek) 'fn)
+  (if (func-def? (tokenizer 'peek))
       (begin (tokenizer 'next)
              (merge-lambda (list 'lambda (func-params-expr tokenizer))
                            (func-body-expr tokenizer)))
@@ -969,7 +971,8 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(fn var if record let letseq letrec case match where try catch finally
+(define *reserved-names* '(fn function var if record let letseq letrec case match 
+                              where try catch finally
                               module exports macro lazy load))
 
 (define (reserved-name? sym)

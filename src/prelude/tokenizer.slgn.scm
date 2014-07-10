@@ -212,6 +212,9 @@
           (else
            (tokenizer-error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
 
+(define (numeric-string->number s #!optional (radix 10))
+  (string->number (list->string (filter (lambda (c) (not (char=? c #\_))) (string->list s))) radix))
+
 (define (read-number port prefix #!optional (radix 10))
   (let loop ((c (port-pos-peek-char port))
              (prev-c #\space)
@@ -220,7 +223,7 @@
         (begin (port-pos-read-char! port)
                (loop (port-pos-peek-char port) c
                      (cons c result)))
-        (let ((n (string->number (list->string (reverse result)) radix)))
+        (let ((n (numeric-string->number (list->string (reverse result)) radix)))
           (if n n
               (tokenizer-error "read-number failed. invalid number format."))))))
 
@@ -249,7 +252,7 @@
                 (begin (port-pos-read-char! port)
                        (loop (port-pos-peek-char port) c
                              (cons c result)))
-                (let ((n (string->number (string-append radix-prefix (list->string (reverse result))) radix)))
+                (let ((n (numeric-string->number (string-append radix-prefix (list->string (reverse result))) radix)))
                   (if (not n)
                       (tokenizer-error "read-number-with-radix-prefix failed. invalid number format.")
                       n))))))))
@@ -258,6 +261,7 @@
   (and (char? c)
        (or (char-numeric? c)
            (char=? #\. c)
+           (char=? #\_ c)
            (exponent-marker? c)
            (sign-in-number-valid? c prev-c))))
 
