@@ -1,0 +1,28 @@
+function add_span_class(token, classname, convfn) 
+    string_append("<span class=\"", classname, "\">", convfn(token), "</span>")
+;
+
+function identity(token) token;
+
+function token_to_html(token)
+    if (is_keyword_token(token)) add_span_class(token, "k", symbol_to_string)
+    else if (is_number(token)) add_span_class(token, "mi", number_to_string)
+    else if (is_special_token(token)) add_span_class(token, "o", special_token_to_string)
+    else if (is_string(token)) add_span_class(token, "s1", identity)
+    else token
+;
+
+function hlcode(program)
+    let (p = open_string_input_port(program))
+    let (t = port_tokenizer(p))
+    let (s = open_string_output_port())
+    letrec (loop = fn() let (token = get_token(t))
+                          if (not(is_eof_object(token))) {
+                              print(port = s, token_to_html(token));
+                              print(port = s, " ");
+                              loop()
+                          } else get_output_string(s))
+     loop()
+;
+                             
+                  

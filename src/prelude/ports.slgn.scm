@@ -135,6 +135,8 @@
    (if str str (make-string 0))
    #f))
 
+(define get_output_string get-output-string)
+
 (define is_port port?)
 (define is_input_port input-port?)
 (define is_output_port output-port?)
