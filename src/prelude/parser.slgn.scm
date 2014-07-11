@@ -95,7 +95,7 @@
 (define (assignment-stmt tokenizer)
   (if (name? (tokenizer 'peek))
       (let ((sym (tokenizer 'next)))
-        (if (eq? sym 'var)
+        (if (eq? sym 'define)
             (define-stmt tokenizer)
             (cond ((reserved-name? sym)
                    (tokenizer 'put sym)
@@ -969,7 +969,7 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(fn function var if record let letseq letrec case match 
+(define *reserved-names* '(fn function define if record let letseq letrec case match 
                               where try catch finally
                               module exports macro lazy load))
 
