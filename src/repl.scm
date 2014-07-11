@@ -13,7 +13,7 @@
                (cadr args)))
           (else (loop (cdr args))))))
 
-(define *valid-command-line-options* '("-e" "-c" "-x" "-ld-options" "-cc-options" "-v" "-h"))
+(define *valid-command-line-options* '("-e" "-c" "-x" "-ld-options" "-cc-options" "-v" "-h" "-r"))
 
 (define (valid-command-line-option? opt)
   (member opt *valid-command-line-options*))
@@ -37,28 +37,17 @@
   (println "     -x            Compile a script into an executable binary.")
   (println "     -ld-options   Additional options that will be passed to the system linker.")
   (println "     -cc-options   Additional options that will be passed to the system C compiler.") 
-  (println "     -v            Display version information.")
-  (println "     -h            Print this help.")
+  (println "     -r            Launch REPL after performing other options.")
+  (println "     -v            Display version information and quit.")
+  (println "     -h            Print this help and quit.")
   (println))
 
 (define (show-version)
   (println "slogan version \"" *major-version* "." *minor-version* "-" *release-name* "\"")
   (println))
 
-(define (show-version-and-quit)
-  (show-version)
-  (exit 0))
-
-(define (show-usage-and-quit)
-  (show-usage)
-  (exit 0))
-
 (define (execute-script scriptname)
   (run-slgn-script scriptname))
-
-(define (execute-script-and-quit scriptname)
-  (execute-script scriptname)
-  (exit 0))
 
 (define (compile-script scriptname args exe)
   (let ((ld-options (get-arg-val "-ld-options" args))
@@ -67,23 +56,26 @@
                      cc_options: cc-options)
         (compile scriptname assemble: #t ld_options: ld-options
                  cc_options: cc-options))))
-  
-(define (compile-script-and-quit scriptname args #!optional exe)
-  (compile-script scriptname args exe)
-  (exit 0))
+
+(define (command-line-has-options? args)
+  (memp (lambda (s) (char=? (string-ref s 0) #\-)) args))
 
 (define (process-args args)
   (assert-command-line-options args)
   (if (has-arg? "-h" args)
-      (show-usage-and-quit))
+      (show-usage))
   (if (has-arg? "-v" args)
-      (show-version-and-quit))
+      (show-version))
   (if (has-arg? "-e" args)
-      (execute-script-and-quit (get-arg-val "-e" args)))
+      (execute-script (get-arg-val "-e" args)))
   (if (has-arg? "-c" args)
-      (compile-script-and-quit (get-arg-val "-c" args) args))
+      (compile-script (get-arg-val "-c" args) args))
   (if (has-arg? "-x" args)
-      (compile-script-and-quit (get-arg-val "-x" args) args #t))
-  (repl (current-input-port)))
+      (compile-script (get-arg-val "-x" args) args #t))
+  (if (command-line-has-options? args)
+      (if (has-arg? "-r" args)
+          (repl (current-input-port))
+          (exit 0))
+      (repl (current-input-port))))
 
 (process-args (command-line))
