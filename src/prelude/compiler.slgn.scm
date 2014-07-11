@@ -80,14 +80,15 @@
 	     #t))))))
 
 (define (show-waiting-prompt prompt)
-  (let loop ((len (- (string-length prompt) 2))
-             (i 0))
-    (if (< len 0)
-        (display "> ")
-        (if (< i len)
-            (begin (display " ")
-                   (loop len (+ i 1)))
-            (display "> ")))))
+  (if prompt
+      (let loop ((len (- (string-length prompt) 2))
+                 (i 0))
+        (if (< len 0)
+            (display "> ")
+            (if (< i len)
+                (begin (display " ")
+                       (loop len (+ i 1)))
+                (display "> "))))))
 
 (define (braces-matches? s)
   (let ((bcount 0)
@@ -124,7 +125,7 @@
                (loop (cdr lines))))))
 
 (define (repl port #!key (prompt "slogan> "))
-  (display prompt) 
+  (if prompt (display prompt))
   (with-exception-catcher
    repl-exception-handler
    (lambda ()
@@ -147,3 +148,15 @@
            (begin (slgn-display val)
                   (newline))))))
   (repl port prompt: prompt))
+
+(define (run-slgn-script script-name) 
+  (let ((program-text (read-script-file script-name)))
+    (let loop ((exprs (compile->scheme (make-tokenizer 
+                                        (open-input-string program-text) 
+                                        program-text)))
+               (val #!void))
+      (if (not (null? exprs))
+          (loop (cdr exprs) (eval (car exprs)))
+          (if (not (void? val))
+              (begin (slgn-display val)
+                     (newline)))))))

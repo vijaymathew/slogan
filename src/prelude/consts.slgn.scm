@@ -1,3 +1,7 @@
+(define *major-version* 0)
+(define *minor-version* 1)
+(define *release-name* 'beta)
+
 (define *scm-extn* ".scm")
 (define *slgn-extn* ".sn")
 (define *exe-extn* ".run")

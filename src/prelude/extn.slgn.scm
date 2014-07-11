@@ -8,6 +8,8 @@
 (define is_symbol symbol?)
 (define is_promise ##promise?)
 
+(define command_line command-line)
+
 (define (current_exception_handler) 
   (current-exception-handler))
 
