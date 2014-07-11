@@ -188,6 +188,6 @@ c-declare-end
 (define (time_is_dst t) (systemtime_is_dst (host-time-tm t)))
 (define (time_set_is_dst t s) (systemtime_set_is_dst (host-time-tm t) s))
 
-(define process_times process-times)
+(define (process_times) (f64vector->list (process-times)))
 (define cpu_time cpu-time)
 (define real_time real-time)
