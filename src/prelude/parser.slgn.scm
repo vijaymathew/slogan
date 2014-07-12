@@ -969,8 +969,9 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(fn function define if record let letseq letrec case match 
-                              where try catch finally
+(define *reserved-names* '(fn function define record 
+			      if else let letseq letrec 
+			      case match where try catch finally
                               module exports macro lazy load))
 
 (define (reserved-name? sym)
