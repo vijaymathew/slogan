@@ -381,3 +381,18 @@
 (define path_strip_volume path-strip-volume)
 
 (define system shell-command)
+
+(define (show obj #!key (port (current-output-port)) #!rest objs)
+  (slgn-display obj display-string: #t port: port)
+  (let loop ((objs objs))
+    (if (not (null? objs))
+	(begin (slgn-display (car objs) display-string: #t port: port)
+	       (loop (cdr objs))))))
+
+(define (showln obj #!key (port (current-output-port)) #!rest objs)
+  (slgn-display obj display-string: #t port: port)
+  (let loop ((objs objs))
+    (if (not (null? objs))
+	(begin (slgn-display (car objs) display-string: #t port: port)
+	       (loop (cdr objs)))))
+  (newline))
