@@ -78,6 +78,8 @@
              (display '!eof port))
             ((reactive-var? val)
              (slgn-display-rvar val port))
+            ((##promise? val)
+             (display "<promise>"))
             (else
              (display (scm-repr->slgn-repr val) port)))))
 

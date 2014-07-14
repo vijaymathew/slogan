@@ -119,7 +119,8 @@
       body))
 
 (define (replace-macro-args-helper expr env)
-  (cond ((not (pair? expr))
+  (cond ((null? expr) expr)
+        ((not (pair? expr))
          (if (symbol? expr)
              (get-macro-env-value env expr expr)
              expr))
@@ -149,8 +150,7 @@
                          r))
                       (else (let ((a (replace-macro-args-helper sym env))
                                   (b (replace-macro-args-helper (cdr expr) env)))
-                              (if (null? b) a
-                                  (cons a (list b))))))))))
+                              (cons a b))))))))
 
 (define (replace-let-vals expr env)
   (let loop ((expr expr)
