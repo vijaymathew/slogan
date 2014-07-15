@@ -439,13 +439,16 @@
 
 (define (is_special_token token)
   (if (or (eq? token '*assignment*)
+          (eq? token '*period*)
           (memp (lambda (p) (eq? token (cdr p))) *single-char-operators*)
           (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)) #t #f))
 
 (define (special_token_to_string token)
-  (if (eq? token '*assignment*) "="
-      (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
-        (if t (caar t)
-            (let ((t (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)))
-              (if t (caar t)
-                  (error "Not a special token." token)))))))
+  (cond ((eq? token '*assignment*) "=")
+        ((eq? token '*period*) ".")
+        (else 
+         (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
+           (if t (caar t)
+               (let ((t (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)))
+                 (if t (caar t)
+                     (error "Not a special token." token))))))))
