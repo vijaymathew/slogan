@@ -91,7 +91,9 @@
 (define (func-def-stmt tokenizer)
   (cond ((func-def? (tokenizer 'peek))
          (tokenizer 'next)
-         (func-def-stmt-from-name tokenizer))
+         (if (eq? (tokenizer 'peek) 'lazy)
+             (lazy-fn-stmt tokenizer)
+             (func-def-stmt-from-name tokenizer)))
         (else (record-def-stmt tokenizer))))
          
 (define (assignment-stmt tokenizer)
@@ -113,7 +115,7 @@
       (begin (tokenizer 'next)
              (mk-macro-def (tokenizer 'next) tokenizer)
              *void*)
-      (lazy-fn-stmt tokenizer)))
+      (module-stmt tokenizer)))
 
 (define (lazy-fn-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'lazy)

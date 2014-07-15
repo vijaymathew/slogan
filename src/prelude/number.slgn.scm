@@ -244,5 +244,3 @@
 		      (loop (+ k 2))))))))
 
 (define is_prime prime?)
-
-
