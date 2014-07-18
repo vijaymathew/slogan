@@ -466,6 +466,11 @@
       (list 'rget (normalize-rvar sym))
       sym))
 
+(define (token->neg-number token)
+  (if (number? token)
+      (string->number (string-append "-" (number->string token)))
+      (list '- token)))
+
 (define (literal-expr tokenizer)
   (let ((expr (func-def-expr tokenizer)))
     (if expr
@@ -478,8 +483,14 @@
                 ((add-sub-opr? token)
                  (tokenizer 'next)
                  (let ((sub (eq? token '*minus*))
-                       (expr (expression tokenizer)))
-                   (if sub (list '- expr) expr)))
+                       (next (tokenizer 'peek)))
+                   (if sub
+                       (if (or (number? next) 
+                               (and (variable? next) (not (reserved-name? next))))
+                           (begin (tokenizer 'next)
+                                  (token->neg-number next))
+                           (list '- (expression tokenizer)))
+                       (expression tokenizer))))                       
                 ((variable? token)
 		 (cond ((eq? token '?)
 			(tokenizer 'next)
