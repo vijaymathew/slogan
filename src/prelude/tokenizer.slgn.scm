@@ -113,6 +113,7 @@
                                       (cons #\, '*comma*)
                                       (cons #\: '*colon*)                                      
                                       (cons #\! '*bang*)
+				      (cons #\% '*quote-start*)
                                       (cons #\; '*semicolon*)))
 
 (define *single-char-operators-strings* (list (cons "+" '*plus*)
@@ -129,6 +130,7 @@
                                               (cons "," '*comma*)
                                               (cons ":" '*colon*)                                      
                                               (cons "!" '*bang*)
+					      (cons "%" '*quote-start*)
                                               (cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (list (cons "==" '*equals*)
@@ -307,7 +309,6 @@
            (char=? c #\_)
            (char=? c #\$)
            (char=? c #\?)
-           (char=? c #\!)
            (char=? c #\~)
            (char=? c #\@))))
 
