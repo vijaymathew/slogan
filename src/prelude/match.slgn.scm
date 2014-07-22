@@ -148,6 +148,6 @@
            (if (eq? (car members) '_)
                (loop (cdr members) (+ i 1) bindings)
                (let ((accessor (string->symbol (string-append (record-pattern-name pattern)
-                                                              "_" (number->string i)))))
+                                                              "-" (number->string i)))))
                  (loop (cdr members) (+ i 1) (cons `(,(car members) (,accessor *value*)) bindings)))))
           (else (loop (cdr members) (+ i 1) bindings)))))

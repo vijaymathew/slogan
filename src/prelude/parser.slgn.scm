@@ -831,7 +831,7 @@
     (let ((scm-accessor (string->symbol (string-append sname "-" smem)))
 	  (scm-modifier (string->symbol (string-append sname "-" smem "-set!")))
 	  (slgn-accessor (string->symbol (string-append sname "_" smem)))
-          (idx-accessor (string->symbol (string-append sname "_" (number->string index))))
+          (idx-accessor (string->symbol (string-append sname "-" (number->string index))))
 	  (slgn-modifier (string->symbol (string-append sname "_set_" smem))))
       (list (list 'define slgn-accessor scm-accessor)
             (list 'define idx-accessor scm-accessor)
