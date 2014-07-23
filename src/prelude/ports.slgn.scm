@@ -177,7 +177,7 @@
    (lambda (e)
      (safely-close-port p)
      (raise e))
-   (lambda () (proc p))))
+   (lambda () (proc p) (safely-close-port p))))
 
 (define (eof_object) #!eof)
 (define is_eof_object eof-object?)
@@ -215,6 +215,17 @@
   (read-all-helper p "" read_char_n string-append bufsz))
 
 (define read_line read-line)
+(define read_all read-all)
+
+(define (read_all_lines #!optional (port (current-input-port)) #!key as_list)
+  (let ((chars (read-all port read-char)))
+    (if (list? chars) 
+        (let ((r (list->string chars)))
+          (if as_list (string_split r #\newline) r))
+        chars)))
+
+(define (read_all_bytes #!optional (port (current-input-port)))
+  (read-all port read_byte))
 
 (define write_byte write-u8)
 (define (write_byte_n p bytes)
@@ -382,17 +393,15 @@
 
 (define system shell-command)
 
-(define (show obj #!key (port (current-output-port)) #!rest objs)
-  (slgn-display obj display-string: #t port: port)
+(define (show #!key (port (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (not (null? objs))
 	(begin (slgn-display (car objs) display-string: #t port: port)
 	       (loop (cdr objs))))))
 
-(define (showln obj #!key (port (current-output-port)) #!rest objs)
-  (slgn-display obj display-string: #t port: port)
+(define (showln #!key (port (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (not (null? objs))
 	(begin (slgn-display (car objs) display-string: #t port: port)
 	       (loop (cdr objs)))))
-  (newline))
+  (newline port))
