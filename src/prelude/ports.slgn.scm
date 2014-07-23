@@ -177,7 +177,10 @@
    (lambda (e)
      (safely-close-port p)
      (raise e))
-   (lambda () (proc p) (safely-close-port p))))
+   (lambda () 
+     (let ((r (proc p))) 
+       (safely-close-port p)
+       r))))
 
 (define (eof_object) #!eof)
 (define is_eof_object eof-object?)
