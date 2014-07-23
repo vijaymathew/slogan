@@ -130,18 +130,21 @@
       (assignment-stmt tokenizer)))
 
 (define (module-def-stmt tokenizer)
-  (let ((name (tokenizer 'next)) (params '()) (exports '()))
+  (let ((name (tokenizer 'next)) (params '()) 
+        (exports '()) (locals #f))
     (if (not (variable? name))
         (parser-error tokenizer "Module must have a name."))
     (check-if-reserved-name name tokenizer)
     (if (eq? (tokenizer 'peek) '*open-paren*)
         (set! params (func-params-expr tokenizer)))
-    (if (eq? (tokenizer 'peek) 'exports)
+    (if (eq? (tokenizer 'peek) 'export)
         (set! exports (module-exports tokenizer)))
+    (if (eq? (tokenizer 'peek) 'locals)
+        (set! locals (module-locals tokenizer)))
     (let ((body (merge-lambda (list 'lambda (list '*message*))
                               (append (func-body-expr tokenizer)
                                       (module-exports->case exports name)))))
-      (list 'define name (merge-lambda (list 'lambda params) body)))))
+      (list 'define name (merge-lambda (list 'lambda params) (if locals (append locals (list body)) body))))))
 
 (define (module-exports tokenizer)
   (tokenizer 'next)
@@ -168,6 +171,28 @@
                                           (lambda ()
                                             (display token)
                                             (display "."))))))))
+
+(define (module-locals tokenizer)
+  (tokenizer 'next)
+  (if (not (eq? (tokenizer 'next) '*open-paren*))
+      (parser-error tokenizer "Missing opening parenthesis before locals list."))
+  (let loop ((token (tokenizer 'next)) (result '()))
+    (cond ((eq? token '*close-paren*)
+           (append (list 'begin) (reverse result)))
+          ((name? token)
+           (check-if-reserved-name token tokenizer)
+           (let ((expr (if (eq? (tokenizer 'peek) '*assignment*)
+                           (begin (tokenizer 'next)
+                                  (func-body-expr tokenizer #t))
+                           #f)))
+             (if (eq? (tokenizer 'peek) '*comma*)
+                 (tokenizer 'next)
+                 (if (not (eq? (tokenizer 'peek) '*close-paren*))
+                     (parser-error tokenizer "Expected comma or closing parenthesis.")))
+             (loop (tokenizer 'next) (cons (list 'define token expr) result))))
+          (else (parser-error tokenizer (with-output-to-string 
+                                          "Expected variable identifier instead of: "
+                                          (lambda () (display token) (display "."))))))))
 
 (define (module-exports->case exports name)
   (if (null? exports) 
@@ -997,7 +1022,7 @@
 (define *reserved-names* '(fn function define record 
 			      if else let letseq letrec 
 			      case match where try catch finally
-                              module exports macro lazy load))
+                              module export locals macro lazy load))
 
 (define (reserved-name? sym)
   (and (symbol? sym)

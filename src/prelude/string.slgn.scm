@@ -119,10 +119,11 @@
 (define string_map string-map)
 (define string_for_each string-for-each)
 
-(define (string_split str #!optional (delim #\space)
+(define (string_split str #!optional (delim char-whitespace?)
                       (include-empty-strings #f))
   (if (not (or (char? delim)
-               (list? delim))) str
+               (list? delim)
+               (procedure? delim))) str
       (let ((len (string-length str)))
         (let loop ((result '()) (currstr '()) (i 0))
           (cond ((>= i len)
@@ -130,7 +131,8 @@
                      (reverse result)
                      (reverse (cons (list->string (reverse currstr)) result))))
                 ((or (and (list? delim) (member (string-ref str i) delim))
-                     (and (char? delim) (char=? (string-ref str i) delim)))
+                     (and (char? delim) (char=? (string-ref str i) delim))
+                     (and (procedure? delim) (delim (string-ref str i))))
                  (loop (if (and (null? currstr) (not include-empty-strings)) 
                            result 
                            (cons (list->string (reverse currstr)) result)) '() 
