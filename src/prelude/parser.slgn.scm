@@ -285,7 +285,7 @@
                (begin (tokenizer 'next)
                       (if (eq? (tokenizer 'peek) 'if)
                           (append expr (list (if-expr tokenizer)))
-                          (append expr (list (expression tokenizer)))))
+                          (append expr (list (func-body-expr tokenizer #t)))))
                expr)))
         (else (case-expr tokenizer))))
 
