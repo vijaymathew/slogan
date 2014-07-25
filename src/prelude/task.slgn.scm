@@ -80,9 +80,10 @@
                (mutex-unlock! (reactive-var-mtx dfv))))))
 
 (define (rget dfv)
-  (mutex-lock! (reactive-var-mtx dfv))
-  (let ((cv (reactive-var-cv dfv)))
-    (if (unbound? (condition-variable-specific cv))
-	(mutex-unlock! (reactive-var-mtx dfv) cv)
-	(mutex-unlock! (reactive-var-mtx dfv)))
-    (condition-variable-specific cv)))
+  (if (not (reactive-var? dfv)) dfv
+      (begin (mutex-lock! (reactive-var-mtx dfv))
+             (let ((cv (reactive-var-cv dfv)))
+               (if (unbound? (condition-variable-specific cv))
+                   (mutex-unlock! (reactive-var-mtx dfv) cv)
+                   (mutex-unlock! (reactive-var-mtx dfv)))
+               (condition-variable-specific cv)))))
