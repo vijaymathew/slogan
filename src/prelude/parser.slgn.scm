@@ -129,22 +129,6 @@
              (module-def-stmt tokenizer))
       (assignment-stmt tokenizer)))
 
-(define (module-body->letrec body closure)
-  (let loop ((body body) (let-defs '()))
-    (cond ((null? body)
-           (if (not (null? let-defs))
-               (list 'let* (reverse let-defs) closure)
-               closure))
-          ((and (list? body) (eq? 'define (car body)))
-           (loop (cdddr body) (cons (list (cadr body) (caddr body)) let-defs)))
-          ((and (list? (car body)) (eq? 'define (caar body)))
-           (let ((h (car body)))
-             (loop (cdr body) (cons (list (cadr h) (caddr h)) let-defs))))
-          (else 
-           (if (null? let-defs)
-               (list (car body) (module-body->letrec (cdr body) closure))
-               (append (list 'let* (reverse let-defs)) (list (car body) (module-body->letrec (cdr body) closure))))))))
-    
 (define (module-def-stmt tokenizer)
   (let ((name (tokenizer 'next)) (params '()) 
         (exports '()))
@@ -158,8 +142,7 @@
     (let ((body (func-body-expr tokenizer))
           (closure (append (list 'lambda (list '*message*))
                            (module-exports->case exports name))))
-      (list 'define name (merge-lambda params
-                                       (module-body->letrec body closure))))))
+      (list 'define name (merge-lambda params (append body (list closure)))))))
 
 (define (module-exports tokenizer)
   (tokenizer 'next)
@@ -187,13 +170,17 @@
                                             (display token)
                                             (display "."))))))))
 
+(define (safe-symbol->string s)
+  (if (symbol? s) (symbol->string s)
+      s))
+
 (define (module-exports->case exports name)
   (if (null? exports) 
       '()
       (let loop ((exports exports)
                  (body (list `(else (error (string-append 
                                             "'" (symbol->string *message*)
-                                            "' not found in module '" (symbol->string ',name)
+                                            "' not found in module '" (safe-symbol->string ',name)
                                             "'."))))))
         (cond ((null? exports)
                (list (append '(case *message*) body)))
