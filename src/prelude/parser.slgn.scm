@@ -693,7 +693,7 @@
              (eq? func-val 'task))
         (if (or (not (list? (car expr))) 
                 (not (eq? (caar expr) 'lambda)))
-            (set! expr (list (merge-lambda '() expr)))))
+            (set! expr (cons (merge-lambda '() (car expr)) (cdr expr)))))
     (cons func-val expr)))
 
 (define (macro-args-list tokenizer)
