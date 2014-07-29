@@ -8,12 +8,18 @@
 
 (define *macros* (list (make-table)))
 (define *lazy-fns* (list (make-table)))
+(define *normal-vars* (list (make-table)))
 
 (define (def-macro name macro)
+  (remove-normal-var-def name)
   (table-set! (car *macros*) name macro))
 
 (define (def-lazy name lazy)
+  (remove-normal-var-def name)
   (table-set! (car *lazy-fns*) name lazy))
+
+(define (def-normal-var name)
+  (table-set! (car *normal-vars*) name #t))
 
 (define (undef-macro name)
   (table-set! (car *macros*) name #f))
@@ -22,12 +28,18 @@
   (table-set! (car *lazy-fns*) name #f))
 
 (define (remove-macro-def name)
-  (if (get-macro-def name)
+  (def-normal-var name)
+  (if (get-macro-def name #f)
       (undef-macro name)))
 
 (define (remove-lazy-def name)
-  (if (get-lazy-def name)
+  (def-normal-var name)
+  (if (get-lazy-def name #f)
       (undef-lazy name)))
+
+(define (remove-normal-var-def name)
+  (if (table-ref (car *normal-vars*) name #f)
+      (table-set! (car *normal-vars*) name #f)))
 
 (define (push-macros)
   (set! *macros* (cons (make-table) *macros*)))
@@ -41,29 +53,37 @@
 (define (pop-lazy-fns)
   (set! *lazy-fns* (cdr *lazy-fns*)))
 
+(define (push-normal-vars)
+  (set! *normal-vars* (cons (make-table) *normal-vars*)))
+
+(define (pop-normal-vars)
+  (set! *normal-vars* (cdr *normal-vars*)))
+
 (define (push-macros-lazy-fns)
   (push-macros)
-  (push-lazy-fns))
+  (push-lazy-fns)
+  (push-normal-vars))
 
 (define (pop-macros-lazy-fns)
   (pop-macros)
-  (pop-lazy-fns))
+  (pop-lazy-fns)
+  (pop-normal-vars))
 
 (define (remove-macro-lazy-fns-def name)
   (remove-macro-def name)
   (remove-lazy-def name))
 
-(define (get-macro-def name) (get-macro-lazy-def name *macros*))
-(define (get-lazy-def name) (get-macro-lazy-def name *lazy-fns*))
+(define (get-macro-def name #!optional (drill #t)) (get-macro-lazy-def name *macros* drill))
+(define (get-lazy-def name #!optional (drill #t)) (get-macro-lazy-def name *lazy-fns* drill))
 
-(define (get-macro-lazy-def name tables)
-  (let loop ((macros tables))
-    (if (null? macros)
-        #f
-        (let ((m (table-ref (car macros) name #f)))
-          (if m 
-              m
-              (loop (cdr macros)))))))
+(define (get-macro-lazy-def name tables drill)
+  (let loop ((macros tables) (normal-vars *normal-vars*))
+    (if (null? macros) #f
+	(let ((m (table-ref (car normal-vars) name #f)))
+	  (if m #f
+	      (let ((m (table-ref (car macros) name #f)))
+		(if m m
+		    (if drill (loop (cdr macros) (cdr normal-vars)) #f))))))))
 
 (define-structure macro-env bindings)
 
