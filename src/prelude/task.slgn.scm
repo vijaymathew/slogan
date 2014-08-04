@@ -15,8 +15,10 @@
 
 (define (task-with-no-args fn name group)
   (if group
-      (make-thread fn name)
-      (make-thread fn)))
+      (make-thread fn name group)
+      (if name 
+          (make-thread fn name)
+          (make-thread fn))))
 
 (define root_task make-root-thread)
 (define is_task thread?)
