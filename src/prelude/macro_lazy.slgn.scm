@@ -155,10 +155,10 @@
                          (pop-macro-env! env)
                          r))
                       ((eq? sym 'lambda)
-                       (let ((r (list sym (cadr expr)
-                                      (replace-macro-args-helper
-                                       (cddr expr)
-                                       (push-macro-env! env (cadr expr) car)))))
+                       (let ((r (append (list sym (cadr expr))
+                                        (replace-macro-args-helper
+                                         (cddr expr)
+                                         (push-macro-env! env (cadr expr) car)))))
                          (pop-macro-env! env)
                          r))
                       ((eq? sym 'define)
