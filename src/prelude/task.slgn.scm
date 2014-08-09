@@ -53,13 +53,13 @@
 (define mutex_lock mutex-lock!)
 (define mutex_unlock mutex-unlock!)
 
-(define condition_variable make-condition-variable)
-(define is_condition_variable condition-variable?)
-(define condition_variable_name condition-variable-name)
-(define condition_variable_data condition-variable-specific)
-(define condition_variable_set_data condition-variable-specific-set!)
-(define condition_variable_signal condition-variable-signal!)
-(define condition_variable_broadcast condition-variable-broadcast!)
+(define monitor make-condition-variable)
+(define is_monitor condition-variable?)
+(define monitor_name condition-variable-name)
+(define monitor_data condition-variable-specific)
+(define monitor_set_data condition-variable-specific-set!)
+(define monitor_notify condition-variable-signal!)
+(define monitor_broadcast condition-variable-broadcast!)
 
 ;; reactive or dataflow variables.
 (define-structure reactive-var cv mtx)

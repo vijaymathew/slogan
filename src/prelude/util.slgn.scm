@@ -80,6 +80,8 @@
              (slgn-display-rvar port))
             ((##promise? val)
              (slgn-display-promise port))
+            ((condition-variable? val)
+             (slgn-display-special-obj "monitor" port))
             (else
              (display (scm-repr->slgn-repr val) port)))))
 
