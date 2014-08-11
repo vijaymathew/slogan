@@ -738,14 +738,6 @@
             (replace-macro-var mparams args body)
             body))))
 
-(define (mk-eval-macro-params params)
-  (let loop ((params params)
-             (result '()))
-    (cond ((null? params)
-           (reverse result))
-          (else (loop (cdr params) (cons (string->symbol (string-append "~" (symbol->string (car params)))) 
-                                         result))))))
-
 (define (record-def-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'record)
       (begin (tokenizer 'next)
