@@ -1001,7 +1001,7 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(fn function define record 
+(define *reserved-names* '(fn function define record true false
 			      if else let letseq letrec 
 			      case match where try catch finally
                               module export macro lazy load))
