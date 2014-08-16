@@ -146,14 +146,19 @@
              expr))
         (else (let ((sym (car expr)))
                 (cond ((or (eq? sym 'let) (eq? sym 'letrec) (eq? sym 'let*))
-                       (let ((r (append (list sym (let ((vals (replace-let-vals (cadr expr) env)))
-                                                    (if (null? vals) vals
-                                                        (list vals))))
-                                        (replace-macro-args-helper 
-                                         (cddr expr) 
-                                         (push-macro-env! env (cadr expr) caar)))))
-                         (pop-macro-env! env)
-                         r))
+                       (let* ((named-let (symbol? (cadr expr)))
+                              (let-expr (if named-let (list sym (cadr expr))
+                                            (list sym))))
+                         (let ((r (append let-expr (let ((vals (replace-let-vals 
+                                                                (if named-let (caddr expr) (cadr expr))
+                                                                env)))
+                                                     (list vals))                                                     
+                                          (replace-macro-args-helper 
+                                           (if named-let (cdddr expr) (cddr expr))
+                                           (push-macro-env! env (if named-let (caddr expr) (cadr expr)) 
+                                                            caar)))))
+                           (pop-macro-env! env)
+                           r)))
                       ((eq? sym 'lambda)
                        (let ((r (append (list sym (cadr expr))
                                         (replace-macro-args-helper
@@ -168,6 +173,9 @@
                                          env))))
                          (update-macro-env! env (cadr expr))
                          r))
+                      ((eq? sym 'set!)
+                       (append (list sym (cadr expr)) 
+                               (replace-macro-args-helper (cddr expr) env)))
                       (else (let ((a (replace-macro-args-helper sym env))
                                   (b (replace-macro-args-helper (cdr expr) env)))
                               (cons a b))))))))
@@ -179,7 +187,7 @@
         result
         (let ((v (replace-macro-args-helper (cadar expr) env)))
           (loop (cdr expr) 
-                (append result (cons (caar expr) (list v))))))))
+                (append result (list (cons (caar expr) (list v)))))))))
 
 (define (expr-lazify lazy-fn expr)
   (if lazy-fn
