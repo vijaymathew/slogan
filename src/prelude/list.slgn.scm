@@ -245,15 +245,6 @@
         (reverse result)
         (loop (cdr a) (cdr b) (cons (cons (car a) (car b)) result)))))
 
-(define (assert-equal-lengths ls rest)
-  (let ((len (length ls)))
-    (for-each (lambda (ls) 
-                (if (not (eq? (length ls) len))
-                    (error (with-output-to-string 
-                             "List is not of proper length: " 
-                             (lambda () (slgn-display ls))))))
-              rest)))
-
 (define (exists f ls . more)
   (if (not (null? more)) 
       (assert-equal-lengths ls more))
@@ -264,7 +255,7 @@
              (or (apply f x (map car more))
                  (exists (car ls) (cdr ls) (map cdr more)))))))
 
-(define (for_all f obj ls . more)
+(define (for_all f ls . more)
   (if (not (null? more)) 
       (assert-equal-lengths ls more))
   (or (null? ls)
@@ -311,4 +302,4 @@
 	(if (null? ls) obj
 	    (let ((head (car ls)))
 	      (f head (recur (cdr ls))))))))
-; :~
+;; :~

@@ -159,11 +159,12 @@
           (if result (setf result i res))
           (loop (+ i 1))))))
 
-(define (assert-equal-lengths vec rest #!optional (lenf length))
-  (let ((len (lenf vec)))
-    (for-each (lambda (ls) 
-                (if (not (eq? (lenf vec) len))
-                    (error (with-output-to-string 
-                             "Object is not of proper length: " 
-                             (lambda () (slgn-display vec))))))
-              rest)))
+(define (assert-equal-lengths seq rest #!optional (lenf length))
+  (let ((len (lenf seq)))
+    (let loop ((rest rest))
+      (if (not (null? rest))
+          (begin (if (not (eq? (lenf (car rest)) len))
+                     (error (with-output-to-string 
+                              "Object is not of proper length: " 
+                              (lambda () (slgn-display (car rest))))))
+                 (loop (cdr rest)))))))
