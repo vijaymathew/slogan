@@ -180,16 +180,8 @@
                     (loop (cdr lst) (cons (car lst) result)))))))))
 
 (define (nth_tail lst n)
-  (let ((neg (< n 0)))
-    (let ((n (if neg (- n) n)))
-      (if (>= n (length lst))
-          #f
-          (let loop ((lst (if neg (reverse lst) lst))
-                     (n n))
-            (if (or (zero? n)
-                    (null? lst))
-                (if neg (reverse lst) lst)
-                (loop (cdr lst) (- n 1))))))))
+  (if (= n 0) lst
+      (list-tail (cdr lst) (- n 1))))
 
 (define (drop lst n)
   (let ((neg (< n 0)))
