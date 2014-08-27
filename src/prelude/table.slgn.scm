@@ -18,6 +18,8 @@
 (define eqv_hash eqv?-hash)
 (define equal_hash equal?-hash)
 
+(define is_hashtable hashtable?)
+
 (define (hashtable_equivalence_function ht) (hashtable-eq-predic ht))
 (define (hashtable_hash_function ht) (hashtable-hash-fn ht))
 
