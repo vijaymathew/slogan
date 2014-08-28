@@ -123,13 +123,12 @@
     (split_helper xs '() '())))
 
 (define (mergesort xs #!optional (test <))
-  (if (or (is_empty xs) (eqv? (length xs) 1)) 
-      xs 
+  (if (or (is_empty xs) (eqv? (length xs) 1)) xs 
       (let ((parts (+split+ xs))) 
         (+merge+ (mergesort (head parts) test) 
                  (mergesort (tail parts) test) test))))
 
-(define (sort ls #!key (test <) (type 'quick))
+(define (sort ls #!optional (test <) (type 'quick))
   (case type
     ((quick) (quicksort ls test))
     ((merge) (mergesort ls test))
@@ -138,46 +137,21 @@
 ;; 
 
 (define (copy_list lst)
-  (if (is_atom lst) 
-      lst
-      (cons (car lst) (copy_list (cdr lst)))))
+  (if (not (pair? lst))
+      (error "(Argument 1) PAIR expected\n" lst))
+  (if (not (list? lst))
+      (cons (car lst) (cdr lst))
+      (let loop ((lst lst) (result '()))
+        (cond ((null? lst) (reverse result))
+              ((is_atom lst) (reverse (cons lst result)))
+              (else (loop (cdr lst) (cons (car lst) result)))))))
 
 (define (list_of n #!optional fill-with)
   (let ((opr (if (< n 0) + -)))
     (let loop ((r '())
                (n n))
-      (if (zero? n)
-          r
+      (if (zero? n) r
           (loop (cons fill-with r) (opr n 1))))))
-
-(define (replace lst a b #!key (test *default-eq*) (drill #t))
-  (let loop ((lst lst)
-             (result '()))
-    (cond ((null? lst)
-           (reverse result))
-          ((and (list? (car lst)) drill)
-           (loop (cdr lst) (cons (replace (car lst) a b test: test drill: drill) result)))
-          ((test a (car lst))
-           (loop (cdr lst) (cons b result)))
-          (else
-           (loop (cdr lst) (cons (car lst) result))))))
-
-(define (replace_all lst alst blst #!key (test *default-eq*) (transform #f) (drill #t))
-  (let loop ((lst lst)
-             (result '()))
-    (cond ((null? lst)
-           (reverse result))
-          ((and (list? (car lst)) drill)
-           (loop (cdr lst) (cons (replace_all (car lst) alst blst test: test transform: transform drill: drill) result)))
-          (else
-           (let inner-loop ((alst alst)
-                            (blst blst))
-             (cond ((not (null? alst))
-                    (if (test (car alst) (car lst))
-                        (loop (cdr lst) (cons (if transform (transform (car blst)) (car blst)) result))
-                        (inner-loop (cdr alst) (cdr blst))))
-                   (else 
-                    (loop (cdr lst) (cons (car lst) result)))))))))
 
 (define (nth_tail lst n)
   (if (= n 0) lst
@@ -223,13 +197,6 @@
     (cond ((null? ls) default)
           ((predic (caar ls)) (car ls))
           (else (loop (cdr ls))))))
-
-(define (range start end #!key (next +) (by 1) (compare >=))
-  (let loop ((start start) (result '()))                     
-    (if (compare start end)
-        (reverse (cons start result))
-        (loop (next start by) 
-              (cons start result)))))
 
 (define (zip a b)
   (let loop ((a a) (b b) (result '()))
