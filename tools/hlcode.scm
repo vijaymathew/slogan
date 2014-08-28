@@ -1,6 +1,0 @@
-(define add_span_class (lambda (token classname convfn) (string_append "<span class=\"" classname "\">" (convfn token) "</span>")))
-(define identity (lambda (token) (begin token)))
-(define token_to_html (lambda (token) (if (is_keyword_token token) (add_span_class token "k" symbol_to_string) (if (is_number token) (add_span_class token "mi" number_to_string) (if (is_special_token token) (add_span_class token "o" special_token_to_string) (if (is_string token) (add_span_class token "s1" identity) token))))))
-(define hlcode_loop (lambda (tokenizer out_str) (let ((token (get_token tokenizer))) (if (not (is_eof_object token)) (let () (print port: out_str (token_to_html token)) (print port: out_str " ") (hlcode_loop tokenizer out_str))))))
-(define hlcode (lambda (program #!optional (with_prompt #t)) (let ((p (open_string_input_port program))) (let ((t (port_tokenizer p))) (let ((s (open_string_output_port))) (begin (hlcode_loop t s) (let ((s (get_output_string s))) (if with_prompt (string_append "<span class=\"nc\">slogan&gt; </span>" s) s))))))))
-(define show_hlcode (lambda (program #!optional (with_prompt #t)) (begin (display (hlcode program with_prompt)) (newline))))
