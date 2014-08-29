@@ -46,7 +46,11 @@
 (define sub -)
 (define mult *)
 (define div /)
-(define mod modulo)
+
+;; for real numbers
+(define (quo x1 x2) (truncate (/ x1 x2)))
+(define (rem x1 x2) (- x1 (* x2 (quo x1 x2))))
+(define (mod x1 x2) (- x1 (* x2 (floor (/ x1 x2)))))
 
 (define (sub1 n) (- n 1))
 (define (add1 n) (+ n 1))
