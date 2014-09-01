@@ -155,7 +155,7 @@
   (if (>= i 0) (bit-count i)
       (bitwise-not (bitwise_bit_count (bitwise-not i)))))
 
-(define (is_bit_set i n) (bit-set? n i))
+(define (bitwise_is_bit_set i n) (bit-set? n i))
 
 (define bitwise_length integer-length)
 
@@ -210,8 +210,8 @@
                                 (bitwise-and old 1))
                    (sub1 width)))))))
 
-(define is_any_bits_set any-bits-set?)
-(define is_all_bits_set all-bits-set?)
+(define bitwise_is_any_bits_set any-bits-set?)
+(define bitwise_is_all_bits_set all-bits-set?)
 (define bitwise_first_bit_set first-bit-set)
 
 (define is_number_eq =)
