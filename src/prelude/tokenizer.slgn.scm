@@ -347,7 +347,7 @@
                      (list->string (reverse result)))
                     ((char=? c #\\)
                      (port-pos-read-char! port)
-                     (set! c (char->special (port-pos-read-char! port)))
+                     (set! c (char->special (port-pos-read-char! port) port))
                      (loop (port-pos-peek-char port) (cons c result)))
                     (else 
                      (set! c (port-pos-read-char! port))
@@ -398,14 +398,12 @@
 (define (read-special-character port)
   (port-pos-read-char! port)
   (let ((c (port-pos-read-char! port)))
-    (if (char=? c #\u)
-        (read-unicode-literal port)
-        (char->special c))))
+    (char->special c port)))
 
-(define (read-unicode-literal port)
+(define (read-unicode-literal port num-digits)
   (let loop ((result '())
              (c (port-pos-peek-char port)))
-    (if (char=? c #\')
+    (if (= (length result) num-digits)
         (eval-unicode-literal (string-append (hexchar-prefix (length result)) (list->string (reverse result))))
         (loop (cons (port-pos-read-char! port) result) (port-pos-peek-char port)))))
 
@@ -421,7 +419,7 @@
          "#\\U")
         (else (tokenizer-error "invalid hex encoded character length. " len))))
 
-(define (char->special c)
+(define (char->special c port)
   (cond ((char=? c #\n)
          #\newline)
         ((char=? c #\")
@@ -442,6 +440,12 @@
          #\esc)
         ((char=? c #\d)
          #\delete)
+        ((char=? c #\u)
+         (read-unicode-literal port 4))
+        ((char=? c #\x)
+         (read-unicode-literal port 2))
+        ((char=? c #\U)
+         (read-unicode-literal port 8))
         (else (tokenizer-error "invalid escaped character " c))))
 
 (define is_keyword_token reserved-name?)
