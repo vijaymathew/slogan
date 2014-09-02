@@ -94,7 +94,7 @@
 (define fx_is_lteq fx<=)
 (define fx_is_gteq fx>=)
 
-(define (is_fxbit_set fx idx)
+(define (fxbit_is_set fx idx)
   (fxbit-set? idx fx))
 
 (define fxarithmetic_shift fxarithmetic-shift)
@@ -121,7 +121,7 @@
       (error "(Argument 1) FLONUM expected"))
   (if (not (flonum? fl2))
       (error "(Argument 2) FLONUM expected"))
-  (modulo fl1 fl2))
+  (mod fl1 fl2))
 
 (define is_flonum flonum?)
 (define fl_is_finite flfinite?)
@@ -139,6 +139,8 @@
 (define fl_is_gt fl>)
 (define fl_is_lteq fl<=)
 (define fl_is_gteq fl>=)
+
+(define (fllogb x b) (fl/ (fllog x) (fllog b)))
 
 (define bitwise_arithmetic_shift arithmetic-shift)
 (define bitwise_merge bitwise-merge)
