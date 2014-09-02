@@ -217,11 +217,11 @@
 (define bitwise_is_all_bits_set all-bits-set?)
 (define bitwise_first_bit_set first-bit-set)
 
-(define is_number_eq =)
-(define is_number_lt <)
-(define is_number_gt >)
-(define is_number_lteq <=)
-(define is_number_gteq >=)
+(define number_is_eq =)
+(define number_is_lt <)
+(define number_is_gt >)
+(define number_is_lteq <=)
+(define number_is_gteq >=)
 
 (define integer_sqrt integer-sqrt)
 (define integer_nth_root integer-nth-root)

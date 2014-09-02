@@ -1,10 +1,10 @@
 ;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define is_char_eq char=?)
-(define is_char_lt char<?)
-(define is_char_gt char>?)
-(define is_char_lteq char<=?)
-(define is_char_gteq char>=?)
+(define char_is_eq char=?)
+(define char_is_lt char<?)
+(define char_is_gt char>?)
+(define char_is_lteq char<=?)
+(define char_is_gteq char>=?)
 (define is_char_ci_eq char-ci=?)
 (define is_char_ci_lt char-ci<?)
 (define is_char_ci_gt char-ci>?)
