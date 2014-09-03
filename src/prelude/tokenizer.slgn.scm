@@ -440,6 +440,8 @@
          #\esc)
         ((char=? c #\d)
          #\delete)
+        ((char=? c #\0)
+         #\nul)
         ((char=? c #\u)
          (read-unicode-literal port 4))
         ((char=? c #\x)

@@ -155,7 +155,7 @@
                    (error "Invalid number format." s)))
               (else (error "Failed to parse numeric string." s)))))))
               
-(define (string_join infix slist)
+(define (strings_join infix slist)
   (let loop ((slist slist) (result #f))
     (if (null? slist) result
         (loop (cdr slist) (if result (string-append result infix (car slist))
