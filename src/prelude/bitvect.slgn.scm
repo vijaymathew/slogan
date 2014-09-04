@@ -28,7 +28,7 @@
              (i 0)
              (ba (make-bitvector (length rest))))
     (if (null? rest) ba
-        (begin (if (= 1 (car rest))
+        (begin (if (not (= 0 (car rest)))
                    (bitvector-set! ba i))
                (loop (cdr rest) (+ i 1) ba)))))
 
@@ -98,6 +98,13 @@
 
 (define bit_array_is_any_set bitvector-one-set?)
 
+(define (bitvector-for-each fn self)
+  (let ((size (%bitvector-size self)))
+    (let loop ((i 0))
+      (cond ((< i size)
+             (fn (%bitvector-i-at self i))
+             (loop (+ i 1)))))))
+
 (define (bitvector->list self)
   (let ((res '()))
     (bitvector-for-each 
@@ -108,16 +115,7 @@
 
 (define bit_array_to_list bitvector->list)
 
-(define (list->bitvector lst)
-  (let ((self (make-bitvector (length lst))))
-    (let loop ((lst lst) (i 0))
-      (cond ((not (null? lst))
-             (if (= (car lst) 1)
-                 (bitvector-set! self i)
-                 (if (not (zero? (car lst)))
-                     (error "List element should be either 1 or 0.")))
-             (loop (cdr lst) (+ i 1)))))
-    self))
+(define (list->bitvector lst) (apply bit_array lst))
 
 (define list_to_bit_array list->bitvector)
 
@@ -198,24 +196,24 @@
           (loop (- i 1) (fn res (%bitvector-i-at self i)))
           res))))
 
-(define (bit_array_reduce self fn #!key (initial_value 0) from_right)
+(define (bit-array-reduce self fn #!key (initial_value 0) from_right)
   ((if from_right bitvector-fold-right bitvector-fold-left)
    fn self initial_value))
 
-(define (bit_array_append a b)
+(define (bit-array-append a b)
   (let ((lena (bitvector-length a))
         (lenb (bitvector-length b)))
     (let ((self (make-bitvector (+ lena lenb))))
       (bitvector-blit! a 0 self 0 lena)
       (bitvector-blit! b 0 self lena lenb))))
 
-(define (bit_array_concat bitvect-list)
+(define (bit_arrays_concat bitvect-list)
   (if (= 1 (length bitvect-list))
       (car bitvect-list)
       (let loop ((self (car bitvect-list))
                  (bitvect-list (cdr bitvect-list)))
         (if (not (null? bitvect-list))
-            (loop (bit_array_append self (car bitvect-list))
+            (loop (bit-array-append self (car bitvect-list))
                   (cdr bitvect-list))
             self))))
 
