@@ -493,13 +493,25 @@
         (begin (tokenizer 'next)
                result))))
 
+(define (byte-array-prefix? prefix tokenizer) 
+  (or (eq? prefix 'u8) (eq? prefix 's8) (eq? prefix 'b)))
+
+(define (byte-array-prefix->constructor prefix)
+  (case prefix
+    ((v) 'vector)
+    ((u8) 'u8vector)
+    ((s8) 's8vector)
+    (else 'bit_array)))
+
 (define (array-literal tokenizer)
   (tokenizer 'next)
-  (let ((is-byte-array (eq? (tokenizer 'peek) 'b)))
-    (if is-byte-array (tokenizer 'next))
+  (let ((prefix (tokenizer 'peek)))
+    (if (byte-array-prefix? prefix tokenizer)
+        (tokenizer 'next)
+        (set! prefix 'v))
     (if (eq? (tokenizer 'peek) '*open-bracket*)
         (begin (tokenizer 'next)
-               (let loop ((expr (list (if is-byte-array 'u8vector 'vector)))
+               (let loop ((expr (list (byte-array-prefix->constructor prefix)))
                           (token (tokenizer 'peek)))
                  (cond ((eq? token '*close-bracket*)
                         (tokenizer 'next)

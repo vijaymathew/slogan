@@ -23,7 +23,16 @@
 (define (make-bitvector size #!optional vector)
   (make-%bitvector size (if vector vector (make-u32vector (%bitvector-vect-size size)))))
 
-(define bit_array make-bitvector)
+(define (bit_array . rest)
+  (let loop ((rest rest)
+             (i 0)
+             (ba (make-bitvector (length rest))))
+    (if (null? rest) ba
+        (begin (if (= 1 (car rest))
+                   (bitvector-set! ba i))
+               (loop (cdr rest) (+ i 1) ba)))))
+
+(define make_bit_array make-bitvector)
 
 (define is_bit_array %bitvector?)
 
@@ -56,30 +65,6 @@
 (define bit_array_length bitvector-length)
 
 (define (%bitvector-i-at self index) (if (bitvector-set? self index) 1 0))
-
-(define (bitvector-for-each fn self)
-  (let ((size (%bitvector-size self)))
-    (let loop ((i 0))
-      (cond ((< i size)
-             (fn (%bitvector-i-at self i))
-             (loop (+ i 1)))))))
-
-(define bit_array_for_each bitvector-for-each)
-
-(define (bitvector-for-each-i fn self)
-  (let ((size (%bitvector-size self)))
-    (let loop ((i 0))
-      (cond ((< i size)
-             (fn i (%bitvector-i-at self i))
-             (loop (+ i 1)))))))
-
-(define (bitvector-map fn bv01 #!rest bvs)
-  (list->bitvector (if bvs
-                       (apply map (cons fn (cons (bitvector->list bv01) 
-                                                 (map bitvector->list bvs))))
-                       (map fn (bitvector->list bv01)))))
-
-(define bit_array_map bitvector-map)
 
 (define (%bitvector-set-all! self v)
   (let ((vect (%bitvector-vector self)))
@@ -234,5 +219,5 @@
                   (cdr bitvect-list))
             self))))
 
-(define (bit_subarray self offset count)
+(define (subbitarray self offset count)
   (bitvector-blit! self offset (make-bitvector (- count offset)) 0 count))
