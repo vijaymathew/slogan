@@ -21,6 +21,9 @@
 
 (define is_array vector?)
 
+(define (vectors-ref vectors i)
+  (map (lambda (v) (vector-ref v i)) vectors))
+
 (define array_length vector-length)
 (define array_at vector-ref)
 (define arrays_at vectors-ref)
@@ -34,16 +37,13 @@
 (define subarray_move subvector-move!)
 (define array_shrink vector-shrink!)
 
-(define (array_sort arr #!key (test <) (type 'quick))
-  (let ((s (sort (vector->list arr) test: test type: type))
+(define (array_sort arr #!optional (test <) (type 'quick))
+  (let ((s (sort (vector->list arr) test type))
         (len (vector-length arr)))
     (let loop ((s s) (i 0))
       (if (null? s) arr
           (begin (vector-set! arr i (car s))
                  (loop (cdr s) (+ i 1)))))))
-    
-(define (vectors-ref vectors i)
-  (map (lambda (v) (vector-ref v i)) vectors))
 
 (define (vector-map f vec . vectors)
   (if (not (null? vectors))
