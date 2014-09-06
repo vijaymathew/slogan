@@ -2,9 +2,10 @@
 
 (define-structure text-transcoder codec eol-style error-handling-mode)
 
-(define *supported-codecs* '(ISO-8859-1 
-                             ASCII UTF-8 UTF-16 UTF-16LE
-                             UTF-16BE UCS-2 UCS-2LE UCS-2BE UCS-4 UCS-4LE UCS-4BE))
+(define *supported-codecs* '(ISO_8859_1 
+                             ASCII UTF_8 UTF_16 UTF_16LE
+                             UTF_16BE UCS_2 UCS_2LE UCS_2BE 
+			     UCS_4 UCS_4LE UCS_4BE))
 
 (define (validate-codec codec)
   (if (not (symbol? codec))
@@ -14,8 +15,10 @@
       (error "Unsupported codec." codec))
   codec)
 
+(define *error-modes* '(replace raise ignore))
+
 (define (validate-error-handling-mode mode)
-  (if (or (eq? mode 'replace) (eq? mode 'raise)) mode
+  (if (memq mode *error-modes*) mode
       (error "Invalid error handling mode." mode)))
 
 (define *eol-styles* '(lf cr crlf))
@@ -30,11 +33,11 @@
   (if (eq? eol-style 'crlf) 'cr-lf
       eol-style))
 
-(define (transcoder codec #!optional (eol-style 'crlf) (error-handling-mode #t))
+(define (transcoder codec #!optional (eol-style 'crlf) (error-handling-mode 'ignore))
   (make-text-transcoder (validate-codec codec) (validate-eol-style eol-style) 
                         (validate-error-handling-mode error-handling-mode)))
 
-(define (trancoder_codec t) (text-transcoder-codec t))
+(define (transcoder_codec t) (text-transcoder-codec t))
 (define (transcoder_eol_style t) (text-transcoder-eol-style t))
 (define (transcoder_error_handling_mode t) (text-transcoder-error-handling-mode t))
 
@@ -49,7 +52,10 @@
       #f))
 
 (define (get-error-handling-mode-from-transcoder tcoder)
-  (if tcoder (error-handling-mode->boolean (text-transcoder-error-handling-mode tcoder))
+  (if tcoder 
+      (let ((em (text-transcoder-error-handling-mode tcoder)))
+	(if (eq? em 'ignore) #f
+	    (error-handling-mode->boolean em)))
       #f))
 
 (define (get-eol-encoding-from-transcoder tcoder)
@@ -65,6 +71,10 @@
         (else (error "Invalid buffer-mode." bmode)))
       bmode))
 
+(define (replace-underscores sym)
+  (let ((s (symbol->string sym)))
+    (string->symbol (string_replace_all s #\_ #\-))))
+
 (define (open-file-port-helper path direction options buffer-mode tcoder permissions)
   (let ((settings (list path: path direction: direction)))
     (let ((opt (get-port-option options 'append)))
@@ -75,7 +85,7 @@
     (let ((opt (get-port-option options 'truncate)))
       (if opt (set! settings (append settings (list truncate: opt)))))
     (let ((opt (get-codec-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list char-encoding: opt)))))
+      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
       (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder tcoder)))
@@ -104,7 +114,7 @@
       (openfn invalue)
       (let ((settings (list init: invalue)))
         (let ((opt (get-codec-from-transcoder tcoder)))
-          (if opt (set! settings (append settings (list char-encoding: opt)))))
+          (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
         (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
           (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
         (let ((opt (get-eol-encoding-from-transcoder tcoder)))
@@ -259,7 +269,7 @@
                         pseudo-terminal: pseudo_terminal
                         show-console: show_console)))
     (let ((opt (get-codec-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list char-encoding: opt)))))
+      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
       (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder tcoder)))
@@ -294,7 +304,7 @@
         (set! settings (append settings (list port-number: port_number))))
     (set! settings (append settings (list keep-alive: keep_alive coalesce: coalesce)))
     (let ((opt (get-codec-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list char-encoding: opt)))))
+      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder transcoder)))
       (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder transcoder)))
@@ -310,7 +320,7 @@
         (set! settings (append settings (list port-number: port_number))))
     (set! settings (append settings (list backlog: backlog reuse-address: reuse_address)))
     (let ((opt (get-codec-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list char-encoding: opt)))))
+      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder transcoder)))
       (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder transcoder)))
