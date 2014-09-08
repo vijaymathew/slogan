@@ -45,12 +45,15 @@
 (define (hashtable_keys ht)
   (let ((keys '()))
     (table-for-each (lambda (k v) (set! keys (cons k keys))) (hashtable-table ht))
-    (reverse keys)))
+    (list->vector (reverse keys))))
 
-(define (hashtable_entries ht)
+(define (hashtable_values ht)
   (let ((e '()))
     (table-for-each (lambda (k v) (set! e (cons v e))) (hashtable-table ht))
-    (reverse e)))
+    (list->vector (reverse e))))
+
+(define (hashtable_entries ht)
+  (cons (hashtable_keys ht) (hashtable_values ht)))
 
 (define (hashtable_for_each proc ht)
   (table-for-each proc (hashtable-table ht)))

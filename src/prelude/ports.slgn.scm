@@ -80,8 +80,12 @@
     (let ((opt (get-port-option options 'append)))
       (if opt (set! settings (append settings (list append: opt)))))
     (if (not (eq? direction 'input))
-        (let ((opt (get-port-option options 'create 'maybe)))
-          (if opt (set! settings (append settings (list create: opt))))))
+        (let ((opt (get-port-option options 'create)))
+          (if opt (set! settings (append settings (list create: #t)))
+              (let ((opt (get-port-option options 'no_create)))
+                (if opt (set! settings (append settings (list create: #f)))
+                    (let ((opt (get-port-option options 'maybe_create)))
+                      (if opt (set! settings (append settings (list create: 'maybe))))))))))
     (let ((opt (get-port-option options 'truncate)))
       (if opt (set! settings (append settings (list truncate: opt)))))
     (let ((opt (get-codec-from-transcoder tcoder)))
@@ -101,9 +105,6 @@
 
 (define (open_file_input_output_port path #!optional options buffer-mode tcoder (permissions #o666))
   (open-file-port-helper path 'input-output options buffer-mode tcoder permissions))
-
-(define open_input_file open-input-file)
-(define open_output_file open-output-file)
 
 (define current_input_port current-input-port)
 (define current_output_port current-output-port)
