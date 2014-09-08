@@ -122,31 +122,20 @@
           (if opt (set! settings (append settings (list eol-encoding: opt)))))
         (openfn settings))))
 
-(define (open_byte_array_input_port #!optional byte_array tcoder)
-  (open-byte-port-helper 
-   open-input-u8vector 
-   (if byte_array byte_array (make-u8vector 0)) 
-   tcoder))
+(define (open_byte_array_input_port byte_array #!optional tcoder)
+  (open-byte-port-helper open-input-u8vector byte_array tcoder))
 
-(define (open_byte_array_output_port #!optional byte_array tcoder)
-  (open-byte-port-helper 
-   open-output-u8vector 
-   (if byte_array byte_array (make-u8vector 0)) 
-   tcoder))
+(define (open_byte_array_output_port #!optional tcoder)
+  (open-byte-port-helper open-output-u8vector '() tcoder))
 
-(define (open_string_input_port #!optional str)
-  (open-byte-port-helper 
-   open-input-string 
-   (if str str (make-string 0)) 
-   #f))
+(define (open_string_input_port str)
+  (open-byte-port-helper open-input-string str #f))
 
-(define (open_string_output_port #!optional str)
-  (open-byte-port-helper
-   open-output-string
-   (if str str (make-string 0))
-   #f))
+(define (open_string_output_port)
+  (open-byte-port-helper open-output-string '() #f))
 
 (define get_output_string get-output-string)
+(define get_output_bytes get-output-u8vector)
 
 (define is_port port?)
 (define is_input_port input-port?)
