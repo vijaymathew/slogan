@@ -79,7 +79,7 @@
             ((error-exception? val)
              (display-exception val port))
             ((eof-object? val)
-             (display '!eof port))
+             (display '<eof> port))
             ((reactive-var? val)
              (slgn-display-rvar port))
             ((##promise? val)

@@ -266,19 +266,12 @@
       (if opt (set! settings (append settings (list eol-encoding: opt)))))
     (open-process settings)))
 
-(define (open_process_output_port path #!key (arguments '()) environment
-                                  directory stdin_redirection stdout_redirection
+(define (open_process_port path #!key (direction 'input_output) (arguments '()) environment
+                                  directory (stdin_redirection #t) (stdout_redirection #t)
                                   stderr_redirection pseudo_terminal
                                   show_console transcoder)
-  (open-process-port-helper path 'output arguments environment directory stdin_redirection
-                            stdout_redirection stderr_redirection pseudo_terminal show_console
-                            transcoder))
-
-(define (open_process_input_port path #!key (arguments '()) environment
-                                 directory stdin_redirection stdout_redirection
-                                 stderr_redirection pseudo_terminal
-                                 show_console transcoder)
-  (open-process-port-helper path 'input arguments environment directory stdin_redirection
+  (if (eq? direction 'input_output) (set! direction 'input-output))
+  (open-process-port-helper path direction arguments environment directory stdin_redirection
                             stdout_redirection stderr_redirection pseudo_terminal show_console
                             transcoder))
 
@@ -365,7 +358,6 @@
 (define (write_datum obj #!optional (to (current-output-port)))
   (slgn-display obj port: to))
 
-
 (define (list_directory dirname #!key ignore_hidden)
   (let ((d (open-directory (list path: dirname ignore-hidden: ignore_hidden))))
     (let ((ls (read-all d)))
@@ -376,6 +368,7 @@
   (create-directory (list path: path permissions: permissions)))
 
 (define delete_directory delete-directory)
+(define current_directory current-directory)
 
 (define create_link create-link)
 (define create_symbolic_link create-symbolic-link)
