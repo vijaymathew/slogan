@@ -192,43 +192,44 @@
 (define (read-n-helper p n initfn rdfn subfn)
   (let ((r (initfn n)))
     (let ((n (rdfn r 0 n p n)))
-      (if (zero? n) #f
+      (if (zero? n) #!eof
           (subfn r 0 n)))))
   
-(define (read_byte_n p n)
-  (read-n-helper p n make-u8vector read-subu8vector subu8vector))
+(define (check-array-for-eof arr lenfn)
+  (if (or (eof-object? arr) (zero? (lenfn arr))) #!eof arr))
+
+(define (read_n_bytes p n)
+  (check-array-for-eof 
+   (read-n-helper p n make-u8vector read-subu8vector subu8vector)
+   u8vector-length))
 
 (define (read-all-helper p init rdfn apndfn bufsz)
   (let loop ((r init)
              (nr (rdfn p bufsz)))
-    (if (not nr) r
+    (if (eof-object? nr) r
         (loop (apndfn r nr)
               (rdfn p bufsz)))))
 
-(define (read_byte_all p #!optional (bufsz *def-buf-sz*))
-  (read-all-helper p (make-u8vector 0) read_byte_n u8vector-append bufsz))
+(define (read_all_bytes p #!optional (bufsz *def-buf-sz*))
+  (check-array-for-eof 
+   (read-all-helper p (make-u8vector 0) read_n_bytes u8vector-append bufsz)
+   u8vector-length))
 
 (define read_char read-char)
 (define peek_char peek-char)
 
-(define (read_char_n p n)
-  (read-n-helper p n make-string read-substring substring))
+(define (read_n_chars p n)
+  (check-array-for-eof 
+   (read-n-helper p n make-string read-substring substring)
+   string-length))
 
-(define (read_char_all p #!optional (bufsz *def-buf-sz*))
-  (read-all-helper p "" read_char_n string-append bufsz))
+(define (read_all_chars p #!optional (bufsz *def-buf-sz*))
+  (check-array-for-eof 
+   (read-all-helper p "" read_n_chars string-append bufsz)
+   string-length))
 
 (define read_line read-line)
 (define read_all read-all)
-
-(define (read_all_lines #!optional (port (current-input-port)) #!key as_list)
-  (let ((chars (read-all port read-char)))
-    (if (list? chars) 
-        (let ((r (list->string chars)))
-          (if as_list (string_split r #\newline) r))
-        chars)))
-
-(define (read_all_bytes #!optional (port (current-input-port)))
-  (read-all port read_byte))
 
 (define write_byte write-u8)
 (define (write_byte_n p bytes)
