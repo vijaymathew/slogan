@@ -367,37 +367,6 @@
 (define (write_datum obj #!optional (to (current-output-port)))
   (slgn-display obj port: to))
 
-(define (list_directory dirname #!key ignore_hidden)
-  (let ((d (open-directory (list path: dirname ignore-hidden: ignore_hidden))))
-    (let ((ls (read-all d)))
-      (close-input-port d)
-      ls)))
-
-(define (create_directory path #!optional (permissions #o777))
-  (create-directory (list path: path permissions: permissions)))
-
-(define delete_directory delete-directory)
-(define current_directory current-directory)
-
-(define create_link create-link)
-(define create_symbolic_link create-symbolic-link)
-(define rename_file rename-file)
-(define copy_file copy-file)
-(define delete_file delete-file)
-
-(define path_expand path-expand)
-(define path_normalize path-normalize)
-
-(define path_extension path-extension)
-(define path_strip_extension path-strip-extension)
-(define path_directory path-directory)
-(define path_strip_directory path-strip-directory)
-(define path_strip_trailing_directory_separator path-strip-trailing-directory-separator)
-(define path_volume path-volume)
-(define path_strip_volume path-strip-volume)
-
-(define system shell-command)
-
 (define (show #!key (port (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (not (null? objs))
