@@ -351,8 +351,8 @@
                      (list->string (reverse str)))
               (loop (cons (read-char port) str) (peek-char port)))))))
 
-(define (port_tokenizer port #!key with_delimiters) 
-  (if with_delimiters (make-delimited-tokenizer port with_delimiters)
+(define (port_tokenizer delimiters #!optional (port (current-input-port))) 
+  (if delimiters (make-delimited-tokenizer port delimiters)
       (make-tokenizer port '())))
 
 (define (peek_token tokenizer)
@@ -360,12 +360,6 @@
 
 (define (get_token tokenizer)
   (tokenizer 'next))
-
-(define (get_datum tokenizer)
-  (slogan tokenizer))
-
-(define (write_datum obj #!optional (to (current-output-port)))
-  (slgn-display obj port: to))
 
 (define (show #!key (port (current-output-port)) #!rest objs)
   (let loop ((objs objs))
