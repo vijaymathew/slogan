@@ -198,7 +198,7 @@
 (define (check-array-for-eof arr lenfn)
   (if (or (eof-object? arr) (zero? (lenfn arr))) #!eof arr))
 
-(define (read_n_bytes p n)
+(define (read_n_bytes n #!optional (p (current-input-port)))
   (check-array-for-eof 
    (read-n-helper p n make-u8vector read-subu8vector subu8vector)
    u8vector-length))
@@ -210,7 +210,7 @@
         (loop (apndfn r nr)
               (rdfn p bufsz)))))
 
-(define (read_all_bytes p #!optional (bufsz *def-buf-sz*))
+(define (read_all_bytes #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
   (check-array-for-eof 
    (read-all-helper p (make-u8vector 0) read_n_bytes u8vector-append bufsz)
    u8vector-length))
@@ -218,12 +218,12 @@
 (define read_char read-char)
 (define peek_char peek-char)
 
-(define (read_n_chars p n)
+(define (read_n_chars n #!optional (p (current-input-port)))
   (check-array-for-eof 
    (read-n-helper p n make-string read-substring substring)
    string-length))
 
-(define (read_all_chars p #!optional (bufsz *def-buf-sz*))
+(define (read_all_chars #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
   (check-array-for-eof 
    (read-all-helper p "" read_n_chars string-append bufsz)
    string-length))
@@ -232,12 +232,20 @@
 (define read_all read-all)
 
 (define write_byte write-u8)
-(define (write_byte_n p bytes)
+
+(define (write_bytes bytes #!optional (p (current-output-port)))
   (write-subu8vector bytes 0 (u8vector-length bytes) p))
 
+(define (write_n_bytes bytes start end #!optional (p (current-output-port)))
+  (write-subu8vector bytes start end p))
+
 (define write_char write-char)
-(define (write_char_n p str)
+
+(define (write_chars str #!optional (p (current-output-port)))
   (write-substring str 0 (string-length str) p))
+
+(define (write_n_chars str start end #!optional (p (current-output-port)))
+  (write-substring str start end p))
 
 (define flush_output_port force-output)
 
