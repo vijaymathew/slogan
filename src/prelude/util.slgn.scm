@@ -27,6 +27,13 @@
       str
       #\_ #\-))))
 
+(define (scm-symbol->slgn-sym s)
+  (let ((str (symbol->string s)))
+    (string->symbol
+     (string_replace_all 
+      str
+      #\- #\_))))
+
 (define (slgn-symbol->scm-keyword s)
   (slgn-symbol->scm-sym/kw s string->keyword))
 

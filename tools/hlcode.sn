@@ -20,7 +20,7 @@ function hlcode_loop(tokenizer, out_str)
 
 function hlcode(program, @optional with_prompt = true)
     let (p = open_string_input_port(program))
-    let (t = port_tokenizer(p))
+    let (t = port_tokenizer(false, p))
     let (s = open_string_output_port()) {
         hlcode_loop(t, s);
         let (s = get_output_string(s)) 
@@ -30,7 +30,7 @@ function hlcode(program, @optional with_prompt = true)
 
 function hlvalue(program)
   let (p = open_string_input_port(program))
-  let (t = port_tokenizer(p))
+  let (t = port_tokenizer(false, p))
   let (v = eval(slogan(t)))
   let (o = open_string_output_port())
    { show(port = o, "<span class=\"ge\">=&gt; ", v, "</span>");

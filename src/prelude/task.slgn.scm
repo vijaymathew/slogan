@@ -8,6 +8,16 @@
         (thread-start! t))
     t))
 
+(define (root_task fn #!key args suspended name group 
+                   (input_port (current-input-port)) 
+                   (output_port (current-output-port)))
+  (let ((t (if args 
+               (root-task-with-args fn args name group input_port output_port)
+               (root-task-with-no-args fn name group input_port output_port))))
+    (if (not suspended)
+        (thread-start! t))
+    t))
+
 (define (task-with-args fn args name group)
   (if group
       (make-thread (lambda () (apply fn args)) name group)
@@ -20,7 +30,18 @@
           (make-thread fn name)
           (make-thread fn))))
 
-(define root_task make-root-thread)
+(define (root-task-with-args fn args name group ip op)
+  (if group
+      (make-root-thread (lambda () (apply fn args)) name group ip op)
+      (make-root-thread (lambda () (apply fn args)) name)))
+
+(define (root-task-with-no-args fn name group ip op)
+  (if group
+      (make-root-thread fn name group ip op)
+      (if name 
+          (make-root-thread fn name)
+          (make-root-thread fn))))
+
 (define is_task thread?)
 (define current_task current-thread)
 (define task_name thread-name)
@@ -28,6 +49,8 @@
 (define task_set_data thread-specific-set!)
 (define task_base_priority thread-base-priority)
 (define task_set_base_priority thread-base-priority-set!)
+(define task_priority_boost thread-priority-boost)
+(define task_set_priority_boost thread-priority-boost-set!)
 (define task_quantum thread-quantum)
 (define task_set_quantum thread-quantum-set!)
 (define task_run thread-start!)
@@ -44,14 +67,27 @@
       (thread-mailbox-extract-and-rewind)
       (thread-mailbox-rewind)))
 
+(define task_group make-thread-group)
+(define is_task_group thread-group?)
+(define task_group_name thread-group-name)
+(define task_group_parent thread-group-parent)
+(define task_group_resume thread-group-resume!)
+(define task_group_suspend thread-group-suspend!)
+(define task_group_terminate thread-group-terminate!)
+
 (define mutex make-mutex)
 (define is_mutex mutex?)
 (define mutex_data mutex-specific)
 (define mutex_set_data mutex-specific-set!)
 (define mutex_name mutex-name)
-(define mutex_state mutex-state)
 (define mutex_lock mutex-lock!)
 (define mutex_unlock mutex-unlock!)
+
+(define (mutex_state mtx)
+  (let ((state (mutex-state mtx)))
+    (if (symbol? state)
+        (scm-symbol->slgn-sym state)
+        state)))
 
 (define monitor make-condition-variable)
 (define is_monitor condition-variable?)

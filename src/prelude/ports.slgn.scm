@@ -71,9 +71,7 @@
         (else (error "Invalid buffer-mode." bmode)))
       bmode))
 
-(define (replace-underscores sym)
-  (let ((s (symbol->string sym)))
-    (string->symbol (string_replace_all s #\_ #\-))))
+(define (replace-underscores sym) (slgn-symbol->scm-sym/kw sym string->symbol))
 
 (define (open-file-port-helper path direction options buffer-mode tcoder permissions)
   (let ((settings (list path: path direction: direction)))
