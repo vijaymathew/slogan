@@ -18,6 +18,8 @@
 (define error_message error-exception-message)
 (define error_args error-exception-parameters)
 (define show_exception display-exception)
+(define is_noncontinuable_exception noncontinuable-exception?)
+(define noncontinuable_exception_reason noncontinuable-exception-reason)
 
 (define callcc call/cc)
 (define dynamic_wind dynamic-wind)

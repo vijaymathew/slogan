@@ -286,19 +286,21 @@
         (else (try-catch-expr tokenizer))))
 
 (define (try-catch-expr tokenizer)
-  (cond ((eq? (tokenizer 'peek) 'try)
-         (tokenizer 'next)
-         (let ((try-expr (expression tokenizer)))
-           (case (tokenizer 'peek)
-             ((catch)
-              (make-try-catch-expr try-expr (catch-args tokenizer) 
-                                   (expression tokenizer) 
-                                   (finally-expr tokenizer)))
-             ((finally)
-              (make-try-catch-expr try-expr '(*e*) '(raise *e*)
-                                   (finally-expr tokenizer)))
-             (else (parser-error tokenizer "Expected catch or finally clauses.")))))
-        (else #f)))
+  (let ((token (tokenizer 'peek)))
+    (cond ((or (eq? token 'try)
+               (eq? token 'trycc))
+           (tokenizer 'next)
+           (let ((try-expr (expression tokenizer)))
+             (case (tokenizer 'peek)
+               ((catch)
+                (make-try-catch-expr token try-expr (catch-args tokenizer) 
+                                     (expression tokenizer) 
+                                     (finally-expr tokenizer)))
+               ((finally)
+                (make-try-catch-expr token try-expr '(*e*) '(raise *e*)
+                                     (finally-expr tokenizer)))
+               (else (parser-error tokenizer "Expected catch or finally clauses.")))))
+          (else #f))))
 
 (define (catch-args tokenizer)
   (tokenizer 'next)
@@ -319,15 +321,18 @@
          (expression tokenizer))
         (else *void*)))
       
-(define (make-try-catch-expr try-expr catch-args catch-expr finally-expr)
+(define (get-exception-handler-fnname try-token)
+  (if (eq? try-token 'try) 'with-exception-catcher 'with-exception-handler))
+
+(define (make-try-catch-expr try-token try-expr catch-args catch-expr finally-expr)
   (if (void? finally-expr)
-      (list 'with-exception-catcher 
+      (list (get-exception-handler-fnname try-token)
             (list 'lambda catch-args catch-expr)
             (list 'lambda (list) try-expr))
       (list 'let (list (list '*finally* (list 'lambda (list) finally-expr)))
-            (list 'with-exception-catcher 
-                  (list 'lambda catch-args (list 'begin '(*finally*) catch-expr))
-                  (list 'lambda (list) (list 'begin try-expr '(*finally*)))))))
+            (list (get-exception-handler-fnname try-token)
+                  (list 'lambda catch-args (list 'begin '(*finally*) '(set! *finally* #f) catch-expr))
+                  (list 'lambda (list) (list 'begin try-expr '(if *finally* (*finally*))))))))
                    
 (define (normalize-sym s)
   (if (and (list? s)
@@ -770,6 +775,8 @@
                (expr (list 
                       (list 'define (string->symbol sname) 
                             (mk-record-constructor sname members default-values preconds))
+                      (list 'define (string->symbol (string-append "make_" sname))
+                            (string->symbol (string-append "make-" sname)))
                       (list 'define 
                             (string->symbol (string-append "is_" sname))
                             (string->symbol (string-append sname "?"))))))
@@ -948,7 +955,7 @@
 
 (define *reserved-names* '(fn function define record true false
 			      if else let letseq letrec 
-			      case match where try catch finally
+			      case match where try trycc catch finally
                               macro lazy load))
 
 (define (reserved-name? sym)
