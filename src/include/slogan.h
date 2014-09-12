@@ -41,6 +41,7 @@
 #define ___pair(a, b) ((___make_pair (___PSTATE, a, b)))
 #define ___head ___CAR
 #define ___tail ___CDR
+#define ___is_empty ___NULLP
 
 #define ___body ___BODY
 
