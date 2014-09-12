@@ -1492,7 +1492,10 @@ c-declare-end
                     (loop (cdr ld-paths)))))))
       (_ffi_open libname)))
 
-(define ffi_close (c-lambda (void-pointer) int "dlclose"))
+(define _ffi_close (c-lambda (void-pointer) int "dlclose"))
+
+(define (ffi_close lib) 
+  (zero? (_ffi_close lib)))
 
 (define ffi_call_void_0 (c-lambda (void-pointer char-string) 
                                   void 
@@ -1926,57 +1929,57 @@ c-declare-end
                                  scheme-object
                                  "ffi_call_obj_8"))
 
-(define ffi_call_with_void_pointer_1 (c-lambda (void-pointer char-string 
-                                                             void-pointer) 
-                                               void
-                                               "ffi_call_with_void_pointer_1"))
+(define ffi_call_void_with_void_pointer_1 (c-lambda (void-pointer char-string 
+                                                                  void-pointer) 
+                                                    void
+                                                    "ffi_call_with_void_pointer_1"))
 
-(define ffi_call_with_void_pointer_2 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object) 
-                                               void
-                                               "ffi_call_with_void_pointer_2"))
+(define ffi_call_void_with_void_pointer_2 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object) 
+                                                    void
+                                                    "ffi_call_with_void_pointer_2"))
 
-(define ffi_call_with_void_pointer_3 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object 
-                                                             scheme-object) 
-                                               void
-                                               "ffi_call_with_void_pointer_3"))
+(define ffi_call_void_with_void_pointer_3 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object 
+                                                                  scheme-object) 
+                                                    void
+                                                    "ffi_call_with_void_pointer_3"))
 
-(define ffi_call_with_void_pointer_4 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object 
-                                                             scheme-object scheme-object)
-                                               void
-                                               "ffi_call_with_void_pointer_4"))
+(define ffi_call_void_with_void_pointer_4 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object 
+                                                                  scheme-object scheme-object)
+                                                    void
+                                                    "ffi_call_with_void_pointer_4"))
 
-(define ffi_call_with_void_pointer_5 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object 
-                                                             scheme-object scheme-object
-                                                             scheme-object) 
-                                               void
-                                               "ffi_call_with_void_pointer_5"))
+(define ffi_call_void_with_void_pointer_5 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object 
+                                                                  scheme-object scheme-object
+                                                                  scheme-object) 
+                                                    void
+                                                    "ffi_call_with_void_pointer_5"))
 
-(define ffi_call_with_void_pointer_6 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object 
-                                                             scheme-object scheme-object
-                                                             scheme-object scheme-object)
-                                               void
-                                               "ffi_call_with_void_pointer_6"))
+(define ffi_call_void_with_void_pointer_6 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object 
+                                                                  scheme-object scheme-object
+                                                                  scheme-object scheme-object)
+                                                    void
+                                                    "ffi_call_with_void_pointer_6"))
 
-(define ffi_call_with_void_pointer_7 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object 
-                                                             scheme-object scheme-object
-                                                             scheme-object scheme-object
-                                                             scheme-object) 
-                                               void
-                                               "ffi_call_with_void_pointer_7"))
+(define ffi_call_void_with_void_pointer_7 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object 
+                                                                  scheme-object scheme-object
+                                                                  scheme-object scheme-object
+                                                                  scheme-object) 
+                                                    void
+                                                    "ffi_call_with_void_pointer_7"))
 
-(define ffi_call_with_void_pointer_8 (c-lambda (void-pointer char-string 
-                                                             void-pointer scheme-object 
-                                                             scheme-object scheme-object
-                                                             scheme-object scheme-object
-                                                             scheme-object scheme-object) 
-                                               void
-                                               "ffi_call_with_void_pointer_8"))
+(define ffi_call_void_with_void_pointer_8 (c-lambda (void-pointer char-string 
+                                                                  void-pointer scheme-object 
+                                                                  scheme-object scheme-object
+                                                                  scheme-object scheme-object
+                                                                  scheme-object scheme-object) 
+                                                    void
+                                                    "ffi_call_with_void_pointer_8"))
 
 
 (define ffi_call_void_pointer_with_void_pointer_1 (c-lambda (void-pointer char-string void-pointer) 
