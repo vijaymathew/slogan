@@ -203,10 +203,10 @@
 
 (define (read-all-helper p init rdfn apndfn bufsz)
   (let loop ((r init)
-             (nr (rdfn p bufsz)))
+             (nr (rdfn bufsz p)))
     (if (eof-object? nr) r
         (loop (apndfn r nr)
-              (rdfn p bufsz)))))
+              (rdfn bufsz p)))))
 
 (define (read_all_bytes #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
   (check-array-for-eof 
