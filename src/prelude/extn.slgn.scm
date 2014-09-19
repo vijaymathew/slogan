@@ -24,7 +24,10 @@
 (define callcc call/cc)
 (define dynamic_wind dynamic-wind)
 
+(define (identity x) x)
+
 (define (compose #!rest fns)
+  (if (null? fns) (set! fns (list identity)))
   (let ((fns (reverse fns)))
     (lambda (#!rest args)
       (let loop ((fns (cdr fns))
