@@ -29,17 +29,19 @@
   (with-output-to-string
     '()
     (lambda ()
-      (let loop ((n 1))
+      (let loop ((n 0))
         (if (= n colno) (display #\^)
             (begin (display #\space)
                    (loop (+ n 1))))))))
 
 (define (highligted-error-line tokenizer)
-  (let loop ((line-no (tokenizer 'line)) (n 1)
-             (program-text (tokenizer 'program-text)))
+  (let loop ((line-no (tokenizer 'line)) 
+             (n 1)
+             (program-text (tokenizer 'program-text))
+             (curr-tok-len (current-token-length tokenizer)))
     (if (not (null? program-text))
         (if (= n line-no)
-            (cons (car program-text) (highligted-line (tokenizer 'column)))
+            (cons (car program-text) (highligted-line (- (tokenizer 'column) curr-tok-len)))
             (loop line-no (+ n 1) (cdr program-text)))
         #f)))
 
