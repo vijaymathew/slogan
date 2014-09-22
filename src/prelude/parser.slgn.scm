@@ -685,7 +685,7 @@
         (begin (set! args (list `(list ,@args)))
                (set! mparams (list mparams))))
     (if (list? body)
-        (replace-macro-args mparams args body)
+        (replace-macro-args mparams args body #f)
         (if (variable? body)
             (replace-macro-var mparams args body)
             body))))
