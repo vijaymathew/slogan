@@ -18,7 +18,7 @@
       (tokenizer 'next)
       (let ((v (statement tokenizer)))
         (if (not v) (set! v (expression tokenizer)))
-        (assert-semicolon tokenizer v)
+        (assert-semicolon tokenizer)
         v)))
 
 (define (statement tokenizer)
@@ -35,15 +35,15 @@
                    (loop (+ n 1))))))))
 
 (define (highligted-error-line tokenizer)
-  (let loop ((line-no (tokenizer 'line)) 
-             (n 1)
-             (program-text (tokenizer 'program-text))
-             (curr-tok-len (current-token-length tokenizer)))
-    (if (not (null? program-text))
-        (if (= n line-no)
-            (cons (car program-text) (highligted-line (- (tokenizer 'column) curr-tok-len)))
-            (loop line-no (+ n 1) (cdr program-text)))
-        #f)))
+  (let ((curr-tok-len (current-token-length tokenizer)))
+    (let loop ((line-no (tokenizer 'line)) 
+               (n 1)
+               (program-text (tokenizer 'program-text)))
+      (if (not (null? program-text))
+          (if (= n line-no)
+              (cons (car program-text) (highligted-line (- (tokenizer 'column) curr-tok-len)))
+              (loop line-no (+ n 1) (cdr program-text)))
+          #f))))
 
 (define (parser-error tokenizer msg)
   (error (with-output-to-string 
@@ -57,7 +57,7 @@
                (if hl (begin (println (car hl))
                              (println (cdr hl)))))))))
 
-(define (assert-semicolon tokenizer expr)
+(define (assert-semicolon tokenizer)
   (let ((token (tokenizer 'peek)))
     (if (or (eq? token '*semicolon*)
             (eq? token '*close-brace*)

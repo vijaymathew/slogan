@@ -161,21 +161,24 @@
                              (if (not (null? vals)) (pop-macro-env! env))
                              r))))
                       ((eq? sym 'lambda)
-                       (let ((r (append (list sym (if is-lazyfn (cadr expr) (replace-macro-args-helper (cadr expr) env is-lazyfn)))
+                       (let ((r (append (list sym (if is-lazyfn (cadr expr) 
+                                                      (replace-macro-args-helper (cadr expr) env is-lazyfn)))
                                         (replace-macro-args-helper
                                          (cddr expr)
                                          (push-macro-env! env (cadr expr) car) is-lazyfn))))
                          (pop-macro-env! env)
                          r))
                       ((eq? sym 'define)
-                       (let ((r (append (list sym (if is-lazyfn (cadr expr) (replace-macro-args-helper (cadr expr) env is-lazyfn)))
+                       (let ((r (append (list sym (if is-lazyfn (cadr expr) 
+                                                      (replace-macro-args-helper (cadr expr) env is-lazyfn)))
                                         (replace-macro-args-helper
                                          (cddr expr)
                                          env is-lazyfn))))
                          (update-macro-env! env (cadr expr))
                          r))
                       ((eq? sym 'set!)
-                       (append (list sym (if is-lazyfn (cadr expr) (replace-macro-args-helper (cadr expr) env is-lazyfn)))
+                       (append (list sym (if is-lazyfn (cadr expr) 
+                                             (replace-macro-args-helper (cadr expr) env is-lazyfn)))
                                (replace-macro-args-helper (cddr expr) env is-lazyfn)))
                       (else (let ((a (replace-macro-args-helper sym env is-lazyfn))
                                   (b (replace-macro-args-helper (cdr expr) env is-lazyfn)))
@@ -188,8 +191,7 @@
         result
         (let ((v (replace-macro-args-helper (cadar expr) env is-lazyfn)))
           (loop (cdr expr) 
-                (append result (list (cons (if is-lazyfn 
-                                               (caar expr) 
+                (append result (list (cons (if is-lazyfn (caar expr) 
                                                (replace-macro-args-helper (caar expr) env is-lazyfn)) 
                                            (list v)))))))))
 
