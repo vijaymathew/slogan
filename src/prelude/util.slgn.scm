@@ -145,12 +145,6 @@
    (lambda () (print port: port c)))
   (display "'" port))
 
-(define (exception_to_string e)
-  (call-with-output-string 
-   '()
-   (lambda (s)
-     (display-exception e s))))
-
 (define (slgn-display-task port)
   (slgn-display-special-obj "task" port))
 

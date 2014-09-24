@@ -118,11 +118,13 @@
 
 (define (repl-exception-handler ex)
   (display "error: ")
-  (let loop ((lines (string_split (exception_to_string ex) #\newline)))
-    (if (not (null? lines))
-        (begin (display (car lines))
-               (newline)
-               (loop (cdr lines))))))
+  (let ((s (open-output-string)))
+    (show_exception ex s)
+    (let loop ((lines (string_split (get_output_string s) #\newline)))
+      (if (not (null? lines))
+          (begin (display (car lines))
+                 (newline)
+                 (loop (cdr lines)))))))
 
 (define (repl port #!key (prompt "slogan> "))
   (if prompt (display prompt))

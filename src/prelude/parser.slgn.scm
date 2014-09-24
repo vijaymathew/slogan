@@ -677,7 +677,7 @@
                                   (display "macro ")
                                   (display macro-name)
                                   (display " expects exactly ")
-                                  (display (length (macro-params m)))
+                                  (slgn-display (length (macro-params m)))
                                   (display " arguments.")))))
   (let ((body (macro-body m))
         (mparams (macro-params m)))
@@ -809,7 +809,7 @@
                                   '()
                                   (lambda ()
                                     (display "Missing comma or ") 
-                                    (display end-seq-char) 
+                                    (slgn-display end-seq-char) 
                                     (display ".")))))))
 
 (define (func-args-expr tokenizer lazy-fn)
