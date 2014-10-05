@@ -277,13 +277,12 @@
                                                       (set! *value* *orig-value*)
                                                       '*unbound*))))
                      (let ((next (tokenizer 'peek))
-                           (le #f))
+                           (le (eq? pattern 'else)))
                        (if (eq? next '*comma*)
-                           (tokenizer 'next)
-                           (set! le #t))
+                           (if (not le) (tokenizer 'next))
+                           (if (not le) (set! le #t)))
                        (loop (tokenizer 'peek)
-			     (if (eq? pattern '@) prev-pattern pattern)
-                             le
+			     (if (eq? pattern '@) prev-pattern pattern) le
                              (cons (match-pattern (if (eq? pattern '@) prev-pattern pattern) consequent) body)))))))))
         (else (try-catch-expr tokenizer))))
 
