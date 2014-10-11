@@ -87,8 +87,25 @@
 
 (define-structure macro-env bindings)
 
+(define (print-env env)
+    (let loop ((env (macro-env-bindings env)))
+      (if (not (null? env))
+          (begin (newline)
+                 (table-for-each (lambda (k v) 
+                                   (display k)
+                                   (display ": ")
+                                   (display v)
+                                   (newline))
+                                   (car env))
+                 (loop (cdr env))))))
+
 (define (get-macro-env-value env param default-value)
-  (table-ref (car (macro-env-bindings env)) param default-value))
+  (let loop ((bindings (macro-env-bindings env)))
+    (if (null? bindings) default-value
+        (let ((v (table-ref (car bindings) param default-value)))
+          (if (eq? v '*unbound*) 
+              (loop (cdr bindings)) 
+              v)))))
 
 (define (top-push-macro-env! env)
   (let ((new-t (make-table))
@@ -106,8 +123,7 @@
   (top-push-macro-env! env)
   (let ((t (car (macro-env-bindings env))))
     (let loop ((expr expr))
-      (if (null? expr) 
-          env
+      (if (null? expr) env
           (let ((sym (extractor expr)))
             (if (not (eq? (table-ref t sym '*unbound*) '*unbound*))
                 (table-set! t sym sym))
@@ -123,8 +139,7 @@
   (let ((t (make-table)))
     (let loop ((params params)
                (args args))
-      (if (null? params)
-          t
+      (if (null? params) t
           (begin (table-set! t (car params) (car args))
                  (loop (cdr params) (cdr args)))))))
 
@@ -156,7 +171,7 @@
                            (let ((r (append let-expr (if (null? vals) (list vals) vals)
                                             (replace-macro-args-helper 
                                              (if named-let (cdddr expr) (cddr expr))
-                                             (if (null? vals) env (push-macro-env! env vals caar)) 
+                                             (if (null? vals) env (push-macro-env! env (car vals) caar)) 
                                              is-lazyfn))))
                              (if (not (null? vals)) (pop-macro-env! env))
                              r))))
