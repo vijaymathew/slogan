@@ -839,7 +839,8 @@
       sym))
   
 (define (check-func-param tokenizer) 
-  (check-if-reserved-name (tokenizer 'next) tokenizer))
+  (check-if-reserved-name (tokenizer 'peek) tokenizer)
+  (tokenizer 'next))
 
 (define (func-params-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) '*open-paren*)
