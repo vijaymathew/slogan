@@ -8,6 +8,9 @@
 (define is_symbol symbol?)
 (define is_promise ##promise?)
 
+(define (is_true obj) (eq? obj #t))
+(define (is_false obj) (eq? obj #f))
+
 (define (current_exception_handler) 
   (current-exception-handler))
 

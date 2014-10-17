@@ -256,6 +256,7 @@
                               (let ((*value* *match-expr*)
                                     (*orig-value* *match-expr*)
                                     (*match-found* #f)
+                                    (*conv-value* #f)
                                     (*result* '*unbound*))
                                 ,@(reverse body)
                                 (if (unbound? *result*)
