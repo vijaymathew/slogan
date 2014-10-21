@@ -4,6 +4,8 @@
 (define is_pair pair?)
 (define (is_atom x) (not (pair? x)))
 
+(define nil '())
+
 (define (pair a b)
   (cons a b))
 
