@@ -80,14 +80,14 @@
                           (func-body-expr tokenizer)))
         (begin (tokenizer 'next)
                (remove-macro-lazy-fns-def name)
-               (let ((params (func-params-expr tokenizer))
-                     (body #f))
+               (let ((params (func-params-expr tokenizer)))
                  (if is-lazy (def-lazy name (make-lazy params #f)))
-                 (set! body (func-body-expr tokenizer))
-                 (if is-lazy (begin (set! body (expr-forcify body params))
-                                    (def-lazy name (make-lazy params body))))
-                 (list 'define name (merge-lambda params body)))))))
-
+                 (list 'define name (merge-lambda 
+                                     params 
+                                     (if is-lazy 
+                                         (expr-forcify (func-body-expr tokenizer) params)
+                                         (func-body-expr tokenizer)))))))))
+                       
 (define (func-def? token) (or (eq? 'fn token) (eq? 'function token)))
 
 (define (func-def-stmt tokenizer)
