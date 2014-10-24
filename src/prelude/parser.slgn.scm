@@ -81,7 +81,7 @@
         (begin (tokenizer 'next)
                (remove-macro-lazy-fns-def name)
                (let ((params (func-params-expr tokenizer)))
-                 (if is-lazy (def-lazy name (make-lazy params #f)))
+                 (if is-lazy (def-lazy name (make-lazy #f #f)))
                  (list 'define name (merge-lambda 
                                      params 
                                      (if is-lazy 
