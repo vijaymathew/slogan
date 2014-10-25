@@ -22,12 +22,25 @@
 (define is_array vector?)
 
 (define (vectors-ref vectors i)
-  (map (lambda (v) (vector-ref v i)) vectors))
+  (map (lambda (v) (array_at v i)) vectors))
+
+(define (array_at arr dim)
+  (if (list? dim)
+      (if (null? dim) arr
+          (array_at (vector-ref arr (car dim)) (cdr dim)))
+      (vector-ref arr dim)))
+
+(define (array_set arr dim obj)
+  (if (list? dim)
+      (cond ((null? dim) 
+             (error "array dimension cannot be empty."))
+            ((= 1 (length dim))
+             (vector-set! arr (car dim) obj))
+            (else (array_set (vector-ref arr (car dim)) (cdr dim) obj)))
+      (vector-set! arr dim obj)))
 
 (define array_length vector-length)
-(define array_at vector-ref)
 (define arrays_at vectors-ref)
-(define array_set vector-set!)
 (define array_to_list vector->list)
 (define array_copy vector-copy)
 (define subarray subvector)
