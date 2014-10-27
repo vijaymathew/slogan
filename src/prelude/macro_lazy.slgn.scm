@@ -236,8 +236,7 @@
   (let ((params (normalize-lazy-params params)))
     (replace-macro-args params (map (lambda (x) (list 'force x)) params) expr #t)))
 
-(define (declare_lazy name #!optional (arity 1))
+(define (declare-lazy name)
   (if (not (get-lazy-def name))
       (def-lazy name (make-lazy #f #f))))
-
-(define undeclare_lazy undef-lazy)
+      
