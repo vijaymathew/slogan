@@ -2,6 +2,7 @@
 
 (define *namespaces* '())
 (define *active-namespaces* (make-table))
+(define *declared-imported* '())
 
 (define (push-namespace name)
   (set! *namespaces* (cons (cons (add-parent-namespace-names name) 
@@ -34,10 +35,11 @@
                (imports '()))
       (if (null? defs)
           (cons 'begin imports)
-          (loop (cdr defs) (cons `(define 
-                                    ,(get-import-name (car defs) prefix)
+          (let ((import-name (get-import-name (car defs) prefix)))
+            (loop (cdr defs) (cons `(,(if (in-declared-imports? import-name) 'set! 'define)
+                                    ,import-name
                                     ,(get-name-from-namespace (car defs) name))
-                                 imports))))))
+                                 imports)))))))
 
 (define (validate-import-names defs namespace)
   (let loop ((defs defs))
@@ -104,10 +106,13 @@
              (result '()))
     (if (null? bindings)
         (reverse result)
-        (loop (cdr bindings) (cons (list (caar bindings) 
-                                         (intern-to-namespace (cadar bindings)
-                                                              namespace-name defs))
-                                   result)))))
+        (loop (cdr bindings) 
+              (cons (list 
+                     (caar bindings) 
+                     (intern-to-namespace 
+                      (cadar bindings)
+                      namespace-name defs))
+                    result)))))
 
 (define (intern-to-namespace expr namespace-name defs)
   (cond ((or (null? expr)
@@ -157,3 +162,19 @@
                       (else (let ((a (intern-to-namespace sym namespace-name defs))
                                   (b (intern-to-namespace (cdr expr) namespace-name defs)))
                               (cons a b))))))))
+
+(define (add-to-declared-imported! name)
+  (if (not (in-declared-imports? name))
+      (set! *declared-imported* (cons name *declared-imported*)))
+  `(define ,name *void*))
+
+(define (in-declared-imports? name) (memq name *declared-imported*))
+
+(define (declare-imported names)
+  (if (name? names)
+      (add-to-declared-imported! names)
+      (let loop ((names names)
+                 (expr '()))
+        (if (null? names)
+            (append '(begin) (reverse expr))
+            (loop (cdr names) (cons (add-to-declared-imported! (car names)) expr))))))

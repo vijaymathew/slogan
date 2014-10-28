@@ -237,6 +237,11 @@
     (replace-macro-args params (map (lambda (x) (list 'force x)) params) expr #t)))
 
 (define (declare-lazy name)
-  (if (not (get-lazy-def name))
-      (def-lazy name (make-lazy #f #f))))
+  (if (symbol? name)
+      (if (not (get-lazy-def name))
+          (def-lazy name (make-lazy #f #f)))
+      (let loop ((names name))
+        (if (not (null? names))
+            (begin (declare-lazy (car names))
+                   (loop (cdr names)))))))
       
