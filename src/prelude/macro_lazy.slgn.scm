@@ -12,10 +12,12 @@
 
 (define (def-macro name macro)
   (remove-normal-var-def name)
+  (undef-lazy name)
   (table-set! (car *macros*) name macro))
 
 (define (def-lazy name lazy)
   (remove-normal-var-def name)
+  (undef-macro name)
   (table-set! (car *lazy-fns*) name lazy))
 
 (define (def-normal-var name)
@@ -149,9 +151,11 @@
    (make-macro-env (list (params-args->table params args))) is-lazyfn))
 
 (define (replace-macro-var params args body)
-  (if (eq? body (car params))
-      (car args)
-      body))
+  (let loop ((params params)
+             (args args))
+    (cond ((null? params) body)
+          ((eq? body (car params)) (car args))
+          (else (loop (cdr params) (cdr args))))))
 
 (define (replace-macro-args-helper expr env is-lazyfn)
   (cond ((null? expr) expr)

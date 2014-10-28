@@ -10,10 +10,12 @@
   (cons a b))
 
 (define (head seq) 
-  (car seq))
+  (if (null? seq) nil
+      (car seq)))
 
 (define (tail seq) 
-  (cdr seq))
+  (if (null? seq) nil
+      (cdr seq)))
 
 (define (is_empty seq)
   (null? seq))
