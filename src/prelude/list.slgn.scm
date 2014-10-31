@@ -266,3 +266,34 @@
 	    (let ((head (car ls)))
 	      (f head (recur (cdr ls))))))))
 ;; :~
+
+(define (range start end #!optional (cmpr <=) (next inc))
+  (let iter ((start start) 
+             (result (list))) 
+    (if (cmpr start end)
+        (let ((elem (next start)))
+          (iter elem (cons start result)))
+        (reverse result))))
+
+(define (mk-comprehension-loop lists vars filters result-expr)
+  (let ((expr-acc '()))
+    (if (null? lists) 
+        (append 
+         expr-acc 
+         `(set! *comprehension-result* 
+                (cons ,result-expr *comprehension-result*)))
+        (append 
+         expr-acc 
+         `(let *comprehension-loop* ((*list* ,(car lists)))
+            (if (not (null? *list*))
+                (let ((,(car vars) (car *list*)))
+                  (if ,(car filters)
+                      ,(mk-comprehension-loop 
+                        (cdr lists) (cdr vars) 
+                        (cdr filters) result-expr))
+                  (*comprehension-loop* (cdr *list*)))))))))
+
+(define (list-comprehension lists vars filters result-expr)
+  `(let ((*comprehension-result* (list)))
+     ,(mk-comprehension-loop lists vars filters result-expr)
+     (reverse *comprehension-result*)))

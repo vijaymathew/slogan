@@ -251,3 +251,6 @@
 		      (loop (+ k 2))))))))
 
 (define is_prime prime?)
+
+(define (inc n) (+ n 1))
+(define (dec n) (- n 1))
