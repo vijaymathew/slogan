@@ -400,8 +400,10 @@
             (list 'lambda (list) try-expr))
       (list 'let (list (list '*finally* (list 'lambda (list) finally-expr)))
             (list (get-exception-handler-fnname try-token)
-                  (list 'lambda catch-args (list 'begin '(*finally*) '(set! *finally* #f) catch-expr))
-                  (list 'lambda (list) (list 'begin try-expr '(if *finally* (*finally*))))))))
+                  (list 'lambda catch-args `(with-exception-catcher 
+                                             (lambda (*e*) (if *finally* (begin (*finally*) (set! *finally* #f))) (raise *e*))
+                                             (lambda () ,catch-expr (if *finally* (begin (*finally*) (set! *finally* #f))))))
+                  (list 'lambda '() try-expr '(if *finally* (*finally*)))))))
                    
 (define (normalize-sym s)
   (if (and (list? s)
