@@ -208,6 +208,12 @@
         (reverse result)
         (loop (cdr a) (cdr b) (cons (cons (car a) (car b)) result)))))
 
+(define (zip_with f a b)
+  (let loop ((a a) (b b) (result '()))
+    (if (or (null? a) (null? b))
+        (reverse result)
+        (loop (cdr a) (cdr b) (cons (f (car a) (car b)) result)))))
+
 (define (exists f ls . more)
   (if (not (null? more)) 
       (assert-equal-lengths ls more))
