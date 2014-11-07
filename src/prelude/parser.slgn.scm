@@ -36,6 +36,7 @@
 
 (define (highligted-error-line tokenizer)
   (let ((curr-tok-len (current-token-length tokenizer)))
+    (println curr-tok-len)
     (let loop ((line-no (tokenizer 'line)) 
                (n 1)
                (program-text (tokenizer 'program-text)))

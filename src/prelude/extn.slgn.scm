@@ -48,3 +48,7 @@
         (if (not (null? fns))
             (loop (cdr fns) ((car fns) result))
             result)))))
+
+(define (mapfn f) (lambda (xs #!rest ys) (apply map f xs ys)))
+
+(define (curry f #!rest args) (lambda (#!rest args2) (apply f (append args2 args))))
