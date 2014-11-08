@@ -52,6 +52,6 @@
 
 (define (mapfn f) (lambda (xs #!rest ys) (apply map f xs ys)))
 
-(define (curry f #!rest args) (lambda (#!rest args2) (apply f (append args2 args))))
+(define (partial f #!rest args) (lambda (#!rest args2) (apply f (append args2 args))))
 
 (define (until p f x) (if (p x) x (until p f (f x))))
