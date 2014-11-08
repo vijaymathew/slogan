@@ -20,8 +20,12 @@
 (define (is_empty seq)
   (null? seq))
 
-(define (at seq i)
+(define (at i seq)
   (list-ref seq i))
+
+(define (get key seq #!optional deflaut)
+  (let ((mapping (assoc key seq)))
+    (if mapping (cdr mapping) deflaut)))        
 
 (define for_each for-each)
 (define set_head set-car!)
@@ -161,7 +165,7 @@
   (if (= n 0) lst
       (list-tail (cdr lst) (- n 1))))
 
-(define (drop lst n)
+(define (drop n lst)
   (let ((neg (< n 0)))
     (let loop ((lst (if neg (reverse lst) lst))
                (n (if neg (- n) n))
@@ -172,7 +176,7 @@
              (loop (cdr lst) 0 (cons (car lst) result)))
             (else (loop (cdr lst) (- n 1) result))))))
 
-(define (take lst n)
+(define (take n lst)
   (let ((neg (< n 0)))
     (let loop ((lst (if neg (reverse lst) lst))
                (n (if neg (- n) n))

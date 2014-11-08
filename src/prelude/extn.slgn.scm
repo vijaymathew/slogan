@@ -36,6 +36,7 @@
 
 (define callcc call/cc)
 (define dynamic_wind dynamic-wind)
+(define call_with_values call-with-values)
 
 (define (identity x) x)
 
