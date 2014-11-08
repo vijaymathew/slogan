@@ -502,7 +502,8 @@
                        (next (tokenizer 'peek)))
                    (if sub
                        (if (or (number? next) 
-                               (and (variable? next) (not (reserved-name? next))))
+                               (and (variable? next) 
+                                    (not (reserved-name? next))))
                            (begin (tokenizer 'next)
                                   (token->neg-number next))
                            (list '- (expression tokenizer)))
@@ -546,7 +547,9 @@
 
 (define (list-literal tokenizer)
   (tokenizer 'next)
-  (let loop ((result (if (tokenizer 'quote-mode?) (list) (list 'list)))
+  (let loop ((result (if (tokenizer 'quote-mode?) 
+                         (list) 
+                         (list 'list)))
              (first #t))
     (let ((token (tokenizer 'peek)))
       (if (eq? token '*close-bracket*)
