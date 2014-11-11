@@ -2,7 +2,8 @@
 
 (define is_list list?)
 (define is_pair pair?)
-(define (is_atom x) (not (pair? x)))
+(define (is_atom x) (and (not (pair? x))
+                         (not (null? x))))
 
 (define nil '())
 
