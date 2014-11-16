@@ -121,11 +121,9 @@
            (loop (cdr lst))))))
 
 (define (slgn-display-pair p port)
-  (display "[" port)
   (slgn-display (car p) port: port)
-  (display " " port)
-  (slgn-display (cdr p) port: port)
-  (display "]" port))
+  (display " : " port)
+  (slgn-display (cdr p) port: port))
 
 (define (slgn-display-array a port 
                             prefix tolist)

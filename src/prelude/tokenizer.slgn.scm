@@ -97,7 +97,6 @@
                     (else (read-name port))))))))
 
 (define *single-char-operators* (list (cons #\+ '*plus*)
-                                      (cons #\- '*minus*)
                                       (cons #\/ '*backslash*)
                                       (cons #\* '*asterisk*)
                                       (cons #\( '*open-paren*)
@@ -114,7 +113,6 @@
                                       (cons #\; '*semicolon*)))
 
 (define *single-char-operators-strings* (list (cons "+" '*plus*)
-                                              (cons "-" '*minus*)
                                               (cons "/" '*backslash*)
                                               (cons "*" '*asterisk*)
                                               (cons "(" '*open-paren*)
@@ -136,7 +134,9 @@
                                              (cons ">=" '*greater-than-equals*)
                                              (cons "<=" '*less-than-equals*)
                                              (cons "&&" '*and*)
-                                             (cons "||" '*or*)))
+                                             (cons "||" '*or*)
+                                             (cons "->" '*inserter*)
+                                             (cons "<-" '*extractor*)))
 
 (define (math-operator? sym)
   (or (eq? sym '*plus*)
@@ -153,6 +153,7 @@
            (char=? c #\<)
            (char=? c #\>)
            (char=? c #\&)
+           (char=? c #\-)
            (char=? c #\|))))
 
 (define (fetch-operator-string token strs)
@@ -169,15 +170,27 @@
 (define (fetch-multi-char-operator-string token)
   (fetch-operator-string *multi-char-operators-strings*))
 
+(define (fetch-less-than-operator port)
+  (let ((c (port-pos-peek-char port)))
+    (cond ((char=? c #\=) 
+           (port-pos-read-char! port)
+           '*less-than-equals*)
+          ((char=? c #\-)
+           (port-pos-read-char! port)
+           '*extractor*)
+          (else '*less-than*))))
+
 (define (fetch-operator port 
                         suffix
                         suffix-opr
                         opr)
   (port-pos-read-char! port)
-  (if (char=? (port-pos-peek-char port) suffix)
-      (begin (port-pos-read-char! port)
-             suffix-opr)
-      opr))
+  (if (eq? opr '*less-than*)
+      (fetch-less-than-operator port)
+      (if (char=? (port-pos-peek-char port) suffix)
+          (begin (port-pos-read-char! port)
+                 suffix-opr)
+          opr)))
 
 (define (tokenizer-error msg #!rest args)
   (error (with-output-to-string 
@@ -192,10 +205,16 @@
 
 (define (fetch-same-operator port c opr)
   (port-pos-read-char! port)
-  (if (char=? (port-pos-peek-char port) c)
-      (begin (port-pos-read-char! port)
-	     opr)
-      (tokenizer-error "invalid character in operator. " (port-pos-read-char! port))))
+  (let ((next (port-pos-peek-char port)))
+    (cond ((char=? next c)
+           (port-pos-read-char! port)
+           opr)
+          ((eq? opr '*or*)
+           '*pipe*)
+          (else
+           (tokenizer-error 
+            "invalid character in operator. " 
+            (port-pos-read-char! port))))))
 
 (define (read-multi-char-operator port)
   (let ((c (port-pos-peek-char port)))
@@ -208,6 +227,8 @@
 	  ((or (char=? c #\&)
 	       (char=? c #\|))
 	   (fetch-same-operator port c (if (char=? c #\&) '*and* '*or*)))
+          ((char=? c #\-)
+           (fetch-operator port #\> '*inserter* '*minus*))
           (else
            (tokenizer-error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
 
@@ -485,7 +506,11 @@
 
 (define (special_token_to_string token)
   (cond ((eq? token '*assignment*) "=")
+        ((eq? token '*minus*) "-")
+        ((eq? token '*extractor*) "<-")
+        ((eq? token '*inserter*) "->")
         ((eq? token '*period*) ".")
+        ((eq? token '*pipe*) "|")
         (else 
          (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
            (if t (caar t)
