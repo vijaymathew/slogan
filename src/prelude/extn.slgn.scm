@@ -55,3 +55,5 @@
 (define (partial f #!rest args) (lambda (#!rest args2) (apply f (append args2 args))))
 
 (define (until p f x) (if (p x) x (until p f (f x))))
+
+(define (complement f) (lambda (#!rest args) (not (apply f args))))
