@@ -138,6 +138,11 @@
                                              (cons "->" '*inserter*)
                                              (cons "<-" '*extractor*)))
 
+(define *special-operators-strings* (list (cons "=" '*assignment*)
+                                          (cons "." '*period*)
+                                          (cons "-" '*minus*)
+                                          (cons "|" '*pipe*)))
+
 (define (math-operator? sym)
   (or (eq? sym '*plus*)
       (eq? sym '*minus*)
@@ -499,24 +504,32 @@
 (define is_keyword_token reserved-name?)
 
 (define (is_special_token token)
-  (if (or (eq? token '*assignment*)
-          (eq? token '*period*)
-          (memp (lambda (p) (eq? token (cdr p))) *single-char-operators*)
-          (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)) #t #f))
+  (let ((cdr-eq? (lambda (p) (eq? token (cdr p)))))
+    (or (memp cdr-eq? *special-operators-strings*)
+        (memp cdr-eq? *single-char-operators*)
+        (memp cdr-eq? *multi-char-operators-strings*))))
 
 (define (special_token_to_string token)
-  (cond ((eq? token '*assignment*) "=")
-        ((eq? token '*minus*) "-")
-        ((eq? token '*extractor*) "<-")
-        ((eq? token '*inserter*) "->")
-        ((eq? token '*period*) ".")
-        ((eq? token '*pipe*) "|")
-        (else 
-         (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
-           (if t (caar t)
-               (let ((t (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)))
-                 (if t (caar t)
-                     (error "Not a special token." token))))))))
+  (let ((cdr-eq? (lambda (p) (eq? token (cdr p)))))
+    (find-and-call (lambda (xs) (memp cdr-eq? xs)) 
+                   (list *special-operators-strings*
+                         *single-char-operators-strings* 
+                         *multi-char-operators-strings*)
+                   caar
+                   (lambda () (error "Not a special token." token)))))
+
+  ;; (cond ((eq? token '*assignment*) "=")
+  ;;       ((eq? token '*minus*) "-")
+  ;;       ((eq? token '*extractor*) "<-")
+  ;;       ((eq? token '*inserter*) "->")
+  ;;       ((eq? token '*period*) ".")
+  ;;       ((eq? token '*pipe*) "|")
+  ;;       (else 
+  ;;        (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
+  ;;          (if t (caar t)
+  ;;              (let ((t (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)))
+  ;;                (if t (caar t)
+  ;;                    (error "Not a special token." token))))))))
 
 (define (current-token-length tokenizer)
   (let ((token (let ((token (tokenizer 'get)))

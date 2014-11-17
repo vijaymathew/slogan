@@ -900,19 +900,20 @@
                                                 (append (list (mk-record-precond-expr precond mem))
                                                         (list (list scm-modifier '*s* mem)))))))))
 
-(define (assert-comma-separator tokenizer end-seq-char)
+(define (assert-comma-separator tokenizer end-seq-char #!optional comma-required)
   (let ((token (tokenizer 'peek)))
     (if (or (eq? token '*comma*)
             (if (list? end-seq-char) 
                 (memq token end-seq-char) 
                 (eq? token end-seq-char)))
         (if (eq? token '*comma*) (tokenizer 'next))
-        (parser-error tokenizer (with-output-to-string
-                                  '()
-                                  (lambda ()
-                                    (display "Missing comma or ") 
-                                    (slgn-display end-seq-char) 
-                                    (display ".")))))))
+        (if comma-required
+            (parser-error tokenizer (with-output-to-string
+                                      '()
+                                      (lambda ()
+                                        (display "Missing comma or ") 
+                                        (slgn-display end-seq-char) 
+                                        (display "."))))))))
 
 (define (func-args-expr tokenizer lazy-fn)
   (let loop ((args '()))

@@ -109,6 +109,13 @@
 (define (slgn-display-promise port)
   (slgn-display-special-obj "promise" port))
 
+(define *sep-char* #\,)
+
+(define (show_comma_separator) 
+  (if *sep-char*
+      (set! *sep-char* #f)
+      (set! *sep-char* #\,)))
+
 (define (slgn-display-list lst port)
   (display "[" port)
   (let loop ((lst lst))
@@ -117,7 +124,8 @@
           (else
            (slgn-display (car lst) port: port)
            (if (not (null? (cdr lst)))
-               (display ", " port))
+               (begin (if *sep-char* (display *sep-char* port))
+                      (display #\space port)))
            (loop (cdr lst))))))
 
 (define (slgn-display-pair p port)

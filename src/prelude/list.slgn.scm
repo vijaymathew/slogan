@@ -286,6 +286,18 @@
           (iter elem (cons start result)))
         (reverse result))))
 
+(define (find-and-call findf xss f 
+                       #!optional call_if_not_found 
+                       default)
+  (let loop ((xss xss))
+    (if (null? xss)
+        (if call_if_not_found
+            (call_if_not_found)
+            (f default))
+        (let ((v (findf (car xss))))
+          (if v (f v) 
+              (loop (cdr xss)))))))
+
 (define (mk-comprehension-loop lists vars filters result-expr)
   (let ((expr-acc '()))
     (if (null? lists) 
