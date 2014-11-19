@@ -111,10 +111,10 @@
 
 (define *sep-char* #\,)
 
-(define (show_comma_separator) 
-  (if *sep-char*
-      (set! *sep-char* #f)
-      (set! *sep-char* #\,)))
+(define (show_comma_separator flag) 
+  (if flag
+      (set! *sep-char* #\,)
+      (set! *sep-char* #f)))
 
 (define (slgn-display-list lst port)
   (display "[" port)
