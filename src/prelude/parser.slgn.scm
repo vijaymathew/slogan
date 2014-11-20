@@ -534,7 +534,7 @@
 		((eq? token '*bang*)
 		 (tokenizer 'next)
                  (let ((already-in-quote-mode (tokenizer 'quote-mode?)))
-                   (if (not already-in-quote-mode) (tokenizer 'quote-mode-on))
+                   (tokenizer 'quote-mode-on)
                    (let ((e (expression tokenizer)))
                      (tokenizer 'quote-mode-off)
                      (if (not already-in-quote-mode) `(quote ,e) e))))
