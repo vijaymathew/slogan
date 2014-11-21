@@ -238,7 +238,11 @@
     (string->symbol (substring s 1 (string-length s)))))
 
 (define (rvar? sym)
-  (and (symbol? sym) (char=? #\? (string-ref (symbol->string sym) 0))))
+  (if (symbol? sym) 
+      (let ((s (symbol->string sym)))
+        (and (> (string-length s) 0)
+             (char=? #\? (string-ref s 0))))
+      #f))
 
 (define (var-def-set sym tokenizer def)
   (remove-macro-lazy-fns-def sym)
@@ -517,7 +521,7 @@
                            (list '- (expression tokenizer)))
                        (expression tokenizer))))                       
                 ((variable? token)
-		 (cond ((eq? token '?)
+		 (cond ((eq? token '?)                        
 			(tokenizer 'next)
 			(list 'rvar))
 		       (else (let ((var (tokenizer 'next)))
