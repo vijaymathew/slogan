@@ -249,9 +249,11 @@
   (if (eq? (tokenizer 'peek) '*assignment*)
       (begin (tokenizer 'next)
              (if (rvar? sym)
-                 (if def (parser-error tokenizer (string-append 
-                                                  "Invalid character in variable name: "
-                                                  (symbol->string sym) "."))
+                 (if def (parser-error 
+                          tokenizer 
+                          (string-append 
+                           "Invalid character in variable name: "
+                           (symbol->string sym) "."))
                      (list 'rbind (normalize-rvar sym) (expression tokenizer)))
                  (list (if def 'define 'set!) sym (expression tokenizer))))
       (parser-error tokenizer "Expected assignment.")))
@@ -535,13 +537,18 @@
                  (block-expr tokenizer #t))
                 ((eq? token '*hash*)
                  (array-literal tokenizer))
-		((eq? token '*bang*)
+		((eq? token '*quasiquote*)
 		 (tokenizer 'next)
                  (let ((already-in-quote-mode (tokenizer 'quote-mode?)))
                    (tokenizer 'quote-mode-on)
                    (let ((e (expression tokenizer)))
                      (tokenizer 'quote-mode-off)
-                     (if (not already-in-quote-mode) `(quote ,e) e))))
+                     (if (not already-in-quote-mode) (list 'quasiquote e) e))))
+                ((eq? token '*unquote*)
+                 (if (not (tokenizer 'quote-mode?))
+                     (parser-error tokenizer "Not in quote mode."))
+                 (tokenizer 'next)
+                 (list 'unquote (expression tokenizer)))
                 (else (parser-error tokenizer "Invalid literal expression.")))))))
 
 (define (member-access/funcall-expr expr tokenizer)

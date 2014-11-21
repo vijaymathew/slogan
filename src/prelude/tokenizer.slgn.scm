@@ -109,7 +109,6 @@
                                       (cons #\# '*hash*)
                                       (cons #\, '*comma*)
                                       (cons #\: '*colon*)                                      
-                                      (cons #\! '*bang*)
                                       (cons #\; '*semicolon*)))
 
 (define *single-char-operators-strings* (list (cons "+" '*plus*)
@@ -124,7 +123,6 @@
                                               (cons "#" '*hash*)
                                               (cons "," '*comma*)
                                               (cons ":" '*colon*)                                      
-                                              (cons "!" '*bang*)
                                               (cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (list (cons "==" '*equals*)
@@ -134,12 +132,14 @@
                                              (cons "<=" '*less-than-equals*)
                                              (cons "&&" '*and*)
                                              (cons "||" '*or*)
+                                             (cons "!!" '*unquote*)
                                              (cons "->" '*inserter*)
                                              (cons "<-" '*extractor*)))
 
 (define *special-operators-strings* (list (cons "=" '*assignment*)
                                           (cons "." '*period*)
                                           (cons "-" '*minus*)
+                                          (cons "!" '*quasiquote*)
                                           (cons "|" '*pipe*)))
 
 (define (math-operator? sym)
@@ -158,6 +158,7 @@
            (char=? c #\>)
            (char=? c #\&)
            (char=? c #\-)
+           (char=? c #\!)
            (char=? c #\|))))
 
 (define (fetch-operator-string token strs)
@@ -215,6 +216,8 @@
            opr)
           ((eq? opr '*or*)
            '*pipe*)
+          ((eq? opr '*unquote*)
+           '*quasiquote*)
           (else
            (tokenizer-error 
             "invalid character in operator. " 
@@ -229,8 +232,11 @@
           ((char=? c #\>)
            (fetch-operator port #\= '*greater-than-equals* '*greater-than*))
 	  ((or (char=? c #\&)
-	       (char=? c #\|))
-	   (fetch-same-operator port c (if (char=? c #\&) '*and* '*or*)))
+	       (char=? c #\|)
+               (char=? c #\!))
+	   (fetch-same-operator port c (cond ((char=? c #\&) '*and*)
+                                             ((char=? c #\|) '*or*)
+                                             (else '*unquote*))))
           ((char=? c #\-)
            (fetch-operator port #\> '*inserter* '*minus*))
           (else
@@ -517,19 +523,6 @@
                          *multi-char-operators-strings*)
                    caar
                    (lambda () (error "Not a special token." token)))))
-
-  ;; (cond ((eq? token '*assignment*) "=")
-  ;;       ((eq? token '*minus*) "-")
-  ;;       ((eq? token '*extractor*) "<-")
-  ;;       ((eq? token '*inserter*) "->")
-  ;;       ((eq? token '*period*) ".")
-  ;;       ((eq? token '*pipe*) "|")
-  ;;       (else 
-  ;;        (let ((t (memp (lambda (p) (eq? token (cdr p))) *single-char-operators-strings*)))
-  ;;          (if t (caar t)
-  ;;              (let ((t (memp (lambda (p) (eq? token (cdr p))) *multi-char-operators-strings*)))
-  ;;                (if t (caar t)
-  ;;                    (error "Not a special token." token))))))))
 
 (define (current-token-length tokenizer)
   (let ((token (let ((token (tokenizer 'get)))
