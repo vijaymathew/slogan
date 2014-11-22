@@ -549,6 +549,14 @@
                      (parser-error tokenizer "Not in quote mode."))
                  (tokenizer 'next)
                  (list 'unquote (expression tokenizer)))
+                ((eq? token '*quote*)
+                 (tokenizer 'next)
+                 (let ((sym (tokenizer 'peek)))
+                   (if (not (variable? sym))
+                       (parser-error tokenizer "Expected symbol."))
+                   (tokenizer 'next)
+                   (if (tokenizer 'quote-mode?) sym
+                       (list 'quote sym))))
                 (else (parser-error tokenizer "Invalid literal expression.")))))))
 
 (define (member-access/funcall-expr expr tokenizer)
