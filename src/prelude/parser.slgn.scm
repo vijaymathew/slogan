@@ -679,9 +679,7 @@
            (let ((expr (func-body-expr tokenizer)))
              (let ((next (tokenizer 'peek)))
                (if (eq? next '*comma*) 
-                   (tokenizer 'next)
-                   (if (not (eq? next '*close-paren*))
-                       (parser-error tokenizer "Expected comma or closing parenthesis."))))
+                   (tokenizer 'next)))
              (loop (tokenizer 'next) (append bindings (list (list token expr))))))
           (else (parser-error tokenizer "Expected variable declaration.")))))
 
