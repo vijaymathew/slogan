@@ -35,9 +35,11 @@
       (cond ((null? dim) 
              (error "array dimension cannot be empty."))
             ((= 1 (length dim))
-             (vector-set! arr (car dim) obj))
+             (vector-set! arr (car dim) obj)
+             *void*)
             (else (array_set (vector-ref arr (car dim)) (cdr dim) obj)))
-      (vector-set! arr dim obj)))
+      (begin (vector-set! arr dim obj)
+             *void*)))      
 
 (define array_length vector-length)
 (define arrays_at vectors-ref)
