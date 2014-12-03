@@ -113,6 +113,7 @@
                (case name
                  ((lazy) (declare-lazy-stmt tokenizer))
                  ((imported) (declare-imported-stmt tokenizer))
+                 ((generic) (declare-generic-stmt tokenizer))
                  (else
                   (parser-error tokenizer tokenizer "Invalid declare type.")))))
       (func-def-stmt tokenizer)))
@@ -129,6 +130,17 @@
       (let ((names (parened-names->list tokenizer)))
         (if names (declare-imported names)
             (parser-error tokenizer "Invalid import list.")))))
+
+(define (declare-generic-stmt tokenizer)
+  (let ((name (tokenizer 'next)))
+    (if (name? name)
+        (define-generic-method name tokenizer)
+        (parser-error tokenizer "Expected generic method name."))))
+
+(define (define-generic-method name tokenizer)
+  `(define ,name 
+     (lambda ,(func-params-expr tokenizer)
+       (error "Generic method is not defined for these arguments."))))
 
 (define (import-defs tokenizer)
   (if (name? (tokenizer 'peek))
@@ -164,8 +176,77 @@
          (if (eq? (tokenizer 'peek) 'lazy)
              (lazy-fn-stmt tokenizer)
              (func-def-stmt-from-name tokenizer)))
+        (else (method-def-stmt tokenizer))))
+
+(define (method-types-decl tokenizer)
+  (if (not (eq? '*open-paren* (tokenizer 'next)))
+      (parser-error tokenizer "Types declaration must start with opening parenthesis."))
+  (let ((types-decl (func-args-expr tokenizer #f)))
+    (if (not (eq? '*close-paren* (tokenizer 'next)))
+        (parser-error tokenizer "Missing closing parenthesis after type declaration."))
+    (if (not (for_all symbol? types-decl))
+        (parser-error tokenizer "Invalid type declaration."))
+    types-decl))
+    
+(define (mk-method-types-chk types args)
+  (let loop ((types types)
+             (args args)
+             (chk-expr '()))
+    (if (null? types) (append (list 'and) (reverse chk-expr))
+        (let ((predic-name (string->symbol 
+                            (string-append 
+                             "is_" 
+                             (symbol->string (car types))))))
+          (loop (cdr types) 
+                (cdr args) 
+                (cons `(,predic-name ,(car args)) chk-expr))))))
+
+(define (params->args params)
+  (let loop ((params params)
+             (args '()))
+    (if (null? params)
+        (reverse args)
+        (cond ((pair? (car params))
+               (loop (cdr params) (cons (caar params) args)))
+              ((symbol? (car params))
+               (loop (cdr params) (cons (car params) args)))
+              (else (loop (cdr params) args))))))
+
+(define (method-def-stmt-from-name tokenizer)
+  (let ((name (tokenizer 'peek)))
+    (if (not (variable? name))
+        (parser-error tokenizer "Method must have a name."))
+    (begin (tokenizer 'next)
+           (remove-macro-lazy-fns-def name)
+           (let ((types (method-types-decl tokenizer))
+                 (params (func-params-expr tokenizer)))
+             (cons types (list 'define name (merge-lambda 
+                                             params 
+                                             (func-body-expr tokenizer))))))))
+
+(define (method-def-stmt tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'method)
+         (tokenizer 'next)
+         (let ((method-def (method-def-stmt-from-name tokenizer)))
+           (let ((func-def (cdr method-def))
+                 (types (car method-def)))
+             (let ((name (cadr func-def))
+                   (params (cadr (caddr func-def)))
+                   (args (params->args (cadr (caddr func-def))))
+                   (body (caddr (caddr func-def))))
+               (let ((types-chk (mk-method-types-chk types args))
+                     (old-name (string->symbol 
+                                (string-append 
+                                 "*" 
+                                 (symbol->string name) 
+                                 "*"))))
+                 `(define ,name (let ((,old-name ,name))
+                                  (lambda ,params 
+                                    (if ,types-chk 
+                                        ,body 
+                                        (,old-name ,@args))))))))))
         (else (record-def-stmt tokenizer))))
-         
+  
 (define (assignment-stmt tokenizer)
   (if (name? (tokenizer 'peek))
       (let ((sym (tokenizer 'next)))
@@ -974,7 +1055,11 @@
                                (assert-comma-separator tokenizer '*close-paren*)
                                (if directives-found
                                    (loop (cons (list sym expr) params) directives-found)
-                                       (loop (cons (list sym expr) (cons (slgn-directive->scm-directive '@optional) params)) #t))))
+                                       (loop (cons 
+                                              (list sym expr) 
+                                              (cons 
+                                               (slgn-directive->scm-directive '@optional) params)) 
+                                             #t))))
                             (else 
                              (assert-comma-separator tokenizer '*close-paren*)
                              (loop (cons sym params) directives-found)))))
@@ -1071,7 +1156,7 @@
   (and (symbol? sym)
        (char-valid-name-start? (string-ref (symbol->string sym) 0))))
 
-(define *reserved-names* '(fn function define record true false
+(define *reserved-names* '(fn function method define record true false
 			      if else let letseq letrec 
 			      case match where try trycc catch finally
                               macro lazy load namespace import declare))
@@ -1095,5 +1180,3 @@
                (loop (tokenizer 'next) (cons token result)))
               (else #f)))
       #f))
-
-  
