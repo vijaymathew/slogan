@@ -140,7 +140,7 @@
 (define (define-generic-method name tokenizer)
   `(define ,name 
      (lambda ,(func-params-expr tokenizer)
-       (error "Generic method is not defined for these arguments."))))
+       (error "Generic method is not defined for these types."))))
 
 (define (import-defs tokenizer)
   (if (name? (tokenizer 'peek))
