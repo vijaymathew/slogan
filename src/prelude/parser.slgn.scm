@@ -47,6 +47,7 @@
           #f))))
 
 (define (parser-error tokenizer msg)
+  (pop-namespace)
   (error (with-output-to-string 
            '()
            (lambda ()
