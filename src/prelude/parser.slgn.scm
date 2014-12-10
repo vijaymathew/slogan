@@ -1160,7 +1160,7 @@
 (define *reserved-names* '(fn function method define record true false
 			      if else let letseq letrec 
 			      case match where try trycc catch finally
-                              macro lazy load namespace import declare))
+                              macro load namespace import declare))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
