@@ -2,7 +2,7 @@
 
 (define *compiler-log* #f)
 
-(define (compiler_log)
+(define (compiler-log)
   (set! *compiler-log* (not *compiler-log*)))
 
 (define (eliminate-voids exprs)
