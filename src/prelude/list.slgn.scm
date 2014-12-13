@@ -24,16 +24,30 @@
 (define (at i seq)
   (list-ref seq i))
 
-(define (first list) (car list))
-(define (second list) (car (cdr list)))
-(define (third list) (car (cddr list)))
-(define (fourth list) (car (cdddr list)))
-(define (fifth list) (car (cddddr list)))
-(define (sixth list) (car (cdr (cddddr list))))
-(define (seventh list) (car (cddr (cddddr list))))
-(define (eighth list) (car (cdddr (cddddr list))))
-(define (ninth list) (car (cddddr (cddddr list))))
-(define (tenth list) (car (cdr (cddddr (cddddr list)))))
+;; Lazy sequences in the form delay(head : tail).
+(define (first seq) (head (force seq)))
+
+(define (rest seq) (tail (force seq)))
+
+(define (nth n seq) 
+  (if (<= n 0)
+      (first seq)
+      (nth (- n 1) (rest seq))))
+
+(define (nth_tail n seq)
+  (if (<= n 0) (force seq)
+      (nth_tail (- n 1) (rest seq))))
+      
+(define (second seq) (nth 1 seq))
+(define (third seq) (nth 2 seq))
+(define (fourth seq) (nth 3 seq))
+(define (fifth seq) (nth 4 seq))
+(define (sixth seq) (nth 5 seq))
+(define (seventh seq) (nth 6 seq))
+(define (eighth seq) (nth 7 seq))
+(define (ninth seq) (nth 8 seq))
+(define (tenth seq) (nth 9 seq))
+;; :~ lazy sequences.
 
 (define (get key seq #!optional deflaut)
   (let ((mapping (assoc key seq)))
@@ -173,9 +187,7 @@
       (if (zero? n) r
           (loop (cons fill-with r) (opr n 1))))))
 
-(define (nth_tail lst n)
-  (if (= n 0) lst
-      (list-tail (cdr lst) (- n 1))))
+(define list_tail list-tail)
 
 (define (drop n lst)
   (let ((neg (< n 0)))
