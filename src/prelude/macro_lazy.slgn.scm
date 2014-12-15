@@ -249,3 +249,13 @@
             (begin (declare-lazy (car names))
                    (loop (cdr names)))))))
       
+(define (push-func-params params)
+  (if (list? params)
+      (let loop ((params params))
+	(if (not (null? params))
+	    (begin (cond ((name? (car params))
+			  (remove-macro-lazy-fns-def (car params)))
+			 ((pair? (car params))
+			  (if (name? (caar params))
+			      (remove-macro-lazy-fns-def (caar params)))))
+		   (loop (cdr params)))))))

@@ -160,18 +160,18 @@
 (define (func-def-stmt-from-name tokenizer #!optional is-lazy)
   (let ((name (tokenizer 'peek)))
     (if (not (variable? name))
-        (if is-lazy (parser-error tokenizer "lazy function must have a name.")
-            (merge-lambda (func-params-expr tokenizer)
-                          (func-body-expr tokenizer)))
-        (begin (tokenizer 'next)
-               (remove-macro-lazy-fns-def name)
-               (let ((params (func-params-expr tokenizer)))
-                 (if is-lazy (def-lazy name (make-lazy #f #f)))
-                 (list 'define name (merge-lambda 
-                                     params 
-                                     (if is-lazy 
-                                         (expr-forcify (func-body-expr tokenizer) params)
-                                         (func-body-expr tokenizer)))))))))
+	(if is-lazy (parser-error tokenizer "lazy function must have a name.")
+	    (let ((params (func-params-expr tokenizer)))
+	      (merge-lambda params (func-body-expr tokenizer params))))
+	(begin (tokenizer 'next)
+	       (remove-macro-lazy-fns-def name)
+	       (let ((params (func-params-expr tokenizer)))
+		 (if is-lazy (def-lazy name (make-lazy #f #f)))
+		 (list 'define name (merge-lambda 
+				     params 
+				     (if is-lazy 
+					 (expr-forcify (func-body-expr tokenizer params) params)
+					 (func-body-expr tokenizer params)))))))))
                        
 (define (func-def? token) (or (eq? 'fn token) (eq? 'function token)))
 
@@ -227,7 +227,7 @@
                  (params (func-params-expr tokenizer)))
              (cons types (list 'define name (merge-lambda 
                                              params 
-                                             (func-body-expr tokenizer))))))))
+                                             (func-body-expr tokenizer params))))))))
 
 (define (method-def-stmt tokenizer)
   (cond ((eq? (tokenizer 'peek) 'method)
@@ -291,7 +291,7 @@
                          (macro-body-expr tokenizer))))
 
 (define (macro-body-expr tokenizer)
-  (func-body-expr tokenizer))
+  (func-body-expr tokenizer #f))
 
 (define (macro-params-exprs tokenizer)
   (let ((nxt (tokenizer 'next)))
@@ -366,7 +366,7 @@
 (define (then-expr tokenizer)
   (if (not (eq? (tokenizer 'next) '*close-paren*))
       (parser-error tokenizer "Expected closing parenthesis."))
-  (func-body-expr tokenizer #t))
+  (func-body-expr tokenizer #f #t))
 
 (define (if-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'if)
@@ -379,7 +379,7 @@
                (begin (tokenizer 'next)
                       (if (eq? (tokenizer 'peek) 'if)
                           (append expr (list (if-expr tokenizer)))
-                          (append expr (list (func-body-expr tokenizer #t)))))
+                          (append expr (list (func-body-expr tokenizer #f #t)))))
                expr)))
         (else (case-expr tokenizer))))
 
@@ -397,7 +397,7 @@
                    (if (not (eq? (tokenizer 'peek) '*inserter*))
                        (parser-error tokenizer "Missing -> after case expression.")
                        (tokenizer 'next))
-                   (let ((result (func-body-expr tokenizer #t))
+                   (let ((result (func-body-expr tokenizer #f #t))
                          (next (tokenizer 'peek)) (le #f))
                      (if (eq? next '*comma*)
                          (tokenizer 'next)
@@ -442,7 +442,7 @@
                    (if (not (eq? (tokenizer 'peek) '*inserter*))
                        (parser-error tokenizer "Missing -> after pattern.")
                        (tokenizer 'next))
-                   (let ((consequent (func-body-expr tokenizer #t)))
+                   (let ((consequent (func-body-expr tokenizer #f #t)))
                      (if (not (eq? guard #t))
                          (set! consequent `(if ,guard 
                                                ,consequent 
@@ -736,16 +736,19 @@
         (parser-error tokenizer "Invalid start of array literal."))))
 
 (define (let-expr tokenizer)
-  (let ((letkw (letkw? (tokenizer 'peek))))
-    (if letkw
-        (begin (tokenizer 'next)
-               (if (name? (tokenizer 'peek))
-                   (named-let-expr letkw tokenizer)
-                   (normal-let-expr letkw tokenizer)))
-        (func-call-expr (literal-expr tokenizer) tokenizer))))
+  (enter-scope)
+  (let ((expr (let ((letkw (letkw? (tokenizer 'peek))))
+		(if letkw
+		    (begin (tokenizer 'next)
+			   (if (name? (tokenizer 'peek))
+			       (named-let-expr letkw tokenizer)
+			       (normal-let-expr letkw tokenizer)))
+		    (func-call-expr (literal-expr tokenizer) tokenizer)))))
+    (leave-scope)
+    expr))
 
 (define (normal-let-expr letkw tokenizer)
-  (list letkw (let-bindings tokenizer) (func-body-expr tokenizer)))
+  (list letkw (let-bindings tokenizer) (func-body-expr tokenizer #f)))
 
 (define (named-let-expr letkw tokenizer)
   (if (not (eq? letkw 'let))
@@ -755,26 +758,26 @@
   (let ((name (tokenizer 'next)))
     (check-if-reserved-name name tokenizer)
     (remove-macro-lazy-fns-def name)
-    (list letkw name (let-bindings tokenizer) (func-body-expr tokenizer))))
+    (list letkw name (let-bindings tokenizer) (func-body-expr tokenizer #f))))
 
 (define (let-bindings tokenizer)
   (if (not (eq? (tokenizer 'next) '*open-paren*))
       (parser-error tokenizer "Expected let variable bindings list."))
   (let loop ((token (tokenizer 'next))
-             (bindings '()))
+	     (bindings '()))
     (cond ((eq? token '*close-paren*)
-           bindings)
-          ((name? token)
-           (check-if-reserved-name token tokenizer)
-           (if (not (eq? (tokenizer 'next) '*assignment*))
-               (parser-error tokenizer "Expected assignment."))
-           (remove-macro-lazy-fns-def token)
-           (let ((expr (func-body-expr tokenizer)))
-             (let ((next (tokenizer 'peek)))
-               (if (eq? next '*comma*) 
-                   (tokenizer 'next)))
-             (loop (tokenizer 'next) (append bindings (list (list token expr))))))
-          (else (parser-error tokenizer "Expected variable declaration.")))))
+	   bindings)
+	  ((name? token)
+	   (check-if-reserved-name token tokenizer)
+	   (if (not (eq? (tokenizer 'next) '*assignment*))
+	       (parser-error tokenizer "Expected assignment."))
+	   (remove-macro-lazy-fns-def token)
+	   (let ((expr (func-body-expr tokenizer #f)))
+	     (let ((next (tokenizer 'peek)))
+	       (if (eq? next '*comma*) 
+		   (tokenizer 'next)))
+	     (loop (tokenizer 'next) (append bindings (list (list token expr))))))
+	  (else (parser-error tokenizer "Expected variable declaration.")))))
 
 (define (letkw? sym)
   (if (and (symbol? sym)
@@ -789,8 +792,8 @@
 (define (func-def-expr tokenizer)
   (if (func-def? (tokenizer 'peek))
       (begin (tokenizer 'next)
-             (merge-lambda (func-params-expr tokenizer)
-                           (func-body-expr tokenizer)))
+             (let ((params (func-params-expr tokenizer)))
+	       (merge-lambda params (func-body-expr tokenizer params))))
       #f))
 
 (define (merge-lambda params lambda-body)
@@ -808,12 +811,13 @@
               (loop (append lambda-expr (list (car lambda-body)))
                     (cdr lambda-body)))))))
 
-(define (func-body-expr tokenizer #!optional (use-let #f))
+(define (func-body-expr tokenizer params #!optional (use-let #f))
   (let ((token (tokenizer 'peek)))
     (if (or (eq? token '*semicolon*) 
             (eof-object? token))
         '(begin (quote ()))
         (begin (enter-scope)
+	       (push-func-params params)
                (let ((expr (if (eq? (tokenizer 'peek) '*open-brace*)
                                (block-expr tokenizer use-let)
                                (let ((expr (statement tokenizer)))
@@ -861,7 +865,7 @@
   (let loop ((args '()))
     (let ((token (tokenizer 'peek)))
       (if (not (eq? token '*close-paren*))
-          (let ((expr (func-body-expr tokenizer #t)))
+          (let ((expr (func-body-expr tokenizer #f #t)))
             (assert-comma-separator tokenizer '*close-paren*)
             (loop (append args (list expr))))
           args))))
@@ -1071,11 +1075,11 @@
                                (assert-comma-separator tokenizer '*close-paren*)
                                (if directives-found
                                    (loop (cons (list sym expr) params) directives-found)
-                                       (loop (cons 
-                                              (list sym expr) 
-                                              (cons 
-                                               (slgn-directive->scm-directive '@optional) params)) 
-                                             #t))))
+				   (loop (cons 
+					  (list sym expr) 
+					  (cons 
+					   (slgn-directive->scm-directive '@optional) params)) 
+					 #t))))
                             (else 
                              (assert-comma-separator tokenizer '*close-paren*)
                              (loop (cons sym params) directives-found)))))
