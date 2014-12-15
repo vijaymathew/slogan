@@ -153,6 +153,10 @@
     (if names names
         (parser-error tokenizer "Invalid import list."))))
 
+(define (meta-fn-name? name)
+  (and (symbol? name)
+       (string-starts-with? (symbol->string name) "~@")))
+
 (define (func-def-stmt-from-name tokenizer #!optional is-lazy)
   (let ((name (tokenizer 'peek)))
     (if (not (variable? name))
@@ -272,7 +276,11 @@
 (define (lazy-fn-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'lazy)
       (begin (tokenizer 'next)
-             (func-def-stmt-from-name tokenizer #t))
+             (let ((name (tokenizer 'peek))
+		   (fndef (func-def-stmt-from-name tokenizer #t)))
+	       (if (meta-fn-name? name) 
+		   (eval fndef)
+		   fndef)))
       (assignment-stmt tokenizer)))
 
 (define (mk-macro-def macro-name tokenizer)
@@ -830,6 +838,10 @@
                (let ((expr (mk-func-call-expr tokenizer func-val lazy-fn)))
                  (cond ((eq? (tokenizer 'peek) '*close-paren*)
                         (tokenizer 'next) 
+			(if (and (meta-fn-name? func-val) lazy-fn)
+			    (with-exception-catcher
+			     (lambda (e) expr)
+			     (lambda () (set! expr (eval expr)))))
                         (if (eq? (tokenizer 'peek) '*period*)
                             (member-access/funcall-expr expr tokenizer)
                             expr))
