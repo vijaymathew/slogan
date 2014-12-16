@@ -499,16 +499,15 @@
   (if (eq? try-token 'try) 'with-exception-catcher 'with-exception-handler))
 
 (define (make-try-catch-expr try-token try-expr catch-args catch-expr finally-expr)
-  (if (void? finally-expr)
-      (list (get-exception-handler-fnname try-token)
-            (list 'lambda catch-args catch-expr)
-            (list 'lambda (list) try-expr))
-      (list 'let (list (list '*finally* (list 'lambda (list) finally-expr)))
+  (let ((try-expr (list (get-exception-handler-fnname try-token)
+			(list 'lambda catch-args catch-expr)
+			(list 'lambda (list) try-expr))))
+    (if (void? finally-expr) try-expr
+	(list 'let (list (list '*finally* (list 'lambda (list) finally-expr)))
             (list (get-exception-handler-fnname try-token)
-                  (list 'lambda catch-args `(with-exception-catcher 
-                                             (lambda (*e*) (if *finally* (begin (*finally*) (set! *finally* #f))) (raise *e*))
-                                             (lambda () ,catch-expr (if *finally* (begin (*finally*) (set! *finally* #f))))))
-                  (list 'lambda '() try-expr '(if *finally* (*finally*)))))))
+                  (list 'lambda '(*e*) '(begin (*finally*) (raise *e*)))
+                  (list 'lambda '() try-expr))
+	    '(*finally*)))))
                    
 (define (normalize-sym s)
   (if (and (list? s)
