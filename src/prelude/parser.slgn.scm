@@ -156,7 +156,7 @@
 (define (meta-fn-name? name)
   (and (symbol? name)
        (let ((s (symbol->string name)))
-	 (and (> 2 (string-length s))
+	 (and (> (string-length s) 2)
 	      (string-starts-with? s "~@")))))
 
 (define (func-def-stmt-from-name tokenizer #!optional is-lazy)
