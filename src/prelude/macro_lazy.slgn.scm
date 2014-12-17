@@ -259,3 +259,4 @@
 			  (if (name? (caar params))
 			      (remove-macro-lazy-fns-def (caar params)))))
 		   (loop (cdr params)))))))
+
