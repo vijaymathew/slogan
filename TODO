@@ -1,10 +1,1 @@
 
-   * Cleanup basic library functions - refer r6rs.     
-   * Exhaustive testing of basic syntax, macros, lazy functions, rvars, records, pattern matching and modules.        
-     
-  - Long term
-    
-    * Rewrite tutorial, docs, samples.
-
-
-
