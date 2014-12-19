@@ -26,17 +26,18 @@
       (load-stmt tokenizer)))
 
 (define (highligted-line colno)
+  (if (< colno 0)
+      (set! colno 1))
   (with-output-to-string
     '()
     (lambda ()
       (let loop ((n 0))
-        (if (= n colno) (display #\^)
-            (begin (display #\space)
-                   (loop (+ n 1))))))))
+	(if (= n colno) (display #\^)
+	    (begin (display #\space)
+		   (loop (+ n 1))))))))
 
 (define (highligted-error-line tokenizer)
   (let ((curr-tok-len (current-token-length tokenizer)))
-    (println curr-tok-len)
     (let loop ((line-no (tokenizer 'line)) 
                (n 1)
                (program-text (tokenizer 'program-text)))
