@@ -78,8 +78,8 @@
   (if (eq? (tokenizer 'peek) 'namespace)
       (begin (tokenizer 'next)
              (if (name? (tokenizer 'peek))
-                 (push-namespace (check-if-reserved-name (tokenizer 'next) tokenizer))
-                 (pop-namespace)))
+		 (push-namespace (check-if-reserved-name (tokenizer 'next) tokenizer))
+		 (pop-namespace)))
       (import-stmt tokenizer)))
 
 (define (import-with-prefix tokenizer ns-name import-names)
@@ -134,11 +134,13 @@
 
 (define (declare-generic-stmt tokenizer)
   (let ((name (tokenizer 'next)))
-    (if (name? name)
+    (if (symbol? name)
         (define-generic-method name tokenizer)
         (parser-error tokenizer "Expected generic method name."))))
 
 (define (define-generic-method name tokenizer)
+  (if (reserved-name? name)
+      (parser-error tokenizer "Keyword cannot be used as generic name."))
   `(define ,name 
      (lambda ,(func-params-expr tokenizer)
        (error "Generic method is not defined for these types."))))
@@ -161,7 +163,7 @@
 
 (define (func-def-stmt-from-name tokenizer #!optional is-lazy)
   (let ((name (tokenizer 'peek)))
-    (if (not (variable? name))
+    (if (not (symbol? name))
 	(if is-lazy (parser-error tokenizer "lazy function must have a name.")
 	    (let ((params (func-params-expr tokenizer)))
 	      (merge-lambda params (func-body-expr tokenizer params))))
@@ -221,8 +223,10 @@
 
 (define (method-def-stmt-from-name tokenizer)
   (let ((name (tokenizer 'peek)))
-    (if (not (variable? name))
+    (if (not (symbol? name))
         (parser-error tokenizer "Method must have a name."))
+    (if (reserved-name? name)
+	(parser-error tokenizer "Keyword cannot be used as method name."))
     (begin (tokenizer 'next)
            (remove-macro-lazy-fns-def name)
            (let ((types (method-types-decl tokenizer))
@@ -320,7 +324,7 @@
 (define (leave-scope) (pop-macros-lazy-fns))
 
 (define (define-stmt tokenizer)
-  (if (variable? (tokenizer 'peek))
+  (if (symbol? (tokenizer 'peek))
       (if (reserved-name? (tokenizer 'peek))
           (parser-error tokenizer "Keyword cannot be used as identifier.")
           (var-def-set (tokenizer 'next) tokenizer #t))
