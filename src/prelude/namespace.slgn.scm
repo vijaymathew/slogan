@@ -171,7 +171,7 @@
 (define (in-declared-imports? name) (memq name *declared-imported*))
 
 (define (declare-imported names)
-  (if (name? names)
+  (if (valid-identifier? names)
       (add-to-declared-imported! names)
       (let loop ((names names)
                  (expr '()))
