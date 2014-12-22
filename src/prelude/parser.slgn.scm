@@ -164,7 +164,7 @@
 
 (define (func-def-stmt-from-name tokenizer #!optional is-lazy)
   (let ((name (tokenizer 'peek)))
-    (if (not (symbol? name))
+    (if (eq? name '*open-paren*)
 	(if is-lazy (parser-error tokenizer "lazy function must have a name.")
 	    (let ((params (func-params-expr tokenizer)))
 	      (merge-lambda params (func-body-expr tokenizer params))))
@@ -776,7 +776,7 @@
 	     (bindings '()))
     (cond ((eq? token '*close-paren*)
 	   bindings)
-	  ((name? token)
+	  ((symbol? token)
 	   (check-if-reserved-name token tokenizer)
 	   (if (not (eq? (tokenizer 'next) '*assignment*))
 	       (parser-error tokenizer "Expected assignment."))
