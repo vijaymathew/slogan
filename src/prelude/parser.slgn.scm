@@ -397,7 +397,7 @@
                (parser-error tokenizer "Missing closing parenthesis after case clause."))
            (let loop ((token (tokenizer 'peek)) (last-expr #f) (body '()))
              (if last-expr (append `(case ,value) (reverse body))
-                 (let ((expr (normalize-sym (expression tokenizer))))
+                 (let ((expr (normalize-sym (case-pattern-expression tokenizer))))
                    (if (not (eq? (tokenizer 'peek) '*inserter*))
                        (parser-error tokenizer "Missing -> after case expression.")
                        (tokenizer 'next))
@@ -411,11 +411,23 @@
                                        result) body))))))))
         (else (match-expr tokenizer))))
 
+(define (case-pattern-expression tokenizer)
+  (if (eq? (tokenizer 'peek) 'else)
+      (begin 
+	(tokenizer 'next)
+	'else)
+      (expression tokenizer)))
+
 (define (pattern-expression tokenizer)
-  (tokenizer 'pattern-mode-on)
-  (let ((expr (expression tokenizer)))
-    (tokenizer 'pattern-mode-off)
-    expr))
+  (if (eq? (tokenizer 'peek) 'else)
+      (begin 
+	(tokenizer 'next)
+	'else)
+      (begin
+	(tokenizer 'pattern-mode-on)
+	(let ((expr (expression tokenizer)))
+	  (tokenizer 'pattern-mode-off)
+	  expr))))
 
 (define (unbound? r) (eq? r '*unbound*))
 
