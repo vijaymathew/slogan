@@ -649,7 +649,7 @@
                 ((eq? token '*quote*)
                  (tokenizer 'next)
                  (let ((sym (tokenizer 'peek)))
-                   (if (not (valid-identifier? sym))
+                   (if (not (symbol? sym))
                        (parser-error tokenizer "Expected symbol."))
                    (tokenizer 'next)
                    (if (tokenizer 'quote-mode?) sym
