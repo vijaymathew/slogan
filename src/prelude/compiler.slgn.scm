@@ -126,7 +126,7 @@
                  (newline)
                  (loop (cdr lines)))))))
 
-(define (repl port #!key (prompt "slogan> "))
+(define (slogan-repl port #!key (prompt "slogan> "))
   (if prompt (display prompt))
   (with-exception-catcher
    repl-exception-handler
@@ -149,7 +149,7 @@
        (if (and (not (void? val)))
            (begin (slgn-display val)
                   (newline))))))
-  (repl port prompt: prompt))
+  (slogan-repl port prompt: prompt))
 
 (define (run-slgn-script script-name) 
   (let ((program-text (read-script-file script-name)))

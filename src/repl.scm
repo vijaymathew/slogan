@@ -74,9 +74,9 @@
       (compile-script (get-arg-val "-x" args) args #t))
   (if (command-line-has-options? args)
       (if (has-arg? "-r" args)
-          (repl (current-input-port))
+          (slogan-repl (current-input-port))
           (exit 0))
-      (repl (current-input-port))))
+      (slogan-repl (current-input-port))))
 
 (process-args (command-line))
 

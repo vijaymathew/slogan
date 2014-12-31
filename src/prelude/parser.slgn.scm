@@ -141,9 +141,40 @@
 
 (define (define-generic-method name tokenizer)
   (check-if-reserved-name name tokenizer)
-  `(define ,name 
-     (lambda ,(func-params-expr tokenizer)
-       (error "Generic method is not defined for these types."))))
+  (let ((params (func-params-expr tokenizer)))
+    (let ((generic-expr
+	   `(define ,name 
+	      (lambda ,params
+	      (error "Method not defined.")))))
+      (if (eq? (tokenizer 'peek) 'cases)
+	  `(begin ,generic-expr ,@(generic-cases-expr tokenizer name params))
+	  generic-expr))))
+
+(define (generic-cases-expr tokenizer name params)
+  (tokenizer 'next)
+  (let loop ((types (method-types-decl tokenizer))
+	     (method-defs '())
+	     (found-else #f))
+    (if (not (eq? (tokenizer 'next) '*inserter*))
+	(parser-error tokenizer "Missing -> after types expression."))
+    (let ((mdef (cons types (list 'define name (merge-lambda 
+						params 
+						(func-body-expr tokenizer params))))))
+      (cond ((eq? (tokenizer 'peek) '*comma*)
+	     (tokenizer 'next)
+	     (cond ((eq? (tokenizer 'peek) 'else)
+		    (tokenizer 'next)
+		    (loop
+		     '()
+		     (cons (mk-method-def mdef) method-defs)
+		     #t))
+		   (else
+		    (loop (method-types-decl tokenizer)
+			  (cons (mk-method-def mdef) method-defs) #f))))
+	    (found-else
+	     (cons (mk-method-def mdef) (reverse method-defs)))
+	    (else
+	     (reverse (cons (mk-method-def mdef) method-defs)))))))
 
 (define (import-defs tokenizer)
   (if (valid-identifier? (tokenizer 'peek))
@@ -236,25 +267,27 @@
 (define (method-def-stmt tokenizer)
   (cond ((eq? (tokenizer 'peek) 'method)
          (tokenizer 'next)
-         (let ((method-def (method-def-stmt-from-name tokenizer)))
-           (let ((func-def (cdr method-def))
-                 (types (car method-def)))
-             (let ((name (cadr func-def))
-                   (params (cadr (caddr func-def)))
-                   (args (params->args (cadr (caddr func-def))))
-                   (body (caddr (caddr func-def))))
-               (let ((types-chk (mk-method-types-chk types args))
-                     (old-name (string->symbol 
-                                (string-append 
-                                 "*" 
-                                 (symbol->string name) 
-                                 "*"))))
-                 `(define ,name (let ((,old-name ,name))
-                                  (lambda ,params 
-                                    (if ,types-chk 
-                                        ,body 
-                                        (,old-name ,@args))))))))))
+         (mk-method-def (method-def-stmt-from-name tokenizer)))
         (else (record-def-stmt tokenizer))))
+
+(define (mk-method-def method-def)
+  (let ((func-def (cdr method-def))
+	(types (car method-def)))
+    (let ((name (cadr func-def))
+	  (params (cadr (caddr func-def)))
+	  (args (params->args (cadr (caddr func-def))))
+	  (body (caddr (caddr func-def))))
+      (let ((types-chk (mk-method-types-chk types args))
+	    (old-name (string->symbol 
+		       (string-append 
+			"*" 
+			(symbol->string name) 
+			"*"))))
+	`(define ,name (let ((,old-name ,name))
+			 (lambda ,params 
+			   (if ,types-chk 
+			       ,body 
+			       (,old-name ,@args)))))))))
   
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))
