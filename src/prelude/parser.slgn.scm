@@ -395,9 +395,14 @@
 
 (define (pair-literal tokenizer expr)
   (tokenizer 'next)
-  (if (tokenizer 'quote-mode?)
-      `(,expr . ,(expression tokenizer))
-      `(cons ,expr ,(expression tokenizer))))
+  (let ((stream-pair? (eq? (tokenizer 'peek) '*colon*)))
+    (if stream-pair? (tokenizer 'next))
+    (let ((tail-expr (if stream-pair? 
+			 `(delay ,(expression tokenizer))
+			 (expression tokenizer))))
+      (if (tokenizer 'quote-mode?)
+	  `(,expr . ,tail-expr)
+	  `(cons ,expr ,tail-expr)))))
 
 (define (then-expr tokenizer)
   (if (not (eq? (tokenizer 'next) '*close-paren*))

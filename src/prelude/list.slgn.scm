@@ -24,36 +24,10 @@
 (define (at i seq)
   (list-ref seq i))
 
-;; Lazy sequences in the form delay(head : tail).
-(define (first seq) (head (force seq)))
-
-(define (rest seq) (tail (force seq)))
-
-(define (nth n seq) 
-  (if (<= n 0)
-      (first seq)
-      (nth (- n 1) (rest seq))))
-
-(define (nth_tail n seq)
-  (if (<= n 0) (force seq)
-      (nth_tail (- n 1) (rest seq))))
-      
-(define (second seq) (nth 1 seq))
-(define (third seq) (nth 2 seq))
-(define (fourth seq) (nth 3 seq))
-(define (fifth seq) (nth 4 seq))
-(define (sixth seq) (nth 5 seq))
-(define (seventh seq) (nth 6 seq))
-(define (eighth seq) (nth 7 seq))
-(define (ninth seq) (nth 8 seq))
-(define (tenth seq) (nth 9 seq))
-;; :~ lazy sequences.
-
 (define (get key seq #!optional deflaut)
   (let ((mapping (assoc key seq)))
     (if mapping (cdr mapping) deflaut)))        
 
-(define for_each for-each)
 (define set_head set-car!)
 (define set_tail set-cdr!)
 (define list_to_string list->string)
@@ -80,18 +54,6 @@
          (list->table lst weak-keys: weak_keys
                       weak-values: weak_values test: test
                       min-load: min_load max-load: max_load))))
-
-(define (filter fn ls #!key drill)
-  (let loop ((ls ls)
-             (result '()))
-    (cond ((null? ls)
-           (reverse result))
-          ((and (list? (car ls)) drill)
-           (loop (cdr ls) (cons (filter fn (car ls) drill: drill) result)))
-          ((fn (car ls))
-           (loop (cdr ls) (cons (car ls) result)))
-          (else
-           (loop (cdr ls) result)))))
 
 (define (memp predic ls #!key default)
   (cond ((null? ls) default)
