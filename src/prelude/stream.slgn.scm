@@ -114,3 +114,9 @@
   (if (is_stream seq)
       (stream-accumulate fn initial seq)
       (fold_right fn initial seq)))
+
+(define (enumerate start end #!optional (cmpr <=) (next inc))
+    (if (cmpr start end)
+        (let ((elem (next start)))
+          (stream-cons start (enumerate elem end cmpr next)))
+        '()))
