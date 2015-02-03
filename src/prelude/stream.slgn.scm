@@ -12,7 +12,6 @@
 
 (define (is_stream obj)
   (and (pair? obj)
-       (not (list? obj))
        (is_promise (cdr obj))))
 
 (define (stream-at i stream)
