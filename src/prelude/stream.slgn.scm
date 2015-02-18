@@ -68,7 +68,7 @@
   (let ((stream? (is_stream ls)))
     (let ((car (if stream? first car))
 	  (cdr (if stream? rest cdr)))
-      (do ([ls ls (cdr ls)] [more more (map cdr more)])
+      (do ((ls ls (cdr ls)) (more more (map cdr more)))
 	  ((null? ls))
 	(apply f (car ls) (map car more))))))
 
