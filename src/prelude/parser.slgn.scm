@@ -227,19 +227,26 @@
     (if (not (for_all symbol? types-decl))
         (parser-error tokenizer "Invalid type declaration."))
     types-decl))
-    
+
+(define (mk-predic-name psym)
+  (string->symbol 
+   (string-append 
+    "is_" 
+    (symbol->string psym))))
+
 (define (mk-method-types-chk types args)
   (let loop ((types types)
              (args args)
              (chk-expr '()))
     (if (null? types) (append (list 'and) (reverse chk-expr))
-        (let ((predic-name (string->symbol 
-                            (string-append 
-                             "is_" 
-                             (symbol->string (car types))))))
-          (loop (cdr types) 
-                (cdr args) 
-                (cons `(,predic-name ,(car args)) chk-expr))))))
+        (let ((type-name (car types)))
+          (if (eq? type-name '@rest)
+              (loop (cddr types)
+                    (cdr args)
+                    (cons `(for_all ,(mk-predic-name (cadr types)) ,(car args)) chk-expr))
+              (loop (cdr types) 
+                    (cdr args) 
+                    (cons `(,(mk-predic-name (car types)) ,(car args)) chk-expr)))))))
 
 (define (params->args params)
   (let loop ((params params)
@@ -270,6 +277,9 @@
          (mk-method-def (method-def-stmt-from-name tokenizer)))
         (else (record-def-stmt tokenizer))))
 
+(define (types-has-rest? types)
+  (member '@rest types))
+
 (define (mk-method-def method-def)
   (let ((func-def (cdr method-def))
 	(types (car method-def)))
@@ -283,11 +293,14 @@
 			"*" 
 			(symbol->string name) 
 			"*"))))
-	`(define ,name (let ((,old-name ,name))
-			 (lambda ,params 
-			   (if ,types-chk 
-			       ,body 
-			       (,old-name ,@args)))))))))
+        (let ((parent-call (if (types-has-rest? types)
+                               `(apply ,old-name ,@args)
+                               `(,old-name ,@args))))
+          `(define ,name (let ((,old-name ,name))
+                           (lambda ,params 
+                             (if ,types-chk 
+                                 ,body
+                                 ,parent-call)))))))))
   
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))

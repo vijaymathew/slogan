@@ -443,10 +443,10 @@
         (if (not (char=? (port-pos-peek-char port) #\'))
             (if (char=? c #\') 
                 #\nul
-                (tokenizer-error "character constant not terminated. " c))
+                (tokenizer-error "invalid character constant."))
             (begin (port-pos-read-char! port)
                    c)))
-      (tokenizer-error "not a character literal.")))
+      (tokenizer-error "not a valid character literal.")))
 
 (define (read-special-character port)
   (port-pos-read-char! port)
