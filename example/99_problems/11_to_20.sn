@@ -1,0 +1,74 @@
+load "1_to_10";
+
+// 11. (*) Modified run-length encoding.
+//         Modify the result of problem 10 in such a way that if an element
+//         has no duplicates it is simply copied into the result list. 
+//         Only elements with duplicates are transferred as (N E) lists. 
+
+function encode_modified(xs) 
+    map(fn(xs) 
+	let (len = length(xs)) 
+	    if (len == 1) first(xs)
+	    else [length(xs) first(xs)],
+	pack(xs));
+
+assert(encode_modified(%[a a a a b c c a a d e e e e]),
+       %[[4 a] b [2 c] [2 a] d [4 e]]);
+
+// 12. (**) Decode a run-length encoded list. 
+
+function decode_modified(xs) 
+    fold_right(fn(a b) 
+            if (is_pair(a)) append(a b) 
+            else append([a] b),
+	   [],
+	   map(fn(xs) 
+       	        if (not(is_pair(xs))) xs
+	        else list_of(first(xs) second(xs)),
+	       xs));
+
+assert(decode_modified(encode_modified(%[a a a a b c c a a d e e e e])),
+       %[a a a a b c c a a d e e e e]);
+
+// 13. (**) Run-length encoding of a list (direct solution).
+//          Implement the so-called run-length encoding data compression method directly. 
+//          I.e. don't explicitly create the sublists containing the duplicates, as in problem 9, 
+//          but only count them. As in problem P11, simplify the result list by replacing the 
+//          singleton lists (1 X) by X. 
+
+function encode_append(r c x) append(r if (c == 1) [x] else [[c x]]);
+
+function encode_helper(c x1 xs r)
+    match(xs)
+	[] -> encode_append(r c x1),
+	x2 : xs where x1 == x2 -> encode_helper(inc(c) x2 xs r),
+        x2 : xs -> encode_helper(1 x2 xs encode_append(r c x1));
+
+function encode_direct(xs) 
+    match(xs)
+	[] -> [],
+	x : xs -> encode_helper(1 x xs []);
+
+assert(encode_direct(%[a a a a b c c a a d e e e e]),
+       %[[4 a] b [2 c] [2 a] d [4 e]]);
+
+// 14. (*) Duplicate the elements of a list. 
+
+function dupli(xs) 
+    match(xs) 
+	[] -> [],
+	x : xs -> x : x : dupli(xs);
+
+assert(dupli([ 1 2 3]),
+       [1, 1, 2, 2, 3, 3]);
+
+// 15. (**) Replicate the elements of a list a given number of times.
+
+function repli(n xs) 
+    match(xs) 
+	[] -> [],
+	x : xs -> append(list_of(n x)
+			 repli(n xs));
+
+assert(repli(3 %[a b c])
+       %[a, a, a, b, b, b, c, c, c]);
