@@ -1,0 +1,5 @@
+// A utility macro for testing.
+macro assert(expr result) 
+    let (r = expr) 
+	if (not(r == result)) 
+	    error("assert failed." %expr "->" r);

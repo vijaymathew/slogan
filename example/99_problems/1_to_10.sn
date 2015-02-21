@@ -1,0 +1,100 @@
+load "../util";
+
+// Problems on Lists - Part I.
+
+// 1. (*) Find the last element of a list.
+
+function my_last(xs) 
+    match(xs) 
+        [] -> [],
+	[x] -> x,
+	_ : xs -> my_last(xs);
+
+assert(my_last([1 2 3]) 3);
+assert(my_last(%[a b c d]) !d);
+
+// 2. (*) Find the last but one element of a list. 
+
+function my_but_last(xs)
+    match(xs)
+	[] -> [],
+	[x y] -> x,
+	_ : xs -> my_but_last(xs);
+
+assert(my_but_last([1 2 3 4]) 3);
+assert(my_but_last(range(1 100)) 99);
+
+// 3. (*) Find the K'th element of a list. The first element in the list is number 1. 
+
+function element_at(k xs) nth(dec(k) xs);
+
+assert(element_at(3 %[a b c d]) !c);
+
+// 4. Find the number of elements of a list. 
+
+function my_length(xs) 
+    match(xs) 
+	[] -> 0,
+	_ : xs -> inc(my_length(xs));
+
+assert(my_length([123 456 789]) 3);
+assert(my_length(string_to_list("hello")) 5);
+
+// 5. (*) Reverse a list. 
+
+function my_reverse(xs) 
+    fold_left(fn(a b) b : a
+	      []
+	      xs);
+
+assert(my_reverse([1 2 3 4 5]) [5 4 3 2 1]);
+assert(list_to_string(my_reverse(string_to_list("olleh"))) "hello");
+
+// 6. (*) Find out whether a list is a palindrome. A palindrome can be read forward or backward; e.g. (x a m a x).
+
+function is_palindrome(xs) xs == reverse(xs);
+
+assert(is_palindrome([1 2 3]) false);
+assert(is_palindrome(string_to_list("malayalam")) true);
+
+// 7. (**) Flatten a nested list structure. 
+
+function flatten(xs) 
+    match(xs) 
+	[] -> [],
+        x : xs where is_pair(x) -> append(flatten(x) 
+					  flatten(xs)),
+	x : xs -> x : flatten(xs);
+
+assert(flatten(%[a [b [c d] e]]) %[a b c d e]);
+
+// 8. (**) Eliminate consecutive duplicates of list elements. 
+
+function compress(xs) 
+    match(xs) 
+	[] -> [],
+        x1 : x2 : xs where x1 == x2 -> compress(x2: xs),
+	x : xs -> x : compress(xs);
+
+assert(list_to_string(compress(string_to_list("aaaabccaadeeee")))
+       "abcade");
+
+// 9. (**) Pack consecutive duplicates of list elements into sublists.
+//         If a list contains repeated elements they should be placed in separate sublists. 
+
+function pack(xs) 
+    match(xs) 
+	[] -> [],
+        x : xs -> (x : take_while(fn(y) y == x, xs)) : pack(drop_while(fn(y) y == x, xs));
+
+assert(pack(%[a a a a b c c a a d e e e e]) 
+       %[[a, a, a, a], [b], [c, c], [a, a], [d], [e, e, e, e]]);
+
+// 10. (*) Run-length encoding of a list. Use the result of problem P09 to implement 
+//         the so-called run-length encoding data compression method. Consecutive duplicates 
+//         of elements are encoded as lists (N E) where N is the number of duplicates of the element E. 
+
+function encode(xs) map(fn(xs) [length(xs) first(xs)] pack(xs));
+
+assert(encode(%[a a a a b c c a a d e e e e]),
+       %[[4, a], [1, b], [2, c], [2, a], [1, d], [4, e]]);

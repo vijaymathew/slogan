@@ -119,3 +119,46 @@
         (let ((elem (next start)))
           (stream-cons start (enumerate elem end cmpr next)))
         '()))
+
+(define (drop n lst)
+  (if (or (zero? n)
+	  (negative? n))
+      lst
+      (let loop ((lst lst)
+		 (n n))
+	(if (or (zero? n)
+		(null? lst))
+	    lst
+	    (loop (rest lst) (- n 1))))))
+
+(define (take n lst)
+  (if (or (zero? n)
+	  (negative? n))
+      '()
+      (let loop ((lst lst)
+		 (n n)
+		 (result '()))
+	(if (or (zero? n)
+		(null? lst))
+	    (reverse result)
+	    (loop (rest lst)
+		  (- n 1)
+		  (cons (first lst) result))))))
+
+(define (drop_while predic lst)
+  (let loop ((lst lst))
+    (if (or (null? lst)
+	    (not (predic (first lst))))
+	lst
+	(loop (rest lst)))))
+
+(define (take_while predic lst)
+  (let loop ((lst lst)
+	     (result '()))
+    (if (or (null? lst)
+	    (not (predic (first lst))))
+	(reverse result)
+	(loop (rest lst)
+	      (cons (first lst) result)))))
+
+  
