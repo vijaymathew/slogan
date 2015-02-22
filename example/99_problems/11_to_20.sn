@@ -72,3 +72,55 @@ function repli(n xs)
 
 assert(repli(3 %[a b c])
        %[a, a, a, b, b, b, c, c, c]);
+
+// 16. (**) Drop every N'th element from a list. 
+
+function drop_every(n i xs r) 
+    match(xs) 
+	[] -> reverse(r),
+	x : xs -> drop_every(n inc(i) xs
+			     if (is_zero(mod(i n))) r
+			     else x : r);
+
+function drop_nth(n xs) drop_every(n 1 xs []);
+
+assert(drop_nth(3 %[a b c d e f g h i k])
+       %[a, b, d, e, g, h, k]);
+
+// 17. (*) Split a list into two parts; the length of the first part is given.
+
+function split(n xs) [take(n xs) drop(n xs)];
+    
+assert(split(3 %[a b c d e f g h i k])
+       %[[a, b, c], [d, e, f, g, h, i, k]]);
+
+// 18. (**) Extract a slice from a list.
+//          Given two indices, i and k, the slice is the list containing 
+//          the elements between the i'th and k'th element of the original 
+//          list (both limits included). Start counting the elements with 1.
+
+function slice(i j xs) take(j - dec(i), drop(dec(i) xs));
+
+assert(slice(3 7 %[a b c d e f g h i k])
+       %[c, d, e, f, g]);
+
+// 19. (**) Rotate a list N places to the left. 
+
+function rotate(n xs) 
+    let (n = if (is_negative(n)) length(xs) + n
+  	      else n) 
+	append(drop(n xs) take(n xs));
+
+assert(rotate(-2, %[a b c d e f g h])
+       %[g, h, a, b, c, d, e, f]);
+assert(rotate(3 %[a b c d e f g h])
+       %[d, e, f, g, h, a, b, c]);
+
+// 20. (*) Remove the K'th element from a list. 
+
+function remove_at(n xs)
+    append(take(dec(n) xs)
+	   drop(n xs));
+
+assert(remove_at(2 %[a b c d])
+       %[a, c, d]);
