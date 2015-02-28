@@ -1,0 +1,72 @@
+load "../util";
+
+// 46. (**) Define predicates and/2, or/2, nand/2, nor/2, xor/2, impl/2
+//          and equ/2 (for logical equivalence) which succeed or fail according
+//          to the result of their respective operations; e.g. and(A,B) will succeed,
+//          if and only if both A and B succeed.
+//
+//          A logical expression in two variables can then be written as in the
+//          following example: and(or(A,B),nand(A,B)).
+//
+//          Now, write a predicate table/3 which prints the truth table of a
+//          given logical expression in two variables.
+
+function my_not(b) 
+    match(b) 
+        true -> false,
+        false -> true;
+
+function and_2(a b) 
+    match(a:b) 
+        true:true -> true,
+        _:_ -> false;
+
+function or_2(a b) 
+    match(a:b) 
+        false:false -> false,
+        _:_ -> true;
+
+function nor_2(a b) my_not(or_2(a b));
+
+function nand_2(a b) my_not(and_2(a b));
+
+function xor_2(a b) 
+    match(a:b) 
+        true:false -> true,
+        false:true -> true,
+        _:_ -> false;
+
+function impl_2(a b) or_2(not(a) b);
+
+function equ_2(a b) 
+    match(a:b) 
+        true:true -> true,
+        false:false -> true,
+        _:_ -> false;
+
+function table(f)  
+    [ [a b f(a b)]
+      | a <- [true false], b <- [true false]];
+
+assert(table(fn(a b) and_2(a or_2(a b)))
+       [[true, true, true],
+        [true, false, true],
+        [false, true, false],
+        [false, false, false]]);
+
+// 47. (*) Truth tables for logical expressions (2).
+//         Continue problem P46 by defining and/2, or/2, etc
+//         as being operators.
+
+// Using slogan's built-in logical operators:
+assert(table(fn(a b) a && (a || b))
+       [[true, true, true],
+        [true, false, true],
+        [false, true, false],
+        [false, false, false]]);
+
+// 48. (**) Truth tables for logical expressions (3).
+//          Generalize problem 47 in such a way that the
+//          logical expression may contain any number of logical variables.
+
+// TODO.
