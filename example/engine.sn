@@ -1,0 +1,32 @@
+// An implementation of multi-tasking kernel based on the paper "Engines from Continuations".
+// (http://www.cs.indiana.edu/cgi-bin/techreports/TRNNN.cgi?trnum=TR254)
+
+
+// Timer for implementing the interrupt mechanism.
+
+function make_timer(clock, handler) {
+
+    function stop() 
+        let (time_left = clock) {
+            clock = 0;
+            time_left
+        };
+
+    function decrement() 
+        if (clock > 0) {
+            clock = dec(clock);
+            if (is_zero(clock)) handler()
+        };
+        
+    fn(msg) 
+        match(msg) 
+            !stop -> stop(),
+            !decrement -> decrement()
+};
+
+macro timed_fn(timer, body) 
+    fn() {
+        timer.decrement;
+        body
+    };
+
