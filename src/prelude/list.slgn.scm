@@ -293,14 +293,14 @@
                 (cons ,result-expr *comprehension-result*)))
         (append 
          expr-acc 
-         `(let *comprehension-loop* ((*list* ,(car lists)))
+         `(let *comprehension-loop* ((*list* ,(first lists)))
             (if (not (null? *list*))
-                (let ((,(car vars) (car *list*)))
-                  (if ,(car filters)
+                (let ((,(first vars) (first *list*)))
+                  (if ,(first filters)
                       ,(mk-comprehension-loop 
-                        (cdr lists) (cdr vars) 
-                        (cdr filters) result-expr))
-                  (*comprehension-loop* (cdr *list*)))))))))
+                        (rest lists) (rest vars) 
+                        (rest filters) result-expr))
+                  (*comprehension-loop* (rest *list*)))))))))
 
 (define (list-comprehension lists vars filters result-expr)
   `(let ((*comprehension-result* (list)))
