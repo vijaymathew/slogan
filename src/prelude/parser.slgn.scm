@@ -398,7 +398,7 @@
       (parser-error tokenizer "Expected assignment.")))
 
 (define (expression tokenizer)
-  (let ((expr (binary-expr tokenizer)))
+  (let ((expr (cmpr-expr tokenizer)))
     (let loop ((expr expr)) 
       (cond ((eq? (tokenizer 'peek) '*open-paren*)
              (loop (func-call-expr expr tokenizer)))
@@ -606,16 +606,8 @@
                         (loop (append expr (list (expression/statement tokenizer)))
                               (+ 1 count)))))))))
 
-(define (binary-expr tokenizer)
-  (let loop ((expr (cmpr-expr tokenizer)))
-    (if (and-or-opr? (tokenizer 'peek))
-        (case (tokenizer 'next)
-          ((*and*) (loop (swap-operands (append (and-expr tokenizer) (list expr)))))
-          ((*or*) (loop (swap-operands (append (or-expr tokenizer) (list expr))))))
-        expr)))
-  
 (define (cmpr-expr tokenizer)
-  (let loop ((expr (addsub-expr tokenizer)))
+  (let loop ((expr (logical-and-expr tokenizer)))
     (if (cmpr-opr? (tokenizer 'peek))
         (case (tokenizer 'next)
           ((*equals*) (loop (swap-operands (append (eq-expr tokenizer) (list expr)))))
@@ -625,6 +617,20 @@
           ((*greater-than-equals*) (loop (swap-operands (append (gteq-expr tokenizer) (list expr))))))
         expr)))
 
+(define (logical-and-expr tokenizer)
+  (let loop ((expr (logical-or-expr tokenizer)))
+    (if (eq? '*and* (tokenizer 'peek))
+        (begin (tokenizer 'next)
+               (loop (swap-operands (append (and-expr tokenizer) (list expr)))))
+        expr)))
+
+(define (logical-or-expr tokenizer)
+  (let loop ((expr (addsub-expr tokenizer)))
+    (if (eq? '*or* (tokenizer 'peek))
+        (begin (tokenizer 'next)
+               (loop (swap-operands (append (or-expr tokenizer) (list expr)))))
+        expr)))
+  
 (define (addsub-expr tokenizer)
   (let loop ((expr (term-expr tokenizer)))
     (if (add-sub-opr? (tokenizer 'peek))
@@ -1203,25 +1209,25 @@
   (swap-operands (cons '/ (list (factor-expr tokenizer)))))
 
 (define (eq-expr tokenizer)
-  (swap-operands (cons 'equal? (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'equal? (list (logical-and-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
-  (swap-operands (cons '< (list (addsub-expr tokenizer)))))
+  (swap-operands (cons '< (list (logical-and-expr tokenizer)))))
 
 (define (lteq-expr tokenizer)
-  (swap-operands (cons '<= (list (addsub-expr tokenizer)))))
+  (swap-operands (cons '<= (list (logical-and-expr tokenizer)))))
 
 (define (gt-expr tokenizer)
-  (swap-operands (cons '> (list (addsub-expr tokenizer)))))
+  (swap-operands (cons '> (list (logical-and-expr tokenizer)))))
 
 (define (gteq-expr tokenizer)
-  (swap-operands (cons '>= (list (addsub-expr tokenizer)))))
+  (swap-operands (cons '>= (list (logical-and-expr tokenizer)))))
 
 (define (and-expr tokenizer)
-  (swap-operands (cons 'and (list (cmpr-expr tokenizer)))))
+  (swap-operands (cons 'and (list (logical-or-expr tokenizer)))))
 
 (define (or-expr tokenizer)
-  (swap-operands (cons 'or (list (cmpr-expr tokenizer)))))
+  (swap-operands (cons 'or (list (addsub-expr tokenizer)))))
 
 (define (term-expr tokenizer)
   (let loop ((expr (factor-expr tokenizer)))
