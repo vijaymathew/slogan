@@ -95,3 +95,64 @@ assert(gray(3)
         [1, 0, 1], [1, 0, 0],
         [1, 1, 0], [1, 1, 1]]);
 
+
+// 50 (***) Huffman codes.
+
+// This solution is based on the Huffman encoding exercise is SICP.
+// TODO: Align solution to the original 99 problem defintion.
+
+function make_leaf(sym weight) [!leaf sym weight];
+function is_leaf(obj) first(obj) == !leaf;
+function symbol_leaf(leaf) second(leaf);
+function weight_leaf(leaf) third(leaf);
+
+function make_code_tree(left right) 
+    [left
+     right
+     append(symbols(left) symbols(right))
+     weight(left) + weight(right)];
+
+function left_branch(tree) first(tree);
+function right_branch(tree) first(rest(tree));
+
+function symbols(tree) 
+    if (is_leaf(tree)) [symbol_leaf(tree)]
+    else first(rest(rest(tree)));
+
+function weight(tree) 
+    if (is_leaf(tree)) weight_leaf(tree)
+    else first(rest(rest(rest(tree))));
+
+function decode(bits tree) {
+    function decode_1(bits current_branch) 
+        if (is_empty(bits)) nil
+        else let (next_branch = choose_branch(first(bits) current_branch)) 
+            if (is_leaf(next_branch)) symbol_leaf(next_branch) : decode_1(rest(bits) tree)
+            else decode_1(rest(bits) next_branch);
+    decode_1(bits tree)
+};
+
+function choose_branch(bit branch) 
+    if (bit == 0) left_branch(branch)
+    else if (bit == 1) right_branch(branch)
+    else error("bad bit -- choose_branch" bit);
+
+function encode(message tree) 
+    if (is_empty(message)) nil
+    else append(encode_symbol(first(message) tree)
+                encode(rest(message) tree));
+
+function encode_symbol(symbol tree) {
+    function has_symbol(sym branch) member(sym symbols(branch));
+    if (is_leaf(tree)) nil
+    else let (left = left_branch(tree)
+              right = right_branch(tree)) 
+        if (has_symbol(symbol left)) 0 : encode_symbol(symbol left)
+        else if (has_symbol(symbol right)) 1 : encode_symbol(symbol right)
+        else error("symbol not in tree" symbol)
+};
+
+define sample_tree = make_code_tree(make_leaf(!A 4), make_code_tree(make_leaf(!B 2), make_code_tree(make_leaf(!D 1) make_leaf(!C 1))));
+define message = %[A D A B B C A];
+assert(decode(encode(message sample_tree) sample_tree)
+       message);
