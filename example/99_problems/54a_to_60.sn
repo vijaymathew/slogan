@@ -1,0 +1,11 @@
+load "../util";
+
+// Representing binary trees with a record:
+
+record tree (left, right);
+
+// 54a. (*) Check whether a given term represents a binary tree.
+// Requires no solution. The predicate is_tree() is auto-generated.
+
+assert(is_tree(tree(left = 1, right = tree(left = 2, right = 3))), true);
+assert(is_tree([1 [2 3]]), false);
