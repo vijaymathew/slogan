@@ -1,8 +1,5 @@
-Slogan is a general purpose expression oriented programming language 
-with facilities for concurrent computing.
-
-This implementation comes with an interpreter and a compiler for 
-generating platform specific executable binaries.
+Slogan is a general purpose functional programming language with facilities for concurrent computing.
+This implementation comes with an interpreter and a compiler for generating platform specific executable binaries.
 
 ###Building and running Slogan
 
@@ -20,6 +17,4 @@ For the Slogan compiler to work properly, you have to point the environment vari
 
     $ export SLOGAN_ROOT=/home/me/dir_where_i_checked_out_slogan
 
-Slogan is in active development and can be considered alpha quality software.
-Some parts of the implementation like the macro and lazy function expander requires extensive validation.
 Please send your comments, suggestions and bug reports to vijay.the.lisper@gmail.com.
