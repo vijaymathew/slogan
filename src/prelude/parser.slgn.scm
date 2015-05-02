@@ -223,10 +223,12 @@
     types-decl))
 
 (define (mk-predic-name psym)
-  (string->symbol 
-   (string-append 
-    "is_" 
-    (symbol->string psym))))
+  (if (eq? psym '_)
+      'is_object
+      (string->symbol 
+       (string-append 
+        "is_" 
+        (symbol->string psym)))))
 
 (define (mk-method-types-chk types args)
   (let loop ((types types)

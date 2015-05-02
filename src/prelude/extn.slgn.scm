@@ -12,6 +12,8 @@
 (define (is_true obj) (eq? obj #t))
 (define (is_false obj) (eq? obj #f))
 
+(define (is_object obj) (not (void? obj)))
+
 (define (current_exception_handler) 
   (current-exception-handler))
 
