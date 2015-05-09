@@ -1,0 +1,16 @@
+load "util";
+
+// Using continutaion to short-circuit evaluation:
+function product(xs) 
+    callcc(fn(return) {
+        fn loop(xs, n)
+            match (xs : n) 
+                [] : n -> n,
+                (0:_) : _ -> return(0),
+                (i:r) : n -> loop(r, i * n);
+        loop(xs, 1)
+    });
+
+assert(product([1 2 3]), 6);
+assert(product([]), 1);
+assert(product([2]), 2);
