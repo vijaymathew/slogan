@@ -139,11 +139,13 @@
                  (conds '()))
         (cond ((null? members)
                (let ((body '(set! *match-found* #t)))
-                 (append prefix (list (if (null? conds) 
-                                          `(if #t ,body)
-                                          `(if (and ,@(reverse conds)) 
-                                               ,body 
-                                               (set! *match-found* #f)))))))
+                 (append
+                  (append prefix (list (if (null? conds) 
+                                           `(if #t ,body)
+                                           `(if (and ,@(reverse conds)) 
+                                                ,body 
+                                                (set! *match-found* #f)))))
+                  (list '(set! *match-found* #f)))))
               ((symbol? (car members))
                (let ((s (car members)))
                  (if (not (eq? s '_))
