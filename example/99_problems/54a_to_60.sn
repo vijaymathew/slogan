@@ -41,3 +41,7 @@ function is_symmetric(t)
 assert(is_symmetric(tree(left = 1, right = 2)), true);
 assert(is_symmetric(tree(left = 1, right = tree(left = 100, right = 200))), false);
 assert(is_symmetric(tree(left = tree(left = 1, right = 2), right = tree(left = 100, right = 200))), true);
+
+//  57. (**) Binary search trees (dictionaries)
+
+
