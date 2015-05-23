@@ -26,7 +26,7 @@
  {
    if (ptr == NULL)
      {
-       printf ("failed to load function %s.\n", name);
+       fprintf (stderr, "failed to load function %s.\n", name);
        exit (1);
      }
  }
