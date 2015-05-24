@@ -1,6 +1,6 @@
 load "util";
 
-// Demonstrates image generation using list-comprension.
+// Demonstrates image generation using list-comprehension.
 
 function wallpaper(corna, cornb, side) 
     let (img = mkimage(100, 100)) {
@@ -17,7 +17,7 @@ function wallpaper(corna, cornb, side)
 	image_show(img)
     };
 
-// Sample usage:
+// Usage:
 /*
 define f = open_file_output_port("wallpaper.ppm");
 show(port = f, wallpaper(9, 5, 5));
