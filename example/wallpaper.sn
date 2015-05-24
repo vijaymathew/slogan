@@ -1,0 +1,25 @@
+load "util";
+
+// Demonstrates image generation using list-comprension.
+
+function wallpaper(corna, cornb, side) 
+    let (img = mkimage(100, 100)) {
+	[[letseq (x = 10 + i * side/100, 
+		  y = 10 + j * side/100, 
+		  c = truncate(x * x + y * y))
+	  if (is_zero(mod(c, 2)))
+	      image_put_pixel(img, i j 1) 
+	  else 
+	      image_put_pixel(img, 0 0 0)
+	  | 
+	  j <- range(1, 100)] 
+	 | i <- range(1 100)];
+	image_show(img)
+    };
+
+// Sample usage:
+/*
+define f = open_file_output_port("wallpaper.ppm");
+show(port = f, wallpaper(9, 5, 5));
+close_port(f);
+*/
