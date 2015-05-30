@@ -1,0 +1,68 @@
+macro times(n, expr) 
+    %let loop (c = %%n) 
+    if (c > 0) { %%expr; 
+                 loop(c - 1) };
+
+times(10, showln("hello"));
+// -> hello
+//    hello 
+//    ...
+
+macro nif(expr pos zero neg) 
+        %let (r = %%expr) 
+            if (is_positive(r)) %%pos
+            else if (is_zero(r)) %%zero
+            else %%neg;
+
+nif(1 - 2, showln("+"), showln("0"), showln("-"));
+// -> -
+
+macro when(test body) %if(%%test) %%body;
+
+when(1 < 2, showln("hello"));
+// -> hello
+
+macro while(test body) %let loop () if (%%test) { %%body; loop() };
+
+let (i = 0) while(i < 10, { showln("hello"); i = i + 1 });
+// -> hello
+//    hello
+//    ...
+
+macro dolist(var xs body) %for_each(fn(%%var) %%body, %%xs);
+
+dolist(x, [1 2 3], showln(x * 100));
+// -> 100
+//    200
+//    300
+
+macro let_when(var expr body) %let (%%var = %%expr) when(%%var, %%body);
+
+let_when(x, 2 * 2, showln(x * 10));
+// -> 40
+let_when(x, 2 < 2, showln(x * 10));
+// 
+
+macro my_and(@rest args) 
+    let (len = length(args)) 
+        if (len == 0) true
+        else if (len == 1) first(args)
+        else %if (%%first(args)) my_and(%%%tail(args)) else false;
+
+my_and(1 2 3 { showln("ok"); 4 });
+// -> ok
+// => 4
+my_and(1 2 false { showln("ok"); 4 });
+// => false
+
+macro for(var start stop body) 
+   %let loop (%%var = %%start) 
+        if (%%{var} < %%{stop}) { %%body; loop(inc(%%var)) };
+
+for(i, 0, 10, showln(i));
+// -> 0
+//    1
+//    ...
+
+
+    

@@ -2,7 +2,8 @@ load "util";
 
 // Demonstrates image generation using list-comprehension.
 
-function wallpaper(corna, cornb, side) 
+function wallpaper(corna, cornb, side)
+    let (r = range(1, 100))
     let (img = mkimage(100, 100)) {
 	[[letseq (x = 10 + i * side/100, 
 		  y = 10 + j * side/100, 
@@ -12,8 +13,8 @@ function wallpaper(corna, cornb, side)
 	  else 
 	      image_put_pixel(img, 0 0 0)
 	  | 
-	  j <- range(1, 100)] 
-	 | i <- range(1 100)];
+	  j <- r] 
+	 | i <- r];
 	image_show(img)
     };
 
