@@ -676,7 +676,7 @@
                 ((eq? token '*open-bracket*)
                  (list-literal tokenizer))
                 ((eq? token '*open-brace*)
-                 (block-expr tokenizer #t))
+                 (block-expr tokenizer (not (tokenizer 'macro-mode?))))
                 ((eq? token '*hash*)
                  (array-literal tokenizer))
 		((eq? token '*quasiquote*)
