@@ -64,5 +64,16 @@ for(i, 0, 10, showln(i));
 //    1
 //    ...
 
+// How to use a macro to define a new global variable:
+macro def(var, value) %{define %%var = %%value};
 
-    
+def(x, 100);
+showln(x);
+// -> 100
+
+// How to use a macro to update a variable:
+macro null(var) %`set!`(%%var, nil);
+
+null(x);
+showln(x);
+// -> []
