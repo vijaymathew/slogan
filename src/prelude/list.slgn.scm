@@ -230,7 +230,7 @@
       (assert-equal-lengths ls more))
   (let fold-left ((obj obj) (ls ls) (more more))
     (if (null? ls) obj
-        (fold-left (apply f obj (car ls) (map car more)) 
+        (fold-left (apply f (car ls) obj (map car more)) 
                    (cdr ls) 
                    (map cdr more)))))
 
