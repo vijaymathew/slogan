@@ -1,0 +1,55 @@
+
+// Examples of declarative concurrency.
+
+load "util";
+
+// Generate a squares from a list.
+// First we do that sequentially and then concurrently.
+// As we do declarative concurrency, the results are same
+// in both cases.
+
+function gen(l h) {
+    task_sleep(.1);
+    if (l > h) nil else l : gen(l+1, h)
+};
+
+assert(map(fn(x) {showln(x); x * x}, gen(1, 10)), [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]);
+
+define xs = ?;
+define ys = ?;
+task({?xs = gen(1, 10)});
+task({?ys = map(fn(x) {showln(x); x * x}, ?xs)});
+assert(?ys, [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]);
+
+// Reactive variables combiled with lazy streams lets us build
+// the result list incrementally:
+
+function gen(l h) {
+    task_sleep(.1);
+    if (l > h) nil else l :: gen(l+1, h)
+};
+
+define xs = ?;
+define ys = ?;
+task({?xs = gen(1, 10)});
+task({?ys = map(fn(x) {showln(x); x * x}, ?xs)});
+assert(nth(3, ?ys), 16);
+
+// Streams using reactive variables:
+
+function generate(n limit xs) 
+    if (n < limit) {
+            ?xs = n : generate(n + 1, limit, rvar());
+            xs
+    } else [];
+
+function sum(xs a) 
+    match(?xs) 
+        [] -> a,
+        x : xr -> sum(xr, a + x);
+
+define xs = ?;
+define s = ?;
+task(generate(0, 150000, xs));
+task({?s = sum(xs, 0)});
+assert(?s, 11249925000);

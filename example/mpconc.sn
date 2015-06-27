@@ -1,0 +1,33 @@
+// Message-passing concurrency.
+
+/* 
+   A Slogan task has an associated "mail box" or "message queue" where 
+   it can receive messages send by other tasks. Messaging between tasks is accomplished 
+   by two functions: task_send and task_receive. Let us get familiar with these functions  
+   by writing a simple "game". There are three players standing in a circle, tossing a ball 
+   among themselves. When a player catches the ball, he or she picks one of the other two 
+   randomly to pass-on the ball. The players are represented by tasks. Ball catching and throwing 
+   takes place through message passing. The ball is "thrown" to a player by sending that task a message 
+   in the format - !ball : name - where name is the name of the pitcher task. A name is assigned to 
+   each task by passing it as an extra argument to the task function. The task that "catches" the ball 
+   randomly selects a player and re-throws the ball to it. To prevent the players from furiously 
+   throwing balls at each other, we have also introduced a delay of one second between each throw.  
+   Let us put all this into a single function: 
+*/
+
+function player(others) {
+    match (task_receive()) 
+        !ball : p -> 
+            { showln(task_name(current_task()), " > ", p); 
+              task_sleep(1); 
+              task_send(at(random_integer(length(others)), others), 
+                        !ball : task_name(current_task())); 
+              player(others) }
+};
+
+// A game with three players can be started as follows:
+let (p1 = false, p2 = false, p3 = false) 
+{ p1 = task(player([p2, p3]), name = "player1"); 
+  p2 = task(player([p1, p3]), name = "player2"); 
+  p3 = task(player([p1, p2]), name = "player3"); 
+  task_send(p1, !ball : "referee") };
