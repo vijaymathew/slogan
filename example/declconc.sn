@@ -2,7 +2,7 @@
 // Examples of declarative concurrency.
 
 load "util";
-
+        
 // Generate a squares from a list.
 // First we do that sequentially and then concurrently.
 // As we do declarative concurrency, the results are same
@@ -21,7 +21,7 @@ task({?xs = gen(1, 10)});
 task({?ys = map(fn(x) {showln(x); x * x}, ?xs)});
 assert(?ys, [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]);
 
-// Reactive variables combiled with lazy streams lets us build
+// Reactive variables combined with lazy streams lets us build
 // the result list incrementally:
 
 function gen(l h) {
@@ -53,3 +53,174 @@ define s = ?;
 task(generate(0, 150000, xs));
 task({?s = sum(xs, 0)});
 assert(?s, 11249925000);
+
+// Multiple readers:
+define xs = ?;
+define s1 = ?;
+define s2 = ?;
+define s3 = ?;
+task(generate(0, 150000, xs));
+task({?s1 = sum(xs, 0)});
+task({?s2 = sum(xs, 0)});
+task({?s3 = sum(xs, 0)});
+assert(?s1, 11249925000);
+assert(?s2, 11249925000);
+assert(?s3, 11249925000);
+
+// Transducers and Pipelines
+
+/* We can put a third stream object in between the producer and consumer.
+   This stream object reads the producer’s stream and creates another 
+   stream which is read by the consumer. This object is called a transducer.
+   (A sequence of stream objects each of which feeds the next is called a pipeline.)
+*/
+
+// Filter - a simple transducer:
+
+function filter_s(xs predic rs) 
+    match(?xs) 
+        [] -> ?rs = [],
+        x : xr -> if (predic(x)) filter_s(xr, predic, rs)
+        else let (r = ?) { filter_s(xr, predic, r); ?rs = x : r };
+
+define xs = ?;
+define ys = ?;
+define s = ?;
+task(generate(0, 150000, xs));
+task(filter_s(xs, is_odd, ys));
+task({?s = sum(ys, 0)});
+assert(?s, 5624925000);
+
+// Demand-driven flow control
+/* Sometimes the producer will generate more elements than the consumer can process. 
+   This can bog down system resources. One way to solve this problem is to limit the rate 
+   at which the producer generates new elements, so that some global condition is satisfied. 
+   This is called flow control. It requires that some information be sent back from the consumer 
+   to the producer. The simplest flow control is to let the producer to generate an element 
+   only when the consumer demands for it. This is called demand-driven flow control. 
+   (The previous technique, where the producer generates an element whenever it likes, can be 
+   called supply-driven flow control.) Here is how to program a demand-driven producer/consumer pair:*/
+
+function producer(xs, n) 
+    if (not(is_empty(?xs)))  
+        match (?xs) 
+            x : xr -> 
+                { ?x = n; 
+                  producer(xr, n + 1) }; 
+
+function consumer(xs, a, limit) 
+    let (xr = ?) {
+            ?xs = ? : xr; 
+        let (x = head(?xs)) 
+        if (?x == limit) { ?xr = []; a } 
+	else consumer(xr, ?x + a, limit) };
+    
+define xs = ?;
+define result = ?;
+task({ ?result = consumer(xs, 0, 150000) }); 
+producer(xs, 0); 
+assert(?result, 11249925000);
+
+// Flow control with bounded buffers
+/* An optimum producer/consumer pair can be designed using a bounded buffer. 
+   A bounded buffer stores elements up to a maximum number, say n. 
+   The producer is allowed to get ahead of the consumer, but only until the buffer is full. 
+   This limits the extra resource usage to n elements. The consumer can take elements 
+   from the buffer immediately without waiting. This keeps throughput high. When the 
+   buffer has less than n elements, the producer is allowed to produce more elements, 
+   until the buffer is full.
+
+   A simple way to update the producer to make use of a bounded buffer is shown below. 
+   The producer call the helper function generate to initialize the buffer. It serves 
+   the consumer request from this buffer. When the buffer runs out generate is called again 
+   to replenish it: */
+
+function generate(n, s) 
+    let loop(n = n + 1, s = s ,r = []) 
+        if (s == 0) reverse(r)
+        else loop(n + 1,s - 1, n : r);
+ 
+function producer(xs, n, elems, bufsize) 
+    if (is_empty(elems)) producer(xs, n, generate(n, bufsize), bufsize)
+    else if (not(is_empty(?xs))) 
+        match (?xs) 
+            x : xr -> { ?x = head(elems); 
+ 	                producer(xr, head(elems), tail(elems), bufsize) };
+
+define xs = ?;
+define result = ?;
+task({ ?result = consumer(xs, 0, 150000) }); 
+producer(xs, 0, [], 10000); 
+assert(?result, 11249925000);
+
+// Lazy streams
+/* Until now we have evaluated expressions in order, from left to right. 
+   This is known as eager evaluation and is the default evaluation strategy. 
+   A second evaluation strategy called lazy evaluation is also possible. 
+   In lazy evaluation an expression is evaluated only when its value is needed. Consider the following program: */
+
+function f1(x) delay({ showln("f1"); 1 + x * (3 + x * (3 + x)) }); 
+function f2(x) delay({ showln("f2"); let (y = x * x) y * y }); 
+function f3(x) delay({ showln("f3"); x * 1 + x * 1 }); 
+
+define a = f1(10); 
+define b = f2(20); 
+define c = f3(30); 
+define d = force(a) + force(b); 
+assert(d, 161331);
+
+
+// We can use lazy evaluation to implement a new version of the demand-driven producer/consume pair:
+
+function generate(n) n : delay(generate(n + 1)); 
+function consumer(xs, a, limit) 
+    if (limit > 0) consumer(force(tail(xs)), a + head(xs), limit - 1) 
+    else a; 
+
+define xs = generate(0);
+assert(consumer(xs, 0, 150000), 11249925000);
+
+// Detecting task termination
+/* A common requirement that arises while programming with tasks is to detect the termination of 
+   a task and make another task wait on that event. The task_join function can be used to make a 
+   task wait until a child-task finishes its execution. The following program shows how to make the 
+   main task wait for a new task to join back: */
+
+define a = task({ task_sleep(10); showln("done.") });
+task_join(a);
+
+// Reactive variables can be used for detecting termination of multiple tasks.
+// The following program shows one way to do it:
+
+assert(let (x1 = ?, x2 = ?, x3 = ?) 
+       { task({ showln("task01 started."); task_sleep(5); ?x1 = true }); 
+         task({ showln("task02 started."); task_sleep(2); ?x2 = ?x1 }); 
+         task({ showln("task03 started."); task_sleep(3); ?x3 = ?x2 }); 
+         ?x3 },
+       true);
+
+/* Each task binds a reactive variable before terminating. The task that follows binds its 
+   reactive variable to the value bound by the previous task. This makes sure that each 
+   task has to wait for the previous task to finish. The termination of the last task can 
+   be detected by waiting for the last reactive variable to be bound. We can abstract this 
+   sequence of procedures into a generic function: */
+
+function barrier(fns)  
+    let (x = ?) {
+            ?x = true; 
+            let loop(fns = fns, x = x) 
+              match (fns) 
+               [] -> ?x, 
+               f : fs -> let (m = ?) 
+                        { task({ f(); ?m = ?x }); 
+                          loop(fs, m) }};
+
+/* Barrier takes a list of zero-argument functions, starts each function in its own task, 
+   and terminates after all these tasks terminate. It does termination detection using the 
+   same "short-circuiting" technique we used in the previous example. We can rewrite this 
+   example using barrier: */
+
+assert(barrier([fn() { showln("task01 started."); task_sleep(5) }, 
+                fn() { showln("task02 started."); task_sleep(2) }, 
+                fn() { showln("task03 started."); task_sleep(3) }]),
+       true);

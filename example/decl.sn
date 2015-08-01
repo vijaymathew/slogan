@@ -2,6 +2,28 @@
 
 load "util";
 
+// Programming with lists:
+function len(xs) 
+    match(xs) 
+        [] -> 0,
+        _ : xs -> inc(len(xs));
+
+assert(len(%[a b c]), length(%[a b c]));
+
+function iter_len(xs, n) 
+    match(xs) 
+        [] -> n,
+        _ : xs -> iter_len(xs, inc(n));
+
+assert(iter_len(%[a b c], 0), len(%[a b c]));
+
+function apnd(xs ys) 
+    match (xs : ys) 
+        [] : ys -> ys,
+        (x : xs) : ys -> x : apnd(xs ys);
+
+assert(apnd([1 2 3] [4 5 6]), [1 2 3 4 5 6]);
+        
 // Finding square roots with Newton's method:
 function sqrt(x) {
     function improve(guess) (guess + x/guess) / 2.0;
