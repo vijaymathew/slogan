@@ -177,3 +177,11 @@
              (else (string-set! result i (char-downcase c))
                    (loop (char-whitespace? c) (+ i 1)))))))))
           
+(define (string_to_u8array s)
+  (let ((len (string-length s))
+        (out (open-output-u8vector)))
+    (let loop ((i 0))
+      (if (>= i len)
+          (get-output-u8vector out)
+          (begin (write-u8 (char->integer (string-ref s i)) out)
+                 (loop (+ i 1)))))))

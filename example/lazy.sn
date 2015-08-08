@@ -58,3 +58,14 @@ function lfilter(xs, f)
 x = lfilter([1 2 3 4 5], is_odd);
 assert(nth(1, x), 3);
 assert(nth(2, x), 5);
+
+// Futures with lazy function:
+
+function lazy mk_future(expression) 
+    let (x = ?) {
+        task({?x = expression});
+        x
+    };
+
+define f = mk_future({task_sleep(3); 10 + 20});
+assert(?f, 30);

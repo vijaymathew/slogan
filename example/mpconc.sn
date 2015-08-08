@@ -1,5 +1,7 @@
 // Message-passing concurrency.
 
+load "util";
+
 /* 
    A Slogan task has an associated "mail box" or "message queue" where 
    it can receive messages send by other tasks. Messaging between tasks is accomplished 
@@ -26,8 +28,75 @@ function player(others) {
 };
 
 // A game with three players can be started as follows:
+/*
 let (p1 = false, p2 = false, p3 = false) 
 { p1 = task(player([p2, p3]), name = "player1"); 
   p2 = task(player([p1, p3]), name = "player2"); 
   p3 = task(player([p1, p2]), name = "player3"); 
   task_send(p1, !ball : "referee") };
+*/
+
+// Simple protocols.
+
+// RMI using reactive-variables:
+
+function server() {
+    match (task_receive()) 
+        [!calc, x, y] -> ?y = x * x + 2.0 * x + 2.0; 
+    server()
+};
+
+function client(s) 
+    let (y1 = ?, y2 = ?) {
+        task_send(s, [!calc, 10.0, y1]); 
+        assert(?y1, 122.); 
+        task_send(s, [!calc, 20.0, y2]); 
+        assert(?y2, 442.)
+    };
+
+//RMI with callback
+/* In certain cases a server may need additional information from 
+   the client for full-filling the original request. In such situations 
+   the server does a callback to the client. */
+
+function server() {
+    match (task_receive()) 
+        [!calc, client, x, y] -> 
+            let (d = ?) {
+                task_send(client, [!delta, d]); 
+                x = x + ?d; 
+                    ?y = x * x + 2.0 * x + 2.0;
+            }; 
+    server()
+};
+
+function client(i, s) 
+    let (y = ?) {
+        task_send(s, [!calc, current_task(), i, y]); 
+        match (task_receive()) [!delta, d] -> ?d = 1.0; 
+        ?y
+    };
+
+assert(client(10.0, task(server())), 145.);
+assert(client(20.0, task(server())), 485.);
+
+// RMI with function continuation:
+
+function server() {
+    match (task_receive()) 
+       [!calc, x, cont] -> cont(x * x + 2.0 * x + 2.0); 
+    server()
+}; 
+
+function client(s, d) 
+    let (cont = fn(y) assert(y * d, 12200))
+      task_send(s, [!calc, 10.0, cont]); 
+
+client(task(server()), 100);
+
+// An actor abstraction:
+function actor(msg_handler, exit_on = false) 
+    task(let loop (r = msg_handler(task_receive()))
+         if (not(r == exit_on)) loop(msg_handler(task_receive())));
+
+

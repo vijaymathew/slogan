@@ -104,6 +104,15 @@
 (define subu8array_move subu8vector-move!)
 (define u8array_shrink u8vector-shrink!)
 
+(define (u8array_to_string u8)
+  (let ((len (u8vector-length u8))
+        (out (open-output-string)))
+    (let loop ((i 0))
+      (if (>= i len)
+          (get-output-string out)
+          (begin (write-char (integer->char (u8vector-ref u8 i)) out)
+                 (loop (+ i 1)))))))
+
 (define s8array s8vector)
 (define (make_s8array dim #!optional (fill 0)) (make-s8vector dim fill))
 (define is_s8array s8vector?)

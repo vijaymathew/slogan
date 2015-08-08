@@ -179,3 +179,44 @@
                               "Object is not of proper length: " 
                               (lambda () (slgn-display (car rest))))))
                  (loop (cdr rest)))))))
+
+(define (has-envvars? path)
+  (let ((len (string-length path)))
+    (let loop ((i 0))
+      (if (< i len)
+          (if (char=? (string-ref path i) #\$)
+              #t
+              (loop (+ i 1)))
+          #f))))
+
+(define (extract-envvar path curri)
+  (let ((last$idx
+         (let ((len (string-length path)))
+           (let loop ((i curri))
+             (if (< i len)
+                 (if (char=? (string-ref path i) #\$)
+                     i
+                     (loop (+ i 1)))
+                 len)))))
+    (substring path curri last$idx)))
+  
+(define (expand-envvars path)
+  (if (has-envvars? path)
+      (let ((len (string-length path))
+            (currstr (open-output-string)))
+        (let loop ((i 0)
+                   (expr '()))
+          (if (< i len)
+              (let ((c (string-ref path i)))
+                (if (char=? c #\$)
+                    (let* ((var (extract-envvar path (+ i 1)))
+                           (skip (string-length var))
+                           (str (get-output-string currstr)))
+                      (set! currstr (open-output-string))
+                      (loop (+ i 2 skip) (cons `(getenv , var) (cons str expr))))
+                    (begin
+                      (write-char c currstr)
+                      (loop (+ i 1) expr))))
+              (reverse (append (cons (get-output-string currstr) expr) (list 'string-append))))))
+      path))
+                       

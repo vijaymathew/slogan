@@ -431,7 +431,8 @@
     (if (not (eof-object? c))
         (begin (port-pos-read-char! port)
                (if (char=? c #\*)
-                   (if (not (char=? (port-pos-read-char! port) #\/))
+                   (if (char=? (port-pos-peek-char port) #\/)
+                       (port-pos-read-char! port)
                        (loop (port-pos-peek-char port)))
                    (loop (port-pos-peek-char port)))))))
 
