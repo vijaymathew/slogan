@@ -1,0 +1,107 @@
+/**
+ * Base64 encoding/decoding.
+ * Sample usage:
+ * 
+ *  > import base64;
+ *  > define in = string_to_u8array("hello");
+ *  > define out = encode(in);
+ *  > in = decode(out);
+ *  > u8array_to_string(in);
+ *  => "hello"
+ *
+ * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
+ *
+**/
+
+namespace base64;
+
+define encmap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+function enci(c, mask, shift) 
+    bitwise_arithmetic_shift(bitwise_and(c, mask), shift);
+    
+function encode(in_u8array) 
+    let (outstr = open_string_output_port()) {
+        function encode_helper(in) {
+            let (len = u8array_length(in),
+                 c0 = u8array_at(in, 0),
+                 c1 = u8array_at(in, 1)) {
+                write_char(string_at(encmap, enci(c0, 0xFC, -2)), outstr);
+                if (len == 1) {
+                    write_char(string_at(encmap, enci(c0, 0x03, 4)), outstr);
+                    write_char('=', outstr);
+                    write_char('=', outstr)
+                } else {
+                    write_char(string_at(encmap, bitwise_ior(enci(c0, 0x03, 4), enci(c1, 0xF0, -4))), outstr);
+                    if (len == 2) {
+                        write_char(string_at(encmap, enci(c1, 0x0F, 2)), outstr);
+                        write_char('=', outstr)
+                    } else {
+                        let (c2 = u8array_at(in, 2)) {
+                            write_char(string_at(encmap, bitwise_ior(enci(c1, 0x0F, 2), enci(c2, 0xC0, -6))), outstr);
+                            write_char(string_at(encmap, bitwise_and(c2, 0x3F)), outstr);
+                            encode_helper(subu8array(in, 3, len))
+                        }
+                    }
+                }
+            }
+        };
+        encode_helper(in_u8array);
+        get_output_string(outstr)
+    };
+
+define decmap = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52,
+                 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, 0, -1, -1, -1,
+                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1,
+                 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
+                 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1, -1];
+
+function chk_illegal_b64(instr, i) 
+    if (i < 3) 
+        let (c = char_to_integer(string_at(instr, i))) {
+            if (c > 128 || at(c, decmap) == -1)
+                error("invalid character for base64 encoding", string_at(instr, i));
+            chk_illegal_b64(instr, inc(i))
+        };
+        
+function decode(instr) {
+    if (not(is_zero(bitwise_and(string_length(instr), 0x03))))
+        error("length of input must be an even multiple of 4.");
+    let (outu8 = open_byte_array_output_port()) {
+        function decode_helper(instr) {
+            chk_illegal_b64(instr, 0);
+            let (len = string_length(instr),
+                 c0 = char_to_integer(string_at(instr, 0)),
+                 c1 = char_to_integer(string_at(instr, 1)),
+                 c2 = char_to_integer(string_at(instr, 2)),
+                 c3 = char_to_integer(string_at(instr, 3))) {
+                write_byte(bitwise_ior(bitwise_arithmetic_shift(at(c0, decmap), 2),
+                                       bitwise_arithmetic_shift(bitwise_and(at(c1, decmap), 0x30), -4)),
+                           outu8);
+                if (not(char_is_eq(string_at(instr, 2), '='))) {
+                    write_byte(bitwise_ior(bitwise_arithmetic_shift(bitwise_and(at(c1, decmap), 0x0f),
+                                                                    4),
+                                           bitwise_arithmetic_shift(bitwise_and(at(c2, decmap), 0x3C),
+                                                                    -2)),
+                               outu8)
+                };
+                if (not(char_is_eq(string_at(instr, 3), '='))) {
+                    write_byte(bitwise_ior(bitwise_arithmetic_shift(bitwise_and(at(c2, decmap), 0x03),
+                                                                    6),
+                                           at(c3, decmap)),
+                               outu8)
+                };
+                if (len - 4 > 0) 
+                    decode_helper(substring(instr, 4, len));
+            }
+        };
+        decode_helper(instr);
+        get_output_bytes(outu8)
+    }
+};
+
+namespace;
+
