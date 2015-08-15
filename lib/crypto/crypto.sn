@@ -1,0 +1,6 @@
+namespace crypto;
+
+function initialize() ffi_open(string_append(getenv("SLOGAN_ROOT") "/lib/crypto/c/crypto.so"));
+function release(handle) ffi_close(handle);
+
+namespace;

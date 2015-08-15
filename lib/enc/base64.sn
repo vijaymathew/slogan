@@ -16,9 +16,12 @@
 namespace base64;
 
 define encmap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+define bshift = bitwise_arithmetic_shift;
+define band = bitwise_and;
+define bior = bitwise_ior;
 
 function enci(c, mask, shift) 
-    bitwise_arithmetic_shift(bitwise_and(c, mask), shift);
+    bshift(band(c, mask), shift);
     
 function encode(in_u8array) 
     let (outstr = open_string_output_port()) {
@@ -32,14 +35,14 @@ function encode(in_u8array)
                     write_char('=', outstr);
                     write_char('=', outstr)
                 } else {
-                    write_char(string_at(encmap, bitwise_ior(enci(c0, 0x03, 4), enci(c1, 0xF0, -4))), outstr);
+                    write_char(string_at(encmap, bior(enci(c0, 0x03, 4), enci(c1, 0xF0, -4))), outstr);
                     if (len == 2) {
                         write_char(string_at(encmap, enci(c1, 0x0F, 2)), outstr);
                         write_char('=', outstr)
                     } else {
                         let (c2 = u8array_at(in, 2)) {
-                            write_char(string_at(encmap, bitwise_ior(enci(c1, 0x0F, 2), enci(c2, 0xC0, -6))), outstr);
-                            write_char(string_at(encmap, bitwise_and(c2, 0x3F)), outstr);
+                            write_char(string_at(encmap, bior(enci(c1, 0x0F, 2), enci(c2, 0xC0, -6))), outstr);
+                            write_char(string_at(encmap, band(c2, 0x3F)), outstr);
                             encode_helper(subu8array(in, 3, len))
                         }
                     }
@@ -68,7 +71,7 @@ function chk_illegal_b64(instr, i)
         };
         
 function decode(instr) {
-    if (not(is_zero(bitwise_and(string_length(instr), 0x03))))
+    if (not(is_zero(band(string_length(instr), 0x03))))
         error("length of input must be an even multiple of 4.");
     let (outu8 = open_byte_array_output_port()) {
         function decode_helper(instr) {
@@ -78,20 +81,20 @@ function decode(instr) {
                  c1 = char_to_integer(string_at(instr, 1)),
                  c2 = char_to_integer(string_at(instr, 2)),
                  c3 = char_to_integer(string_at(instr, 3))) {
-                write_byte(bitwise_ior(bitwise_arithmetic_shift(at(c0, decmap), 2),
-                                       bitwise_arithmetic_shift(bitwise_and(at(c1, decmap), 0x30), -4)),
+                write_byte(bior(bshift(at(c0, decmap), 2),
+                                bshift(band(at(c1, decmap), 0x30), -4)),
                            outu8);
                 if (not(char_is_eq(string_at(instr, 2), '='))) {
-                    write_byte(bitwise_ior(bitwise_arithmetic_shift(bitwise_and(at(c1, decmap), 0x0f),
-                                                                    4),
-                                           bitwise_arithmetic_shift(bitwise_and(at(c2, decmap), 0x3C),
-                                                                    -2)),
+                    write_byte(bior(bshift(band(at(c1, decmap), 0x0f),
+                                           4),
+                                           bshift(band(at(c2, decmap), 0x3C),
+                                                  -2)),
                                outu8)
                 };
                 if (not(char_is_eq(string_at(instr, 3), '='))) {
-                    write_byte(bitwise_ior(bitwise_arithmetic_shift(bitwise_and(at(c2, decmap), 0x03),
-                                                                    6),
-                                           at(c3, decmap)),
+                    write_byte(bior(bshift(band(at(c2, decmap), 0x03),
+                                           6),
+                                    at(c3, decmap)),
                                outu8)
                 };
                 if (len - 4 > 0) 

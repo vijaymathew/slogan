@@ -1,0 +1,24 @@
+/**
+ * AES-128/256 encryption and decryption.
+ * See the README file for sample usage.
+ * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
+ **/
+
+namespace aes;
+
+function enc_dec_helper(handle, key, iv, input, enc) 
+    letseq (len = u8array_length(input),
+            out = make_u8array(len)) {
+        ffi_call_void_6(handle, "crypto_aes", key, iv,
+                        input, out, len,
+                        if (enc) 1 else 0);
+        out
+    };
+    
+function encrypt(handle, key, iv, input) 
+    enc_dec_helper(handle, key, iv, input, true);
+
+function decrypt(handle, key, iv, input) 
+    enc_dec_helper(handle, key, iv, input, false);
+    
+namespace;

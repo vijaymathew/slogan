@@ -1,0 +1,14 @@
+#!/bin/bash
+
+src_pref=$SLOGAN_ROOT/lib/crypto/c
+src_files="$src_pref/des.c $src_pref/aes.c"
+incs="-I$SLOGAN_ROOT/src/include -I$SLOGAN_ROOT/platform/gsc/include"
+out_file=$src_pref/crypto.so
+unamestr=`uname`
+
+if [[ "$unamestr" == 'Darwin' ]]; then
+    gcc -dynamiclib $incs -Wl,-undefined -Wl,dynamic_lookup -o $out_file $src_files
+else # Linux and maybe BSDs?
+    gcc -Wall -shared $incs -fPIC -o $out_file $src_files
+fi
+
