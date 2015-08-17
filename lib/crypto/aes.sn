@@ -15,10 +15,10 @@ function enc_dec_helper(handle, key, iv, input, enc)
         out
     };
     
-function encrypt(handle, key, iv, input) 
+function encrypt(key, iv, input, @optional handle) 
     enc_dec_helper(handle, key, iv, input, true);
 
-function decrypt(handle, key, iv, input) 
+function decrypt(key, iv, input, @optional handle) 
     enc_dec_helper(handle, key, iv, input, false);
     
 namespace;

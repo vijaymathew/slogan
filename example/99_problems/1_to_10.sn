@@ -42,11 +42,13 @@ assert(my_length(string_to_list("hello")) 5);
 
 // 5. (*) Reverse a list. 
 
-function my_reverse(xs) 
-    fold_left(fn(a b) b : a
-	      []
-	      xs);
-
+function my_reverse(xs) {
+    function helper(xs, sx) 
+        if (is_empty(xs)) sx
+        else helper(rest(xs), first(xs) : sx);
+    helper(xs, [])
+};
+    
 assert(my_reverse([1 2 3 4 5]) [5 4 3 2 1]);
 assert(list_to_string(my_reverse(string_to_list("olleh"))) "hello");
 

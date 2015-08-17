@@ -340,7 +340,7 @@
   (remove-macro-lazy-fns-def macro-name)
   (tokenizer 'macro-mode-on)
   (eval (let ((expr (list 'define macro-name (func-def-stmt-from-name tokenizer #f #t))))
-          (add-def-to-namespace expr)))
+          (add-def-to-namespace expr #t)))
   (def-macro macro-name #t)
   (tokenizer 'macro-mode-off)
   *void*)
@@ -388,7 +388,7 @@
       (parser-error tokenizer "Expected assignment.")))
 
 (define (expression tokenizer)
-  (let ((expr (cmpr-expr tokenizer)))
+  (let ((expr (logical-and-expr tokenizer)))
     (let loop ((expr expr)) 
       (cond ((eq? (tokenizer 'peek) '*open-paren*)
              (loop (func-call-expr expr tokenizer)))
@@ -600,7 +600,7 @@
                               (+ 1 count)))))))))
 
 (define (cmpr-expr tokenizer)
-  (let loop ((expr (logical-and-expr tokenizer)))
+  (let loop ((expr (addsub-expr tokenizer)))
     (if (cmpr-opr? (tokenizer 'peek))
         (case (tokenizer 'next)
           ((*equals*) (loop (swap-operands (append (eq-expr tokenizer) (list expr)))))
@@ -618,7 +618,7 @@
         expr)))
 
 (define (logical-or-expr tokenizer)
-  (let loop ((expr (addsub-expr tokenizer)))
+  (let loop ((expr (cmpr-expr tokenizer)))
     (if (eq? '*or* (tokenizer 'peek))
         (begin (tokenizer 'next)
                (loop (swap-operands (append (or-expr tokenizer) (list expr)))))
@@ -1202,25 +1202,25 @@
   (swap-operands (cons '/ (list (factor-expr tokenizer)))))
 
 (define (eq-expr tokenizer)
-  (swap-operands (cons 'equal? (list (logical-and-expr tokenizer)))))
+  (swap-operands (cons 'equal? (list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
-  (swap-operands (cons '< (list (logical-and-expr tokenizer)))))
+  (swap-operands (cons '< (list (addsub-expr tokenizer)))))
 
 (define (lteq-expr tokenizer)
-  (swap-operands (cons '<= (list (logical-and-expr tokenizer)))))
+  (swap-operands (cons '<= (list (addsub-expr tokenizer)))))
 
 (define (gt-expr tokenizer)
-  (swap-operands (cons '> (list (logical-and-expr tokenizer)))))
+  (swap-operands (cons '> (list (addsub-expr tokenizer)))))
 
 (define (gteq-expr tokenizer)
-  (swap-operands (cons '>= (list (logical-and-expr tokenizer)))))
+  (swap-operands (cons '>= (list (addsub-expr tokenizer)))))
 
 (define (and-expr tokenizer)
   (swap-operands (cons 'and (list (logical-or-expr tokenizer)))))
 
 (define (or-expr tokenizer)
-  (swap-operands (cons 'or (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'or (list (cmpr-expr tokenizer)))))
 
 (define (term-expr tokenizer)
   (let loop ((expr (factor-expr tokenizer)))
