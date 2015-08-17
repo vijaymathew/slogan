@@ -1202,19 +1202,19 @@
   (swap-operands (cons '/ (list (factor-expr tokenizer)))))
 
 (define (eq-expr tokenizer)
-  (swap-operands (cons 'equal? (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'safe-equal? (list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
-  (swap-operands (cons '< (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'safe-< (list (addsub-expr tokenizer)))))
 
 (define (lteq-expr tokenizer)
-  (swap-operands (cons '<= (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'safe-<= (list (addsub-expr tokenizer)))))
 
 (define (gt-expr tokenizer)
-  (swap-operands (cons '> (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'safe-> (list (addsub-expr tokenizer)))))
 
 (define (gteq-expr tokenizer)
-  (swap-operands (cons '>= (list (addsub-expr tokenizer)))))
+  (swap-operands (cons 'safe->= (list (addsub-expr tokenizer)))))
 
 (define (and-expr tokenizer)
   (swap-operands (cons 'and (list (logical-or-expr tokenizer)))))

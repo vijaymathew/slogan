@@ -60,3 +60,17 @@
 (define (until p f x) (if (p x) x (until p f (f x))))
 
 (define (complement f) (lambda (#!rest args) (not (apply f args))))
+
+(define (safe-equal? a b)
+  (if (equal? a b) b #f))
+
+(define (safe-num-cmpr a b f)
+  (if (and (number? a)
+           (number? b))
+      (if (f a b) b #f)
+      #f))
+
+(define (safe-< a b) (safe-num-cmpr a b <))
+(define (safe-> a b) (safe-num-cmpr a b >))
+(define (safe-<= a b) (safe-num-cmpr a b <=))
+(define (safe->= a b) (safe-num-cmpr a b >=))
