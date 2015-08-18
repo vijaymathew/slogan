@@ -4,3 +4,5 @@ function initialize() ffi_open(string_append(getenv("SLOGAN_ROOT") "/lib/crypto/
 function release(handle) ffi_close(handle);
 
 namespace;
+
+define __crypto_lib_handle = crypto_initialize();

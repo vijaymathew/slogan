@@ -6,19 +6,20 @@
 
 namespace aes;
 
-function enc_dec_helper(handle, key, iv, input, enc) 
+function enc_dec_helper(key, iv, input, enc) 
     letseq (len = u8array_length(input),
             out = make_u8array(len)) {
-        ffi_call_void_6(handle, "crypto_aes", key, iv,
+        ffi_call_void_6(__crypto_lib_handle,
+                        "crypto_aes", key, iv,
                         input, out, len,
                         if (enc) 1 else 0);
         out
     };
     
-function encrypt(key, iv, input, @optional handle) 
-    enc_dec_helper(handle, key, iv, input, true);
+function encrypt(key, iv, input) 
+    enc_dec_helper(key, iv, input, true);
 
-function decrypt(key, iv, input, @optional handle) 
-    enc_dec_helper(handle, key, iv, input, false);
+function decrypt(key, iv, input) 
+    enc_dec_helper(key, iv, input, false);
     
 namespace;

@@ -10,18 +10,14 @@ Building the library
 Export the environment variable `SLOGAN_ROOT` to point to the Slogan parent directory.
 Build the shared library by running the `build` script in this folder.
 
-Loading the crypto-library from Slogan
-===========================================
+Load and initialize the crypto-library
+======================================
 
 ```
 load "$SLOGAN_ROOT/lib/crypto/crypto";
 
-define handle = crypto_initialize();
-
 // Do crypto-stuff here
-// and finally, release the handle to the C library:
 
-crypto_release(handle);
 ```
 
 Symmetric-key algorithms
@@ -35,14 +31,14 @@ load "$SLOGAN_ROOT/lib/crypto/des";
 
 define key = u8array_to_string(random_byte_array(8));
 define iv = u8array_to_string(random_byte_array(8));
-define enc = des_encrypt(key, iv, string_to_u8array("abcdefgh"), handle);
-define dec = des_decrypt(key, iv, enc, handle);
+define enc = des_encrypt(key, iv, string_to_u8array("abcdefgh"));
+define dec = des_decrypt(key, iv, enc);
 u8array_to_string(dec); // => "abcdefgh"
 
 // A 24 byte key will perform 3DES encryption:
 key = u8array_to_string(random_byte_array(24));
-define enc = des_encrypt(key, iv, string_to_u8array("abcdefgh"), handle);
-define dec = des_decrypt(key, iv, enc, handle);
+define enc = des_encrypt(key, iv, string_to_u8array("abcdefgh"));
+define dec = des_decrypt(key, iv, enc);
 u8array_to_string(dec); // => "abcdefgh"
 ```
 
@@ -55,13 +51,13 @@ load "$SLOGAN_ROOT/lib/crypto/aes";
 
 define key = u8array_to_string(random_byte_array(24));
 define iv = u8array_to_string(random_byte_array(8));
-define enc = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"), handle);
-define dec = aes_decrypt(key, iv, enc, handle);
+define enc = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"));
+define dec = aes_decrypt(key, iv, enc);
 u8array_to_string(dec); // => "abcdefghabcdefgh"
 
 // A 32 byte key will perform AES-256 encryption:
 key = u8array_to_string(random_byte_array(32));
-define enc = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"), handle);
-define dec = aes_decrypt(key, iv, enc, handle);
+define enc = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"));
+define dec = aes_decrypt(key, iv, enc);
 u8array_to_string(dec); // => "abcdefghabcdefgh"
 ```
