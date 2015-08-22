@@ -4,6 +4,7 @@
  * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
  **/
 
+namespace crypto;
 namespace rsa;
 
 function encrypt(key, input) 
@@ -16,4 +17,5 @@ function decrypt(key, input)
                    "crypto_rsa_decrypt",
                    key, input, u8array_length(input));
 
+namespace;
 namespace;

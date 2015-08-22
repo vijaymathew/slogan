@@ -4,6 +4,7 @@
  * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
  **/
 
+namespace crypto;
 namespace rc4;
 
 function combksched(s, key, klen) 
@@ -31,7 +32,7 @@ function encdec(p, plen, s, out, state)
                 u8array_set(s, j, tmp);
                 u8array_set(out, c, bitwise_xor(u8array_at(s, mod(u8array_at(s, i) + u8array_at(s, j), 256)),
                                                 u8array_at(p, c)));
-                loop(i, j, inc(c), dec(plen))
+                loop(i, j, inc(c), plen - 1)
             }
         } else {
             state_set_i(state, i);
@@ -60,4 +61,5 @@ define decrypt_40 = encdec_40;
 define encrypt_128 = encdec_128;
 define decrypt_128 = encdec_128;
 
+namespace;
 namespace;

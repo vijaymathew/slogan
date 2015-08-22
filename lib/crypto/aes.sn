@@ -4,6 +4,7 @@
  * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
  **/
 
+namespace crypto;
 namespace aes;
 
 function enc_dec_helper(key, iv, input, enc) 
@@ -22,4 +23,5 @@ function encrypt(key, iv, input)
 function decrypt(key, iv, input) 
     enc_dec_helper(key, iv, input, false);
     
+namespace;
 namespace;

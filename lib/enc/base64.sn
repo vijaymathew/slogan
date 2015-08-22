@@ -2,7 +2,7 @@
  * Base64 encoding/decoding.
  * Sample usage:
  * 
- *  > import base64;
+ *  > import enc_base64;
  *  > define in = string_to_u8array("hello");
  *  > define out = encode(in);
  *  > in = decode(out);
@@ -13,6 +13,7 @@
  *
 **/
 
+namespace enc;
 namespace base64;
 
 define encmap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -107,4 +108,4 @@ function decode(instr) {
 };
 
 namespace;
-
+namespace;
