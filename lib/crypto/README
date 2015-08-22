@@ -2,7 +2,8 @@ Disclaimer: This library is not battle-tested. Use at your own risk.
 
 The Crypto library implements various symmetric and public-key cryptographic algorithms.
 The core algorithms are implemented in C and is based on the code from "Implementing SSL / TLS Using Cryptography and PKI" by Joshua Davies.
-(See: http://as.wiley.com/WileyCDA/WileyTitle/productCd-0470920416.html)
+(See: http://as.wiley.com/WileyCDA/WileyTitle/productCd-0470920416.html).
+In the long-term the `crypto` library should move to a robust backend like OpenSSL.
 
 Building the library
 ====================
