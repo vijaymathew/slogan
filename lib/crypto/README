@@ -61,3 +61,15 @@ define enc = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"));
 define dec = aes_decrypt(key, iv, enc);
 u8array_to_string(dec); // => "abcdefghabcdefgh"
 ```
+
+RC4
+---
+
+```
+load "$SLOGAN_ROOT/lib/crypto/rc4";
+
+define a = encrypt_40("password", string_to_u8array("hello"));
+u8array_to_string(decrypt_40("password", a)); // => "hello"
+define a = encrypt_128("password", string_to_u8array("hello"));
+u8array_to_string(decrypt_128("password", a)); // => "hello"
+```

@@ -47,4 +47,7 @@
 
 #define ___release_slogan_obj ___release_scmobj
 
+/* Allocates space for a u8vector whose pointer is not relocated by the GC. */
+extern ___slogan_obj ___alloc_u8array(size_t size);
+
 #endif

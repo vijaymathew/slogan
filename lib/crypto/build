@@ -1,9 +1,9 @@
 #!/bin/bash
 
-src_pref=$SLOGAN_ROOT/lib/crypto/c
-src_files="$src_pref/des.c $src_pref/aes.c"
-incs="-I$SLOGAN_ROOT/src/include -I$SLOGAN_ROOT/platform/gsc/include"
-out_file=$src_pref/crypto.so
+src_dir=$SLOGAN_ROOT/lib/crypto/c
+src_files="$SLOGAN_ROOT/src/c/slogan.c $src_dir/huge.c $src_dir/des.c $src_dir/aes.c $src_dir/rsa.c"
+incs="-I$SLOGAN_ROOT/src/include -I$SLOGAN_ROOT/platform/gsc/include -I$src_dir"
+out_file=$src_dir/crypto.so
 unamestr=`uname`
 
 if [[ "$unamestr" == 'Darwin' ]]; then

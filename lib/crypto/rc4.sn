@@ -16,8 +16,13 @@ function combksched(s, key, klen)
                 loop(inc(i), j)
             };
 
-function encdec(p, plen, s, out) 
-    let loop (i = 0, j = 0, c = 0, plen = plen) 
+record state(inited, i, j, s);
+
+function init() state(inited = false, i = 0, j = 0, s = list_to_u8array(range(0, 255)));
+
+function encdec(p, plen, s, out, state) 
+    let loop (i = state_i(state), j = state_j(state),
+              c = 0, plen = plen) 
         if (plen > 0) {
             i = mod(i + 1, 256);
             let (tmp = u8array_at(s, i)) {
@@ -28,16 +33,31 @@ function encdec(p, plen, s, out)
                                                 u8array_at(p, c)));
                 loop(i, j, inc(c), dec(plen))
             }
+        } else {
+            state_set_i(state, i);
+            state_set_j(state, j)
         };
 
-function opr(in, key) 
-    let (s = list_to_u8array(range(0, 255))
-         klen = string_length(key)
+function opr(in, key, klen, state = false) {
+    if (state == false) state = init();
+    let (s = state_s(state)
          plen = u8array_length(in)) 
-        let (out = make_u8array(plen)) {
+    let (out = make_u8array(plen)) {
+        if (not(state_inited(state))) {
             combksched(s, key, klen);
-            encdec(in, plen, s, out);
-            out
+            state_set_inited(state, true)
         };
+        encdec(in, plen, s, out, state);
+        out
+    }
+};
+
+function encdec_40(key, in, state = false) opr(in, key, 5, state);
+function encdec_128(key, in, state = false) opr(in, key, 16, state);
+
+define encrypt_40 = encdec_40;
+define decrypt_40 = encdec_40;
+define encrypt_128 = encdec_128;
+define decrypt_128 = encdec_128;
 
 namespace;

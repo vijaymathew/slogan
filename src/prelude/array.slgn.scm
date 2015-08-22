@@ -97,6 +97,8 @@
 (define u8array_to_list u8vector->list)
 (define list_to_u8array list->u8vector)
 (define u8array_fill u8vector-fill!)
+(define object_to_u8array object->u8vector)
+(define u8array_to_object u8vector->object)
 (define subu8array_fill subu8vector-fill!)
 (define u8array_append u8vector-append)
 (define u8array_copy u8vector-copy)
