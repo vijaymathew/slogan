@@ -263,6 +263,11 @@
           (if n n
               (tokenizer-error "read-number failed. invalid number format."))))))
 
+(define (prec-prefix? c)
+  (and (string? c)
+       (or (string=? c "#e")
+           (string=? c "#i"))))
+
 (define (radix-prefix? c)
   (if (char? c)
       (let ((c (char-downcase c)))
@@ -281,7 +286,8 @@
 	(read-number port #\0 radix)
         (let ((c (port-pos-read-char! port))
               (result '()))
-          (if (char=? (port-pos-peek-char port) #\0)
+          (if (and (prec-prefix? radix-prefix)
+                   (char=? (port-pos-peek-char port) #\0))
               (begin (port-pos-read-char! port)
                      (let ((radix-prefix2 (radix-prefix? (port-pos-peek-char port))))
                        (if radix-prefix2 
