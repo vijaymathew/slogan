@@ -29,7 +29,7 @@ DES
 
 ```
 load "$SLOGAN_ROOT/lib/crypto/des";
-import crypto_des with_prefix des;
+import crypto_des as des;
 
 define key = u8array_to_string(random_byte_array(8));
 define iv = u8array_to_string(random_byte_array(8));
@@ -50,7 +50,7 @@ AES
 
 ```
 load "$SLOGAN_ROOT/lib/crypto/aes";
-import crypto_aes with_prefix aes;
+import crypto_aes as aes;
 
 define key = u8array_to_string(random_byte_array(24));
 define iv = u8array_to_string(random_byte_array(8));
@@ -70,7 +70,7 @@ RC4
 
 ```
 load "$SLOGAN_ROOT/lib/crypto/rc4";
-import crypto_rc4 with_prefix rc4;
+import crypto_rc4 as rc4;
 
 define a = rc4_encrypt_40("password", string_to_u8array("hello"));
 u8array_to_string(rc4_decrypt_40("password", a)); // => "hello"
@@ -83,7 +83,7 @@ RSA
 
 ```
 load "$SLOGAN_ROOT/lib/crypto/rsa";
-import crypto_rsa with_prefix rsa;
+import crypto_rsa as rsa;
 
 define modulus = #u8[0xC4, 0xF8, 0xE9, 0xE1, 0x5D, 0xCA, 0xDF, 0x2B,
                      0x96, 0xC7, 0x63, 0xD9, 0x81, 0x00, 0x6A, 0x64,
