@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "huge.h"
 #include "slogan.h"
+#include "huge.h"
 
 struct rsa_key
 {
@@ -210,7 +210,11 @@ ___slogan_obj crypto_rsa_encdec(___slogan_obj key,
       memcpy(___BODY (result), data, size);
       free(data);
     }
-  
+
+  free_huge(pkey.modulus);
+  free_huge(pkey.exponent);
+  free(pkey.modulus);
+  free(pkey.exponent);
   return result;
 }
 

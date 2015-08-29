@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "slogan.h"
 #include "huge.h"
 
 /**
@@ -612,3 +613,11 @@ void inv( huge *z, huge *a )
     }
   }
 }
+
+___slogan_obj huge_to_sobj(huge *h)
+{
+  ___slogan_obj result = ___alloc_u8array(h->size);
+  memcpy(___BODY(result), h->rep, h->size);
+  return result;
+}
+

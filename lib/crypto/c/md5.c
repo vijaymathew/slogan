@@ -229,3 +229,7 @@ void new_md5_digest( digest_ctx *context )
   context->block_finalize = md5_finalize;
 } 
 
+int crypto_md5_result_size()
+{
+  return MD5_RESULT_SIZE;
+}

@@ -5,7 +5,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <arpa/inet.h>
+#include "slogan.h"
 #include "sha.h"
 #include "digest.h"
 #include "huge.h"
@@ -115,4 +117,202 @@ int ecdsa_verify( elliptic_curve *params,
   free_huge( &Q.y );
 
   return match;
+}
+
+___slogan_obj crypto_ecdsa_sign(___slogan_obj args,
+                                ___slogan_obj u8arr_msg,
+                                ___slogan_obj imsg_len)
+{
+  ___slogan_obj h;
+  ___slogan_obj P;
+  ___slogan_obj b;
+  ___slogan_obj q;
+  ___slogan_obj gx;
+  ___slogan_obj gy;
+  ___slogan_obj w;
+  int mlen;
+  int hlen;
+  int Plen;
+  int blen;
+  int qlen;
+  int gxlen;
+  int gylen;
+  int wlen;
+
+  elliptic_curve curve;
+  ecc_key A;
+  dsa_signature signature;
+
+  digest_ctx ctx;
+  ___slogan_obj rr;
+  ___slogan_obj rs;
+  ___slogan_obj result;
+
+  h = ___head(args);
+  P = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Plen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  b = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &blen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  q = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &qlen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  gx = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &gxlen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  gy = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &gylen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  w = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &wlen);
+
+  ___slogan_obj_to_int(imsg_len, &mlen);
+
+  load_huge(&curve.p, (unsigned char *) ___BODY(P), Plen);
+  set_huge(&curve.a, 3);
+  curve.a.sign = 1;
+  load_huge(&curve.b, (unsigned char *)___BODY(b), blen);
+  load_huge(&curve.G.x, (unsigned char *)___BODY(gx), gxlen);
+  load_huge(&curve.G.y, (unsigned char *)___BODY(gy), gylen);
+  load_huge(&curve.n, (unsigned char *)___BODY(q), qlen);
+
+  load_huge(&A.d, (unsigned char *)___BODY(w), wlen);
+  set_huge(&A.Q.x, 0);
+  set_huge(&A.Q.y, 0);
+  copy_huge(&A.Q.x, &curve.G.x);
+  copy_huge(&A.Q.y, &curve.G.y);
+  multiply_point(&A.Q, &A.d, &curve.a, &curve.p);
+
+  new_sha256_digest(&ctx);
+  update_digest(&ctx, (unsigned char *)___BODY(u8arr_msg), mlen);
+  finalize_digest(&ctx);
+
+  ecdsa_sign(&curve, &A.d, ctx.hash, ctx.hash_len, &signature);
+  rr = ___alloc_u8array(signature.r.size);
+  memcpy(___BODY(rr), signature.r.rep, signature.r.size);
+  rs = ___alloc_u8array(signature.s.size);
+  memcpy(___BODY(rs), signature.s.rep, signature.s.size);
+  result = ___pair(rr, rs);
+  
+  free_huge(&curve.p);
+  free_huge(&curve.b);
+  free_huge(&curve.G.x);
+  free_huge(&curve.G.y);
+  free_huge(&curve.n);
+  free_huge(&A.d);
+
+  return result;
+}
+
+___slogan_obj crypto_ecdsa_verify(___slogan_obj args,
+                                  ___slogan_obj u8arr_rr,
+                                  ___slogan_obj irr_len,
+                                  ___slogan_obj u8arr_rs,
+                                  ___slogan_obj irs_len,
+                                  ___slogan_obj u8arr_msg,
+                                  ___slogan_obj imsg_len)
+{
+  ___slogan_obj h;
+  ___slogan_obj P;
+  ___slogan_obj b;
+  ___slogan_obj q;
+  ___slogan_obj gx;
+  ___slogan_obj gy;
+  ___slogan_obj w;
+  int mlen;
+  int hlen;
+  int Plen;
+  int blen;
+  int qlen;
+  int gxlen;
+  int gylen;
+  int wlen;
+  int rrlen;
+  int rslen;
+
+  elliptic_curve curve;
+  ecc_key A;
+  dsa_signature signature;
+
+  digest_ctx ctx;
+  ___slogan_obj result;
+
+  h = ___head(args);
+  P = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Plen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  b = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &blen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  q = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &qlen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  gx = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &gxlen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  gy = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &gylen);
+  args = ___tail(args);
+
+  h = ___head(args);
+  w = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &wlen);
+
+  ___slogan_obj_to_int(imsg_len, &mlen);
+  ___slogan_obj_to_int(irr_len, &rrlen);
+  ___slogan_obj_to_int(irs_len, &rslen);
+
+  load_huge(&curve.p, (unsigned char *) ___BODY(P), Plen);
+  set_huge(&curve.a, 3);
+  curve.a.sign = 1;
+  load_huge(&curve.b, (unsigned char *)___BODY(b), blen);
+  load_huge(&curve.G.x, (unsigned char *)___BODY(gx), gxlen);
+  load_huge(&curve.G.y, (unsigned char *)___BODY(gy), gylen);
+  load_huge(&curve.n, (unsigned char *)___BODY(q), qlen);
+
+  load_huge(&A.d, (unsigned char *)___BODY(w), wlen);
+  set_huge(&A.Q.x, 0);
+  set_huge(&A.Q.y, 0);
+  copy_huge(&A.Q.x, &curve.G.x);
+  copy_huge(&A.Q.y, &curve.G.y);
+  multiply_point(&A.Q, &A.d, &curve.a, &curve.p);
+
+  new_sha256_digest(&ctx);
+  update_digest(&ctx, (unsigned char *)___BODY(u8arr_msg), mlen);
+  finalize_digest(&ctx);
+
+  load_huge(&signature.r, (unsigned char *)___BODY(u8arr_rr), rrlen);
+  load_huge(&signature.s, (unsigned char *)___BODY(u8arr_rs), rslen);
+
+  result = ecdsa_verify(&curve, &A.Q, ctx.hash, ctx.hash_len, &signature) ? ___TRU : ___FAL;
+
+  free_huge(&curve.p);
+  free_huge(&curve.b);
+  free_huge(&curve.G.x);
+  free_huge(&curve.G.y);
+  free_huge(&curve.n);
+  free_huge(&A.d);
+  free_huge(&signature.r);
+  free_huge(&signature.s);
+  
+  return result;
 }

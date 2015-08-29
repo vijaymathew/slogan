@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "slogan.h"
 #include "sha.h"
 #include "digest.h"
 #include "dsa.h"
@@ -126,3 +127,150 @@ int dsa_verify( dsa_params *params,
   return match;
 }
 
+___slogan_obj crypto_dsa_sign(___slogan_obj args,
+                              ___slogan_obj u8arr_msg,
+                              ___slogan_obj imsg_len)
+{
+  ___slogan_obj h;
+  ___slogan_obj u8arr_G;
+  ___slogan_obj u8arr_P;
+  ___slogan_obj u8arr_Q;
+  ___slogan_obj u8arr_priv;
+  ___slogan_obj u8arr_pub;
+  int Gsz;
+  int Psz;
+  int Qsz;
+  int privsz;
+  int mlen;
+  
+  dsa_params params;
+  dsa_signature signature;
+  huge x;
+  digest_ctx ctx;
+
+  ___slogan_obj rr;
+  ___slogan_obj rs;
+  ___slogan_obj result;
+
+  h = ___head(args);
+  u8arr_G = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Gsz);
+  args = ___tail(args);
+  
+  h = ___head(args);
+  u8arr_P = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Psz);
+  args = ___tail(args);
+
+  h = ___head(args);
+  u8arr_Q = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Qsz);
+  args = ___tail(args);
+
+  h = ___head(args);
+  u8arr_priv = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &privsz);
+
+  ___slogan_obj_to_int(imsg_len, &mlen);
+
+  // TODO load these from a DSA private key file instead
+  load_huge(&params.g, (unsigned char *)___BODY(u8arr_G), Gsz);
+  load_huge(&params.p, (unsigned char *)___BODY(u8arr_P), Psz);
+  load_huge(&params.q, (unsigned char *)___BODY(u8arr_Q), Qsz);
+  load_huge(&x, (unsigned char *)___BODY(u8arr_priv), privsz);
+
+  new_sha1_digest(&ctx);
+  update_digest(&ctx, (unsigned char *)___BODY(u8arr_msg), mlen);
+  finalize_digest(&ctx);
+
+  dsa_sign(&params, &x, ctx.hash, ctx.hash_len, &signature);
+  rr = ___alloc_u8array(signature.r.size);
+  memcpy(___BODY(rr), signature.r.rep, signature.r.size);
+  rs = ___alloc_u8array(signature.s.size);
+  memcpy(___BODY(rs), signature.s.rep, signature.s.size);
+  result = ___pair(rr, rs);
+
+  free_huge(&params.g);
+  free_huge(&params.p);
+  free_huge(&params.q);
+  free_huge(&x);
+  free_huge(&signature.r);
+  free_huge(&signature.s);
+
+  return result;
+}
+
+___slogan_obj crypto_dsa_verify(___slogan_obj args,
+                                ___slogan_obj u8arr_rr,
+                                ___slogan_obj irr_len,
+                                ___slogan_obj u8arr_rs,
+                                ___slogan_obj irs_len,
+                                ___slogan_obj u8arr_msg,
+                                ___slogan_obj imsg_len)
+
+{
+  ___slogan_obj h;
+  ___slogan_obj u8arr_G;
+  ___slogan_obj u8arr_P;
+  ___slogan_obj u8arr_Q;
+  ___slogan_obj u8arr_pub;
+  int Gsz;
+  int Psz;
+  int Qsz;
+  int pubsz;
+  int mlen;
+  int rr_len;
+  int rs_len;
+  ___slogan_obj result;
+  
+  dsa_params params;
+  dsa_signature signature;
+  huge y;
+  digest_ctx ctx;
+
+  h = ___head(args);
+  u8arr_G = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Gsz);
+  args = ___tail(args);
+  
+  h = ___head(args);
+  u8arr_P = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Psz);
+  args = ___tail(args);
+
+  h = ___head(args);
+  u8arr_Q = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &Qsz);
+  args = ___tail(args);
+
+  h = ___head(args);
+  u8arr_pub = ___head(h);
+  ___slogan_obj_to_int(___tail(h), &pubsz);
+  args = ___tail(args);
+
+  ___slogan_obj_to_int(imsg_len, &mlen);
+  ___slogan_obj_to_int(irr_len, &rr_len);
+  ___slogan_obj_to_int(irs_len, &rs_len);
+
+  load_huge(&params.g, (unsigned char *)___BODY(u8arr_G), Gsz);
+  load_huge(&params.p, (unsigned char *)___BODY(u8arr_P), Psz);
+  load_huge(&params.q, (unsigned char *)___BODY(u8arr_Q), Qsz);
+  load_huge(&y, (unsigned char *)___BODY(u8arr_pub), pubsz);
+  load_huge(&signature.r, (unsigned char *)___BODY(u8arr_rr), rr_len);
+  load_huge(&signature.s, (unsigned char *)___BODY(u8arr_rs), rs_len);
+
+  new_sha1_digest(&ctx);
+  update_digest(&ctx, (unsigned char *)___BODY(u8arr_msg), mlen);
+  finalize_digest(&ctx);
+
+  result = dsa_verify(&params, &y, ctx.hash, ctx.hash_len, &signature) ? ___TRU : ___FAL;
+
+  free_huge(&params.g);
+  free_huge(&params.p);
+  free_huge(&params.q);
+  free_huge(&y);
+  free_huge(&signature.r);
+  free_huge(&signature.s);
+
+  return result;
+}

@@ -133,7 +133,7 @@ void sha1_block_operate( const unsigned char *block, unsigned int hash[ SHA1_RES
   hash[ 4 ] = htonl( hash[ 4 ] );
 }
 
-static const unsigned int sha256_initial_hash[] =
+unsigned int sha256_initial_hash[] =
 {
   0x67e6096a,
   0x85ae67bb,
@@ -331,4 +331,14 @@ void new_sha256_digest( digest_ctx *context )
   memset( context->block, '\0', DIGEST_BLOCK_SIZE );
   context->block_operate = sha256_block_operate;
   context->block_finalize = sha1_finalize;
+}
+
+int crypto_sha1_result_size()
+{
+  return SHA1_RESULT_SIZE;
+}
+
+int crypto_sha256_result_size()
+{
+  return SHA256_RESULT_SIZE;
 }

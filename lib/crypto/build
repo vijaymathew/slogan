@@ -1,7 +1,7 @@
 #!/bin/bash
 
 src_dir=$SLOGAN_ROOT/lib/crypto/c
-src_files="$SLOGAN_ROOT/src/c/slogan.c $src_dir/huge.c $src_dir/des.c $src_dir/aes.c $src_dir/rsa.c"
+src_files="$src_dir/huge.c $src_dir/des.c $src_dir/aes.c $src_dir/rsa.c $src_dir/md5.c $src_dir/sha.c $src_dir/digest.c $src_dir/hmac.c $src_dir/dsa.c $src_dir/ecc.c $src_dir/ecdsa.c $src_dir/base64.c $src_dir/asn1.c $src_dir/x509.c"
 incs="-I$SLOGAN_ROOT/src/include -I$SLOGAN_ROOT/platform/gsc/include -I$src_dir"
 out_file=$src_dir/crypto.so
 unamestr=`uname`

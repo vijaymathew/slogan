@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <dlfcn.h>
+#include "../include/slogan.h"
 
  typedef void (*fn_void)();
  typedef void* (*fn_void_pointer)();
@@ -1469,6 +1470,22 @@
    fn_obj fn = dlsym (handle, fnname);
    assert_fn_pointer (fn, fnname);
    return fn (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+ }
+
+ /* Implementation of functions declared in slogan.h */
+ 
+ ___slogan_obj ___alloc_u8array(size_t size)
+ {
+   ___slogan_obj result = (___slogan_obj)___EXT(___alloc_scmobj)(___PSTATE, ___sU8VECTOR, size);
+   ___EXT(___release_scmobj)(result);
+   return result;
+ }
+ 
+ ___slogan_obj ___alloc_array(size_t size)
+ {
+   ___SCMOBJ init = ___FAL;
+   ___SCMOBJ result = ___EXT(___make_vector)(___PSTATE, size, init);
+   return result;
  }
 
 c-declare-end

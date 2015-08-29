@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "slogan.h"
 #include "sha.h"
 #include "md5.h"
 #include "digest.h"
@@ -69,4 +70,43 @@ void hmac( const unsigned char *key,
   finalize_digest( digest );
 
   free( hash1.hash );
+}
+
+___slogan_obj crypto_hmac(___slogan_obj u8arr_key,
+                          ___slogan_obj ikey_len,
+                          ___slogan_obj u8arr_text,
+                          ___slogan_obj itext_len,
+                          ___slogan_obj ihash_type)
+{
+  int i;
+  digest_ctx digest;
+  int key_len;
+  int text_len;
+  int hash_type;
+  ___slogan_obj result;
+  size_t result_len;
+  ___slogan_obj *r;
+  
+  ___slogan_obj_to_int(ihash_type, &hash_type);
+  ___slogan_obj_to_int(ikey_len, &key_len);
+  ___slogan_obj_to_int(itext_len, &text_len);
+
+  if (hash_type == 1)
+    new_sha1_digest(&digest);
+  else if (hash_type == 0)
+    new_md5_digest(&digest);
+  else
+  {
+    fprintf(stderr, "unsupportd hash algorithm");
+    exit(1);
+  }
+
+  hmac((unsigned char *)___BODY(u8arr_key), key_len,
+       (unsigned char *)___BODY(u8arr_text), text_len,
+       &digest);
+  result_len = digest.hash_len * sizeof(int);
+  result = ___alloc_u8array(result_len);
+  memcpy(___BODY(result), (unsigned char *)digest.hash, result_len);
+  free(digest.hash);
+  return result;
 }

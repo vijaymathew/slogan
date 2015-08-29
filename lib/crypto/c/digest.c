@@ -6,10 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "digest.h"
 #include "md5.h"
 #include "sha.h"
+#include "slogan.h"
 
+typedef void (*block_operate)(const unsigned char *input, unsigned int hash[]);
+typedef void (*block_finalize)(unsigned char *block, int length);
+  
 /**
  * Generic digest hash computation. The hash should be set to its initial
  * value *before* calling this function.
@@ -128,5 +133,61 @@ void finalize_digest( digest_ctx *context )
   context->block_finalize( context->block, context->input_len * 8 );
 
   context->block_operate( context->block, context->hash );
+}
+
+void crypto_digest(___slogan_obj itype,
+                   ___slogan_obj u8arrin,
+                   ___slogan_obj inlen,
+                   ___slogan_obj arrout)
+{
+  int type;
+  int len;
+  unsigned int *hash;
+  int hash_len;
+  unsigned int *init_hash;
+  block_operate opr;
+  block_finalize fnl;
+  int i;
+  ___slogan_obj *outarr;
+
+  ___slogan_obj_to_int(itype, &type);
+  ___slogan_obj_to_int(inlen, &len);
+
+  if (type == 0) /* MD5 */
+    {
+      hash_len = MD5_RESULT_SIZE;
+      init_hash = md5_initial_hash;
+      opr = md5_block_operate;
+      fnl = md5_finalize;
+    }
+  else if (type == 1) /* SHA1 */
+    {
+      hash_len = SHA1_RESULT_SIZE;
+      init_hash = sha1_initial_hash;
+      opr = sha1_block_operate;
+      fnl = sha1_finalize;
+    }
+  else if (type == 2) /* SHA256 */
+    {
+      hash_len = SHA256_RESULT_SIZE;
+      init_hash = sha256_initial_hash;
+      opr = sha256_block_operate;
+      fnl = sha1_finalize;
+    }
+  else
+    {
+      fprintf(stderr, "unsupported digest algorithm");
+      exit(2);
+    }
+
+  hash = malloc(sizeof(int) * hash_len);
+  assert(hash != NULL);
+  memcpy(hash, init_hash, sizeof(int) * hash_len);
+  digest_hash((unsigned char *)___BODY(u8arrin), len, hash, opr, fnl);
+
+  outarr = ___BODY(arrout);
+  for (i = 0; i < hash_len; ++i)
+    outarr[i] = ___fix(hash[i]);
+  free(hash);
 }
 

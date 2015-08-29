@@ -28,4 +28,6 @@ void mod_pow( huge *h1, huge *exp, huge *n, huge *h2 );
 void inv( huge *z, huge *a );
 void contract( huge *h );
 
+___slogan_obj huge_to_sobj(huge *h);
+  
 #endif
