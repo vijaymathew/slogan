@@ -1,0 +1,57 @@
+/**
+ * Various hash/message-digest algorithms - MD5, SHA1, SHA256 and HMAC.
+ * See the README file for sample usage.
+ * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
+ **/
+
+namespace crypto;
+namespace digest;
+
+function get_md5_result_size() 
+    ffi_call_int_0(__crypto_lib_handle,
+                   "crypto_md5_result_size");
+
+function get_sha1_result_size() 
+    ffi_call_int_0(__crypto_lib_handle,
+                   "crypto_sha1_result_size");
+
+function get_sha256_result_size() 
+    ffi_call_int_0(__crypto_lib_handle,
+                   "crypto_sha256_result_size");
+
+define md5_result_size = get_md5_result_size();
+define sha1_result_size = get_sha1_result_size();
+define sha256_result_size = get_sha256_result_size();
+
+define digest_name_map = [!md5 : (0:md5_result_size),
+                          !sha1 : (1:sha1_result_size),
+                          !sha256 : (2:sha256_result_size)];
+
+function digest_name(nm) 
+    let (a = assoc(nm, digest_name_map)) 
+        if (a) a
+        else error("unsupported digest algorithm -" nm);
+
+function hash(in, type = !md5)  
+    letseq (len = u8array_length(in),
+            v = tail(digest_name(type)),
+            out = make_array(tail(v))) {
+        ffi_call_void_4(__crypto_lib_handle,
+                        "crypto_digest",
+                        head(v),
+                        in, len, out);
+        out
+    };
+
+function hmac(key, text, type = !md5) 
+    let (keylen = u8array_length(key),
+         textlen = u8array_length(text),
+         type = head(tail(digest_name(type)))) 
+        ffi_call_obj_5(__crypto_lib_handle,
+                       "crypto_hmac",
+                       key, keylen,
+                       text, textlen,
+                       type);
+        
+namespace;
+namespace;
