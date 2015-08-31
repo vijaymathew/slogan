@@ -1,16 +1,17 @@
 /**
- * Base64 encoding/decoding.
- * Sample usage:
- * 
- *  > import enc_base64;
- *  > define in = string_to_u8array("hello");
- *  > define out = encode(in);
- *  > in = decode(out);
- *  > u8array_to_string(in);
- *  => "hello"
- *
- * Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
- *
+ Base64 encoding/decoding.
+ Sample usage:
+
+ ````
+ import enc_base64;
+ define in = string_to_u8array("hello");
+ define out = encode(in);
+ in = decode(out);
+ u8array_to_string(in);
+ // => "hello"
+ ````
+ 
+Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
 **/
 
 namespace enc;

@@ -69,14 +69,14 @@ AES
 load "$SLOGAN_ROOT/lib/crypto/aes";
 import crypto_aes as aes;
 
-define key = u8array_to_string(random_byte_array(24));
-define iv = u8array_to_string(random_byte_array(8));
+define key = "0123456789abcdef";
+define iv = "AAAAAAAAAAAAAAAA";
 define e = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"));
 define d = aes_decrypt(key, iv, e);
 u8array_to_string(d);
 
 // A 32 byte key will perform AES-256 encryption:
-key = u8array_to_string(random_byte_array(32));
+key = "12345678901234567890123456789012";
 define e = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"));
 define d = aes_decrypt(key, iv, e);
 u8array_to_string(d);

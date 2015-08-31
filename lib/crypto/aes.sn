@@ -7,11 +7,28 @@
 namespace crypto;
 namespace aes;
 
+function chkbytes(arr, explens) 
+    let (len = u8array_length(arr)) 
+        if (not(memq(len, explens)))
+            error("expected byte array lengths are " explens)
+        else let loop (i = 0) 
+            if (i < len) 
+                if (is_zero(u8array_at(arr, i)))
+                    error("all bytes must be positive " arr)
+                else
+                    loop(i + 1)
+            else arr;
+
+define ivlens = [16];
+define keylens = [16 32];
+function chkiv(iv) { chkbytes(string_to_u8array(iv), ivlens); iv };
+function chkkey(key) { chkbytes(string_to_u8array(key), keylens); key };
+
 function enc_dec_helper(key, iv, input, enc) 
     letseq (len = u8array_length(input),
             out = make_u8array(len)) {
         ffi_call_void_6(__crypto_lib_handle,
-                        "crypto_aes", key, iv,
+                        "crypto_aes", chkkey(key), chkiv(iv),
                         input, out, len,
                         if (enc) 1 else 0);
         out
