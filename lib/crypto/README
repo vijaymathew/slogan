@@ -14,17 +14,17 @@ Build the shared library by running the `build` script in this folder.
 Load and initialize the crypto-library
 ======================================
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/crypto";
 
 // Do crypto-stuff here
 
-```
+````
 
 Hashing
 =======
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/digest";
 import crypto_digest as digest;
 
@@ -36,7 +36,7 @@ digest_hash(string_to_u8array("abc"), !sha256);
 // HMAC
 digest_hmac(string_to_u8array("pass"), string_to_u8array("hello world"), !md5);
 digest_hmac(string_to_u8array("pass"), string_to_u8array("hello world"), !sha1);
-```
+````
 
 Symmetric-key algorithms
 ========================
@@ -44,7 +44,7 @@ Symmetric-key algorithms
 DES
 ---
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/des";
 import crypto_des as des;
 
@@ -59,13 +59,13 @@ key = "123456789012345678901234";
 define e = des_encrypt(key, iv, string_to_u8array("abcdefgh"));
 define d = des_decrypt(key, iv, e);
 u8array_to_string(d);
-```
+````
 
 
 AES
 ---
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/aes";
 import crypto_aes as aes;
 
@@ -80,12 +80,12 @@ key = "12345678901234567890123456789012";
 define e = aes_encrypt(key, iv, string_to_u8array("abcdefghabcdefgh"));
 define d = aes_decrypt(key, iv, e);
 u8array_to_string(d);
-```
+````
 
 RC4
 ---
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/rc4";
 import crypto_rc4 as rc4;
 
@@ -93,12 +93,12 @@ define a = rc4_encrypt_40("password", string_to_u8array("hello"));
 u8array_to_string(rc4_decrypt_40("password", a));
 define a = rc4_encrypt_128("password", string_to_u8array("hello"));
 u8array_to_string(rc4_decrypt_128("password", a));
-```
+````
 
 RSA
 ---
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/rsa";
 import crypto_rsa as rsa;
 
@@ -127,12 +127,12 @@ function mkkey(m, k) (u8array_length(m) : m) : (u8array_length(k) : k);
 define e = rsa_encrypt(mkkey(modulus, publickey), string_to_u8array("abc"));
 define d = rsa_decrypt(mkkey(modulus, privatekey), e);
 u8array_to_string(d);
-```
+````
 
 DSA
 ---
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/dsa";
 import crypto_dsa as dsa;
 
@@ -159,12 +159,12 @@ define G = #u8[0x7d, 0xcd, 0x66, 0x81, 0x61, 0x52, 0x21, 0x10, 0xf7, 0xa0, 0x83,
 define msg = string_to_u8array("abc123");
 define sign = dsa_sign(G, P, Q, priv, msg);
 dsa_verify(G, P, Q, pub, sign, msg);
-```
+````
 
 ECDSA
 -----
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/ecdsa";
 import crypto_ecdsa as ecdsa;
 
@@ -193,20 +193,20 @@ define w = #u8[0xDC, 0x51, 0xD3, 0x86, 0x6A, 0x15, 0xBA, 0xCD, 0xE3,
 define msg = string_to_u8array("abc");
 define sign = ecdsa_sign(P, b, q, gx, gy, w, msg);
 ecdsa_verify(P, b, q, gx, gy, w, sign, msg);
-```
+````
 
 Certificates
 ============
 
 Use OpenSSL to generate a sample certificate for testing:
 
-```
+````
 $ openssl req -x509 -newkey rsa:512 -keyout key.der -keyform der -out cert.der -outform der
-```
+````
 
 Read and parse the certificate from Slogan:
 
-```
+````
 load "$SLOGAN_ROOT/lib/crypto/cert";
 import crypto_cert as cert;
 
@@ -215,4 +215,4 @@ define p = open_file_input_port(cfile);
 define b = read_n_bytes(file_size(cfile), p);
 define c1 = cert_asn1_parse(b);
 define c2 = cert_x509_parse(b, false);
-```
+````
