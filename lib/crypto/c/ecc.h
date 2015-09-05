@@ -31,7 +31,7 @@ typedef struct
 }
 ecc_key;
 
-void add_points( point *p1, point *p2, huge *p );
-void multiply_point( point *p1, huge *k, huge *a, huge *p );
+void add_points(point *p1, point *p2, huge *p);
+void multiply_point(point *p1, huge *k, huge *a, huge *p);
 
 #endif

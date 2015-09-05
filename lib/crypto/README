@@ -48,14 +48,14 @@ DES
 load "$SLOGAN_ROOT/lib/crypto/des";
 import crypto_des as des;
 
-define key = u8array_to_string(random_byte_array(8));
-define iv = u8array_to_string(random_byte_array(8));
+define key = "password";
+define iv = "12345678";
 define e = des_encrypt(key, iv, string_to_u8array("abcdefgh"));
 define d = des_decrypt(key, iv, e);
 u8array_to_string(d);
 
 // A 24 byte key will perform 3DES encryption:
-key = u8array_to_string(random_byte_array(24));
+key = "123456789012345678901234";
 define e = des_encrypt(key, iv, string_to_u8array("abcdefgh"));
 define d = des_decrypt(key, iv, e);
 u8array_to_string(d);

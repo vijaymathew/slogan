@@ -13,11 +13,11 @@
 #include "huge.h"
 #include "ecdsa.h"
 
-void ecdsa_sign( elliptic_curve *params, 
-         huge *private_key,
-         unsigned int *hash, 
-         int hash_len, 
-         dsa_signature *signature )
+void ecdsa_sign(elliptic_curve *params, 
+                huge *private_key,
+                unsigned int *hash, 
+                int hash_len, 
+                dsa_signature *signature)
 {
   unsigned char K[] = {
     0x9E, 0x56, 0xF5, 0x09, 0x19, 0x67, 0x84, 0xD9, 0x63, 0xD1, 0xC0, 
@@ -28,44 +28,49 @@ void ecdsa_sign( elliptic_curve *params,
   point X;
   huge z;
 
+  init_huge(&k);
+  init_huge(&X.x);
+  init_huge(&X.y);
+  init_huge(&z);
+  
   // This should be a random number between 0 and n-1
-  load_huge( &k, ( unsigned char * ) K, sizeof( K ) );
+  load_huge(&k, (unsigned char *) K, sizeof(K));
 
-  set_huge( &X.x, 0 );
-  set_huge( &X.y, 0 );
-  copy_huge( &X.x, &params->G.x );
-  copy_huge( &X.y, &params->G.y );
+  set_huge(&X.x, 0);
+  set_huge(&X.y, 0);
+  copy_huge(&X.x, &params->G.x);
+  copy_huge(&X.y, &params->G.y);
 
-  multiply_point( &X, &k, &params->a, &params->p );
+  multiply_point(&X, &k, &params->a, &params->p);
 
-  set_huge( &signature->r, 0 );
-  copy_huge( &signature->r, &X.x );
-  divide( &signature->r, &params->n, NULL ); // r = x1 % n
+  set_huge(&signature->r, 0);
+  copy_huge(&signature->r, &X.x);
+  divide(&signature->r, &params->n, NULL); // r = x1 % n
 
   // z is the L_n leftmost bits of hash - cannot be longer than n
-  load_huge( &z, ( unsigned char * ) hash,
-     ( ( hash_len * 4 ) < params->n.size ) ? ( hash_len * 4 ) : params->n.size );
+  load_huge(&z, (unsigned char *) hash,
+            ((hash_len * 4) < params->n.size) ? (hash_len * 4) : params->n.size);
 
-  // s = k^-1 ( z + r d_a ) % n
-  inv( &k, &params->n );
-  set_huge( &signature->s, 0 );
-  copy_huge( &signature->s, private_key );
-  multiply( &signature->s, &signature->r );
-  add( &signature->s, &z );
-  multiply( &signature->s, &k );
-  divide( &signature->s, &params->n, NULL );
+  // s = k^-1 (z + r d_a) % n
+  inv(&k, &params->n);
+  set_huge(&signature->s, 0);
+  copy_huge(&signature->s, private_key);
+  multiply(&signature->s, &signature->r);
+  add(&signature->s, &z);
+  multiply(&signature->s, &k);
+  divide(&signature->s, &params->n, NULL);
 
-  free_huge( &k );
-  free_huge( &z );
-  free_huge( &X.x );
-  free_huge( &X.y );
+  release_huge(&k);
+  release_huge(&z);
+  release_huge(&X.x);
+  release_huge(&X.y);
 }
 
-int ecdsa_verify( elliptic_curve *params,
-         point *public_key,
-         unsigned int *hash,
-         int hash_len,
-         dsa_signature *signature )
+int ecdsa_verify(elliptic_curve *params,
+                 point *public_key,
+                 unsigned int *hash,
+                 int hash_len,
+                 dsa_signature *signature)
 {
   huge z;
   huge w;
@@ -73,48 +78,55 @@ int ecdsa_verify( elliptic_curve *params,
   point Q;
   int match;
 
+  init_huge(&z);
+  init_huge(&w);
+  init_huge(&G.x);
+  init_huge(&G.y);
+  init_huge(&Q.x);
+  init_huge(&Q.y);
+
   // w = s^-1 % n
-  set_huge( &w, 0 );
-  copy_huge( &w, &signature->s );
-  inv( &w, &params->n );
+  set_huge(&w, 0);
+  copy_huge(&w, &signature->s);
+  inv(&w, &params->n);
 
   // z is the L_n leftmost bits of hash - cannot be longer than n
-  load_huge( &z, ( unsigned char * ) hash, 
-   ( ( hash_len * 4 ) < params->n.size ) ? ( hash_len * 4 ) : params->n.size );
+  load_huge(&z, (unsigned char *) hash, 
+            ((hash_len * 4) < params->n.size) ? (hash_len * 4) : params->n.size);
 
   // u1 = zw % n
-  multiply( &z, &w );
-  divide( &z, &params->n, NULL );  // u1 = z
+  multiply(&z, &w);
+  divide(&z, &params->n, NULL);  // u1 = z
 
   // u2 = (rw) % q
-  multiply( &w, &signature->r );
-  divide( &w, &params->n, NULL ); // u2 = w
+  multiply(&w, &signature->r);
+  divide(&w, &params->n, NULL); // u2 = w
 
   // (x1,y1) = u1 * G + u2 * Q
-  set_huge( &G.x, 0 );
-  set_huge( &G.y, 0 );
-  set_huge( &Q.x, 0 );
-  set_huge( &Q.y, 0 );
-  copy_huge( &G.x, &params->G.x );
-  copy_huge( &G.y, &params->G.y );
-  copy_huge( &Q.x, &public_key->x );
-  copy_huge( &Q.y, &public_key->y ); 
+  set_huge(&G.x, 0);
+  set_huge(&G.y, 0);
+  set_huge(&Q.x, 0);
+  set_huge(&Q.y, 0);
+  copy_huge(&G.x, &params->G.x);
+  copy_huge(&G.y, &params->G.y);
+  copy_huge(&Q.x, &public_key->x);
+  copy_huge(&Q.y, &public_key->y); 
 
-  multiply_point( &G, &z, &params->a, &params->p );
-  multiply_point( &Q, &w, &params->a, &params->p );
-  add_points( &G, &Q, &params->p );
+  multiply_point(&G, &z, &params->a, &params->p);
+  multiply_point(&Q, &w, &params->a, &params->p);
+  add_points(&G, &Q, &params->p);
  
   // r = x1 % n
-  divide( &G.x, &params->n, NULL );
+  divide(&G.x, &params->n, NULL);
 
-  match = !compare( &G.x, &signature->r );
+  match = !compare(&G.x, &signature->r);
 
-  free_huge( &z );
-  free_huge( &w );
-  free_huge( &G.x );
-  free_huge( &G.y );
-  free_huge( &Q.x );
-  free_huge( &Q.y );
+  release_huge(&z);
+  release_huge(&w);
+  release_huge(&G.x);
+  release_huge(&G.y);
+  release_huge(&Q.x);
+  release_huge(&Q.y);
 
   return match;
 }
@@ -179,6 +191,19 @@ ___slogan_obj crypto_ecdsa_sign(___slogan_obj args,
 
   ___slogan_obj_to_int(imsg_len, &mlen);
 
+  init_huge(&curve.p);
+  init_huge(&curve.a);
+  init_huge(&curve.b);
+  init_huge(&curve.G.x);
+  init_huge(&curve.G.y);
+  init_huge(&curve.n);
+  init_huge(&curve.h);
+  init_huge(&A.d);
+  init_huge(&A.Q.x);
+  init_huge(&A.Q.y);
+  init_huge(&signature.r);
+  init_huge(&signature.s);
+
   load_huge(&curve.p, (unsigned char *) ___BODY(P), Plen);
   set_huge(&curve.a, 3);
   curve.a.sign = 1;
@@ -194,7 +219,7 @@ ___slogan_obj crypto_ecdsa_sign(___slogan_obj args,
   copy_huge(&A.Q.y, &curve.G.y);
   multiply_point(&A.Q, &A.d, &curve.a, &curve.p);
 
-  new_sha256_digest(&ctx);
+  init_sha256_digest(&ctx);
   update_digest(&ctx, (unsigned char *)___BODY(u8arr_msg), mlen);
   finalize_digest(&ctx);
 
@@ -205,13 +230,20 @@ ___slogan_obj crypto_ecdsa_sign(___slogan_obj args,
   memcpy(___BODY(rs), signature.s.rep, signature.s.size);
   result = ___pair(rr, rs);
   
-  free_huge(&curve.p);
-  free_huge(&curve.b);
-  free_huge(&curve.G.x);
-  free_huge(&curve.G.y);
-  free_huge(&curve.n);
-  free_huge(&A.d);
-
+  release_sha256_digest(&ctx);
+  release_huge(&curve.p);
+  release_huge(&curve.a);
+  release_huge(&curve.b);
+  release_huge(&curve.G.x);
+  release_huge(&curve.G.y);
+  release_huge(&curve.n);
+  release_huge(&curve.h);
+  release_huge(&A.d);
+  release_huge(&A.Q.x);
+  release_huge(&A.Q.y);
+  release_huge(&signature.r);
+  release_huge(&signature.s);
+  
   return result;
 }
 
@@ -281,6 +313,19 @@ ___slogan_obj crypto_ecdsa_verify(___slogan_obj args,
   ___slogan_obj_to_int(irr_len, &rrlen);
   ___slogan_obj_to_int(irs_len, &rslen);
 
+  init_huge(&curve.p);
+  init_huge(&curve.a);
+  init_huge(&curve.b);
+  init_huge(&curve.G.x);
+  init_huge(&curve.G.y);
+  init_huge(&curve.n);
+  init_huge(&curve.h);
+  init_huge(&A.d);
+  init_huge(&A.Q.x);
+  init_huge(&A.Q.y);
+  init_huge(&signature.r);
+  init_huge(&signature.s);
+
   load_huge(&curve.p, (unsigned char *) ___BODY(P), Plen);
   set_huge(&curve.a, 3);
   curve.a.sign = 1;
@@ -296,7 +341,7 @@ ___slogan_obj crypto_ecdsa_verify(___slogan_obj args,
   copy_huge(&A.Q.y, &curve.G.y);
   multiply_point(&A.Q, &A.d, &curve.a, &curve.p);
 
-  new_sha256_digest(&ctx);
+  init_sha256_digest(&ctx);
   update_digest(&ctx, (unsigned char *)___BODY(u8arr_msg), mlen);
   finalize_digest(&ctx);
 
@@ -305,14 +350,19 @@ ___slogan_obj crypto_ecdsa_verify(___slogan_obj args,
 
   result = ecdsa_verify(&curve, &A.Q, ctx.hash, ctx.hash_len, &signature) ? ___TRU : ___FAL;
 
-  free_huge(&curve.p);
-  free_huge(&curve.b);
-  free_huge(&curve.G.x);
-  free_huge(&curve.G.y);
-  free_huge(&curve.n);
-  free_huge(&A.d);
-  free_huge(&signature.r);
-  free_huge(&signature.s);
+  release_sha256_digest(&ctx);
+  release_huge(&curve.p);
+  release_huge(&curve.a);
+  release_huge(&curve.b);
+  release_huge(&curve.G.x);
+  release_huge(&curve.G.y);
+  release_huge(&curve.n);
+  release_huge(&curve.h);
+  release_huge(&A.d);
+  release_huge(&A.Q.x);
+  release_huge(&A.Q.y);
+  release_huge(&signature.r);
+  release_huge(&signature.s);
   
   return result;
 }

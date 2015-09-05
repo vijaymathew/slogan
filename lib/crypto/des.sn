@@ -7,11 +7,17 @@
 namespace crypto;
 namespace des;
 
+define ivlens = [8];
+define keylens = [8 24];
+function chkiv(iv) { __crypto_chkbytes(string_to_u8array(iv), ivlens); iv };
+function chkkey(key) { __crypto_chkbytes(string_to_u8array(key), keylens); key };
+
 function enc_dec_helper(key, iv, input, enc) 
     letseq (len = u8array_length(input),
             out = make_u8array(len)) {
         ffi_call_void_6(__crypto_lib_handle,
-                        "crypto_des", key, iv,
+                        "crypto_des",
+                        chkkey(key), chkiv(iv),
                         input, out, len,
                         if (enc) 1 else 0);
         out

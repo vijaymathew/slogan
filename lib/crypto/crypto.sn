@@ -6,3 +6,15 @@ function release(handle) ffi_close(handle);
 namespace;
 
 define __crypto_lib_handle = crypto_initialize();
+
+function __crypto_chkbytes(arr, explens) 
+    let (len = u8array_length(arr)) 
+        if (not(memq(len, explens)))
+            error("expected byte array lengths are " explens)
+        else let loop (i = 0) 
+            if (i < len) 
+                if (is_zero(u8array_at(arr, i)))
+                    error("all bytes must be positive " arr)
+                else
+                    loop(i + 1)
+            else arr;
