@@ -1,0 +1,69 @@
+/**
+ Read/Write JSON encoded strings.
+ Sample usage:
+
+ ````
+ import enc_json;
+ define a = decode("{\"name\":\"nemo\", \"age\":3}");
+ encode(a);
+ // => "{\"name\":\"nemo\", \"age\":3}"
+ ````
+ 
+Copyright (c) 2013-2015 by Vijay Mathew Pandyalakal, All Rights Reserved.
+**/
+
+namespace enc;
+namespace json;
+
+function is_opr(token, opr)
+    is_special_token(token) && special_token_to_string(token) == opr;
+
+function read_json_string(tokenizer) 
+    let (s = get_token(tokenizer)) 
+        if (not(is_string(s)))
+            error("Expected string, found", s)
+        else s;
+
+function read_json_array(tokenizer) 
+    if (is_opr(get_token(tokenizer), "[")) 
+        let loop (e = enc_json_read_json_value(tokenizer),
+                  r = []) 
+            let (t = get_token(tokenizer)) 
+                if (is_opr(t, ",")) loop(enc_json_read_json_value(tokenizer),
+                                         e : r)
+                else if (is_opr(t, "]")) list_to_array(reverse(e : r))
+                else error("Found" t "instead of ] or ,");
+                
+function read_json_value(tokenizer) 
+    let (t = peek_token(tokenizer)) 
+        if (is_opr(t, "{"))
+            read_json_object(tokenizer)
+        else if (is_opr(t, "["))
+            read_json_array(tokenizer)
+        else get_token(tokenizer);
+
+function read_json_objvalue(tokenizer) 
+    let (t = get_token(tokenizer)) 
+        if (is_opr(t, ":"))
+            read_json_value(tokenizer)
+        else error("Found" t "instead of :");
+    
+function read_json_object(tokenizer) 
+    let (t = get_token(tokenizer)) 
+        if (is_opr(t, "{")) 
+            let loop (e = read_json_string(tokenizer) : read_json_objvalue(tokenizer),
+                      r = []) 
+                let (t = get_token(tokenizer)) 
+                    if (is_opr(t, ",")) loop(read_json_string(tokenizer) : read_json_objvalue(tokenizer),
+                                             e : r)
+                    else if (is_opr(t, "}")) reverse(e : r)
+                    else error("Found" t " instead of } or ,")
+        else error("Found" t "instead of {");
+            
+function decode(str_json)
+    read_json_object(port_tokenizer(false, open_string_input_port(str_json)));
+
+// TODO: implement the `encode` function.
+
+namespace;
+namespace;
