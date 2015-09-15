@@ -40,18 +40,22 @@
 	    (begin (display #\space)
 		   (loop (+ n 1))))))))
 
-(define (highligted-error-line tokenizer)
-  (let ((curr-tok-len (current-token-length tokenizer)))
+(define (highligted-error-line tokenizer #!optional token)
+  (let ((curr-tok-len (current-token-length tokenizer))
+        (tlen (if token
+                  (string-length (if (symbol? token) (symbol->string token) token))
+                  0)))
+    (display curr-tok-len) (newline)
     (let loop ((line-no (tokenizer 'line)) 
                (n 1)
                (program-text (tokenizer 'program-text)))
       (if (not (null? program-text))
           (if (= n line-no)
-              (cons (car program-text) (highligted-line (- (tokenizer 'column) curr-tok-len)))
+              (cons (car program-text) (highligted-line (+ tlen (- (tokenizer 'column) curr-tok-len))))
               (loop line-no (+ n 1) (cdr program-text)))
           #f))))
 
-(define (parser-error tokenizer msg)
+(define (parser-error tokenizer msg #!optional token)
   (pop-namespace)
   (error (with-output-to-string 
            '()
@@ -60,7 +64,7 @@
                  (println "at [line: "(tokenizer 'line) 
                           ", column: " (tokenizer 'column) "]. " 
                           msg))
-             (let ((hl (highligted-error-line tokenizer)))
+             (let ((hl (highligted-error-line tokenizer token)))
                (if hl (begin (println (car hl))
                              (println (cdr hl)))))))))
 
@@ -199,7 +203,8 @@
 	    (let ((params (func-params-expr tokenizer)))
 	      (merge-lambda params (func-body-expr tokenizer params))))
 	(begin (if (not noname)
-                   (begin (tokenizer 'next)
+                   (begin (check-if-reserved-name name tokenizer)
+                          (tokenizer 'next)
                           (remove-macro-lazy-fns-def name)))
 	       (let ((params (func-params-expr tokenizer)))
 		 (if (and is-lazy (not noname))
@@ -1130,7 +1135,7 @@
   (if (or (reserved-name? sym)
 	  (is_special_token sym))
       (parser-error tokenizer (string-append "Invalid use of keyword or operator: "
-                                             (symbol->string sym) "."))
+                                             (symbol->string sym) ".") sym)
       sym))
 
 (define (valid-identifier? sym)
