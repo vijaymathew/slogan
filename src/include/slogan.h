@@ -35,6 +35,8 @@
 #define ___nonnullcharstring_to_slogan_obj(c, s) ((___NONNULLCHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)))
 
 #define ___SLOGAN_OBJ_to_POINTER ___SCMOBJ_to_POINTER
+#define ___slogan_obj_to_void_pointer(obj, p) ___SCMOBJ_to_POINTER(obj, p, ___FAL, 0);
+
 #define ___POINTER_to_SLOGAN_OBJ ___POINTER_to_SCMOBJ
 
 #define ___PAIR ___make_pair
