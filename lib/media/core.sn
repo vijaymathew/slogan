@@ -1,0 +1,131 @@
+namespace media;
+
+function load_lib() ffi_open(string_append(getenv("SLOGAN_ROOT") "/lib/media/c/media.so"));
+define lib_handle = load_lib();
+function release_lib() ffi_close(lib_handle);
+
+define INIT_HAPTIC = 0;
+define INIT_AUDIO = 1;
+define INIT_VIDEO = 2;
+define INIT_TIMER = 3;
+define INIT_JOYSTICK = 4;
+define INIT_EVERYTHING = 5;
+define INIT_NOPARACHUTE = 6;
+
+function initialize(flags = [INIT_EVERYTHING]) 
+    ffi_call_obj_1(lib_handle, "_media_init", flags);
+
+function release() 
+    ffi_call_void_0(lib_handle, "_media_release");
+
+function get_error() 
+    ffi_call_obj_0(lib_handle, "_media_get_error");
+    
+define WINDOW_FULLSCREEN = 0;
+define WINDOW_OPENGL = 1;
+define WINDOW_SHOWN = 2;
+define WINDOW_HIDDEN = 3;
+define WINDOW_BORDERLESS = 4;
+define WINDOW_RESIZABLE = 5;
+define WINDOW_MINIMIZED = 6;
+define WINDOW_MAXIMIZED = 7;
+define WINDOW_INPUT_GRABBED = 8;
+define WINDOW_INPUT_FOCUS = 9;
+define WINDOW_MOUSE_FOCUS = 10;
+define WINDOW_FOREIGN = 11;
+
+function create_window(title, x, y, w, h, flags = [WINDOW_SHOWN]) 
+    ffi_call_void_pointer_6(lib_handle,
+                            "_media_create_window"
+                            title, x, y, w, h, flags);
+
+function destroy_window(w) 
+    ffi_call_void_with_void_pointer_1(lib_handle,
+                                      "_media_destroy_window",
+                                      w);                                      
+
+define RENDERER_SOFTWARE = 0;
+define RENDERER_ACCELERATED = 1;
+define RENDERER_PRESENTVSYNC = 2;
+define RENDERER_TARGETTEXTURE = 3;
+
+function create_renderer(w, d, flags = []) 
+    ffi_call_void_pointer_with_void_pointer_3(lib_handle,
+                                              "_media_create_renderer"
+                                              w, d, flags);
+
+function destroy_renderer(rd) 
+    ffi_call_void_with_void_pointer_1(lib_handle,
+                                      "_media_destroy_renderer",
+                                      rd);
+
+function set_render_draw_color(rd, r, g, b, a) 
+    ffi_call_obj_with_void_pointer_5(lib_handle,
+                                     "_media_set_render_draw_color",
+                                     rd, r, g, b, a);
+
+function render_clear(rd) 
+    ffi_call_obj_with_void_pointer_1(lib_handle,
+                                     "_media_render_clear",
+                                     rd);
+
+function render_present(rd) 
+    ffi_call_void_with_void_pointer_1(lib_handle,
+                                      "_media_render_present",
+                                      rd);
+
+function sleep(ms) ffi_call_void_1(lib_handle, "_media_delay", ms);
+
+function handle_event() 
+    ffi_call_obj_0(lib_handle, "_media_handle_event");
+
+function load_image(rd, path) 
+    ffi_call_void_pointer_with_void_pointer_2(lib_handle,
+                                              "_media_load_image", rd, path);
+
+function render_copy(rd, texture, x, y, w = -1, h = -1,
+                     angle = 0.0, center = [], flip = 0) 
+    ffi_call_obj_8(lib_handle, "_media_render_copy",
+                   [rd, texture], x, y, w, h,
+                   angle, center, flip);
+
+function draw_line(rd, x1, y1, x2, y2) 
+    ffi_call_obj_with_void_pointer_5(lib_handle, "_media_draw_line",
+                                     rd, x1, y1, x2, y2);
+
+function draw_lines(rd, points) 
+    ffi_call_obj_with_void_pointer_2(lib_handle, "_media_draw_lines",
+                                     rd, points);
+
+function draw_rect(rd, x, y, w, h, fill = false) 
+    ffi_call_obj_with_void_pointer_6(lib_handle, "_media_draw_rect",
+                                     rd, x, y, w, h, fill);
+
+function draw_point(rd, x, y) 
+    ffi_call_obj_with_void_pointer_3(lib_handle, "_media_draw_point",
+                                     rd, x, y);
+
+function draw_circle(rd, x0, y0, radius) 
+    let loop (x = radius,
+              y = 0,
+              decisionOver2 = 1 - radius) 
+        if (y <= x) {
+            draw_point(rd, x + x0,  y + y0);
+            draw_point(rd, y + x0,  x + y0);
+            draw_point(rd, -x + x0,  y + y0);
+            draw_point(rd, -y + x0,  x + y0);
+            draw_point(rd, -x + x0, -y + y0);
+            draw_point(rd, -y + x0, -x + y0);
+            draw_point(rd, x + x0, -y + y0);
+            draw_point(rd, y + x0, -x + y0);
+            y = y + 1;
+            if (decisionOver2 <= 0)
+                decisionOver2 = decisionOver2 + (2 * y + 1)
+            else {
+                x = x - 1;
+                decisionOver2 = decisionOver2 + (2 * (y - x) + 1)
+            };
+            loop(x, y, decisionOver2)
+        };
+
+namespace;
