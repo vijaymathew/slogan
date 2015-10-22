@@ -45,6 +45,19 @@ define img = load_image(r, "image.bmp");
 render_copy(r, img, 0, 0);
 ````
 
+Draw some simple shapes on the Window's surface
+------------------------------------------------
+
+```
+import media_draw;
+define s = get_window_surface(w);
+line(s, !red, 10 : 10, 100 : 200);
+ellipse(s, !green, [20, 30, 150, 250]);
+circle(s, !blue, 45, 50, 60);
+rect(s, [255, 255, 0, 255], [20, 30, 100, 100], 10);
+update_window_surface(w);
+```
+
 Destroy the window and renderer after use
 -----------------------------------------
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 src_dir=$SLOGAN_ROOT/lib/media/c
-src_files="$src_dir/core.c"
+src_files="$src_dir/core.c $src_dir/draw.c"
 incs="-I$SLOGAN_ROOT/src/include -I$SLOGAN_ROOT/platform/gsc/include -I$src_dir"
 out_file=$src_dir/media.so
 unamestr=`uname`

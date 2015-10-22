@@ -44,6 +44,16 @@ function destroy_window(w)
                                       "_media_destroy_window",
                                       w);                                      
 
+function get_window_surface(w) 
+    ffi_call_void_pointer_with_void_pointer_1(lib_handle,
+                                              "_media_get_window_surface",
+                                              w);
+
+function update_window_surface(w) 
+    ffi_call_obj_with_void_pointer_1(lib_handle,
+                                     "_media_update_window_surface",
+                                     w);
+    
 define RENDERER_SOFTWARE = 0;
 define RENDERER_ACCELERATED = 1;
 define RENDERER_PRESENTVSYNC = 2;
@@ -59,9 +69,9 @@ function destroy_renderer(rd)
                                       "_media_destroy_renderer",
                                       rd);
 
-function set_render_draw_color(rd, r, g, b, a) 
+function set_render_color(rd, r, g, b, a) 
     ffi_call_obj_with_void_pointer_5(lib_handle,
-                                     "_media_set_render_draw_color",
+                                     "_media_set_render_color",
                                      rd, r, g, b, a);
 
 function render_clear(rd) 
@@ -89,35 +99,35 @@ function render_copy(rd, texture, x, y, w = -1, h = -1,
                    [rd, texture], x, y, w, h,
                    angle, center, flip);
 
-function draw_line(rd, x1, y1, x2, y2) 
-    ffi_call_obj_with_void_pointer_5(lib_handle, "_media_draw_line",
+function render_line(rd, x1, y1, x2, y2) 
+    ffi_call_obj_with_void_pointer_5(lib_handle, "_media_render_line",
                                      rd, x1, y1, x2, y2);
 
-function draw_lines(rd, points) 
-    ffi_call_obj_with_void_pointer_2(lib_handle, "_media_draw_lines",
+function render_lines(rd, points) 
+    ffi_call_obj_with_void_pointer_2(lib_handle, "_media_render_lines",
                                      rd, points);
 
-function draw_rect(rd, x, y, w, h, fill = false) 
-    ffi_call_obj_with_void_pointer_6(lib_handle, "_media_draw_rect",
+function render_rect(rd, x, y, w, h, fill = false) 
+    ffi_call_obj_with_void_pointer_6(lib_handle, "_media_render_rect",
                                      rd, x, y, w, h, fill);
 
-function draw_point(rd, x, y) 
-    ffi_call_obj_with_void_pointer_3(lib_handle, "_media_draw_point",
+function render_point(rd, x, y) 
+    ffi_call_obj_with_void_pointer_3(lib_handle, "_media_render_point",
                                      rd, x, y);
 
-function draw_circle(rd, x0, y0, radius) 
+function render_circle(rd, x0, y0, radius) 
     let loop (x = radius,
               y = 0,
               decisionOver2 = 1 - radius) 
         if (y <= x) {
-            draw_point(rd, x + x0,  y + y0);
-            draw_point(rd, y + x0,  x + y0);
-            draw_point(rd, -x + x0,  y + y0);
-            draw_point(rd, -y + x0,  x + y0);
-            draw_point(rd, -x + x0, -y + y0);
-            draw_point(rd, -y + x0, -x + y0);
-            draw_point(rd, x + x0, -y + y0);
-            draw_point(rd, y + x0, -x + y0);
+            render_point(rd, x + x0,  y + y0);
+            render_point(rd, y + x0,  x + y0);
+            render_point(rd, -x + x0,  y + y0);
+            render_point(rd, -y + x0,  x + y0);
+            render_point(rd, -x + x0, -y + y0);
+            render_point(rd, -y + x0, -x + y0);
+            render_point(rd, x + x0, -y + y0);
+            render_point(rd, y + x0, -x + y0);
             y = y + 1;
             if (decisionOver2 <= 0)
                 decisionOver2 = decisionOver2 + (2 * y + 1)
@@ -127,5 +137,63 @@ function draw_circle(rd, x0, y0, radius)
             };
             loop(x, y, decisionOver2)
         };
+
+namespace draw;
+
+define colors = %[red : [255, 0, 0, 255],
+                  green : [0, 255, 0, 255],
+                  blue : [0, 0, 255, 255]];
+
+function valid_color_value(v) is_integer(v) && v >= 0 && v <= 255;
+
+function color_to_rgba(color) 
+    if (is_symbol(color))
+        let (rgba = get(color, colors)) 
+            if (not(rgba)) [0, 0, 0, 255]
+            else rgba
+    else if (is_list(color) && length(color) == 4 && for_all(valid_color_value, color))
+        color
+    else error("invalid color specification - " color);
+    
+function line(surface, color, sxy, exy, width = 1)  
+    ffi_call_obj_with_void_pointer_5(lib_handle,
+                                     "_media_draw_line",
+                                     surface, color_to_rgba(color),
+                                     sxy, exy, width);
+
+function ellipse(surface, color, bounds, width = 1) 
+    ffi_call_obj_with_void_pointer_4(lib_handle,
+                                     "_media_draw_ellipse",
+                                     surface, color_to_rgba(color),
+                                     bounds, width);
+
+function circle(surface, color, x, y, radius, width = 1) 
+    ffi_call_obj_with_void_pointer_6(lib_handle,
+                                     "_media_draw_circle",
+                                     surface, color_to_rgba(color),
+                                     x, y, radius, width);
+
+function arc(surface, color, bounds, sangle, eangle, width = 1) 
+    ffi_call_obj_with_void_pointer_6(lib_handle,
+                                     "_media_draw_arc",
+                                     surface, color_to_rgba(color),
+                                     bounds, sangle, eangle, width);
+
+function polygon(surface, color, points, width = 1) 
+    ffi_call_obj_with_void_pointer_4(lib_handle,
+                                     "_media_draw_polygon",
+                                     surface, color_to_rgba(color),
+                                     points, width);
+
+function rect(surface, color, rect, width = 1) 
+    let (x = first(rect), y = second(rect),
+         w = third(rect), h = fourth(rect))
+        let (l = x, r = x + w - 1,
+	     t = y, b = y + h - 1) 
+            polygon(surface, color,
+                    [l : t, r : t,
+                     r : b, l : b],
+                    width);
+namespace;
 
 namespace;

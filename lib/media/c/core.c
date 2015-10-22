@@ -102,6 +102,16 @@ void _media_destroy_window(void *w)
   SDL_DestroyWindow(w);
 }
 
+void *_media_get_window_surface(void *w)
+{
+  return SDL_GetWindowSurface((SDL_Window *)w);
+}
+
+___slogan_obj _media_update_window_surface(void *w)
+{
+  return SDL_UpdateWindowSurface(w) == 0 ? ___TRU : ___FAL;
+}
+
 static int MAX_RENDERER_FLAGS = 4;
 static int RENDERER_FLAGS[] = { SDL_RENDERER_SOFTWARE,
                                 SDL_RENDERER_ACCELERATED,
@@ -135,11 +145,11 @@ void _media_destroy_renderer(void *r)
   SDL_DestroyRenderer(r);
 }
 
-___slogan_obj _media_set_render_draw_color(void *renderer,
-                                           ___slogan_obj so_r,
-                                           ___slogan_obj so_g,
-                                           ___slogan_obj so_b,
-                                           ___slogan_obj so_a)
+___slogan_obj _media_set_render_color(void *renderer,
+                                      ___slogan_obj so_r,
+                                      ___slogan_obj so_g,
+                                      ___slogan_obj so_b,
+                                      ___slogan_obj so_a)
 {
   int r, g, b, a;
 
@@ -179,7 +189,7 @@ ___slogan_obj _media_handle_event()
 {
   SDL_Event event;
   if (SQL_PollEvent(&event))
-    return ___fix(event.type);
+    return ___FIX(event.type);
   else
     return ___FAL;
 }
@@ -256,11 +266,11 @@ ___slogan_obj _media_render_copy(___slogan_obj so_ptrs,
     return ___FAL;
 }
 
-___slogan_obj _media_draw_line(void *renderer,
-                               ___slogan_obj so_x1,
-                               ___slogan_obj so_y1,
-                               ___slogan_obj so_x2,
-                               ___slogan_obj so_y2)
+___slogan_obj _media_render_line(void *renderer,
+                                 ___slogan_obj so_x1,
+                                 ___slogan_obj so_y1,
+                                 ___slogan_obj so_x2,
+                                 ___slogan_obj so_y2)
 {
 
   int x1, y1, x2, y2;
@@ -276,9 +286,9 @@ ___slogan_obj _media_draw_line(void *renderer,
     return ___FAL;
 }
 
-___slogan_obj _media_draw_lines(void *renderer,
-                                ___slogan_obj so_points,
-                                ___slogan_obj so_count)
+___slogan_obj _media_render_lines(void *renderer,
+                                  ___slogan_obj so_points,
+                                  ___slogan_obj so_count)
 {
   int count;
   int i;
@@ -300,9 +310,9 @@ ___slogan_obj _media_draw_lines(void *renderer,
   return (i == 0 ? ___TRU : ___FAL);
 }
 
-___slogan_obj _media_draw_point(void *renderer,
-                                ___slogan_obj so_x,
-                                ___slogan_obj so_y)
+___slogan_obj _media_render_point(void *renderer,
+                                  ___slogan_obj so_x,
+                                  ___slogan_obj so_y)
 {
   int x, y;
 
@@ -314,12 +324,12 @@ ___slogan_obj _media_draw_point(void *renderer,
   return ___FAL;
 }
 
-___slogan_obj _media_draw_rect(void *renderer,
-                               ___slogan_obj so_x,
-                               ___slogan_obj so_y,
-                               ___slogan_obj so_w,
-                               ___slogan_obj so_h,
-                               ___slogan_obj fill)
+___slogan_obj _media_render_rect(void *renderer,
+                                 ___slogan_obj so_x,
+                                 ___slogan_obj so_y,
+                                 ___slogan_obj so_w,
+                                 ___slogan_obj so_h,
+                                 ___slogan_obj fill)
 {
   SDL_Rect rect;
   int r;
@@ -336,4 +346,3 @@ ___slogan_obj _media_draw_rect(void *renderer,
   return (r == 0 ? ___TRU : ___FAL);
 }
 
-  
