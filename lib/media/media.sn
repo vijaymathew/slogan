@@ -1,0 +1,4 @@
+load "$SLOGAN_ROOT/lib/media/core";
+load "$SLOGAN_ROOT/lib/media/graphics";
+
+media_core_initialize();

@@ -102,6 +102,16 @@ void _media_destroy_window(void *w)
   SDL_DestroyWindow(w);
 }
 
+void _media_show_window(void *w)
+{
+  SDL_ShowWindow(w);
+}
+
+void _media_hide_window(void *w)
+{
+  SDL_HideWindow(w);
+}
+
 void *_media_get_window_surface(void *w)
 {
   return SDL_GetWindowSurface((SDL_Window *)w);
@@ -210,6 +220,25 @@ void *_media_load_image(void *renderer,
     }
   
   return NULL;
+}
+
+void *_media_texture_from_surface(void *renderer_ptr,
+                                  ___slogan_obj surface_obj)
+{
+  SDL_Surface *surface;
+
+  ___slogan_obj_to_void_pointer(surface_obj, (void **)&surface);
+  return SDL_CreateTextureFromSurface((SDL_Renderer *)renderer_ptr, surface);
+}
+
+void _media_free_surface(void *surface)
+{
+  SDL_FreeSurface(surface);
+}
+
+void _media_free_texture(void *texture)
+{
+  SDL_DestroyTexture(texture);
 }
 
 static int MAX_FLIP = 3;

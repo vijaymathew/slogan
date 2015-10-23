@@ -1,0 +1,32 @@
+namespace media_graphics;
+
+import media_core as mc;
+
+record canvas(renderer, surface, window);
+record pen(width, color);
+
+define default_pen = make_pen(1, [0, 0, 0, 255]);
+
+function window_canvas(window, rendering_driver = -1, rendering_flags = []) 
+    make_canvas(mc_create_renderer(window,
+                                   rendering_driver,
+                                   rendering_flags),
+                mc_get_window_surface(window),
+                window);
+
+function set_forecolor(canvas, rgba) 
+    mc_set_render_color(canvas_renderer(canvas),
+                        first(rgba),
+                        second(rgba),
+                        third(rgba),
+                        fourth(rgba));
+
+function draw_line(canvas, pen, x1, y1, x2, y2) 
+    let (r = mc_line(canvas_surface(canvas), pen_color(pen),
+                     x1 : y1, x2 : y2, pen_width(pen)),
+         w = canvas_window(canvas)) {
+        if (w) mc_update_window_surface(w);
+        r
+    };
+
+namespace;
