@@ -246,6 +246,7 @@ function text_close_font(font)
 function text_on_solid_surface(font, text, rgba) 
     ffi_call_void_pointer_with_void_pointer_3(lib_handle,
                                               "_media_text_render_solid",
-                                              font, text, rgba);
+                                              font, text,
+                                              color_to_rgba(rgba));
 
 namespace;

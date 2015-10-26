@@ -149,7 +149,7 @@ ___slogan_obj _media_draw_line(void *surfobj,
   int rgba[4];
   int color;
   int anydraw;
-  
+
   if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4)
     return ___FIX(-1);
 
@@ -162,7 +162,7 @@ ___slogan_obj _media_draw_line(void *surfobj,
   ___slogan_obj_to_int(___CDR(so_end), &endy);
 
   ___slogan_obj_to_int(so_width, &width);
-  
+
   if (width < 1)
     return ilist4(startx, starty, 0, 0);
   

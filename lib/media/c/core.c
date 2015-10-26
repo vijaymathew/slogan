@@ -82,14 +82,15 @@ void *_media_create_window(___slogan_obj so_title,
   ___slogan_obj_to_int(so_ypos, &ypos);
   ___slogan_obj_to_int(so_width, &width);
   ___slogan_obj_to_int(so_height, &height);
-  while (so_flags != ___NUL) {
-    ___slogan_obj obj = ___CAR(so_flags);
-    int f;
-    ___slogan_obj_to_int(obj, &f);
-    assert(f >= 0 && f < MAX_CREATE_WINDOW_FLAGS);
-    flags |= CREATE_WINDOW_FLAGS[f];
-    so_flags = ___CDR(so_flags);
-  }
+  while (so_flags != ___NUL)
+    {
+      ___slogan_obj obj = ___CAR(so_flags);
+      int f;
+      ___slogan_obj_to_int(obj, &f);
+      assert(f >= 0 && f < MAX_CREATE_WINDOW_FLAGS);
+      flags |= CREATE_WINDOW_FLAGS[f];
+      so_flags = ___CDR(so_flags);
+    }
 
   return SDL_CreateWindow(title,
                           xpos == -1 ? SDL_WINDOWPOS_CENTERED : xpos,

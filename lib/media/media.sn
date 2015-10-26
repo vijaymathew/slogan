@@ -2,3 +2,4 @@ load "$SLOGAN_ROOT/lib/media/core";
 load "$SLOGAN_ROOT/lib/media/graphics";
 
 media_core_initialize();
+media_core_text_init();

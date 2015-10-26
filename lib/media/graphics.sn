@@ -7,10 +7,8 @@ record pen(width, color);
 
 define default_pen = make_pen(1, [0, 0, 0, 255]);
 
-function window_canvas(window, rendering_driver = -1, rendering_flags = []) 
-    make_canvas(mc_create_renderer(window,
-                                   rendering_driver,
-                                   rendering_flags),
+function window_canvas(window, rendering_driver = -1, rendering_flags = %[software]) 
+    make_canvas(mc_create_renderer(window, rendering_driver, rendering_flags),
                 mc_get_window_surface(window),
                 window);
 
@@ -21,12 +19,63 @@ function set_forecolor(canvas, rgba)
                         third(rgba),
                         fourth(rgba));
 
-function draw_line(canvas, pen, x1, y1, x2, y2) 
+define open_font = mc_text_open_font;
+define close_font = mc_text_close_font;
+
+function update_surface(canvas) 
+    if (canvas_window(canvas))
+        mc_update_window_surface(canvas_window(canvas));
+
+function draw_line(canvas, pen, start_point, end_point) 
     let (r = mc_line(canvas_surface(canvas), pen_color(pen),
-                     x1 : y1, x2 : y2, pen_width(pen)),
-         w = canvas_window(canvas)) {
-        if (w) mc_update_window_surface(w);
+                     start_point, end_point, pen_width(pen))) {
+        update_surface(canvas);
         r
     };
+
+function draw_ellipse(canvas, pen, xywh) 
+    let (r = mc_ellipse(canvas_surface(canvas), pen_color(pen),
+                        xywh, pen_width(pen))) {
+        update_surface(canvas);
+        r
+    };
+
+function draw_circle(canvas, pen, xy, radius) 
+    let (r = mc_circle(canvas_surface(canvas), pen_color(pen),
+                       head(xy), tail(xy), pen_width(pen))) {
+        update_surface(canvas);
+        r
+    };
+
+function draw_arc(canvas, pen, bounds, start_angle, end_angle) 
+    let (r = mc_circle(canvas_surface(canvas), pen_color(pen),
+                       bounds, start_angle, end_angle,
+                       pen_width(pen))) {
+        update_surface(canvas);
+        r
+    };
+
+function draw_poly(canvas, pen, points) 
+    let (r = mc_polygon(canvas_surface(canvas), pen_color(pen),
+                        points, pen_width(pen))) {
+        update_surface(canvas);
+        r
+    };
+
+function draw_rect(canvas, pen, bounds) 
+    let (r = mc_rect(canvas_surface(canvas), pen_color(pen),
+                     bounds, pen_width(pen))) {
+        update_surface(canvas);
+        r
+    };
+
+function draw_text(canvas, font, text, rgba, x, y) 
+    let (surface = mc_text_on_solid_surface(font, text, rgba),
+         renderer = canvas_renderer(canvas)) 
+        let (texture = mc_texture_from_surface(renderer, surface)) {
+            mc_destroy_surface(surface);
+            mc_render_copy(renderer, texture, x, y);
+            mc_render_present(renderer)
+        };
 
 namespace;

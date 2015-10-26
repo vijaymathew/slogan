@@ -29,9 +29,10 @@ Create and show a simple window
 
 ````
 define w = create_window("hello", -1, -1, 500, 500);
-define r = create_renderer(w, -1);
+define r = create_renderer(w, -1, %[software]);
 set_render_color(r, 0, 0, 0, 255);
 render_clear(r);
+// draw some shapes here
 render_present(r);
 ````
 
@@ -48,26 +49,26 @@ render_copy(r, img, 0, 0);
 Draw some simple shapes on the Window's surface
 ------------------------------------------------
 
-```
+````
 define s = get_window_surface(w);
 line(s, !red, 10 : 10, 100 : 200);
 ellipse(s, !green, [20, 30, 150, 250]);
 circle(s, !blue, 45, 50, 60);
 rect(s, [255, 255, 0, 255], [20, 30, 100, 100], 10);
 update_window_surface(w);
-```
+````
 
 Render some text
 ----------------
 
-```
+````
 text_init();
 define font = text_open_font("/Library/Fonts/Verdana.ttf", 16);
 define surface = text_on_solid_surface(font, "hello, world", [255, 0, 0, 255]);
 define texture = texture_from_surface(r, surface);
 destroy_surface(surface);
 render_copy(r, texture, 100, 50);
-```
+````
 
 Destroy the window and renderer after use
 -----------------------------------------
