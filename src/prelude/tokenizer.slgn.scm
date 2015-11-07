@@ -226,8 +226,8 @@
            '*quasiquote*)
           (else
            (tokenizer-error 
-            "invalid character in operator. " 
-            (port-pos-read-char! port))))))
+            "invalid character in operator. expected - "
+            c " - found - " next)))))
 
 (define (read-multi-char-operator port)
   (let ((c (port-pos-peek-char port)))

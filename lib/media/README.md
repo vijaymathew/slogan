@@ -7,7 +7,7 @@ Export the environment variable `SLOGAN_ROOT` to point to the Slogan parent dire
 `media` has a dependency on SDL. Make sure the SDL headers and development library is installed.
 Build the shared library by running the `build` script in this folder.
 
-Load and initialize the crypto-library
+Load and initialize the core-library
 ======================================
 
 ````
@@ -78,3 +78,28 @@ destroy_window(w);
 destroy_renderer(r);
 ````
 
+Render graphics using the higher-level functions
+------------------------------------------------
+
+````
+load "$SLOGAN_ROOT/lib/media/media";
+load "$SLOGAN_ROOT/lib/media/graphics";
+
+import media_graphics;
+
+define w = window(500, 500);
+define c = window_canvas(w);
+point(c, 20, 20);
+point(c, 30, 30);
+point(c, 40, 40);
+point(c, 50, 50);
+point(c, 60, 60);
+color(c, [255, 0, 0, 255]);
+line(c, 10, 10, 10, 100);
+line(c, 10, 10, 100, 10);
+line(c, 100, 10, 100, 100);
+line(c, 10, 100, 100, 100);
+circle(c, 100, 100, 50);
+ellipse(c, 200, 250, 100, 120);
+redraw(c);
+````

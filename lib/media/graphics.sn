@@ -2,80 +2,176 @@ namespace media_graphics;
 
 import media_core as mc;
 
-record canvas(renderer, surface, window);
-record pen(width, color);
+record canvas_rec(handle, color);
 
-define default_pen = make_pen(1, [0, 0, 0, 255]);
+define default_bgcolor = [255, 255, 255, 255];
+define default_forecolor = [0, 0, 0, 255];
 
-function window_canvas(window, rendering_driver = -1, rendering_flags = %[software]) 
-    make_canvas(mc_create_renderer(window, rendering_driver, rendering_flags),
-                mc_get_window_surface(window),
-                window);
+function color(r, g, b, a) [r, g, b, a];
+function color_red(color) first(color);
+function color_green(color) second(color);
+function color_blue(color) third(color);
+function color_alpha(color) fourth(color);
 
-function set_forecolor(canvas, rgba) 
-    mc_set_render_color(canvas_renderer(canvas),
-                        first(rgba),
-                        second(rgba),
-                        third(rgba),
-                        fourth(rgba));
+function window(width, height, @key x = -1, y = -1, title = "",
+                rendering_driver = -1, rendering_flags = %[software]) 
+    let (window = mc_create_window(title, x, y, width, height)) 
+        if (not(window)) error("failed to create window -" mc_get_error())
+        else let (canvas = mc_create_renderer(window, rendering_driver, rendering_flags)) 
+            if (not(canvas)) error("failed to create canvas -" mc_get_error())
+            else { mc_set_render_color(canvas, 255, 255, 255, 255);
+                   mc_render_clear(canvas);
+                   mc_render_present(canvas);
+                   mc_set_render_color(canvas, 0, 0, 0, 255);
+                   window : make_canvas_rec(canvas, default_forecolor) };
 
-define open_font = mc_text_open_font;
-define close_font = mc_text_close_font;
+function window_canvas(window) tail(window);
+function window_handle(window) head(window);
 
-function update_surface(canvas) 
-    if (canvas_window(canvas))
-        mc_update_window_surface(canvas_window(canvas));
+function window_show(window) mc_show_window(window_handle(window));
+function window_hide(window) mc_hide_window(window_handle(window));
+function window_destroy(window) mc_destroy_window(window_handle(window));
 
-function draw_line(canvas, pen, start_point, end_point) 
-    let (r = mc_line(canvas_surface(canvas), pen_color(pen),
-                     start_point, end_point, pen_width(pen))) {
-        update_surface(canvas);
-        r
-    };
+function color(canvas, rgba = false) 
+    if (rgba) 
+        let (handle = canvas_rec_handle(canvas)) 
+            if (mc_set_render_color(handle, color_red(rgba), color_green(rgba),
+                                    color_blue(rgba), color_alpha(rgba))) {
+                canvas_rec_set_color(canvas, rgba);
+                rgba
+            } else false
+    else canvas_rec_color(canvas);
 
-function draw_ellipse(canvas, pen, xywh) 
-    let (r = mc_ellipse(canvas_surface(canvas), pen_color(pen),
-                        xywh, pen_width(pen))) {
-        update_surface(canvas);
-        r
-    };
+function redraw(canvas) mc_render_present(canvas_rec_handle(canvas));
 
-function draw_circle(canvas, pen, xy, radius) 
-    let (r = mc_circle(canvas_surface(canvas), pen_color(pen),
-                       head(xy), tail(xy), pen_width(pen))) {
-        update_surface(canvas);
-        r
-    };
+function clear(canvas) 
+    let (handle = canvas_rec_handle(canvas),
+         rgba = canvas_rec_color(canvas)) 
+        if (mc_set_render_color(handle, color_red(rgba), color_green(rgba),
+                                color_blue(rgba), color_alpha(rgba))
+            && mc_render_clear(handle))  {
+            mc_render_present(handle);
+            true            
+        } else false;
 
-function draw_arc(canvas, pen, bounds, start_angle, end_angle) 
-    let (r = mc_circle(canvas_surface(canvas), pen_color(pen),
-                       bounds, start_angle, end_angle,
-                       pen_width(pen))) {
-        update_surface(canvas);
-        r
-    };
+function point(canvas, x, y) mc_render_point(canvas_rec_handle(canvas), x y);
 
-function draw_poly(canvas, pen, points) 
-    let (r = mc_polygon(canvas_surface(canvas), pen_color(pen),
-                        points, pen_width(pen))) {
-        update_surface(canvas);
-        r
-    };
-
-function draw_rect(canvas, pen, bounds) 
-    let (r = mc_rect(canvas_surface(canvas), pen_color(pen),
-                     bounds, pen_width(pen))) {
-        update_surface(canvas);
-        r
-    };
-
-function draw_text(canvas, font, text, rgba, x, y) 
-    let (surface = mc_text_on_solid_surface(font, text, rgba),
-         renderer = canvas_renderer(canvas)) 
-        let (texture = mc_texture_from_surface(renderer, surface)) {
-            mc_destroy_surface(surface);
-            mc_render_copy(renderer, texture, x, y);
-            mc_render_present(renderer)
+function lineprim(h, x0, y0, x1, y1) 
+    let (dx = abs(x1 - x0)
+         dy = abs(y1 - y0),
+	 sx = if (x0 < x1) 1 else -1
+	 sy = if (y0 < y1) 1 else -1) 
+        let loop (err = dx - dy
+	          e2 = 0
+	          current_x = x0
+	          current_y = y0) {
+            mc_render_point(h, current_x, current_y);
+	    if (not(current_x == x1 && current_y == y1)) {
+	        e2 = 2 * err;
+	        if (e2 > -1 * dy) 
+		    loop(err - dy, e2, current_x + sx, current_y)
+                else if (e2 < dx) 
+		    loop(err + dx, e2, current_x, current_y + sy)
+            }
         };
+
+function line(canvas, x0, y0, x1, y1) 
+    lineprim(canvas_rec_handle(canvas), x0, y0, x1, y1);
+
+function circle(canvas, x0, y0, radius)  
+let (h = canvas_rec_handle(canvas))
+        let loop (x = radius
+                  y = 0
+                  decision_over2 = 1 - radius) 
+            if (y <= x) {
+                mc_render_point(h,  x + x0,  y + y0); // Octant 1
+                mc_render_point(h,  y + x0,  x + y0); // Octant 2
+                mc_render_point(h, -x + x0,  y + y0); // Octant 4
+                mc_render_point(h, -y + x0,  x + y0); // Octant 3
+                mc_render_point(h, -x + x0, -y + y0); // Octant 5
+                mc_render_point(h, -y + x0, -x + y0); // Octant 6
+                mc_render_point(h,  x + x0, -y + y0); // Octant 8
+                mc_render_point(h,  y + x0, -x + y0); // Octant 7
+                y = y + 1;
+                if (decision_over2 <= 0) 
+                    loop(x, y, decision_over2 + 2 * y + 1)
+                else 
+                    loop(x - 1, y, decision_over2 + 2 * (y - x) + 1)
+            };
+
+function ellipse_point(h, xcenter, ycenter, x, y) {
+    mc_render_point(h, xcenter + x, ycenter + y);
+    mc_render_point(h, xcenter - x, ycenter + y);
+    mc_render_point(h, xcenter + x, ycenter - y);
+    mc_render_point(h, xcenter - x, ycenter - y)
+};
+
+function ellipse(canvas, xcenter, ycenter, rx, ry) {
+    letseq (h = canvas_rec_handle(canvas)
+            rx2 = rx*rx
+            ry2 = ry*ry
+            two_rx2 = 2*rx2
+            two_ry2 = 2*ry2
+            x = 0
+            y = ry
+            p = 0
+            px = 0
+            py = two_rx2*y) {
+       
+        ellipse_point(h, xcenter, ycenter, x, y);
+        // Region 
+        p = floor(ry2-(rx2*ry)+(0.25+rx2));
+        let loop () {
+            if (px < py) {
+                x = x + 1;
+                px = px + two_ry2;
+                if (p < 0) p = p + ry2 + px
+                else {
+                    y = y - 1;
+                    py = py - two_rx2;
+                    p = p + ry2 + px - py
+                };
+                ellipse_point(h, xcenter, ycenter, x, y);
+                loop()
+            }
+        };
+       
+        // Region2 
+        p = floor(ry2*(x+0.5)*(x+0.5)+rx2*(y-1)*(y-1)-rx2*ry2);
+        let loop () {
+            if (y > 0) {
+                y = y - 1;
+                py = py - two_rx2;
+                if (p > 0) p = p + rx2 - py
+                else {
+                    x = x + 1;
+                    px = px + two_ry2;
+                    p = p + rx2 + px - py
+                };
+                ellipse_point(h, xcenter, ycenter, x, y);
+                loop();
+            }
+        }
+    }
+};
+
+function polygon(canvas, edges) 
+    if (not(is_empty(edges))) 
+        let (h = canvas_rec_handle(canvas)) 
+            let loop (points = edges,
+                      a = first(reverse(edges))) 
+                let (b = first(points)) 
+                    if (not(is_empty(points))) {
+                        lineprim(h, first(a), rest(a), first(b), rest(b));
+                        loop(rest(points), b)
+                    };
+
+function rectangle(canvas, x, y, width, height) 
+    let (h = canvas_rec_handle(canvas)) {
+        lineprim(h, x, y, x+width, y);
+        lineprim(h, x, y, x, y+height);
+        lineprim(h, x+width, y, x+width, y+height);
+        lineprim(h, x, y+height, x+width, y+height)
+    };
 
 namespace;
