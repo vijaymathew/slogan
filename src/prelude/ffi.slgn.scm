@@ -23,6 +23,24 @@
  typedef double (*fn_double)();
  typedef ___SCMOBJ (*fn_obj)();
 
+ #define SCHEME_LIBRARY_LINKER ____20_ffi_2e_slgn
+ 
+ ___BEGIN_C_LINKAGE
+ extern ___mod_or_lnk SCHEME_LIBRARY_LINKER (___global_state);
+ ___END_C_LINKAGE
+
+ void ___setup_fn_call()
+ {
+   ___setup_params_struct setup_params;
+   
+   ___setup_params_reset (&setup_params);
+   
+   setup_params.version = ___VERSION;
+   setup_params.linker  = SCHEME_LIBRARY_LINKER;
+   
+   ___setup (&setup_params);
+ }
+
  static void assert_fn_pointer (void *ptr, const char *name) 
  {
    if (ptr == NULL)
@@ -2410,3 +2428,5 @@ c-declare-end
                                                            char-string
                                                            "ffi_call_char_string_with_void_pointer_8"))
 
+(c-define (___call-fn f args) (scheme-object scheme-object) scheme-object "___call_fn" ""
+          (apply f args))

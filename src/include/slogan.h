@@ -55,6 +55,8 @@
 
 #define ___release_slogan_obj ___release_scmobj
 
+extern  void ___setup_fn_call();
+
 /* Allocates space for arrays whose pointer is not relocated by the GC. */
 extern ___slogan_obj ___alloc_u8array(size_t size);
 extern ___slogan_obj ___alloc_array(size_t size);
