@@ -1,0 +1,88 @@
+// Section 2.1.1
+
+function add_rat(x y) 
+    make_rat(numer(x) * denom(y) + numer(y) * denom(x),
+             denom(x) * denom(y));
+
+function sub_rat(x y) 
+    make_rat(numer(x) * denom(y) - numer(y) * denom(x),
+             denom(x) * denom(y));
+
+function mul_rat(x y) 
+    make_rat(numer(x) * numer(y), denom(x) * denom(y));
+
+function div_rat(x y) 
+    make_rat(numer(x) * denom(y), denom(x) * numer(y));
+
+function is_equal_rat(x y) 
+    numer(x) * denom(y) == numer(y) * denom(x);
+
+function make_rat(n, d) let (g = gcd(n, d)) n/g : d/g;
+function numer(x) head(x);
+function denom(x) tail(x);
+
+function print_rat(x) showln(numer(x) "/" denom(x));
+
+// Exercise 2.1
+
+function make_rat(n, d) 
+    let (g = gcd(n, d)) 
+        if (is_negative(d)) -n/g : -d/g
+        else n/g : d/g;
+
+// Exercise 2.2
+
+function make_point(x y) x:y;
+function x_point(p) head(p);
+function y_point(p) tail(p);
+
+function print_point(p) showln("(" x_point(p) ", " y_point(p) ")");
+    
+function make_segment(start_point end_point) start_point:end_point;
+function start_segment(s) head(s);
+function end_segment(s) tail(s);
+
+function average(x, y) (x + y)/2;
+function midpoint_segment(s) 
+    make_point(average(x_point(start_segment(s)), x_point(end_segment(s))),
+               average(y_point(start_segment(s)), y_point(end_segment(s))));
+
+// Exercise 2.3
+
+function make_rect(a b) (abs(x_point(a) - x_point(b))):(abs(y_point(a) - y_point(b)));
+function rect_width(r) head(r);
+function rect_height(r) tail(r);
+
+function rect_perimeter(r) 2 * (rect_width(r) + rect_height(r));
+function rect_area(r) rect_width(r) * rect_height(r);
+
+// Exercise 2.4
+// Not replacing the defintions of cons, car and cdr because
+// it will break the implementation of Slogan itself.
+// We will replace the function pair, head and tail instead.
+function pair(x y) fn(m) m(x y);
+function head(z) z(fn(p q) p);
+function tail(z) z(fn(p q) q);
+
+// Exercise 2.5
+function numdivs(n d) {
+    function iter(x result) {
+        if (is_zero(remainder(x d)))
+            iter(x/d, inc(result))
+        else result
+    };
+    iter(n 0)
+};
+
+function pair(x y) expt(2 x) * expt(3 y);
+function head(z) numdivs(z 2);
+function tail(z) numdivs(z 3);
+
+// Exercise 2.6
+function zero(f) fn(x) x;
+function one(f) fn(x) f(x);
+function two(f) fn(x) f(f(x));
+function add_church(m n) fn(f) fn(x) (m(f))(n(f)(x));
+
+define three = add_church(one two);
+(three(inc))(0); // => 3
