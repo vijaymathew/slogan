@@ -13,7 +13,9 @@
   (if (not (null? *namespaces*))
       (let ((top (car *namespaces*)))
 	  (set! *namespaces* (cdr *namespaces*))
-	  `(table-set! *active-namespaces* ',(car top) ',(cdr top)))
+	  (let ((expr `(table-set! *active-namespaces* ',(car top) ',(cdr top))))
+	    (eval expr)
+	    expr))
       #f))
 
 (define (existing-namespace-defs name)
@@ -30,7 +32,7 @@
 
 (define (import-from-namespace name #!optional defs prefix)
   (let ((n (find-namespace name)))
-    (if (and (not n) (not defs)) (error "namespace not found" name))
+    (if (and (not n) (not defs)) (error "namespace not found -" name))
     (if (and n defs) (validate-import-names defs n))
     (let loop ((defs (if defs defs n))
                (imports '()))
