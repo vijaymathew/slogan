@@ -12,8 +12,9 @@
 (define (pop-namespace)
   (if (not (null? *namespaces*))
       (let ((top (car *namespaces*)))
-        (table-set! *active-namespaces* (car top) (cdr top))
-        (set! *namespaces* (cdr *namespaces*)))))
+	  (set! *namespaces* (cdr *namespaces*))
+	  `(table-set! *active-namespaces* ',(car top) ',(cdr top)))
+      #f))
 
 (define (existing-namespace-defs name)
   (table-ref *active-namespaces* name '()))
