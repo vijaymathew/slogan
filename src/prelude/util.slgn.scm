@@ -214,3 +214,8 @@
                 (begin (write-char c buff)
                        (loop (+ i 1)))))
           (get-output-string buff)))))
+
+(define (add-slgn-extn file-name)
+  (if (string=? (path-extension file-name) *slgn-extn*)
+      file-name
+      (string-append file-name *slgn-extn*)))

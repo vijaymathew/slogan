@@ -22,9 +22,7 @@
         (reverse exprs))))
 
 (define (read-script-file script-name)
-  (call-with-input-file (if (not (string-ends-with? script-name *slgn-extn*)) 
-                            (string-append script-name *slgn-extn*)
-                            script-name)
+  (call-with-input-file (add-slgn-extn script-name)
     (lambda (port)
       (with-output-to-string 
         '()

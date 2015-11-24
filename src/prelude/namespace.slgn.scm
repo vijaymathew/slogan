@@ -4,6 +4,47 @@
 (define *active-namespaces* (make-table))
 (define *declared-imported* '())
 
+(define (namespace_exports namespace-name)
+  (table-ref *active-namespaces* namespace-name #f))
+
+(define (namespace-hide-unhide namespace-name symbols-or-symbol hide f)
+  (let ((namespace (table-ref *active-namespaces* namespace-name #f)))
+    (if namespace
+        (let loop ((symbols (if (list? symbols-or-symbol) symbols-or-symbol (list symbols-or-symbol)))
+                   (new-names (if hide '() namespace)))
+          (if (null? symbols)
+              (let ((namespace (reverse new-names)))
+                (table-set! *active-namespaces* namespace-name namespace)
+                namespace)
+              (loop (cdr symbols) (f namespace symbols new-names))))
+        #f)))
+
+(define (namespace_hide namespace-name symbols-or-symbol)
+  (namespace-hide-unhide namespace-name symbols-or-symbol #t
+                         (lambda (namespace symbols new-names)
+                           (if (eq? (car namespace) (car symbols))
+                               new-names
+                               (cons (car namespace) new-names)))))
+
+(define (namespace_unhide namespace-name symbols-or-symbol)
+  (namespace-hide-unhide namespace-name symbols-or-symbol #f
+                         (lambda (namespace symbols new-names)
+                           (if (memq (car symbols) namespace)
+                               new-names
+                               (cons (car symbols) new-names)))))
+
+(define (namespace_remove namespace-name)
+  (table-set! *active-namespaces* namespace-name #f)
+  #t)
+
+(define (namespace_add namespace-name symbols)
+  (if (not (symbol? namespace-name))
+      (error "namespace name must be a symbol - " namespace-name)
+      (if (and (list? symbols) (for_all symbol? symbols))
+          (begin (table-set! *active-namespaces* namespace-name symbols)
+                 #t)
+          (error "exported names must be a list of symbols - " symbols))))
+
 (define (push-namespace name)
   (set! *namespaces* (cons (cons (add-parent-namespace-names name) 
                                  (existing-namespace-defs name)) 
