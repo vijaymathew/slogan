@@ -106,7 +106,7 @@
 
 (define (stream-accumulate fn initial stream)
   (if (null? stream)
-      initial
+      '()
       (let ((r (fn initial (first stream))))
         (stream-cons r (stream-accumulate fn r (rest stream))))))
 
