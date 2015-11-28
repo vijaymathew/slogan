@@ -4,7 +4,7 @@
 (define *active-namespaces* (make-table))
 (define *declared-imported* '())
 
-(define (namespace_exports namespace-name)
+(define (namespace_names namespace-name)
   (table-ref *active-namespaces* namespace-name #f))
 
 (define (namespace-hide-unhide namespace-name symbols-or-symbol hide f)
@@ -33,11 +33,11 @@
                                new-names
                                (cons (car symbols) new-names)))))
 
-(define (namespace_remove namespace-name)
+(define (namespace_delete namespace-name)
   (table-set! *active-namespaces* namespace-name #f)
   #t)
 
-(define (namespace_add namespace-name symbols)
+(define (namespace_create namespace-name symbols)
   (if (not (symbol? namespace-name))
       (error "namespace name must be a symbol - " namespace-name)
       (if (and (list? symbols) (for_all symbol? symbols))
