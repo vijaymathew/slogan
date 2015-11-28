@@ -60,9 +60,9 @@ function rect_area(r) rect_width(r) * rect_height(r);
 // Not replacing the defintions of cons, car and cdr because
 // it will break the implementation of Slogan itself.
 // We will replace the function pair, head and tail instead.
-function pair(x y) fn(m) m(x y);
-function head(z) z(fn(p q) p);
-function tail(z) z(fn(p q) q);
+function my_pair(x y) fn(m) m(x y);
+function my_head(z) z(fn(p q) p);
+function my_tail(z) z(fn(p q) q);
 
 // Exercise 2.5
 function numdivs(n d) {
@@ -74,9 +74,9 @@ function numdivs(n d) {
     iter(n 0)
 };
 
-function pair(x y) expt(2 x) * expt(3 y);
-function head(z) numdivs(z 2);
-function tail(z) numdivs(z 3);
+function my_pair(x y) expt(2 x) * expt(3 y);
+function my_head(z) numdivs(z 2);
+function my_tail(z) numdivs(z 3);
 
 // Exercise 2.6
 function zero(f) fn(x) x;
@@ -86,3 +86,350 @@ function add_church(m n) fn(f) fn(x) (m(f))(n(f)(x));
 
 define three = add_church(one two);
 (three(inc))(0); // => 3
+
+// Exercise 2.7
+function make_interval(a, b) a:b;
+function lower_bound(x) head(x);
+function upper_bound(x) tail(x);
+
+function add_interval(x y) 
+    make_interval(lower_bound(x) + lower_bound(y)
+                  upper_bound(x) + upper_bound(y));
+
+function mul_interval(x y) 
+    let (p1 = lower_bound(x) * lower_bound(y)
+         p2 = lower_bound(x) * upper_bound(y)
+         p3 = upper_bound(x) * lower_bound(y)
+         p4 = upper_bound(x) * upper_bound(y)) 
+        make_interval(min(p1 p2 p3 p4), max(p1 p2 p3 p4));
+
+function div_interval(x y) 
+    mul_interval(x, make_interval(1.0/upper_bound(y), 1.0/lower_bound(y)));
+
+// Exercise 2.8
+function sub_interval(x y) 
+    make_interval(lower_bound(x) - upper_bound(y)
+                  upper_bound(x) - lower_bound(y));
+
+// Exercise 2.10
+function spans_zero(y) lower_bound(y) <= 0 && upper_bound(y) >= 0;
+
+function div_interval(x y) 
+    if (spans_zero(y)) error("the denominator should not span 0 -" y)
+    else mul_interval(x, make_interval(1.0/upper_bound(y), 1.0/lower_bound(y)));
+
+
+// Exercise 2.17
+function last_pair(xs) 
+    if (is_empty(xs) || is_empty(tail(xs))) xs
+    else last_pair(tail(xs));
+
+// Exercise 2.18
+function my_reverse(xs)  
+    if (is_empty(xs)) xs
+    else append(my_reverse(tail(xs)), [first(xs)]);
+
+// An iterative version of my_reverse:
+function my_reverse(xs) {
+    function iter(xs, result) 
+        if (is_empty(xs)) result
+        else iter(tail(xs), first(xs) : result);
+    iter(xs, [])
+};
+
+// Exercise 2.19
+function has_no_more(coins) is_empty(coins);
+function except_first_denomination(coins) tail(coins);
+function first_denomination(coins) head(coins);
+
+function cc(amount coin_values) 
+    if (amount == 0) 1
+    else if (amount < 0 || has_no_more(coin_values)) 0
+    else add(cc(amount, except_first_denomination(coin_values)),
+             cc(amount - first_denomination(coin_values), coin_values));
+
+// Exercise 2.20
+function filter_list(predic, xs) 
+    if (is_empty(xs)) xs
+    else if (predic(head(xs))) head(xs):filter_list(predic, tail(xs))
+    else filter_list(predic, tail(xs));
+    
+function same_parity(x, @rest xs) filter_list(if(is_odd(x)) is_odd else is_even, x:xs);
+
+// Exercise 2.21
+function square(x) x * x;
+
+function square_list(items) 
+    if (is_empty(items)) items
+    else square(head(items)) : square_list(tail(items));
+    
+function square_list(items) map(square, items);
+
+// Exercise 2.23
+function my_for_each(f, xs) 
+    if (is_empty(xs)) true
+    else { f(head(xs));
+           my_for_each(f, tail(xs))
+         };
+
+// Exercise 2.25
+head(tail(head(tail(tail([1 3 [5 7] 9])))));
+head(head([[7]]));
+head(tail(head(tail(head(tail(head(tail(head(tail(head(tail([1 [2 [3 [4 [5 [6 7]]]]]]))))))))))));
+
+// Exercise 2.27
+function deep_reverse(xs) {
+    function iter(xs, result) 
+        if (is_empty(xs)) result
+        else if (is_pair(head(xs))) iter(tail(xs), deep_reverse(head(xs)):result)
+        else iter(tail(xs), head(xs):result);
+    iter(xs, [])
+};
+
+// Exercise 2.28
+function fringe(xs) 
+    if (is_empty(xs)) xs
+    else if (is_pair(head(xs))) append(fringe(head(xs)), fringe(tail(xs)))
+    else head(xs) : fringe(tail(xs));
+
+// Exercise 2.29
+function make_mobile(left right) [left right];
+function make_branch(length structure) [length structure];
+function left_branch(mobile) head(mobile);
+function right_branch(mobile) head(tail(mobile));
+function branch_length(branch) head(branch);
+function branch_structure(branch) head(tail(branch));
+
+function branch_weight(branch) 
+    if (is_pair(branch_structure(branch)))
+        total_weight(branch_structure(branch))
+    else branch_structure(branch);
+
+function total_weight(mobile) 
+    branch_weight(left_branch(mobile)) + branch_weight(right_branch(mobile));
+
+function branch_torque(branch) branch_length(branch) * branch_weight(branch);
+
+function is_branch_balanced(branch) 
+    if (is_pair(branch_structure(branch)))
+        is_balanced(branch_structure(branch))
+    else true;
+
+function is_balanced(mobile) 
+    and(branch_torque(left_branch(mobile)) == branch_torque(right_branch(mobile)),
+        is_branch_balanced(left_branch(mobile)),
+        is_branch_balanced(right_branch(mobile)));
+
+// Exercise 2.30
+function square_tree(xs) 
+    if (is_empty(xs)) xs
+    else if (is_pair(head(xs))) square_tree(head(xs)):square_tree(tail(xs))
+    else square(head(xs)):square_tree(tail(xs));
+    
+function square_tree(xs) 
+    map(fn(xs) if (is_pair(xs)) square_tree(xs) else square(xs), xs);
+
+// Exercise 2.31
+function tree_map(f, xs) map(fn(x) if (is_pair(x)) tree_map(f, x) else f(x), xs);
+
+// Exercise 2.32
+function subsets(s) 
+    if (is_empty(s)) [[]]
+    else let (rest = subsets(tail(s))) 
+        append(rest, map(fn(x) first(s):x, rest));
+
+// Section 2.2.3 - Sequence operations
+// We use the Slogan built-in function `fold_right` instead of `accumulate`.
+function fib(n)
+    if (n <= 1) 0
+    else if (n == 2) 1
+    else fib(n-1) + fib(n-2);
+    
+function enumerate_tree(tree) 
+    if (is_empty(tree)) tree
+    else if (not(is_pair(tree))) [tree]
+    else append(enumerate_tree(head(tree)),
+                enumerate_tree(tail(tree)));
+
+function sum_odd_squares(tree) 
+    fold_right(`+`, 0, map(square, filter(is_odd, enumerate_tree(tree))));
+
+function even_fibs(n) 
+    fold_right(pair, [], map(fib, filter(is_even, range(0, n))));
+
+// Exercise 2.33
+function a_map(p, sequence) fold_right(fn(x y) p(x):y, nil, sequence);
+function a_append(seq1, seq2) fold_right(pair, seq2, seq1);
+function a_length(sequence) fold_right(fn(x y) inc(y), 0, sequence);
+
+// Exercise 2.34
+function horner_eval(x coefficient_sequence) 
+    fold_right(fn(this_coeff higher_terms) x * higher_terms + this_coeff, 0, coefficient_sequence);
+
+// Exercise 2.35
+function count_leaves(tree) 
+    fold_right(`+`, 0, map(fn(x) if (is_pair(x)) count_leaves(x) else 1, tree));
+
+// Exercise 2.36
+function accumulate_n(op init seqs) 
+    if (is_empty(head(seqs))) nil
+    else fold_right(op, init, map(head, seqs)):accumulate_n(op, init, map(tail, seqs));
+
+// Exercise 2.37
+function dot_product(v w) fold_right(`+`, 0, map(`*`, v, w));
+
+function matrix_by_vector(m v) map(fn(row) dot_product(row v), m);
+
+function transpose(m) accumulate_n(pair, nil, m);
+
+function matrix_by_matrix(m n) 
+    let (cols = transpose(n)) 
+        map(fn(row) matrix_by_vector(cols row), m);
+
+// Exercise 2.39
+function my_reverse_r(sequence) fold_right(fn(x y) append(y, [x]), nil, sequence);
+function my_reverse_l(sequence) fold_left(fn(x y) x:y, nil, sequence);
+
+// Nested mappings
+function flatmap(f seq) fold_right(append nil map(f seq));
+function is_prime_sum(p) is_prime(first(p) + second(p));
+function make_pair_sum(p) [first(p), second(p), first(p) + second(p)];
+
+function prime_sum_pairs(n) 
+    map(make_pair_sum
+        filter(is_prime_sum
+               flatmap(fn(i) map(fn(j) [i j], range(1, i-1))
+                       range(1, n))));
+
+function permutations(xs) 
+    if (is_empty(xs)) [xs]
+    else flatmap(fn(x) map(fn(p) x:p, permutations(remove(x, xs))), xs);
+
+// Exercise 2.40
+function unique_pairs(n) flatmap(fn(i) map(fn(j) [i j], range(1, i - 1)), range(1, n));
+function prime_sum_pairs(n) map(make_pair_sum, filter(is_prime_sum, unique_pairs(n)));
+
+// Exercise 2.41
+function ordered_triples(n)
+    flatmap(fn(i) flatmap(fn(j) map(fn(k) [i j k], range(1, j-1)), range(1, i-1)), range(1, n));
+
+function is_triple_sum(triple s) fold_right(`+`, 0, triple) == s;
+function make_triple_sum(triple) append(triple [fold_right(`+` 0 triple)]);
+
+function ordered_triple_sum(n s) 
+    map(make_triple_sum, filter(fn(triple) is_triple_sum(triple s), ordered_triples(n)));
+
+// Exercise 2.54
+function my_is_equal(xs ys) 
+    if (is_empty(xs) && is_empty(ys)) true
+    else if (is_empty(xs) || is_empty(ys)) false
+    else if (is_pair(head(xs)) && is_pair(head(ys))) 
+        my_is_equal(head(xs), head(ys)) && my_is_equal(tail(xs), tail(ys))
+    else if (is_eq(head(xs), head(ys))) my_is_equal(tail(xs), tail(ys))
+    else false;
+
+// Section 2.3.2 - Symbolic Differentiation
+function deriv(exp var) 
+    if (is_number(exp)) 0
+    else if (is_variable(exp)) if (is_same_variable(exp var)) 1 else 0
+    else if (is_sum(exp)) make_sum(deriv(addend(exp) var), deriv(augend(exp) var))
+    else if (is_product(exp)) make_sum(make_product(multiplier(exp) deriv(multiplicand(exp) var))
+                                       make_product(deriv(multiplier(exp) var) multiplicand(exp)))
+    else error("unknown expression type -- DERIV" exp);
+
+function is_variable(exp) is_symbol(exp);
+function is_same_variable(e1 e2) is_variable(e1) && is_variable(e2) && is_eq(e1 e2);
+function make_sum(e1 e2) %[`+` %%e1 %%e2];
+function make_product(e1 e2) %[`*` %%e1 %%e2];
+function is_sum(x) is_pair(x) && is_eq(head(x), %`+`);
+function addend(s) second(s);
+function augend(s) third(s);
+function is_product(x) is_pair(x) && is_eq(head(x), %`*`);
+function multiplier(p) second(p);
+function multiplicand(p) third(p);
+
+function is_eq_number(exp num) is_number(exp) && exp == num;
+
+function make_sum(a1 a2) 
+    if (is_eq_number(a1 0)) a2
+    else if (is_eq_number(a2 0)) a1
+    else if (is_number(a1) && is_number(a2)) a1 + a2
+    else list(!`+` a1 a2);
+
+function make_product(m1 m2) 
+    if (is_eq_number(m1 0) || is_eq_number(m2 0)) 0
+    else if (is_eq_number(m1 1)) m2
+    else if (is_eq_number(m2 1)) m1
+    else if (is_number(m1) && is_number(m2)) m1 * m2
+    else list(!`*` m1 m2);
+
+// Exercise 2.56
+function is_exponentiation(x) is_pair(x) && is_eq(head(x), !`**`);
+function base(e) second(e);
+function exponent(e) third(e);
+
+function make_exponentiation(base exponent) 
+    if (is_eq_number(exponent 0)) 1
+    else if (is_eq_number(exponent 1)) base
+    else if (is_number(base) && is_number(exponent)) expt(base exponent)
+    else list(!`**` base exponent);
+
+function deriv(exp var) 
+    if (is_number(exp)) 0
+    else if (is_variable(exp)) if (is_same_variable(exp var)) 1 else 0
+    else if (is_sum(exp)) make_sum(deriv(addend(exp) var), deriv(augend(exp) var))
+    else if (is_product(exp)) make_sum(make_product(multiplier(exp) deriv(multiplicand(exp) var))
+                                       make_product(deriv(multiplier(exp) var) multiplicand(exp)))
+    else if (is_exponentiation(exp)) make_product(make_product(exponent(exp)
+                                                               make_exponentiation(base(exp)
+                                                                                   make_sum(exponent(exp), -1))),
+                                                  deriv(base(exp) var))
+    else error("unknown expression type -- DERIV" exp);
+
+// Section 2.3.3  Example: Representing Sets
+// Sets as unordered lists
+
+function is_element_of_set(x set) 
+    if (is_empty(set)) false
+    else if (x == head(set)) true
+    else is_element_of_set(x tail(set));
+
+function adjoin_set(x set) 
+    if (is_element_of_set(x set)) set
+    else x:set;
+
+function intersetction_set(set1 set2) 
+    if (is_empty(set1) || is_empty(set2)) nil
+    else if (is_element_of_set(head(set1), set2))
+        head(set1):intersetction_set(tail(set1) set2)
+    else intersetction_set(tail(set1) set2);
+
+// Exercise 2.59
+function union_set(set1 set2) 
+    if (is_empty(set1)) set2
+    else if (is_element_of_set(head(set1) set2)) 
+        union_set(tail(set1) set2)
+    else union_set(tail(set1) head(set1):set2);
+
+// Exercise 2.60
+function adjoin_set(x set) x:set;
+function union_set(set1 set2) append(set1 set2);
+
+// Exercise 2.61
+function adjoin_set(x set) 
+    if (is_empty(set)) [x]
+    else if (x == head(set)) set
+    else if (x < head(set)) x:set
+    else if (x > head(set)) head(set):adjoin_set(x, tail(set));
+
+// Exercise 2.62
+function union_set(set1 set2) 
+    if (is_empty(set1)) set2
+    else if (is_empty(set2)) set1
+    else if (head(set1) == head(set2))
+        head(set1):union_set(tail(set1) tail(set2))
+    else if (head(set1) < head(set2))
+        head(set1):union_set(tail(set1) set2)
+    else head(set2):union_set(set1 tail(set2));
+
+// TODO Exercise 2.65
