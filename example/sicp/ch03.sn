@@ -1,0 +1,72 @@
+// Exercise 3.1
+function make_accumulator(n) fn(v) { n = n + v; n };
+
+// Exercise 3.2
+function make_monitored(f) 
+    let (count = 0) 
+        fn(arg) 
+            match(arg) 
+                !how_many_calls? -> count,
+                !reset_count -> count = 0,
+                _ -> { count = count + 1; f(arg) };
+
+// Exercise 3.3
+function make_account(balance, password) {
+    function withdraw(amount, pswd) 
+        if (pswd == password) 
+            if (balance >= amount) {
+                balance = balance - amount;
+                balance
+            } else "Insufficient funds"
+        else error("Incorrect password");
+    
+    function deposit(amount, pswd) 
+        if (pswd == password) {
+            balance = balance + amount;
+            balance
+        } else error("Incorrect password");
+    
+    function dispatch(m) 
+        match(m) 
+            !withdraw -> withdraw,
+            !deposit -> deposit,
+            _ -> error("Unknown request -- MAKE_ACCOUNT" m);
+    dispatch
+};
+
+// Exercise 3.4
+function make_account(balance, password) {
+
+    define incorrect_attempts = 0;
+
+    function call_the_cops() "Cops called!";
+    
+    function check_incorrect_attempts() 
+        if (incorrect_attempts >= 7) call_the_cops()
+        else { incorrect_attempts = incorrect_attempts + 1;
+               "Incorrect password" };
+        
+    function withdraw(amount, pswd) 
+        if (pswd == password) {
+            incorrect_attempts = 0;
+            if (balance >= amount) {
+                balance = balance - amount;
+                balance
+            } else "Insufficient funds"
+        } else check_incorrect_attempts();
+    
+    function deposit(amount, pswd) 
+        if (pswd == password) {
+            incorrect_attempts = 0;
+            balance = balance + amount;
+            balance
+        } else check_incorrect_attempts();
+    
+    function dispatch(m) 
+        match(m) 
+            !withdraw -> withdraw,
+            !deposit -> deposit,
+            _ -> error("Unknown request -- MAKE_ACCOUNT" m);
+    dispatch
+};
+

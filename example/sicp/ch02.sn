@@ -432,4 +432,259 @@ function union_set(set1 set2)
         head(set1):union_set(tail(set1) set2)
     else head(set2):union_set(set1 tail(set2));
 
-// TODO Exercise 2.65
+// Section 2.3.4 Huffman Encoding Trees
+
+function make_leaf(symbol weight) [!leaf symbol weight];
+function is_leaf(object) is_eq(head(object), !leaf);
+function symbol_leaf(x) second(x);
+function weight_leaf(x) third(x);
+
+function make_code_tree(left right) 
+    [left right append(symbols(left), symbols(right))
+     weight(left) + weight(right)];
+
+function left_branch(tree) head(tree);
+function right_branch(tree) second(tree);
+
+function symbols(tree) 
+    if (is_leaf(tree)) [symbol_leaf(tree)]
+    else third(tree);
+    
+function weight(tree) 
+    if (is_leaf(tree)) weight_leaf(tree)
+    else fourth(tree);
+
+function decode(bits tree) {
+    function decode_1(bits current_branch) 
+        if (is_empty(bits)) bits
+        else let (next_branch = choose_branch(head(bits) current_branch)) 
+            if (is_leaf(next_branch)) symbol_leaf(next_branch):decode_1(tail(bits) tree)
+            else decode_1(tail(bits) next_branch);
+    decode_1(bits tree)
+};
+    
+function choose_branch(bit branch) 
+    if (bit == 0) left_branch(branch)
+    else if (bit == 1) right_branch(branch)
+    else error("bad bit -- choose_branch" bit);
+
+function adjoin_set(x set) 
+    if (is_empty(set)) [x]
+    else if (weight(x) < weight(head(set))) x:set
+    else head(set):adjoin_set(x tail(set));
+    
+function make_leaf_set(pairs) 
+    if (is_empty(pairs)) nil
+    else let (pair = head(pairs)) 
+        adjoin_set(make_leaf(head(pair), second(pair))
+                   make_leaf_set(tail(pairs)));
+
+// Exercise 2.67
+define sample_tree = make_code_tree(make_leaf(!A 4),
+                                    make_code_tree(make_leaf(!B 2),
+                                                   make_code_tree(make_leaf(!D 1),
+                                                                  make_leaf(!C 1))));
+define sample_message = [0 1 1 0 0 1 0 1 0 1 1 1 0];
+decode(sample_message sample_tree); // => [A, D, A, B, B, C, A]
+
+// Section 2.4.1  Representations for Complex Numbers
+function add_complex(z1 z2) 
+    make_from_real_imag(real_part(z1) + real_part(z2)
+                        imag_part(z1) + imag_part(z2));
+    
+function sub_complex(z1 z2) 
+    make_from_real_imag(real_part(z1) - real_part(z2)
+                        imag_part(z1) - imag_part(z2));
+
+function mul_complex(z1 z2) 
+    make_from_mag_ang(magnitude(z1) * magnitude(z2)
+                      angle(z1) + angle(z2));
+    
+function div_complex(z1 z2) 
+    make_from_mag_ang(magnitude(z1) / magnitude(z2)
+                      angle(z1) - angle(z2));
+
+// Ben's representation:
+function real_part(z) head(z);
+function imag_part(z) tail(z);
+function magnitude(z) sqrt(square(real_part(z)) + square(imag_part(z)));
+function angle(z) atan(imag_part(z), real_part(z));
+function make_from_real_imag(x y) x:y;
+function make_from_mag_ang(r a) r * cos(a) : r * sin(a);
+
+// Alyssa's representation:
+function real_part(z) magnitude(z) * cos(angle(z));
+function imag_part(z) magnitude(z) * sin(angle(z));
+function magnitude(z) head(z);
+function angle(z) tail(z);
+function make_from_real_imag(x y) sqrt(square(x) + square(y)):atan(y x);
+function make_from_mag_ang(r a) r:a;
+
+// Section 2.4.2 Tagged data
+function attach_tag(type_tag contents) type_tag:contents;
+
+function type_tag(datum) 
+    if (is_pair(datum)) head(datum)
+    else error("Bad tagged datum -- TYPE-TAG" datum);
+
+function contents(datum) 
+    if (is_pair(datum)) tail(datum)
+    else error("Bad tagged datum -- CONTENTS" datum);
+
+function is_rectangular(z) is_eq(type_tag(z) !rectangular);
+function is_polar(z) is_eq(type_tag(z) !polar);
+
+// Ben's and Alyssa's representations updated using typetags:
+namespace rectangular;
+function real_part(z) head(z);
+function imag_part(z) tail(z);
+function magnitude(z) sqrt(square(real_part(z)) + square(imag_part(z)));
+function angle(z) atan(imag_part(z), real_part(z));
+function make_from_real_imag(x y) attach_tag(!rectangular, x:y);
+function make_from_mag_ang(r a) attach_tag(!rectangular, r * cos(a) : r * sin(a));
+namespace;
+
+namespace polar;
+function real_part(z) magnitude(z) * cos(angle(z));
+function imag_part(z) magnitude(z) * sin(angle(z));
+function magnitude(z) head(z);
+function angle(z) tail(z);
+function make_from_real_imag(x y) attach_tag(!polar, sqrt(square(x) + square(y)):atan(y x));
+function make_from_mag_ang(r a) attach_tag(!polar, r:a);
+namespace;
+
+// Selectors based on typetags:
+function real_part(z) 
+    if (is_rectangular(z)) rectangular_real_part(contents(z))
+    else if (is_polar(z)) polar_real_part(contents(z))
+    else error("Unknown type -- REAL-PART" z);
+
+function imag_part(z) 
+    if (is_rectangular(z)) rectangular_imag_part(contents(z))
+    else if (is_polar(z)) polar_imag_part(contents(z))
+    else error("Unknown type -- IMAG-PART" z);
+
+function magnitude(z) 
+    if (is_rectangular(z)) rectangular_magnitude(contents(z))
+    else if (is_polar(z)) polar_magnitude(contents(z))
+    else error("Unknown type -- MAGNITUDE" z);
+
+function angle(z) 
+    if (is_rectangular(z)) rectangular_angle(contents(z))
+    else if (is_polar(z)) polar_angle(contents(z))
+    else error("Unknown type -- ANGLE" z);
+
+function make_from_real_imag(x y) rectangular_make_from_real_imag(x y);
+function make_from_mag_ang(r a) polar_make_from_mag_ang(r a);
+
+// 2.4.3  Data-Directed Programming and Additivity
+function install_package(pkgtype, fns) 
+    let loop (fns = fns) 
+        if (is_empty(fns)) !done
+        else {
+            put(head(head(fns)), pkgtype, tail(head(fns)));
+            loop(tail(fns))
+        };
+
+function install_rectangular_package() {
+    function real_part(z) head(z);
+    function imag_part(z) tail(z);
+    function magnitude(z) sqrt(square(real_part(z)) + square(imag_part(z)));
+    function angle(z) atan(imag_part(z), real_part(z));
+    function make_from_real_imag(x y) attach_tag(!rectangular, x:y);
+    function make_from_mag_ang(r a) attach_tag(!rectangular, r * cos(a) : r * sin(a));
+    // interface to the rest of the system
+    function tag(x) attach_tag(!rectangular x);
+    install_package([!rectangular],
+                    list(!real_part:real_part
+                         !imag_part:imag_part
+                         !magnitude:magnitude
+                         !angle:angle
+                         !make_from_real_imag:fn(x y) tag(make_from_real_imag(x y))
+                         !make_from_mag_ang:fn(r a) tag(make_from_mag_ang(r a))))
+};
+
+function install_polar_package() {
+    function real_part(z) magnitude(z) * cos(angle(z));
+    function imag_part(z) magnitude(z) * sin(angle(z));
+    function magnitude(z) head(z);
+    function angle(z) tail(z);
+    function make_from_real_imag(x y) attach_tag(!polar, sqrt(square(x) + square(y)):atan(y x));
+    function make_from_mag_ang(r a) attach_tag(!polar, r:a);
+    // interface to the rest of the system
+    function tag(x) attach_tag(!polar x);
+    install_package([!polar],
+                    list(!real_part:real_part
+                         !imag_part:imag_part
+                         !magnitude:magnitude
+                         !angle:angle
+                         !make_from_real_imag:fn(x y) tag(make_from_real_imag(x y))
+                         !make_from_mag_ang:fn(r a) tag(make_from_mag_ang(r a))))
+};
+
+
+// Message passing
+function make_from_real_imag(x y) 
+    fn(op) 
+        match(op) 
+            !real_part -> x,
+            !imag_part -> y,
+            !magnitude -> sqrt(square(x) + square(y)),
+            !angle -> atan(y x),
+            _ -> error("Unknown op -- make_from_real_imag" op);
+
+// Exercise 2.75
+function make_from_mag_ang(x y) 
+    fn(op) 
+        match(op) 
+            !real_part -> x * cos(y),
+            !imag_part -> x * sin(y),
+            !magnitude -> x,
+            !angle -> y,
+            _ -> error("Unknown op -- make_from_mag_ang" op);
+
+// Section 2.5.1 - Generic Arithmetic Operations
+function add(x y) apply_generic(!add x y);
+function sub(x y) apply_generic(!sub x y);
+function mul(x y) apply_generic(!mul x y);
+function div(x y) apply_generic(!div x y);
+
+function install_scheme_number_package() {
+    function tag(x) attach_tag(!scheme_number x);
+    install_package(%[scheme_number scheme_number],
+                    list(!add:fn(x y) tag(x + y)
+                         !sub:fn(x y) tag(x - y)
+                         !mul:fn(x y) tag(x * y)
+                         !div:fn(x y) tag(x / y)));
+    put(!scheme_number, !make, fn(x) tag(x))
+};
+
+function make_scheme_number(n) (get(!make !scheme_number))(n);
+
+// Exercise 2.78
+function attach_tag(type_tag contents) 
+    if (is_number(contents)) contents
+    else type_tag:contents;
+
+function type_tag(datum) 
+    if (is_pair(datum)) head(datum)
+    else if (is_number(datum)) !scheme_number
+    else error("Bad tagged datum -- TYPE-TAG" datum);
+
+function contents(datum) 
+    if (is_pair(datum)) tail(datum)
+    else if (is_number(datum)) datum
+    else error("Bad tagged datum -- CONTENTS" datum);
+
+// Exercise 2.79
+put(%[scheme_number scheme_number], !is_equ, fn(x y) x == y);
+put(%[rational rational], !is_equ, fn(x y) x == y);
+put(%[complex complex], !is_equ, fn(x y) x == y);
+
+// Exercise 2.80
+put(%[scheme_number], !is_zero, fn(x) is_zero(x));
+put(%[rational], !is_zero, fn(x) is_zero(number(x)));
+put(%[complex complex], !is_equ, fn(x) is_zero(real_part(x)) && is_zero(imag_part(x)));
+
+
+
