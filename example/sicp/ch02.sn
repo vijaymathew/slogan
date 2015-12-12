@@ -65,14 +65,12 @@ function my_head(z) z(fn(p q) p);
 function my_tail(z) z(fn(p q) q);
 
 // Exercise 2.5
-function numdivs(n d) {
-    function iter(x result) {
-        if (is_zero(remainder(x d)))
-            iter(x/d, inc(result))
-        else result
-    };
-    iter(n 0)
-};
+function numdivs(n d) 
+{ function iter(x result)
+  { if (is_zero(remainder(x d)))
+      iter(x/d, inc(result))
+    else result };
+  iter(n 0) };
 
 function my_pair(x y) expt(2 x) * expt(3 y);
 function my_head(z) numdivs(z 2);
@@ -130,12 +128,11 @@ function my_reverse(xs)
     else append(my_reverse(tail(xs)), [first(xs)]);
 
 // An iterative version of my_reverse:
-function my_reverse(xs) {
-    function iter(xs, result) 
-        if (is_empty(xs)) result
-        else iter(tail(xs), first(xs) : result);
-    iter(xs, [])
-};
+function my_reverse(xs) 
+{ function iter(xs, result) 
+    if (is_empty(xs)) result
+    else iter(tail(xs), first(xs) : result);
+  iter(xs, []) };
 
 // Exercise 2.19
 function has_no_more(coins) is_empty(coins);
@@ -178,13 +175,12 @@ head(head([[7]]));
 head(tail(head(tail(head(tail(head(tail(head(tail(head(tail([1 [2 [3 [4 [5 [6 7]]]]]]))))))))))));
 
 // Exercise 2.27
-function deep_reverse(xs) {
-    function iter(xs, result) 
-        if (is_empty(xs)) result
-        else if (is_pair(head(xs))) iter(tail(xs), deep_reverse(head(xs)):result)
-        else iter(tail(xs), head(xs):result);
-    iter(xs, [])
-};
+function deep_reverse(xs) 
+{ function iter(xs, result) 
+    if (is_empty(xs)) result
+    else if (is_pair(head(xs))) iter(tail(xs), deep_reverse(head(xs)):result)
+    else iter(tail(xs), head(xs):result);
+  iter(xs, []) };
 
 // Exercise 2.28
 function fringe(xs) 
@@ -454,14 +450,13 @@ function weight(tree)
     if (is_leaf(tree)) weight_leaf(tree)
     else fourth(tree);
 
-function decode(bits tree) {
-    function decode_1(bits current_branch) 
-        if (is_empty(bits)) bits
-        else let (next_branch = choose_branch(head(bits) current_branch)) 
-            if (is_leaf(next_branch)) symbol_leaf(next_branch):decode_1(tail(bits) tree)
-            else decode_1(tail(bits) next_branch);
-    decode_1(bits tree)
-};
+function decode(bits tree) 
+{ function decode_1(bits current_branch) 
+    if (is_empty(bits)) bits
+    else let (next_branch = choose_branch(head(bits) current_branch)) 
+        if (is_leaf(next_branch)) symbol_leaf(next_branch):decode_1(tail(bits) tree)
+        else decode_1(tail(bits) next_branch);
+  decode_1(bits tree) };
     
 function choose_branch(bit branch) 
     if (bit == 0) left_branch(branch)
@@ -581,46 +576,42 @@ function make_from_mag_ang(r a) polar_make_from_mag_ang(r a);
 function install_package(pkgtype, fns) 
     let loop (fns = fns) 
         if (is_empty(fns)) !done
-        else {
-            put(head(head(fns)), pkgtype, tail(head(fns)));
-            loop(tail(fns))
-        };
+        else { put(head(head(fns)), pkgtype, tail(head(fns)));
+               loop(tail(fns)) };
 
-function install_rectangular_package() {
-    function real_part(z) head(z);
-    function imag_part(z) tail(z);
-    function magnitude(z) sqrt(square(real_part(z)) + square(imag_part(z)));
-    function angle(z) atan(imag_part(z), real_part(z));
-    function make_from_real_imag(x y) attach_tag(!rectangular, x:y);
-    function make_from_mag_ang(r a) attach_tag(!rectangular, r * cos(a) : r * sin(a));
-    // interface to the rest of the system
-    function tag(x) attach_tag(!rectangular x);
-    install_package([!rectangular],
-                    list(!real_part:real_part
-                         !imag_part:imag_part
-                         !magnitude:magnitude
-                         !angle:angle
-                         !make_from_real_imag:fn(x y) tag(make_from_real_imag(x y))
-                         !make_from_mag_ang:fn(r a) tag(make_from_mag_ang(r a))))
-};
+function install_rectangular_package() 
+{ function real_part(z) head(z);
+  function imag_part(z) tail(z);
+  function magnitude(z) sqrt(square(real_part(z)) + square(imag_part(z)));
+  function angle(z) atan(imag_part(z), real_part(z));
+  function make_from_real_imag(x y) attach_tag(!rectangular, x:y);
+  function make_from_mag_ang(r a) attach_tag(!rectangular, r * cos(a) : r * sin(a));
+  // interface to the rest of the system
+  function tag(x) attach_tag(!rectangular x);
+  install_package([!rectangular],
+                  list(!real_part:real_part
+                       !imag_part:imag_part
+                       !magnitude:magnitude
+                       !angle:angle
+                       !make_from_real_imag:fn(x y) tag(make_from_real_imag(x y))
+                       !make_from_mag_ang:fn(r a) tag(make_from_mag_ang(r a)))) };
 
-function install_polar_package() {
-    function real_part(z) magnitude(z) * cos(angle(z));
-    function imag_part(z) magnitude(z) * sin(angle(z));
-    function magnitude(z) head(z);
-    function angle(z) tail(z);
-    function make_from_real_imag(x y) attach_tag(!polar, sqrt(square(x) + square(y)):atan(y x));
-    function make_from_mag_ang(r a) attach_tag(!polar, r:a);
-    // interface to the rest of the system
-    function tag(x) attach_tag(!polar x);
-    install_package([!polar],
-                    list(!real_part:real_part
-                         !imag_part:imag_part
-                         !magnitude:magnitude
-                         !angle:angle
-                         !make_from_real_imag:fn(x y) tag(make_from_real_imag(x y))
-                         !make_from_mag_ang:fn(r a) tag(make_from_mag_ang(r a))))
-};
+function install_polar_package() 
+{ function real_part(z) magnitude(z) * cos(angle(z));
+  function imag_part(z) magnitude(z) * sin(angle(z));
+  function magnitude(z) head(z);
+  function angle(z) tail(z);
+  function make_from_real_imag(x y) attach_tag(!polar, sqrt(square(x) + square(y)):atan(y x));
+  function make_from_mag_ang(r a) attach_tag(!polar, r:a);
+  // interface to the rest of the system
+  function tag(x) attach_tag(!polar x);
+  install_package([!polar],
+                  list(!real_part:real_part
+                       !imag_part:imag_part
+                       !magnitude:magnitude
+                       !angle:angle
+                       !make_from_real_imag:fn(x y) tag(make_from_real_imag(x y))
+                       !make_from_mag_ang:fn(r a) tag(make_from_mag_ang(r a)))) };
 
 
 // Message passing
@@ -649,15 +640,14 @@ function sub(x y) apply_generic(!sub x y);
 function mul(x y) apply_generic(!mul x y);
 function div(x y) apply_generic(!div x y);
 
-function install_scheme_number_package() {
-    function tag(x) attach_tag(!scheme_number x);
-    install_package(%[scheme_number scheme_number],
-                    list(!add:fn(x y) tag(x + y)
-                         !sub:fn(x y) tag(x - y)
-                         !mul:fn(x y) tag(x * y)
-                         !div:fn(x y) tag(x / y)));
-    put(!scheme_number, !make, fn(x) tag(x))
-};
+function install_scheme_number_package() 
+{ function tag(x) attach_tag(!scheme_number x);
+  install_package(%[scheme_number scheme_number],
+                  list(!add:fn(x y) tag(x + y)
+                       !sub:fn(x y) tag(x - y)
+                       !mul:fn(x y) tag(x * y)
+                       !div:fn(x y) tag(x / y)));
+  put(!scheme_number, !make, fn(x) tag(x)) };
 
 function make_scheme_number(n) (get(!make !scheme_number))(n);
 
