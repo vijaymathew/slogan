@@ -1,4 +1,5 @@
-31-Jan-2015
+22-Dec-2015
 ===========
 
-  * Test the stream functions.
+  * Integrate libffi.
+  * Implement a package manager.

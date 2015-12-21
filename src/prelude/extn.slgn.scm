@@ -74,3 +74,30 @@
 (define (safe-> a b #!optional final) (safe-num-cmpr a b > final))
 (define (safe-<= a b #!optional final) (safe-num-cmpr a b <= final))
 (define (safe->= a b #!optional final) (safe-num-cmpr a b >= final))
+
+(define (map-mutate tab key val)
+  (cond ((list? tab)
+         (set-cdr! (assoc key tab) val))
+        ((vector? tab)
+         (vector-set! tab key val))
+        (else
+         (hashtable_set tab key val))))
+
+(define (map-access tab key default)
+  (cond ((list? tab)
+         (get key tab default))
+        ((vector? tab)
+         (with-exception-handler
+          (lambda (e) default)
+          (lambda () (vector-ref tab key))))
+        (else
+         (hashtable_at tab key default))))
+
+(define (@ tab key #!key (value *void*) (default #f))
+  (let ((v (map-access tab key default)))
+    (if (not (eq? value *void*))
+        (map-mutate tab key value))
+    v))
+
+      
+      
