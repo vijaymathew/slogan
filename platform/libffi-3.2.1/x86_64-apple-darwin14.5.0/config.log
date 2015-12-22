@@ -30,8 +30,8 @@ Kernel configured for up to 8 processors.
 Processor type: x86_64h (Intel x86-64h Haswell)
 Processors active: 0 1 2 3 4 5 6 7
 Primary memory available: 16.00 gigabytes
-Default processor set: 222 tasks, 1019 threads, 8 processors
-Load average: 1.81, Mach factor: 6.18
+Default processor set: 205 tasks, 947 threads, 8 processors
+Load average: 1.27, Mach factor: 6.72
 /bin/machine           = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
@@ -721,7 +721,7 @@ configure:16416: gcc -o conftest -O3 -fomit-frame-pointer -fstrict-aliasing -ffa
 configure:16416: $? = 0
 configure:16416: ./conftest
 configure:16416: $? = 0
-configure:16426: result: 40661:2100800:7ffafbff:bfebfbff
+configure:16426: result: 40661:4100800:7ffafbff:bfebfbff
 configure:16650: checking whether C compiler accepts -march=core2
 configure:16669: gcc -c -O3 -fomit-frame-pointer -fstrict-aliasing -ffast-math  -march=core2  conftest.c >&5
 configure:16669: $? = 0
@@ -798,7 +798,7 @@ configure:16914: checking for mkostemp
 configure:16914: gcc -o conftest -O3 -fomit-frame-pointer -fstrict-aliasing -ffast-math -march=core2  -Wall -fexceptions   conftest.c  >&5
 Undefined symbols for architecture x86_64:
   "_mkostemp", referenced from:
-      _main in cchYOofb.o
+      _main in ccfqchMc.o
 ld: symbol(s) not found for architecture x86_64
 collect2: error: ld returned 1 exit status
 configure:16914: $? = 1
@@ -1201,7 +1201,7 @@ ax_cv_check_cflags___fstrict_aliasing=yes
 ax_cv_check_cflags___march_core2=yes
 ax_cv_gcc_archflag=-march=core2
 ax_cv_gcc_x86_cpuid_0=d:756e6547:6c65746e:49656e69
-ax_cv_gcc_x86_cpuid_1=40661:2100800:7ffafbff:bfebfbff
+ax_cv_gcc_x86_cpuid_1=40661:4100800:7ffafbff:bfebfbff
 gcc_cv_as_cfi_pseudo_op=yes
 libffi_cv_hidden_visibility_attribute=no
 libffi_cv_ro_eh_frame=no

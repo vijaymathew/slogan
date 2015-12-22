@@ -1,5 +1,6 @@
-22-Dec-2015
+23-Dec-2015
 ===========
 
-  * Integrate libffi.
+  * Reduce the number of mallocs that libffi_fncall does.
+  * Implement a `declare native` extension that makes libffi usage easy.
   * Implement a package manager.
