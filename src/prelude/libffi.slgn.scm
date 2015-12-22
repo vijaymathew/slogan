@@ -150,14 +150,14 @@
          }
        else if (args[i] == &ffi_type_ulong || args[i] == &ffi_type_slong)
          {
-           int r;
-           ___slogan_obj_to_int(___CDR(arg), &r);
-           largs[largs_count] = (long)r;
+           long r;
+           ___slogan_obj_to_long(___CDR(arg), &r);
+           largs[largs_count] = r;
            values[i] = &largs[largs_count++];
          }
        else if (args[i] == &ffi_type_uint64 || args[i] == &ffi_type_sint64)
          {
-           ___slogan_obj_to_int64(___CDR(arg), &llargs[llargs_count]);
+           ___slogan_obj_to_longlong(___CDR(arg), &llargs[llargs_count]);
            values[i] = &llargs[llargs_count++];
          }
        else if (args[i] == &ffi_type_float)

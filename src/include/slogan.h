@@ -10,8 +10,11 @@
 #define ___SLOGAN_OBJ_to_INT ___SCMOBJ_to_INT
 #define ___slogan_obj_to_int(s, i) ((___SCMOBJ_to_INT (s, i, 0)))
 
-#define ___SLOGAN_OBJ_to_INT64 ___SCMOBJ_to_INT64
-#define ___slogan_obj_to_int64(s, i) ((___SCMOBJ_to_INT64 (s, i, 0)))
+#define ___SLOGAN_OBJ_to_LONG ___SCMOBJ_to_LONG
+#define ___slogan_obj_to_long(s, i) ((___SCMOBJ_to_LONG (s, i, 0)))
+
+#define ___SLOGAN_OBJ_to_LONGLONG ___SCMOBJ_to_LONGLONG
+#define ___slogan_obj_to_longlong(s, i) ((___SCMOBJ_to_LONGLONG (s, i, 0)))
 
 #define ___SLOGAN_OBJ_to_UINT ___SCMOBJ_to_UINT
 #define ___slogan_obj_to_uint(s, u) ((___SCMOBJ_to_UINT (s, u, 0)))

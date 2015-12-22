@@ -58,8 +58,8 @@ extern "C" {
 #endif
 
 /* Specify which architecture libffi is configured for. */
-#ifndef X86_DARWIN
-#define X86_DARWIN
+#ifndef X86
+#define X86
 #endif
 
 /* ---- System configuration information --------------------------------- */

@@ -3691,3 +3691,5 @@ dist-hook dist-hook-all:
 #### CONFIGURATIONS FOR TOPLEVEL MAKEFILE: 
 #### ...... x86_64-apple-darwin14.5.0
 ####  |x86_64-apple-darwin14.5.0
+#### ...... i686-pc-linux-gnu
+####  |i686-pc-linux-gnu
