@@ -1532,6 +1532,8 @@ c-declare-end
 (define (ffi_close lib) 
   (zero? (_ffi_close lib)))
 
+(define ffi_fn (c-lambda (void-pointer char-string) void-pointer "dlsym"))
+
 (define ffi_call_void_0 (c-lambda (void-pointer char-string) 
                                   void 
                                   "ffi_call_void_0"))

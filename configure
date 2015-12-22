@@ -5,3 +5,8 @@ SLOGAN_HOME=`pwd`
 cd ${SLOGAN_HOME}/platform/gsc
 ./configure --enable-single-host --bindir=${SLOGAN_HOME}/platform/gsc/bin --includedir=${SLOGAN_HOME}/platform/gsc/include --libdir=${SLOGAN_HOME}/platform/gsc/lib
 make
+
+cd ${SLOGAN_HOME}/platform/libffi-3.2.1
+./configure --prefix=${SLOGAN_HOME}/platform/libffi-3.2.1/target/usr/local
+make install
+
