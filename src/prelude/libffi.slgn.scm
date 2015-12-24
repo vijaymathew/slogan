@@ -352,22 +352,22 @@ c-declare-end
                                    "libffi_defstruct"))
 
 (define *libffi-types*
-  '((uint8 . 0) (sint8 . 1)
-    (uint16 . 2) (sint16 . 3)
-    (uint32 . 4) (sint32 . 5)
-    (uchar . 6) (schar . 7)
-    (ushort . 8) (sshort . 9)
-    (uint . 10) (sint . 11)
-    (ulong . 12) (slong . 13)
-    (uint64 . 14) (sint64 . 15)
+  '((uint8 . 0) (int8 . 1)
+    (uint16 . 2) (int16 . 3)
+    (uint32 . 4) (int32 . 5)
+    (uchar . 6) (char . 7)
+    (ushort . 8) (short . 9)
+    (uint . 10) (int . 11)
+    (ulong . 12) (long . 13)
+    (uint64 . 14) (int64 . 15)
     (float . 16) (double . 17)
-    (longdouble . 18) (charstr . 19)
+    (longdouble . 18) (char_string . 19)
     (pointer . 20) (void . 21)))
 
 (define (libffitype->int type)
   (let ((t (assq type *libffi-types*)))
     (if t (cdr t)
-        (error "invalid c type - " type))))
+        (error "Invalid c type - " type))))
 
 (define (def-c-struct name memtypes)
   (let ((sid (libffi-defstruct (map libffitype->int memtypes)
@@ -375,7 +375,7 @@ c-declare-end
     (cond (sid
            (set! *libffi-types* (cons (cons name sid) *libffi-types*))
            name)
-          (else (error "failed to define c structure - " name)))))
+          (else (error "Failed to define c structure - " name)))))
 
 (define (mk-c-fn-param-names plen)
   (let loop ((i 0) (pnames '()))
@@ -386,8 +386,13 @@ c-declare-end
         (reverse pnames))))
 
 (define (mk-c-fn-args ptypes pnames)
-  (map (lambda (t n) (cons (libffitype->int t) n))
-       ptypes pnames))
+  (let loop ((ptypes ptypes)
+             (pnames pnames)
+             (expr '(list)))
+    (if (null? ptypes)
+        expr
+        (loop (cdr ptypes) (cdr pnames)
+              (append expr (list `(cons ,(libffitype->int (car ptypes)) ,(car pnames))))))))
        
 (define (def-c-fn libhandle c-fn-name name paramtypes rettype)
   (let ((plen (length paramtypes)))
@@ -417,3 +422,18 @@ c-declare-end
 ;; define p = `libffi-fncall`(f [5:100 5:200] 2 22);
 ;; f = ffi_fn(clib, "print_point");
 ;; `libffi-fncall`(f [22:p] 1 21);
+
+;; Using the `declare ffi` statement:
+;; declare ffi "./demo_lib.so" [int32 add[int32 int32]];
+;; add(10 20);
+
+;; Or:
+
+;; declare ffi "./demo_lib.so" [int32 add[int32 int32] as c_add, char_string say_hello[char_string]];
+;; c_add(10 20);
+;; say_hello("hi there");
+
+;; Or:
+;; define clib = ffi_open("./demo_lib.so");
+;; declare ffi clib [int add[int int] as c_add];
+;; c_add(10 20);

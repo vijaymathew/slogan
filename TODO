@@ -1,5 +1,5 @@
-23-Dec-2015
+24-Dec-2015
 ===========
 
-  * Implement a `declare native` extension that makes libffi usage easy.
+  * Test the `declare ffi` extension.
   * Implement a package manager.
