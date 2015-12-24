@@ -4,8 +4,11 @@
 (c-declare #<<c-declare-end
 
 #include <ffi.h>
+#include <stdlib.h>
 #include "../include/slogan.h"
 
+ #define SLOGAN_LIBFFI_TYPE_COUNT 22
+ 
  enum libffi_type {
   libffi_type_uint8,
   libffi_type_sint8,
@@ -31,7 +34,7 @@
   libffi_type_void
 };
 
- ffi_type *FFI_TYPE_MAP[22] = {
+ ffi_type *FFI_TYPE_MAP[SLOGAN_LIBFFI_TYPE_COUNT] = {
    &ffi_type_uint8,
      &ffi_type_sint8,
      &ffi_type_uint16,
@@ -59,16 +62,16 @@
  struct fncall_param
  {
    int argc;
-   ffi_type *args[LIBFFI_MAX_ARGC];
-   void *values[LIBFFI_MAX_ARGC];
-   int iargs[LIBFFI_MAX_ARGC];
-   long largs[LIBFFI_MAX_ARGC];
-   long long llargs[LIBFFI_MAX_ARGC];
-   float fargs[LIBFFI_MAX_ARGC];
-   double dargs[LIBFFI_MAX_ARGC];
-   long double ldargs[LIBFFI_MAX_ARGC];
-   char *sargs[LIBFFI_MAX_ARGC];
-   void *pargs[LIBFFI_MAX_ARGC];
+   ffi_type *args[SLOGAN_LIBFFI_ARGC];
+   void *values[SLOGAN_LIBFFI_ARGC];
+   int iargs[SLOGAN_LIBFFI_ARGC];
+   long largs[SLOGAN_LIBFFI_ARGC];
+   long long llargs[SLOGAN_LIBFFI_ARGC];
+   float fargs[SLOGAN_LIBFFI_ARGC];
+   double dargs[SLOGAN_LIBFFI_ARGC];
+   long double ldargs[SLOGAN_LIBFFI_ARGC];
+   char *sargs[SLOGAN_LIBFFI_ARGC];
+   void *pargs[SLOGAN_LIBFFI_ARGC];
    int iargs_count;
    int llargs_count;
    int largs_count;
@@ -86,6 +89,9 @@
    fp->dargs_count = fp->sargs_count = fp->pargs_count = 0;
  }
 
+ static ffi_type user_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
+ static int user_struct_count;
+ 
  ___SCMOBJ libffi_fncall(void *fn,
                          ___SCMOBJ arg_types_vals,
                          ___SCMOBJ i_argc,
@@ -94,6 +100,7 @@
    ffi_cif cif;
    struct fncall_param fp;
    int ret_type;
+   ffi_type *ret_ffi_type;
    int i;
 
    ___SCMOBJ retval = ___TRU;
@@ -103,79 +110,92 @@
 
    for (i = 0; i < fp.argc; ++i)
      {
-       ffi_type t;
        int it;
        ___SCMOBJ arg = ___CAR(arg_types_vals);
    
        ___slogan_obj_to_int(___CAR(arg), &it);
-       fp.args[i] = FFI_TYPE_MAP[it];
-       if (fp.args[i] == &ffi_type_uint8
-           || fp.args[i] == &ffi_type_sint8
-           || fp.args[i] == &ffi_type_uint16
-           || fp.args[i] == &ffi_type_sint16
-           || fp.args[i] == &ffi_type_uint32
-           || fp.args[i] == &ffi_type_sint32
-           || fp.args[i] == &ffi_type_uchar
-           || fp.args[i] == &ffi_type_schar
-           || fp.args[i] == &ffi_type_ushort
-           || fp.args[i] == &ffi_type_sshort
-           || fp.args[i] == &ffi_type_uint
-           || fp.args[i] == &ffi_type_sint)
+       if (it >= SLOGAN_LIBFFI_TYPE_COUNT) /* A user defined struct */
          {
-           ___slogan_obj_to_int(___CDR(arg), &fp.iargs[fp.iargs_count]);
-           fp.values[i] = &fp.iargs[fp.iargs_count++];
-         }
-       else if (fp.args[i] == &ffi_type_ulong || fp.args[i] == &ffi_type_slong)
-         {
-           long r;
-           ___slogan_obj_to_long(___CDR(arg), &r);
-           fp.largs[fp.largs_count] = r;
-           fp.values[i] = &fp.largs[fp.largs_count++];
-         }
-       else if (fp.args[i] == &ffi_type_uint64 || fp.args[i] == &ffi_type_sint64)
-         {
-           ___slogan_obj_to_longlong(___CDR(arg), &fp.llargs[fp.llargs_count]);
-           fp.values[i] = &fp.llargs[fp.llargs_count++];
-         }
-       else if (fp.args[i] == &ffi_type_float)
-         {
-           ___slogan_obj_to_float(___CDR(arg), &fp.fargs[fp.fargs_count]);
-           fp.values[i] = &fp.fargs[fp.fargs_count++];
-         }
-       else if (fp.args[i] == &ffi_type_double)
-         {
-           ___slogan_obj_to_double(___CDR(arg), &fp.dargs[fp.dargs_count]);
-           fp.values[i] = &fp.dargs[fp.dargs_count++];
-         }
-       else if (fp.args[i] == &ffi_type_longdouble)
-         {
-           double d;
-           ___slogan_obj_to_double(___CDR(arg), &d);
-           fp.ldargs[fp.ldargs_count] = (long double)d;
-           fp.values[i] = &fp.ldargs[fp.ldargs_count++];
+           it -= SLOGAN_LIBFFI_TYPE_COUNT;
+           fp.args[i] = &user_structs[it];
+           ___slogan_obj_to_void_pointer(___CDR(arg), &fp.pargs[fp.pargs_count]);
+           fp.values[i] = &fp.pargs[fp.pargs_count++];
          }
        else
          {
-           int t = 0;
-           ___slogan_obj_to_int(___CAR(arg), &t);
-           if (t == libffi_type_charstr)
+           fp.args[i] = FFI_TYPE_MAP[it];
+           if (fp.args[i] == &ffi_type_uint8
+               || fp.args[i] == &ffi_type_sint8
+               || fp.args[i] == &ffi_type_uint16
+               || fp.args[i] == &ffi_type_sint16
+               || fp.args[i] == &ffi_type_uint32
+               || fp.args[i] == &ffi_type_sint32
+               || fp.args[i] == &ffi_type_uchar
+               || fp.args[i] == &ffi_type_schar
+               || fp.args[i] == &ffi_type_ushort
+               || fp.args[i] == &ffi_type_sshort
+               || fp.args[i] == &ffi_type_uint
+               || fp.args[i] == &ffi_type_sint)
              {
-               ___slogan_obj_to_charstring(___CDR(arg), &fp.sargs[fp.sargs_count]);
-               fp.values[i] = &fp.sargs[fp.sargs_count++];
+               ___slogan_obj_to_int(___CDR(arg), &fp.iargs[fp.iargs_count]);
+               fp.values[i] = &fp.iargs[fp.iargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_ulong || fp.args[i] == &ffi_type_slong)
+             {
+               long r;
+               ___slogan_obj_to_long(___CDR(arg), &r);
+               fp.largs[fp.largs_count] = r;
+               fp.values[i] = &fp.largs[fp.largs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_uint64 || fp.args[i] == &ffi_type_sint64)
+             {
+               ___slogan_obj_to_longlong(___CDR(arg), &fp.llargs[fp.llargs_count]);
+               fp.values[i] = &fp.llargs[fp.llargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_float)
+             {
+               ___slogan_obj_to_float(___CDR(arg), &fp.fargs[fp.fargs_count]);
+               fp.values[i] = &fp.fargs[fp.fargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_double)
+             {
+               ___slogan_obj_to_double(___CDR(arg), &fp.dargs[fp.dargs_count]);
+               fp.values[i] = &fp.dargs[fp.dargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_longdouble)
+             {
+               double d;
+               ___slogan_obj_to_double(___CDR(arg), &d);
+               fp.ldargs[fp.ldargs_count] = (long double)d;
+               fp.values[i] = &fp.ldargs[fp.ldargs_count++];
              }
            else
              {
-               ___slogan_obj_to_void_pointer(___CDR(arg), &fp.pargs[fp.pargs_count]);
-               fp.values[i] = &fp.pargs[fp.pargs_count++];
+               int t = 0;
+               ___slogan_obj_to_int(___CAR(arg), &t);
+               if (t == libffi_type_charstr)
+                 {
+                   ___slogan_obj_to_charstring(___CDR(arg), &fp.sargs[fp.sargs_count]);
+                   fp.values[i] = &fp.sargs[fp.sargs_count++];
+                 }
+               else
+                 {
+                   ___slogan_obj_to_void_pointer(___CDR(arg), &fp.pargs[fp.pargs_count]);
+                   fp.values[i] = &fp.pargs[fp.pargs_count++];
+                 }
+               break;
              }
-           break;
          }
        arg_types_vals = ___CDR(arg_types_vals);
      }
 
    ___slogan_obj_to_int(i_ret_type, &ret_type);
+   if (ret_type >= SLOGAN_LIBFFI_TYPE_COUNT)
+     ret_ffi_type = &user_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
+   else ret_ffi_type = FFI_TYPE_MAP[ret_type];
+   
    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, fp.argc,
-                    FFI_TYPE_MAP[ret_type], fp.args) == FFI_OK)
+                    ret_ffi_type, fp.args) == FFI_OK)
      {
        if (ret_type <= libffi_type_sint)
          {
@@ -235,6 +255,42 @@
    return retval;
  }
 
+ ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
+ {
+   if (user_struct_count >= SLOGAN_LIBFFI_STRUCT_DEFS)
+     {
+       fprintf(stderr, "user struct definitions limit exceeded - %d", user_struct_count);
+       return ___FAL;
+     }
+   ffi_type s_type;
+   ffi_type **s_type_elements = NULL;
+   int memcount;
+   int i;
+
+   ___slogan_obj_to_int(i_memcount, &memcount);
+   s_type_elements = (ffi_type**)malloc(sizeof(ffi_type*) * (memcount + 1));    /* this is never freed */
+   s_type.size = s_type.alignment = 0;
+   s_type.type = FFI_TYPE_STRUCT;
+   s_type.elements = s_type_elements;
+     
+   for (i = 0; i < memcount; i++)
+     {
+       int it;
+       ___slogan_obj_to_int(___CAR(memtypes), &it);
+       if (it >= SLOGAN_LIBFFI_TYPE_COUNT) /* A user defined struct */
+         {
+           it -= SLOGAN_LIBFFI_TYPE_COUNT;
+           s_type_elements[i] = &user_structs[it];
+         }
+       else s_type_elements[i] = FFI_TYPE_MAP[it];
+       memtypes = ___CDR(memtypes);
+     }
+   s_type_elements[memcount] = NULL;
+   user_structs[user_struct_count] = s_type;
+   ++user_struct_count;
+   return ___fix((user_struct_count + SLOGAN_LIBFFI_TYPE_COUNT) - 1);
+ }
+ 
 c-declare-end
 )
 
@@ -243,6 +299,9 @@ c-declare-end
 (define libffi-fncall (c-lambda (void-pointer scheme-object scheme-object scheme-object)
                                 scheme-object
                                 "libffi_fncall"))
+(define libffi-defstruct (c-lambda (scheme-object scheme-object)
+                                   scheme-object
+                                   "libffi_defstruct"))
 ;; Sample:
 ;; define clib = ffi_open("./demo_lib.so"); 
 ;; define f = ffi_fn(clib, "add");
@@ -257,3 +316,9 @@ c-declare-end
 ;; `libffi-fncall`(f, [20:p], 1, 5);
 ;; define f = ffi_fn(clib, "free_point");
 ;; `libffi-fncall`(f, [20:p], 1, 21);
+
+;; `libffi-defstruct`([5 5] 2);
+;; f = ffi_fn(clib, "copy_point");
+;; define p = `libffi-fncall`(f [5:100 5:200] 2 22);
+;; f = ffi_fn(clib, "print_point");
+;; `libffi-fncall`(f [22:p] 1 21);
