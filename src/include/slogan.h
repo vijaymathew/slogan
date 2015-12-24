@@ -3,6 +3,8 @@
 
 #include "gambit.h" 
 
+#define LIBFFI_MAX_ARGC 12 
+
 #define ___slogan_obj ___SCMOBJ
 #define ___int ___INT
 #define ___fix ___FIX
