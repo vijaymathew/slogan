@@ -124,9 +124,13 @@
                  ((lazy) (declare-lazy-stmt tokenizer))
                  ((imported) (declare-imported-stmt tokenizer))
                  ((generic) (declare-generic-stmt tokenizer))
+                 ((ffi) (declare-ffi-stmt statement))
                  (else
                   (parser-error tokenizer tokenizer "Invalid declare type.")))))
       (func-def-stmt tokenizer)))
+
+(define (declare-ffi-stmt tokenizer)
+  (parser-error tokenizer "declare ffi - not implemented."))
 
 (define (declare-lazy-stmt tokenizer)
   (let ((name (tokenizer 'peek)))

@@ -350,6 +350,53 @@ c-declare-end
 (define libffi-defstruct (c-lambda (scheme-object scheme-object)
                                    scheme-object
                                    "libffi_defstruct"))
+
+(define *libffi-types*
+  '((uint8 . 0) (sint8 . 1)
+    (uint16 . 2) (sint16 . 3)
+    (uint32 . 4) (sint32 . 5)
+    (uchar . 6) (schar . 7)
+    (ushort . 8) (sshort . 9)
+    (uint . 10) (sint . 11)
+    (ulong . 12) (slong . 13)
+    (uint64 . 14) (sint64 . 15)
+    (float . 16) (double . 17)
+    (longdouble . 18) (charstr . 19)
+    (pointer . 20) (void . 21)))
+
+(define (libffitype->int type)
+  (let ((t (assq type *libffi-types*)))
+    (if t (cdr t)
+        (error "invalid c type - " type))))
+
+(define (def-c-struct name memtypes)
+  (let ((sid (libffi-defstruct (map libffitype->int memtypes)
+                               (length memtypes))))
+    (cond (sid
+           (set! *libffi-types* (cons (cons name sid) *libffi-types*))
+           name)
+          (else (error "failed to define c structure - " name)))))
+
+(define (mk-c-fn-param-names plen)
+  (let loop ((i 0) (pnames '()))
+    (if (< i plen)
+        (loop (+ i 1) (cons (string->symbol
+                             (string-append "p" (number->string i)))
+                            pnames))
+        (reverse pnames))))
+
+(define (mk-c-fn-args ptypes pnames)
+  (map (lambda (t n) (cons (libffitype->int t) n))
+       ptypes pnames))
+       
+(define (def-c-fn libhandle c-fn-name name paramtypes rettype)
+  (let ((plen (length paramtypes)))
+    (let ((pnames (mk-c-fn-param-names plen)))
+      `(define ,name (let ((fhandle (ffi_fn ,libhandle ,(symbol->string c-fn-name))))
+                       (lambda ,pnames
+                         (libffi-fncall fhandle ,(mk-c-fn-args paramtypes pnames)
+                                        ,plen ,(libffitype->int rettype))))))))
+
 ;; Sample:
 ;; define clib = ffi_open("./demo_lib.so"); 
 ;; define f = ffi_fn(clib, "add");
