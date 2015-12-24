@@ -1,5 +1,6 @@
 platform/libffi-3.2.1/i686-pc-linux-gnu/
 platform/libffi-3.2.1/x86_64-apple-darwin14.5.0/
 platform/libffi-3.2.1/target/
+platform/libffi-3.2.1/Makefile
 src/slogan
 
