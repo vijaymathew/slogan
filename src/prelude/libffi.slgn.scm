@@ -67,6 +67,9 @@
    int iargs[SLOGAN_LIBFFI_ARGC];
    long largs[SLOGAN_LIBFFI_ARGC];
    long long llargs[SLOGAN_LIBFFI_ARGC];
+   unsigned int uiargs[SLOGAN_LIBFFI_ARGC];
+   unsigned long ulargs[SLOGAN_LIBFFI_ARGC];
+   unsigned long long ullargs[SLOGAN_LIBFFI_ARGC];   
    float fargs[SLOGAN_LIBFFI_ARGC];
    double dargs[SLOGAN_LIBFFI_ARGC];
    long double ldargs[SLOGAN_LIBFFI_ARGC];
@@ -75,6 +78,9 @@
    int iargs_count;
    int llargs_count;
    int largs_count;
+   int uiargs_count;
+   int ullargs_count;
+   int ulargs_count;
    int fargs_count;
    int ldargs_count;
    int dargs_count;
@@ -124,33 +130,49 @@
        else
          {
            fp.args[i] = FFI_TYPE_MAP[it];
-           if (fp.args[i] == &ffi_type_uint8
-               || fp.args[i] == &ffi_type_sint8
-               || fp.args[i] == &ffi_type_uint16
+           if (fp.args[i] == &ffi_type_sint8
                || fp.args[i] == &ffi_type_sint16
-               || fp.args[i] == &ffi_type_uint32
                || fp.args[i] == &ffi_type_sint32
-               || fp.args[i] == &ffi_type_uchar
                || fp.args[i] == &ffi_type_schar
-               || fp.args[i] == &ffi_type_ushort
                || fp.args[i] == &ffi_type_sshort
-               || fp.args[i] == &ffi_type_uint
                || fp.args[i] == &ffi_type_sint)
              {
                ___slogan_obj_to_int(___CDR(arg), &fp.iargs[fp.iargs_count]);
                fp.values[i] = &fp.iargs[fp.iargs_count++];
              }
-           else if (fp.args[i] == &ffi_type_ulong || fp.args[i] == &ffi_type_slong)
+           else if (fp.args[i] == &ffi_type_uint8
+                    || fp.args[i] == &ffi_type_uint16
+                    || fp.args[i] == &ffi_type_uint32
+                    || fp.args[i] == &ffi_type_uchar
+                    || fp.args[i] == &ffi_type_ushort
+                    || fp.args[i] == &ffi_type_uint)
+             {
+               ___slogan_obj_to_uint(___CDR(arg), &fp.uiargs[fp.uiargs_count]);
+               fp.values[i] = &fp.uiargs[fp.uiargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_slong)
              {
                long r;
                ___slogan_obj_to_long(___CDR(arg), &r);
                fp.largs[fp.largs_count] = r;
                fp.values[i] = &fp.largs[fp.largs_count++];
              }
-           else if (fp.args[i] == &ffi_type_uint64 || fp.args[i] == &ffi_type_sint64)
+           else if (fp.args[i] == &ffi_type_ulong)
+             {
+               unsigned long r;
+               ___slogan_obj_to_long(___CDR(arg), &r);
+               fp.ulargs[fp.ulargs_count] = r;
+               fp.values[i] = &fp.ulargs[fp.ulargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_sint64)
              {
                ___slogan_obj_to_longlong(___CDR(arg), &fp.llargs[fp.llargs_count]);
                fp.values[i] = &fp.llargs[fp.llargs_count++];
+             }
+           else if (fp.args[i] == &ffi_type_uint64)
+             {
+               ___slogan_obj_to_longlong(___CDR(arg), &fp.ullargs[fp.ullargs_count]);
+               fp.values[i] = &fp.ullargs[fp.ullargs_count++];
              }
            else if (fp.args[i] == &ffi_type_float)
              {
@@ -199,22 +221,48 @@
      {
        if (ret_type <= libffi_type_sint)
          {
-           int rc;
-           ffi_call(&cif, fn, &rc, fp.values);
-           retval =  ___fix(rc);
+           if (fp.args[i] == &ffi_type_sint8
+               || fp.args[i] == &ffi_type_sint16
+               || fp.args[i] == &ffi_type_sint32
+               || fp.args[i] == &ffi_type_schar
+               || fp.args[i] == &ffi_type_sshort
+               || fp.args[i] == &ffi_type_sint)
+             {
+               int rc;
+               ffi_call(&cif, fn, &rc, fp.values);
+               retval =  ___fix(rc);
+             }
+           else
+             {
+               unsigned int rc;
+               ffi_call(&cif, fn, &rc, fp.values);
+               retval =  ___fix(rc);
+             }
          }
-       else if (ret_type <= libffi_type_slong)
+       else if (ret_type == libffi_type_slong)
          {
            long rc;
            ffi_call(&cif, fn, &rc, fp.values);
            retval = ___fix(rc);
          }
-       else if (ret_type <=  libffi_type_sint64)
+       else if (ret_type == libffi_type_ulong)
+         {
+           unsigned long rc;
+           ffi_call(&cif, fn, &rc, fp.values);
+           retval = ___fix(rc);
+         }       
+       else if (ret_type == libffi_type_sint64)
          {
            long long rc;
            ffi_call(&cif, fn, &rc, fp.values);
            retval = ___fix(rc);
          }
+       else if (ret_type == libffi_type_uint64)
+         {
+           unsigned long long rc;
+           ffi_call(&cif, fn, &rc, fp.values);
+           retval = ___fix(rc);
+         }       
        else if (ret_type == libffi_type_float)
          {
            float rc;
