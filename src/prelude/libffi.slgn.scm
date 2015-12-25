@@ -392,7 +392,7 @@ c-declare-end
     (if (null? ptypes)
         expr
         (loop (cdr ptypes) (cdr pnames)
-              (append expr (list `(cons ,(libffitype->int (car ptypes)) ,(car pnames))))))))
+              (append expr (list `(cons (libffitype->int ',(car ptypes)) ,(car pnames))))))))
        
 (define (def-c-fn libhandle c-fn-name name paramtypes rettype)
   (let ((plen (length paramtypes)))
@@ -400,7 +400,7 @@ c-declare-end
       `(define ,name (let ((fhandle (ffi_fn ,libhandle ,(symbol->string c-fn-name))))
                        (lambda ,pnames
                          (libffi-fncall fhandle ,(mk-c-fn-args paramtypes pnames)
-                                        ,plen ,(libffitype->int rettype))))))))
+                                        ,plen (libffitype->int ',rettype))))))))
 
 ;; Sample:
 ;; define clib = ffi_open("./demo_lib.so"); 
@@ -435,5 +435,5 @@ c-declare-end
 
 ;; Or:
 ;; define clib = ffi_open("./demo_lib.so");
-;; declare ffi clib [int add[int int] as c_add];
+;; declare ffi clib [int add[int int] as c_add, struct point[int int], point copy_point[int int], void print_point[point]];
 ;; c_add(10 20);

@@ -136,7 +136,7 @@
         (let ((memtypes (expression tokenizer)))
           (if (not (eq? (car memtypes) 'list))
               (parser-error tokenizer "Struct member types must be a list." memtypes)
-              `(def-c-struct ,struct-name ,(cdr memtypes)))))))
+              `(def-c-struct ',struct-name ',(cdr memtypes)))))))
 
 (define (c-fn-stmt tokenizer rettype libname)
   (let ((fn-name (tokenizer 'next)))
