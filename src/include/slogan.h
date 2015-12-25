@@ -46,6 +46,21 @@
 #define ___NONNULLCHARSTRING_to_SLOGAN_OBJ ___NONNULLCHARSTRING_to_SCMOBJ
 #define ___nonnullcharstring_to_slogan_obj(c, s) ((___NONNULLCHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)))
 
+#define ___UINT_to_SLOGAN_OBJ ___UINT_to_SCMOBJ
+#define ___uint_to_slogan_obj(c, s) ((___UINT_to_SCMOBJ (___PSTATE, c, s, 0)))
+
+#define ___ULONG_to_SLOGAN_OBJ ___ULONG_to_SCMOBJ
+#define ___ulong_to_slogan_obj(c, s) ((___ULONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+
+#define ___LONG_to_SLOGAN_OBJ ___LONG_to_SCMOBJ
+#define ___long_to_slogan_obj(c, s) ((___LONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+
+#define ___LONGLONG_to_SLOGAN_OBJ ___LONGLONG_to_SCMOBJ
+#define ___longlong_to_slogan_obj(c, s) ((___LONGLONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+
+#define ___ULONGLONG_to_SLOGAN_OBJ ___ULONGLONG_to_SCMOBJ
+#define ___ulonglong_to_slogan_obj(c, s) ((___ULONGLONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+
 #define ___FLOAT_to_SLOGAN_OBJ ___FLOAT_to_SCMOBJ
 #define ___float_to_slogan_obj(c, s) ((___FLOAT_to_SCMOBJ (___PSTATE, c, s, 0)))
 

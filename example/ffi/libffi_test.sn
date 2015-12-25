@@ -1,0 +1,49 @@
+declare ffi "clib.so" [
+    int add_i[int, int]
+    uint add_ui[uint, uint]
+    long add_l[long, long]
+    ulong add_ul[ulong, ulong]
+    int64 add_ll[int64, int64]
+    float add_f[float, float]
+    double add_d[double, double]
+    longdouble add_ld[longdouble, longdouble]
+    char add_c[char, char]
+
+    pointer alloc_person[charstring, int]
+    int person_age[pointer]
+    charstring person_name[pointer]
+    void free_person[pointer]
+
+    struct point[int, int]
+    point make_point[int, int]
+    void print_point[point]
+
+    struct ball[point, float]
+    ball make_ball[point, float]
+    void print_ball[ball]
+];
+
+showln(add_i(10 20)); // => 30
+showln(add_i(10, -20)); // => -10
+showln(add_ui(10 20)); // => 30
+showln(add_ui(10, -20)); // => xxxxxxx
+showln(add_l(10 20)); // => 30
+showln(add_ul(10 20)); // => 30
+showln(add_ul(10, -20)); // => xxxxxxxx
+showln(add_ll(10 20)); // => 30
+showln(add_f(10.2 20.3)); // => 30.5
+showln(add_d(10.2 20.3)); // => 30.5
+showln(add_ld(10.2 20.3)); // => 30.5
+showln(add_c(60 65)); // => 125
+
+define p = alloc_person("tom", 30);
+showln(person_age(p)); // => 30
+showln(person_name(p)); // => tom
+free_person(p);
+
+p = make_point(100, 340);
+print_point(p);
+
+showln();
+define v = make_ball(p, 1000.34);
+print_ball(v);

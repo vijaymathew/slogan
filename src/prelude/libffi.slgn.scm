@@ -3,6 +3,7 @@
 
 (c-declare #<<c-declare-end
 
+ #include <stdio.h>
 #include <ffi.h>
 #include <stdlib.h>
 #include "../include/slogan.h"
@@ -130,22 +131,22 @@
        else
          {
            fp.args[i] = FFI_TYPE_MAP[it];
-           if (fp.args[i] == &ffi_type_sint8
-               || fp.args[i] == &ffi_type_sint16
-               || fp.args[i] == &ffi_type_sint32
+           if (fp.args[i] == &ffi_type_sint
                || fp.args[i] == &ffi_type_schar
                || fp.args[i] == &ffi_type_sshort
-               || fp.args[i] == &ffi_type_sint)
+               || fp.args[i] == &ffi_type_sint8
+               || fp.args[i] == &ffi_type_sint16
+               || fp.args[i] == &ffi_type_sint32)
              {
                ___slogan_obj_to_int(___CDR(arg), &fp.iargs[fp.iargs_count]);
                fp.values[i] = &fp.iargs[fp.iargs_count++];
              }
-           else if (fp.args[i] == &ffi_type_uint8
-                    || fp.args[i] == &ffi_type_uint16
-                    || fp.args[i] == &ffi_type_uint32
+           else if (fp.args[i] == &ffi_type_uint
                     || fp.args[i] == &ffi_type_uchar
                     || fp.args[i] == &ffi_type_ushort
-                    || fp.args[i] == &ffi_type_uint)
+                    || fp.args[i] == &ffi_type_uint8
+                    || fp.args[i] == &ffi_type_uint16
+                    || fp.args[i] == &ffi_type_uint32)
              {
                ___slogan_obj_to_uint(___CDR(arg), &fp.uiargs[fp.uiargs_count]);
                fp.values[i] = &fp.uiargs[fp.uiargs_count++];
@@ -160,7 +161,7 @@
            else if (fp.args[i] == &ffi_type_ulong)
              {
                unsigned long r;
-               ___slogan_obj_to_long(___CDR(arg), &r);
+               ___slogan_obj_to_ulong(___CDR(arg), &r);
                fp.ulargs[fp.ulargs_count] = r;
                fp.values[i] = &fp.ulargs[fp.ulargs_count++];
              }
@@ -171,7 +172,7 @@
              }
            else if (fp.args[i] == &ffi_type_uint64)
              {
-               ___slogan_obj_to_longlong(___CDR(arg), &fp.ullargs[fp.ullargs_count]);
+               ___slogan_obj_to_ulonglong(___CDR(arg), &fp.ullargs[fp.ullargs_count]);
                fp.values[i] = &fp.ullargs[fp.ullargs_count++];
              }
            else if (fp.args[i] == &ffi_type_float)
@@ -193,9 +194,7 @@
              }
            else
              {
-               int t = 0;
-               ___slogan_obj_to_int(___CAR(arg), &t);
-               if (t == libffi_type_charstr)
+               if (it == libffi_type_charstr)
                  {
                    ___slogan_obj_to_charstring(___CDR(arg), &fp.sargs[fp.sargs_count]);
                    fp.values[i] = &fp.sargs[fp.sargs_count++];
@@ -205,7 +204,6 @@
                    ___slogan_obj_to_void_pointer(___CDR(arg), &fp.pargs[fp.pargs_count]);
                    fp.values[i] = &fp.pargs[fp.pargs_count++];
                  }
-               break;
              }
          }
        arg_types_vals = ___CDR(arg_types_vals);
@@ -215,18 +213,18 @@
    if (ret_type >= SLOGAN_LIBFFI_TYPE_COUNT)
      ret_ffi_type = &user_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
    else ret_ffi_type = FFI_TYPE_MAP[ret_type];
-   
+
    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, fp.argc,
                     ret_ffi_type, fp.args) == FFI_OK)
      {
        if (ret_type <= libffi_type_sint)
          {
-           if (fp.args[i] == &ffi_type_sint8
-               || fp.args[i] == &ffi_type_sint16
-               || fp.args[i] == &ffi_type_sint32
-               || fp.args[i] == &ffi_type_schar
-               || fp.args[i] == &ffi_type_sshort
-               || fp.args[i] == &ffi_type_sint)
+           if (ret_type == libffi_type_sint
+               || ret_type == libffi_type_schar
+               || ret_type == libffi_type_sshort
+               || ret_type == libffi_type_sint8
+               || ret_type == libffi_type_sint16
+               || ret_type == libffi_type_sint32)
              {
                int rc;
                ffi_call(&cif, fn, &rc, fp.values);
@@ -236,32 +234,32 @@
              {
                unsigned int rc;
                ffi_call(&cif, fn, &rc, fp.values);
-               retval =  ___fix(rc);
+               ___uint_to_slogan_obj(rc, &retval);
              }
          }
        else if (ret_type == libffi_type_slong)
          {
            long rc;
            ffi_call(&cif, fn, &rc, fp.values);
-           retval = ___fix(rc);
+           ___long_to_slogan_obj(rc, &retval);
          }
        else if (ret_type == libffi_type_ulong)
          {
            unsigned long rc;
            ffi_call(&cif, fn, &rc, fp.values);
-           retval = ___fix(rc);
+           ___ulong_to_slogan_obj(rc, &retval);
          }       
        else if (ret_type == libffi_type_sint64)
          {
            long long rc;
            ffi_call(&cif, fn, &rc, fp.values);
-           retval = ___fix(rc);
+           ___longlong_to_slogan_obj(rc, &retval);
          }
        else if (ret_type == libffi_type_uint64)
          {
            unsigned long long rc;
            ffi_call(&cif, fn, &rc, fp.values);
-           retval = ___fix(rc);
+           ___ulonglong_to_slogan_obj(rc, &retval);
          }       
        else if (ret_type == libffi_type_float)
          {
@@ -361,7 +359,7 @@ c-declare-end
     (ulong . 12) (long . 13)
     (uint64 . 14) (int64 . 15)
     (float . 16) (double . 17)
-    (longdouble . 18) (char_string . 19)
+    (longdouble . 18) (charstring . 19)
     (pointer . 20) (void . 21)))
 
 (define (libffitype->int type)
@@ -401,39 +399,3 @@ c-declare-end
                        (lambda ,pnames
                          (libffi-fncall fhandle ,(mk-c-fn-args paramtypes pnames)
                                         ,plen (libffitype->int ',rettype))))))))
-
-;; Sample:
-;; define clib = ffi_open("./demo_lib.so"); 
-;; define f = ffi_fn(clib, "add");
-;; `libffi-fncall`(f, [5:10, 5:20], 2, 5);
-;; define f = ffi_fn(clib, "say_hello");
-;; `libffi-fncall`(f, [19:"hey there!"], 1, 19);
-;;  define f = ffi_fn(clib, "make_point");
-;; define p = `libffi-fncall`(f, [5:3 5:12], 2, 20);
-;; define f = ffi_fn(clib, "point_x");
-;; `libffi-fncall`(f, [20:p], 1, 5);
-;; define f = ffi_fn(clib, "point_y");
-;; `libffi-fncall`(f, [20:p], 1, 5);
-;; define f = ffi_fn(clib, "free_point");
-;; `libffi-fncall`(f, [20:p], 1, 21);
-
-;; `libffi-defstruct`([5 5] 2);
-;; f = ffi_fn(clib, "copy_point");
-;; define p = `libffi-fncall`(f [5:100 5:200] 2 22);
-;; f = ffi_fn(clib, "print_point");
-;; `libffi-fncall`(f [22:p] 1 21);
-
-;; Using the `declare ffi` statement:
-;; declare ffi "./demo_lib.so" [int32 add[int32 int32]];
-;; add(10 20);
-
-;; Or:
-
-;; declare ffi "./demo_lib.so" [int32 add[int32 int32] as c_add, char_string say_hello[char_string]];
-;; c_add(10 20);
-;; say_hello("hi there");
-
-;; Or:
-;; define clib = ffi_open("./demo_lib.so");
-;; declare ffi clib [int add[int int] as c_add, struct point[int int], point copy_point[int int], void print_point[point]];
-;; c_add(10 20);

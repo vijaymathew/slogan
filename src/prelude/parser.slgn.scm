@@ -143,6 +143,8 @@
     (if (not (symbol? fn-name))
         (parser-error tokenizer "Function name must be a symbol." fn-name)
         (let ((paramtypes (expression tokenizer)))
+          (if (not (pair? paramtypes))
+              (parser-error tokenizer "Expected parameter list."))
           (if (not (eq? (car paramtypes) 'list))
               (parser-error tokenizer "Parameter types must be a list." paramtypes)
               (let ((name fn-name))
@@ -169,14 +171,20 @@
             (let ((cdef (cdef-stmt tokenizer libname)))
               (assert-comma-separator tokenizer '*close-bracket*)
               (loop (cons cdef defs)))))))
-            
+
+(define *ffi-lib-count* 0)
+(define (genffisym)
+  (let ((s (string-append "*ffi-" (number->string *ffi-lib-count*) "-*")))
+    (set! *ffi-lib-count* (+ *ffi-lib-count* 1))
+    (string->symbol s)))
+
 (define (declare-ffi-stmt tokenizer)
   (let ((libname (tokenizer 'next)))
     (if (not (or (string? libname)
                  (symbol? libname)))
         (parser-error tokenizer "Invalid library name - " libname)
         (if (string? libname)
-            (let ((lname (gensym)))
+            (let ((lname (genffisym)))
               (def-ffi tokenizer lname `(begin (define ,lname (ffi_open ,libname)))))
             (def-ffi tokenizer libname `(begin))))))
 
