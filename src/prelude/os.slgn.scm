@@ -97,4 +97,11 @@
 (define host_info_aliases host-info-aliases)
 (define host_info_addresses host-info-addresses)
 
-  
+(define (os_name)
+  (with-exception-catcher
+   (lambda (e) #f)
+   (lambda ()
+     (let ((p (open_process_port "uname")))
+       (let ((n (read p)))
+         (close_port p)
+         n)))))
