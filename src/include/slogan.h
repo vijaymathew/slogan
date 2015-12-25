@@ -5,6 +5,7 @@
 
 #define SLOGAN_LIBFFI_ARGC 32
 #define SLOGAN_LIBFFI_STRUCT_DEFS 32
+#define SLOGAN_LIBFFI_STRUCT_SIZE 1024
 
 #define ___slogan_obj ___SCMOBJ
 #define ___int ___INT

@@ -87,6 +87,7 @@ point make_point(int x, int y)
 {
   point p;
   p.x = x; p.y = y;
+  printf("%p\n", &p);
   return p;
 }
 

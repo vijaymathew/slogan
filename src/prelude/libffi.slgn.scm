@@ -1,11 +1,12 @@
-;; Copyright (c) 2013-2014 by Vijay Mathew Pandyalakal, All Rights Reserved.
+;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Linkage to libffi to provide a higher level of abstraction to C library calls.
 
 (c-declare #<<c-declare-end
 
- #include <stdio.h>
+#include <stdio.h>
 #include <ffi.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../include/slogan.h"
 
  #define SLOGAN_LIBFFI_TYPE_COUNT 22
@@ -98,11 +99,139 @@
 
  static ffi_type user_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
  static int user_struct_count;
+
+ static ___SCMOBJ user_struct_to_slogan_obj_(void *p, ffi_type *s_type)
+ {
+   ffi_type **s_type_elements = s_type->elements;
+   ffi_type *elem = s_type_elements[0];
+   int i = 0;
+   ___SCMOBJ retval = ___NUL;
+   ___SCMOBJ obj;
+
+   while (elem != NULL)
+     {          
+       if (elem == &ffi_type_sint8
+           || elem == &ffi_type_sint16
+           || elem == &ffi_type_sint32
+           || elem == &ffi_type_schar
+           || elem == &ffi_type_sshort
+           || elem == &ffi_type_sint)
+         {
+           int *si = (int *)p;
+           retval = ___pair(___fix(*si), retval);
+           if (elem == &ffi_type_sint)
+             p += sizeof(int);
+           else if (elem == &ffi_type_sshort)
+             p += sizeof(short);
+           else if (elem == &ffi_type_schar)
+             p += sizeof(char);
+           else if (elem == &ffi_type_sint32)
+             p += sizeof(int);
+           else if (elem == &ffi_type_sint16)
+             p += sizeof(short);
+           else if (elem == &ffi_type_sint8)
+             p += sizeof(char);
+         }
+       else if (elem == &ffi_type_uint8
+                || elem == &ffi_type_uint16
+                || elem == &ffi_type_uint32
+                || elem == &ffi_type_uchar
+                || elem == &ffi_type_ushort
+                || elem == &ffi_type_uint)
+         {
+           unsigned int *ui = (unsigned int *)p;
+           ___uint_to_slogan_obj(*ui, &obj);
+           retval = ___pair(obj, retval);
+           if (elem == &ffi_type_uint)
+             p += sizeof(unsigned int);
+           else if (elem == &ffi_type_ushort)
+             p += sizeof(unsigned short);
+           else if (elem == &ffi_type_uchar)
+             p += sizeof(unsigned char);
+           else if (elem == &ffi_type_uint32)
+             p += sizeof(unsigned int);
+           else if (elem == &ffi_type_uint16)
+             p += sizeof(unsigned short);
+           else if (elem == &ffi_type_uint8)
+             p += sizeof(unsigned char);
+         }
+       else if (elem == &ffi_type_slong)
+         {
+           long *r = (long *)p;
+           ___long_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(long);
+         }
+       else if (elem == &ffi_type_ulong)
+         {
+           unsigned long *r = (unsigned long *)p;
+           ___ulong_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(unsigned long);
+         }
+       else if (elem == &ffi_type_sint64)
+         {
+           long long *r = (long long *)p;
+           ___longlong_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(long long);
+         }
+       else if (elem == &ffi_type_uint64)
+         {
+           unsigned long long *r = (unsigned long long *)p;
+           ___ulonglong_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(unsigned long long);
+         }
+       else if (elem == &ffi_type_float)
+         {
+           float *r = (float *)p;
+           ___float_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(float);
+         }
+       else if (elem == &ffi_type_double)
+         {
+           double *r = (double *)p;
+           ___double_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(double);
+         }
+       else if (elem == &ffi_type_longdouble)
+         {
+           long double *r = (long double *)p;
+           ___double_to_slogan_obj(*r, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(long double);
+         }
+       else if (elem == &ffi_type_pointer)
+         {
+           ___void_pointer_to_slogan_obj(p, &obj);
+           retval = ___pair(obj, retval);
+           p += sizeof(void *);
+         }
+       else
+         retval = ___pair(user_struct_to_slogan_obj_(p, elem), retval);
+       elem = s_type_elements[++i];
+     }
+   return retval;
+ }
  
- ___SCMOBJ libffi_fncall(void *fn,
-                         ___SCMOBJ arg_types_vals,
-                         ___SCMOBJ i_argc,
-                         ___SCMOBJ i_ret_type)
+ static ___SCMOBJ user_struct_to_slogan_obj(void *p, int ret_type)
+ {
+   ffi_type *s_type = &user_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
+   return user_struct_to_slogan_obj_(p, s_type);
+ }
+   
+ struct placeholder
+ {
+   char c[SLOGAN_LIBFFI_STRUCT_SIZE];
+ };
+ 
+ static  ___SCMOBJ libffi_fncall(void *fn,
+                                 ___SCMOBJ arg_types_vals,
+                                 ___SCMOBJ i_argc,
+                                 ___SCMOBJ i_ret_type)
  {
    ffi_cif cif;
    struct fncall_param fp;
@@ -293,15 +422,25 @@
        else
          {
            void *rc;
-           ffi_call(&cif, fn, &rc, fp.values);
-           ___void_pointer_to_slogan_obj(rc, &retval);
+           if (ret_type >= SLOGAN_LIBFFI_TYPE_COUNT)
+             {
+               struct placeholder pc;
+               ffi_call(&cif, fn, &pc, fp.values);
+               rc = &pc;
+               retval = user_struct_to_slogan_obj(rc, ret_type);
+             }
+           else
+             {
+               ffi_call(&cif, fn, &rc, fp.values);
+               ___void_pointer_to_slogan_obj(rc, &retval);
+             }
          }
      }
    else retval = ___FAL;
    return retval;
  }
 
- ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
+static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
  {
    if (user_struct_count >= SLOGAN_LIBFFI_STRUCT_DEFS)
      {
