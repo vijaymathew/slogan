@@ -436,11 +436,12 @@
   (if (eq? (tokenizer 'peek) '*assignment*)
       (begin (tokenizer 'next)
              (if (rvar? sym)
-                 (if def
-		     `(begin
-			(define ,(normalize-rvar sym) (rvar))
-			(rbind ,(normalize-rvar sym) ,(expression tokenizer)))
-                     (list 'rbind (normalize-rvar sym) (expression tokenizer)))
+                 (let ((sym (normalize-rvar sym)))
+                   (if def
+                       `(begin
+                          (define ,sym (rvar))
+                          (rbind ,sym ,(expression tokenizer)))
+                       (list 'rbind sym (expression tokenizer))))
                  (list (if def 'define 'set!) sym (expression tokenizer))))
       (parser-error tokenizer "Expected assignment.")))
 
