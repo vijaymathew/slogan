@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <ffi.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include "../include/slogan.h"
 
@@ -68,10 +69,10 @@
    void *values[SLOGAN_LIBFFI_ARGC];
    int iargs[SLOGAN_LIBFFI_ARGC];
    long largs[SLOGAN_LIBFFI_ARGC];
-   long long llargs[SLOGAN_LIBFFI_ARGC];
+   int64_t llargs[SLOGAN_LIBFFI_ARGC];
    unsigned int uiargs[SLOGAN_LIBFFI_ARGC];
    unsigned long ulargs[SLOGAN_LIBFFI_ARGC];
-   unsigned long long ullargs[SLOGAN_LIBFFI_ARGC];   
+   uint64_t ullargs[SLOGAN_LIBFFI_ARGC];   
    float fargs[SLOGAN_LIBFFI_ARGC];
    double dargs[SLOGAN_LIBFFI_ARGC];
    long double ldargs[SLOGAN_LIBFFI_ARGC];
@@ -111,27 +112,209 @@
    return -1;
  }
 
- static void slogan_obj_to_c_struct(___SCMOBJ obj, void **out)
+ static size_t slogan_obj_to_c_struct(___SCMOBJ obj, void **p)
  {
    int struct_index;
    ffi_type *ft;
    ffi_type **s_type_elements;
    ffi_type *elem;
    int i;
+   size_t out_sz;
    
    ___slogan_obj_to_int(___CAR(obj), &struct_index);
    obj = ___CDR(obj);
    ft = &c_structs[struct_index];
    s_type_elements = ft->elements;
    elem = s_type_elements[0];
-
+   
    i = 0;
    while (elem != NULL)
      {
-       // TODO fill *out
+       ___SCMOBJ mem = ___CAR(obj);
+       if (elem == &ffi_type_sint8)
+         {
+           int8_t tmp;
+           ___slogan_obj_to_int(mem, (int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_schar)
+         {
+           char tmp;
+           ___slogan_obj_to_int(mem, (int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_sint16)
+         {
+           int16_t tmp;
+           ___slogan_obj_to_int(mem, (int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_sint32)
+         {
+           int32_t tmp;
+           ___slogan_obj_to_int(mem, (int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_sint)
+         {
+           int tmp;
+           ___slogan_obj_to_int(mem, (int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_sshort)
+         {
+           short tmp;
+           ___slogan_obj_to_int(mem, (int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_uint8)
+         {
+           uint8_t tmp;
+           ___slogan_obj_to_uint(mem, (unsigned int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_uint16)
+         {
+           uint16_t tmp;
+           ___slogan_obj_to_uint(mem, (unsigned int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }         
+       else if (elem == &ffi_type_uint32)
+         {
+           uint32_t tmp;
+           ___slogan_obj_to_uint(mem, (unsigned int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }         
+       else if (elem == &ffi_type_uchar)
+         {
+           unsigned char tmp;
+           ___slogan_obj_to_uint(mem, (unsigned int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }         
+       else if (elem == &ffi_type_ushort)
+         {
+           unsigned short tmp;
+           ___slogan_obj_to_uint(mem, (unsigned int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_uint)
+         {
+           unsigned int tmp;
+           ___slogan_obj_to_uint(mem, (unsigned int *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_slong)
+         {
+           long tmp;
+           ___slogan_obj_to_long(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_ulong)
+         {
+           unsigned long tmp;
+           ___slogan_obj_to_ulong(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_sint64)
+         {
+           int64_t tmp;
+           ___slogan_obj_to_longlong(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_uint64)
+         {
+           uint64_t tmp;
+           ___slogan_obj_to_ulonglong(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_float)
+         {
+           float tmp;
+           ___slogan_obj_to_float(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_double)
+         {
+           double tmp;
+           ___slogan_obj_to_double(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_longdouble)
+         {
+           long double tmp;
+           ___slogan_obj_to_double(mem, (double *)&tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else if (elem == &ffi_type_pointer)
+         {
+           void *tmp;
+           ___slogan_obj_to_void_pointer(mem, &tmp);
+           memcpy(*p, &tmp, sizeof(tmp));
+           *p += sizeof(tmp);
+           out_sz += sizeof(tmp);
+         }
+       else
+         {
+           size_t s;
+           void *ptr = malloc(SLOGAN_LIBFFI_STRUCT_SIZE);
+           if (ptr == NULL)
+             {
+               fprintf(stderr, "failed to allocate memory for nested struct.");
+               exit(1);
+             }
+           s = slogan_obj_to_c_struct(mem, &ptr);
+           if (s > SLOGAN_LIBFFI_STRUCT_SIZE)
+             {
+               fprintf(stderr, "nested struct too large, redefine SLOGAN_LIBFFI_STRUCT_SIZE");
+               exit(1);
+             }
+           memcpy(*p, ptr, s);
+           *p += s;
+           out_sz += s;
+           free(ptr);
+         }
        obj = ___CDR(obj);
        elem = s_type_elements[++i];
-     }   
+     }
+   return out_sz;
  }
  
  static ___SCMOBJ c_struct_to_slogan_obj_(void **p, ffi_type *s_type, int struct_index)

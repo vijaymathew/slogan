@@ -1,5 +1,6 @@
-24-Dec-2015
+26-Dec-2015
 ===========
 
-  * Test the `declare ffi` extension.
+  * Test the `declare ffi` extension - slogan_obj->c_struct conversion,
+    test all types in function arguments, return values and struct members.
   * Implement a package manager.
