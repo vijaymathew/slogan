@@ -87,12 +87,12 @@ point make_point(int x, int y)
 {
   point p;
   p.x = x; p.y = y;
-  printf("%p\n", &p);
   return p;
 }
 
 void print_point(point p)
 {
+  printf("~~~~%p\n", &p);
   printf("%d:%d", p.x, p.y);
   fflush(stdout);
 }

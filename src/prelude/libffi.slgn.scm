@@ -98,6 +98,22 @@
    fp->dargs_count = fp->sargs_count = fp->pargs_count = 0;
  }
 
+ static ___SCMOBJ slogan_list_reverse(___SCMOBJ lst)
+ {
+   ___SCMOBJ a = lst;
+   ___SCMOBJ b = ___NUL;
+   while (1)
+     {
+       if (a == ___NUL) break;
+       else
+         {
+           a = ___CDR(a);
+           b = ___pair(___CAR(a), b);
+         }
+     }
+   return b;
+ }
+ 
  static ffi_type c_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
  static int c_struct_count;
 
@@ -119,14 +135,15 @@
    ffi_type **s_type_elements;
    ffi_type *elem;
    int i;
-   size_t out_sz;
+   size_t out_sz = 0;
+   void *old_p = *p;
    
    ___slogan_obj_to_int(___CAR(obj), &struct_index);
    obj = ___CDR(obj);
    ft = &c_structs[struct_index];
    s_type_elements = ft->elements;
    elem = s_type_elements[0];
-   
+
    i = 0;
    while (elem != NULL)
      {
@@ -314,6 +331,12 @@
        obj = ___CDR(obj);
        elem = s_type_elements[++i];
      }
+   *p = old_p;
+   if (out_sz > SLOGAN_LIBFFI_STRUCT_SIZE)
+     {
+       fprintf(stderr, "struct too large, redefine SLOGAN_LIBFFI_STRUCT_SIZE");
+       exit(1);
+     }
    return out_sz;
  }
  
@@ -343,11 +366,11 @@
            else if (elem == &ffi_type_schar)
              *p += sizeof(char);
            else if (elem == &ffi_type_sint32)
-             *p += sizeof(int);
+             *p += sizeof(int32_t);
            else if (elem == &ffi_type_sint16)
-             *p += sizeof(short);
+             *p += sizeof(int16_t);
            else if (elem == &ffi_type_sint8)
-             *p += sizeof(char);
+             *p += sizeof(int8_t);
          }
        else if (elem == &ffi_type_uint8
                 || elem == &ffi_type_uint16
@@ -366,11 +389,11 @@
            else if (elem == &ffi_type_uchar)
              *p += sizeof(unsigned char);
            else if (elem == &ffi_type_uint32)
-             *p += sizeof(unsigned int);
+             *p += sizeof(uint32_t);
            else if (elem == &ffi_type_uint16)
-             *p += sizeof(unsigned short);
+             *p += sizeof(uint16_t);
            else if (elem == &ffi_type_uint8)
-             *p += sizeof(unsigned char);
+             *p += sizeof(uint8_t);
          }
        else if (elem == &ffi_type_slong)
          {
@@ -478,18 +501,20 @@
        ___slogan_obj_to_int(___CAR(arg), &it);
        if (it >= SLOGAN_LIBFFI_TYPE_COUNT) /* A user defined struct */
          {
+           size_t ssz;
            it -= SLOGAN_LIBFFI_TYPE_COUNT;
            fp.args[i] = &c_structs[it];
-           fp.pargs[fp.pargs_count] = (char *)malloc(SLOGAN_LIBFFI_STRUCT_SIZE);
+           fp.pargs[fp.pargs_count] = calloc(SLOGAN_LIBFFI_STRUCT_SIZE, 1);
            if (fp.pargs[fp.pargs_count] == NULL)
              {
                fprintf(stderr, "failed to allocate memory for user struct object");
                return ___FAL;
              }
-           slogan_obj_to_c_struct(___CDR(arg), &fp.pargs[fp.pargs_count]);
+           ssz = slogan_obj_to_c_struct(___CDR(arg), &fp.pargs[fp.pargs_count]);
            dealloc_pargs[fp.pargs_count] = 1;
            ++has_allocated_pargs;
-           fp.values[i] = &fp.pargs[fp.pargs_count++];
+           fp.pargs[fp.pargs_count] = realloc(fp.pargs[fp.pargs_count], ssz);
+           fp.values[i] = fp.pargs[fp.pargs_count++];
          }
        else
          {
