@@ -97,10 +97,44 @@
    fp->dargs_count = fp->sargs_count = fp->pargs_count = 0;
  }
 
- static ffi_type user_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
- static int user_struct_count;
+ static ffi_type c_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
+ static int c_struct_count;
 
- static ___SCMOBJ user_struct_to_slogan_obj_(void *p, ffi_type *s_type)
+ static int c_struct_index(ffi_type *ft)
+ {
+   int i;
+   for (i = 0; i < c_struct_count; ++i)
+     {
+       if (ft == &c_structs[i])
+         return i;
+     }
+   return -1;
+ }
+
+ static void slogan_obj_to_c_struct(___SCMOBJ obj, void **out)
+ {
+   int struct_index;
+   ffi_type *ft;
+   ffi_type **s_type_elements;
+   ffi_type *elem;
+   int i;
+   
+   ___slogan_obj_to_int(___CAR(obj), &struct_index);
+   obj = ___CDR(obj);
+   ft = &c_structs[struct_index];
+   s_type_elements = ft->elements;
+   elem = s_type_elements[0];
+
+   i = 0;
+   while (elem != NULL)
+     {
+       // TODO fill *out
+       obj = ___CDR(obj);
+       elem = s_type_elements[++i];
+     }   
+ }
+ 
+ static ___SCMOBJ c_struct_to_slogan_obj_(void **p, ffi_type *s_type, int struct_index)
  {
    ffi_type **s_type_elements = s_type->elements;
    ffi_type *elem = s_type_elements[0];
@@ -117,20 +151,20 @@
            || elem == &ffi_type_sshort
            || elem == &ffi_type_sint)
          {
-           int *si = (int *)p;
+           int *si = (int *)*p;
            retval = ___pair(___fix(*si), retval);
            if (elem == &ffi_type_sint)
-             p += sizeof(int);
+             *p += sizeof(int);
            else if (elem == &ffi_type_sshort)
-             p += sizeof(short);
+             *p += sizeof(short);
            else if (elem == &ffi_type_schar)
-             p += sizeof(char);
+             *p += sizeof(char);
            else if (elem == &ffi_type_sint32)
-             p += sizeof(int);
+             *p += sizeof(int);
            else if (elem == &ffi_type_sint16)
-             p += sizeof(short);
+             *p += sizeof(short);
            else if (elem == &ffi_type_sint8)
-             p += sizeof(char);
+             *p += sizeof(char);
          }
        else if (elem == &ffi_type_uint8
                 || elem == &ffi_type_uint16
@@ -139,90 +173,94 @@
                 || elem == &ffi_type_ushort
                 || elem == &ffi_type_uint)
          {
-           unsigned int *ui = (unsigned int *)p;
+           unsigned int *ui = (unsigned int *)*p;
            ___uint_to_slogan_obj(*ui, &obj);
            retval = ___pair(obj, retval);
            if (elem == &ffi_type_uint)
-             p += sizeof(unsigned int);
+             *p += sizeof(unsigned int);
            else if (elem == &ffi_type_ushort)
-             p += sizeof(unsigned short);
+             *p += sizeof(unsigned short);
            else if (elem == &ffi_type_uchar)
-             p += sizeof(unsigned char);
+             *p += sizeof(unsigned char);
            else if (elem == &ffi_type_uint32)
-             p += sizeof(unsigned int);
+             *p += sizeof(unsigned int);
            else if (elem == &ffi_type_uint16)
-             p += sizeof(unsigned short);
+             *p += sizeof(unsigned short);
            else if (elem == &ffi_type_uint8)
-             p += sizeof(unsigned char);
+             *p += sizeof(unsigned char);
          }
        else if (elem == &ffi_type_slong)
          {
-           long *r = (long *)p;
+           long *r = (long *)*p;
            ___long_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(long);
+           *p += sizeof(long);
          }
        else if (elem == &ffi_type_ulong)
          {
-           unsigned long *r = (unsigned long *)p;
+           unsigned long *r = (unsigned long *)*p;
            ___ulong_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(unsigned long);
+           *p += sizeof(unsigned long);
          }
        else if (elem == &ffi_type_sint64)
          {
-           long long *r = (long long *)p;
+           long long *r = (long long *)*p;
            ___longlong_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(long long);
+           *p += sizeof(long long);
          }
        else if (elem == &ffi_type_uint64)
          {
-           unsigned long long *r = (unsigned long long *)p;
+           unsigned long long *r = (unsigned long long *)*p;
            ___ulonglong_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(unsigned long long);
+           *p += sizeof(unsigned long long);
          }
        else if (elem == &ffi_type_float)
          {
-           float *r = (float *)p;
+           float *r = (float *)*p;
            ___float_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(float);
+           *p += sizeof(float);
          }
        else if (elem == &ffi_type_double)
          {
-           double *r = (double *)p;
+           double *r = (double *)*p;
            ___double_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(double);
+           *p += sizeof(double);
          }
        else if (elem == &ffi_type_longdouble)
          {
-           long double *r = (long double *)p;
+           long double *r = (long double *)*p;
            ___double_to_slogan_obj(*r, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(long double);
+           *p += sizeof(long double);
          }
        else if (elem == &ffi_type_pointer)
          {
-           ___void_pointer_to_slogan_obj(p, &obj);
+           ___void_pointer_to_slogan_obj(*p, &obj);
            retval = ___pair(obj, retval);
-           p += sizeof(void *);
+           *p += sizeof(void *);
          }
        else
-         retval = ___pair(user_struct_to_slogan_obj_(p, elem), retval);
+         {
+           int sindex = c_struct_index(elem);
+           retval = ___pair(c_struct_to_slogan_obj_(p, elem, sindex), retval);
+         }
        elem = s_type_elements[++i];
      }
-   return retval;
+   return ___pair(___fix(struct_index), retval);
  }
  
- static ___SCMOBJ user_struct_to_slogan_obj(void *p, int ret_type)
+ static ___SCMOBJ c_struct_to_slogan_obj(void **p, int ret_type)
  {
-   ffi_type *s_type = &user_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
-   return user_struct_to_slogan_obj_(p, s_type);
+   int i = ret_type - SLOGAN_LIBFFI_TYPE_COUNT;
+   ffi_type *s_type = &c_structs[i];
+   return c_struct_to_slogan_obj_(p, s_type, i);
  }
-   
+
  struct placeholder
  {
    char c[SLOGAN_LIBFFI_STRUCT_SIZE];
@@ -240,7 +278,12 @@
    int i;
 
    ___SCMOBJ retval = ___TRU;
-
+   int dealloc_pargs[SLOGAN_LIBFFI_ARGC];
+   int has_allocated_pargs = 0;
+   
+   for (i = 0; i < SLOGAN_LIBFFI_ARGC; ++i)
+     dealloc_pargs[i] = 0;
+   
    fpinit(&fp);
    ___slogan_obj_to_int(i_argc, &fp.argc);
 
@@ -253,8 +296,16 @@
        if (it >= SLOGAN_LIBFFI_TYPE_COUNT) /* A user defined struct */
          {
            it -= SLOGAN_LIBFFI_TYPE_COUNT;
-           fp.args[i] = &user_structs[it];
-           ___slogan_obj_to_void_pointer(___CDR(arg), &fp.pargs[fp.pargs_count]);
+           fp.args[i] = &c_structs[it];
+           fp.pargs[fp.pargs_count] = (char *)malloc(SLOGAN_LIBFFI_STRUCT_SIZE);
+           if (fp.pargs[fp.pargs_count] == NULL)
+             {
+               fprintf(stderr, "failed to allocate memory for user struct object");
+               return ___FAL;
+             }
+           slogan_obj_to_c_struct(___CDR(arg), &fp.pargs[fp.pargs_count]);
+           dealloc_pargs[fp.pargs_count] = 1;
+           ++has_allocated_pargs;
            fp.values[i] = &fp.pargs[fp.pargs_count++];
          }
        else
@@ -340,7 +391,7 @@
 
    ___slogan_obj_to_int(i_ret_type, &ret_type);
    if (ret_type >= SLOGAN_LIBFFI_TYPE_COUNT)
-     ret_ffi_type = &user_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
+     ret_ffi_type = &c_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
    else ret_ffi_type = FFI_TYPE_MAP[ret_type];
 
    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, fp.argc,
@@ -427,7 +478,7 @@
                struct placeholder pc;
                ffi_call(&cif, fn, &pc, fp.values);
                rc = &pc;
-               retval = user_struct_to_slogan_obj(rc, ret_type);
+               retval = c_struct_to_slogan_obj(&rc, ret_type);
              }
            else
              {
@@ -437,14 +488,26 @@
          }
      }
    else retval = ___FAL;
+   if (has_allocated_pargs > 0)
+     {
+       for (i = 0; i < SLOGAN_LIBFFI_ARGC; ++i)
+         {
+           if (dealloc_pargs[i] == 1)
+             {
+               free(fp.pargs[i]);
+               --has_allocated_pargs;
+             }
+           if (has_allocated_pargs <= 0) break;
+         }
+     }
    return retval;
  }
 
 static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
  {
-   if (user_struct_count >= SLOGAN_LIBFFI_STRUCT_DEFS)
+   if (c_struct_count >= SLOGAN_LIBFFI_STRUCT_DEFS)
      {
-       fprintf(stderr, "user struct definitions limit exceeded - %d", user_struct_count);
+       fprintf(stderr, "user struct definitions limit exceeded - %d", c_struct_count);
        return ___FAL;
      }
    ffi_type s_type;
@@ -465,15 +528,15 @@ static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
        if (it >= SLOGAN_LIBFFI_TYPE_COUNT) /* A user defined struct */
          {
            it -= SLOGAN_LIBFFI_TYPE_COUNT;
-           s_type_elements[i] = &user_structs[it];
+           s_type_elements[i] = &c_structs[it];
          }
        else s_type_elements[i] = FFI_TYPE_MAP[it];
        memtypes = ___CDR(memtypes);
      }
    s_type_elements[memcount] = NULL;
-   user_structs[user_struct_count] = s_type;
-   ++user_struct_count;
-   return ___fix((user_struct_count + SLOGAN_LIBFFI_TYPE_COUNT) - 1);
+   c_structs[c_struct_count] = s_type;
+   ++c_struct_count;
+   return ___fix((c_struct_count + SLOGAN_LIBFFI_TYPE_COUNT) - 1);
  }
  
 c-declare-end
