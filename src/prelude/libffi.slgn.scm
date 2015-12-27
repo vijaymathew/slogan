@@ -137,9 +137,10 @@
    int i;
    size_t out_sz = 0;
    void *old_p = *p;
+   ___SCMOBJ *arrbuf;
    
    ___slogan_obj_to_int(___CAR(obj), &struct_index);
-   obj = ___CDR(obj);
+   arrbuf = ___body(___CDR(obj));
    ft = &c_structs[struct_index];
    s_type_elements = ft->elements;
    elem = s_type_elements[0];
@@ -147,7 +148,7 @@
    i = 0;
    while (elem != NULL)
      {
-       ___SCMOBJ mem = ___CAR(obj);
+       ___SCMOBJ mem = arrbuf[i];
        if (elem == &ffi_type_sint8)
          {
            int8_t tmp;
@@ -328,7 +329,6 @@
            out_sz += s;
            free(ptr);
          }
-       obj = ___CDR(obj);
        elem = s_type_elements[++i];
      }
    *p = old_p;
@@ -345,11 +345,23 @@
    ffi_type **s_type_elements = s_type->elements;
    ffi_type *elem = s_type_elements[0];
    int i = 0;
-   ___SCMOBJ retval = ___NUL;
-   ___SCMOBJ obj;
+   ___SCMOBJ retval;
+   ___SCMOBJ *arrbuf;
+   size_t elems_sz = 0;
 
    while (elem != NULL)
-     {          
+     {
+       ++elems_sz;
+       elem = s_type_elements[++i];
+     }
+   i = 0;
+   elem = s_type_elements[0];
+   retval = ___alloc_array(elems_sz);
+   arrbuf = ___body(retval);
+   
+   while (elem != NULL)
+     {
+       ___SCMOBJ obj;
        if (elem == &ffi_type_sint8
            || elem == &ffi_type_sint16
            || elem == &ffi_type_sint32
@@ -358,7 +370,7 @@
            || elem == &ffi_type_sint)
          {
            int *si = (int *)*p;
-           retval = ___pair(___fix(*si), retval);
+           obj = ___fix(*si);
            if (elem == &ffi_type_sint)
              *p += sizeof(int);
            else if (elem == &ffi_type_sshort)
@@ -381,7 +393,6 @@
          {
            unsigned int *ui = (unsigned int *)*p;
            ___uint_to_slogan_obj(*ui, &obj);
-           retval = ___pair(obj, retval);
            if (elem == &ffi_type_uint)
              *p += sizeof(unsigned int);
            else if (elem == &ffi_type_ushort)
@@ -399,62 +410,55 @@
          {
            long *r = (long *)*p;
            ___long_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(long);
          }
        else if (elem == &ffi_type_ulong)
          {
            unsigned long *r = (unsigned long *)*p;
            ___ulong_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(unsigned long);
          }
        else if (elem == &ffi_type_sint64)
          {
            long long *r = (long long *)*p;
            ___longlong_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(long long);
          }
        else if (elem == &ffi_type_uint64)
          {
            unsigned long long *r = (unsigned long long *)*p;
            ___ulonglong_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(unsigned long long);
          }
        else if (elem == &ffi_type_float)
          {
            float *r = (float *)*p;
            ___float_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(float);
          }
        else if (elem == &ffi_type_double)
          {
            double *r = (double *)*p;
            ___double_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(double);
          }
        else if (elem == &ffi_type_longdouble)
          {
            long double *r = (long double *)*p;
            ___double_to_slogan_obj(*r, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(long double);
          }
        else if (elem == &ffi_type_pointer)
          {
            ___void_pointer_to_slogan_obj(*p, &obj);
-           retval = ___pair(obj, retval);
            *p += sizeof(void *);
          }
        else
          {
            int sindex = c_struct_index(elem);
-           retval = ___pair(c_struct_to_slogan_obj_(p, elem, sindex), retval);
+           obj = c_struct_to_slogan_obj_(p, elem, sindex);
          }
+       arrbuf[i] = obj;
        elem = s_type_elements[++i];
      }
    return ___pair(___fix(struct_index), retval);
@@ -752,13 +756,6 @@ c-declare-end
 
 (c-define-type void-pointer (pointer void))
 
-(define libffi-fncall (c-lambda (void-pointer scheme-object scheme-object scheme-object)
-                                scheme-object
-                                "libffi_fncall"))
-(define libffi-defstruct (c-lambda (scheme-object scheme-object)
-                                   scheme-object
-                                   "libffi_defstruct"))
-
 (define *libffi-types*
   '((uint8 . 0) (int8 . 1)
     (uint16 . 2) (int16 . 3)
@@ -771,6 +768,13 @@ c-declare-end
     (float . 16) (double . 17)
     (longdouble . 18) (charstring . 19)
     (pointer . 20) (void . 21)))
+
+(define libffi-fncall (c-lambda (void-pointer scheme-object scheme-object scheme-object)
+                                scheme-object
+                                "libffi_fncall"))
+(define libffi-defstruct (c-lambda (scheme-object scheme-object)
+                                   scheme-object
+                                   "libffi_defstruct"))
 
 (define (libffitype->int type)
   (let ((t (assq type *libffi-types*)))
