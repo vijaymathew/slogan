@@ -14,11 +14,11 @@ declare ffi "clib.so" [
     charstring person_name[pointer]
     void free_person[pointer]
 
-    struct point[int, int]
+    struct point[int:x, int:y]
     point make_point[int, int]
     void print_point[point]
 
-    struct ball[point, float]
+    struct ball[point:position, float:velocity]
     ball make_ball[point, float]
     void print_ball[ball]
 ];
@@ -44,6 +44,6 @@ free_person(p);
 p = make_point(100, 340);
 print_point(p);
 
-// showln();
-// define v = make_ball(p, 1000.34);
-// print_ball(v);
+showln();
+define v = make_ball(p, 1000.34);
+//print_ball(v);

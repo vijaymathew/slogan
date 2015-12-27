@@ -98,22 +98,6 @@
    fp->dargs_count = fp->sargs_count = fp->pargs_count = 0;
  }
 
- static ___SCMOBJ slogan_list_reverse(___SCMOBJ lst)
- {
-   ___SCMOBJ a = lst;
-   ___SCMOBJ b = ___NUL;
-   while (1)
-     {
-       if (a == ___NUL) break;
-       else
-         {
-           a = ___CDR(a);
-           b = ___pair(___CAR(a), b);
-         }
-     }
-   return b;
- }
- 
  static ffi_type c_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
  static int c_struct_count;
 
@@ -137,10 +121,9 @@
    int i;
    size_t out_sz = 0;
    void *old_p = *p;
-   ___SCMOBJ *arrbuf;
    
    ___slogan_obj_to_int(___CAR(obj), &struct_index);
-   arrbuf = ___body(___CDR(obj));
+   obj = ___CDR(obj);
    ft = &c_structs[struct_index];
    s_type_elements = ft->elements;
    elem = s_type_elements[0];
@@ -148,7 +131,7 @@
    i = 0;
    while (elem != NULL)
      {
-       ___SCMOBJ mem = arrbuf[i];
+       ___SCMOBJ mem = ___CDR(___CAR(obj));
        if (elem == &ffi_type_sint8)
          {
            int8_t tmp;
@@ -329,6 +312,7 @@
            out_sz += s;
            free(ptr);
          }
+       obj = ___CDR(obj);
        elem = s_type_elements[++i];
      }
    *p = old_p;
@@ -346,7 +330,6 @@
    ffi_type *elem = s_type_elements[0];
    int i = 0;
    ___SCMOBJ retval;
-   ___SCMOBJ *arrbuf;
    size_t elems_sz = 0;
 
    while (elem != NULL)
@@ -356,8 +339,7 @@
      }
    i = 0;
    elem = s_type_elements[0];
-   retval = ___alloc_array(elems_sz);
-   arrbuf = ___body(retval);
+   retval = ___NUL;
    
    while (elem != NULL)
      {
@@ -458,7 +440,7 @@
            int sindex = c_struct_index(elem);
            obj = c_struct_to_slogan_obj_(p, elem, sindex);
          }
-       arrbuf[i] = obj;
+       retval = ___pair(obj, retval);
        elem = s_type_elements[++i];
      }
    return ___pair(___fix(struct_index), retval);
@@ -769,6 +751,10 @@ c-declare-end
     (longdouble . 18) (charstring . 19)
     (pointer . 20) (void . 21)))
 
+(define *libffi-types-count* (length *libffi-types*))
+
+(define *c-struct-defs* '())
+
 (define libffi-fncall (c-lambda (void-pointer scheme-object scheme-object scheme-object)
                                 scheme-object
                                 "libffi_fncall"))
@@ -781,11 +767,19 @@ c-declare-end
     (if t (cdr t)
         (error "Invalid c type - " type))))
 
+(define (normalize-c-struct-value result rettype)
+  (if (>= rettype *libffi-types-count*)
+      (let ((sdef (assq rettype *c-struct-defs*)))
+        (if sdef
+            (cons (car result) (map cons (cdr sdef) (reverse (cdr result))))
+            (error "failed to find c-struct definition" rettype)))))
+
 (define (def-c-struct name memtypes)
-  (let ((sid (libffi-defstruct (map libffitype->int memtypes)
+  (let ((sid (libffi-defstruct (map libffitype->int (map car memtypes))
                                (length memtypes))))
     (cond (sid
            (set! *libffi-types* (cons (cons name sid) *libffi-types*))
+           (set! *c-struct-defs* (cons (cons sid (map cdr memtypes)) *c-struct-defs*))
            name)
           (else (error "Failed to define c structure - " name)))))
 
@@ -811,5 +805,9 @@ c-declare-end
     (let ((pnames (mk-c-fn-param-names plen)))
       `(define ,name (let ((fhandle (ffi_fn ,libhandle ,(symbol->string c-fn-name))))
                        (lambda ,pnames
-                         (libffi-fncall fhandle ,(mk-c-fn-args paramtypes pnames)
-                                        ,plen (libffitype->int ',rettype))))))))
+                         (let ((rettype-n (libffitype->int ',rettype)))
+                           (let ((result (libffi-fncall fhandle ,(mk-c-fn-args paramtypes pnames)
+                                                        ,plen rettype-n)))
+                             (if (>= rettype-n *libffi-types-count*)
+                                 (normalize-c-struct-value result rettype-n)
+                                 result)))))))))

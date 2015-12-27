@@ -129,6 +129,9 @@
                   (parser-error tokenizer "Invalid declare type.")))))
       (func-def-stmt tokenizer)))
 
+(define (normalize-c-struct-members memtypes)
+  (map (lambda (m) (cons (cadr m) (caddr m))) memtypes))
+
 (define (c-struct-stmt tokenizer)
   (let ((struct-name (tokenizer 'next)))
     (if (not (symbol? struct-name))
@@ -136,7 +139,7 @@
         (let ((memtypes (expression tokenizer)))
           (if (not (eq? (car memtypes) 'list))
               (parser-error tokenizer "Struct member types must be a list." memtypes)
-              `(def-c-struct ',struct-name ',(cdr memtypes)))))))
+              `(def-c-struct ',struct-name ',(normalize-c-struct-members (cdr memtypes))))))))
 
 (define (c-fn-stmt tokenizer rettype libname)
   (let ((fn-name (tokenizer 'next)))
