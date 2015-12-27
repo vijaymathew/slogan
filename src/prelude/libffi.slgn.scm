@@ -4,10 +4,10 @@
 (c-declare #<<c-declare-end
 
 #include <stdio.h>
-#include <ffi.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <ffi.h>
 #include "../include/slogan.h"
 
  #define SLOGAN_LIBFFI_TYPE_COUNT 22
@@ -488,18 +488,16 @@
        if (it >= SLOGAN_LIBFFI_TYPE_COUNT) /* A user defined struct */
          {
            size_t ssz;
+           char buf[SLOGAN_LIBFFI_STRUCT_SIZE];
+           void *p = (void *)&buf;
            it -= SLOGAN_LIBFFI_TYPE_COUNT;
            fp.args[i] = &c_structs[it];
-           fp.pargs[fp.pargs_count] = calloc(SLOGAN_LIBFFI_STRUCT_SIZE, 1);
-           if (fp.pargs[fp.pargs_count] == NULL)
-             {
-               fprintf(stderr, "failed to allocate memory for user struct object");
-               return ___FAL;
-             }
-           ssz = slogan_obj_to_c_struct(___CDR(arg), &fp.pargs[fp.pargs_count]);
+           fp.pargs[fp.pargs_count] = NULL;
+           ssz = slogan_obj_to_c_struct(___CDR(arg), &p);
            dealloc_pargs[fp.pargs_count] = 1;
            ++has_allocated_pargs;
            fp.pargs[fp.pargs_count] = realloc(fp.pargs[fp.pargs_count], ssz);
+           memcpy(fp.pargs[fp.pargs_count], p, ssz);
            fp.values[i] = fp.pargs[fp.pargs_count++];
          }
        else

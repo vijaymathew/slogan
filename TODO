@@ -2,7 +2,6 @@
 ===========
 
   * fix normalization of nested struct objects.
-  * try to statically allocate insetead of `fp.pargs[fp.pargs_count] = calloc(SLOGAN_LIBFFI_STRUCT_SIZE, 1)` at line-511.
   * Test the `declare ffi` extension - slogan_obj->c_struct conversion,
     test all types in function arguments, return values and struct members.
   * Implement a package manager.
