@@ -21,7 +21,10 @@ declare ffi "clib.so" [
     float employee_salary[pointer]
     void free_employee[pointer]
 
-    // Directly mapping to C structures:
+    // Directly mapping to C structures.
+    // On a 64bit compiler, 12-byte padding is required.
+    struct person[int:age, int:pad1, int:pad2, int:pad3, charstring:name]
+    
     struct point[int:x, int:y]
     point make_point[int, int]
     void print_point[point]
@@ -40,14 +43,22 @@ showln(add_d(10.2 20.3)); // => 30.5
 showln(add_ld(10.2 20.3)); // => 30.5
 showln(add_c(60 65)); // => 125
 
+// Functions that return and take pointers to structs:
 define p = alloc_person("tom", 30);
 showln(person_age(p)); // => 30
-showln(person_name(p)); // => tom
+showln(person_name(p)); // => tomcc
 define copy = clone_person(p);
-showln(person_age(copy));
-showln(person_name(copy));
+showln(person_age(copy)); // => 30
+showln(person_name(copy)); // => tom
 free_person(copy);
 
+// If the struct prototype is declared, a pointer can be converted to
+// a Slogan object that represents that structure.
+define np = pointer_to_c_struct(!person, p);
+showln(c_struct_get(np, !age)); // => 30
+showln(c_struct_get(np, !name)); // => tom
+
+// Nested structures:
 define e = alloc_employee(p, 1000.23);
 showln(person_age(employee_person(e))); // => 30
 showln(person_name(employee_person(e))); // => tom
@@ -55,6 +66,8 @@ showln(employee_salary(e)); // => 1000.22998046875
 free_employee(e);
 free_person(p);
 
+// Functions that return and take structure objects directly,
+// not through pointers:
 p = make_point(100, 340);
 print_point(p);
 showln();
@@ -63,7 +76,7 @@ showln(c_struct_name(p)); // => point
 showln(c_struct_get(p, !x)); // => 100
 showln(c_struct_get(p, !y)); // => 340
 
-// Create a c_struct instance in Slogan:
+// Create a c_struct instance in Slogan and pass it to a C function:
 define pp = c_struct_instance(!point, [10 20]);
 print_point(pp); // => 10:20
 

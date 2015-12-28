@@ -37,7 +37,9 @@
   libffi_type_void
 };
 
- ffi_type *FFI_TYPE_MAP[SLOGAN_LIBFFI_TYPE_COUNT] = {
+ static ffi_type ffi_type_charstr;
+ 
+ static ffi_type *FFI_TYPE_MAP[SLOGAN_LIBFFI_TYPE_COUNT] = {
    &ffi_type_uint8,
      &ffi_type_sint8,
      &ffi_type_uint16,
@@ -57,7 +59,7 @@
      &ffi_type_float,
      &ffi_type_double,  
      &ffi_type_longdouble,
-     &ffi_type_pointer,
+     &ffi_type_charstr,
      &ffi_type_pointer,
      &ffi_type_void
      };
@@ -284,6 +286,14 @@
            *p += sizeof(tmp);
            out_sz += sizeof(tmp);
          }
+       else if (elem == &ffi_type_charstr)
+         {
+           char *s;
+           ___slogan_obj_to_charstring(mem, &s);
+           memcpy(*p, &s, sizeof(s));
+           *p += sizeof(s);
+           out_sz += sizeof(s);
+         }
        else if (elem == &ffi_type_pointer)
          {
            void *tmp;
@@ -353,9 +363,9 @@
          {
            int *si = (int *)*p;
            obj = ___fix(*si);
-           if (elem == &ffi_type_sint)
+           if (elem == &ffi_type_sint) {
              *p += sizeof(int);
-           else if (elem == &ffi_type_sshort)
+           } else if (elem == &ffi_type_sshort)
              *p += sizeof(short);
            else if (elem == &ffi_type_schar)
              *p += sizeof(char);
@@ -429,6 +439,11 @@
            long double *r = (long double *)*p;
            ___double_to_slogan_obj(*r, &obj);
            *p += sizeof(long double);
+         }
+       else if (elem == &ffi_type_charstr)
+         {
+           ___charstring_to_slogan_obj((char *)*p, &obj);
+           *p += sizeof(char *);
          }
        else if (elem == &ffi_type_pointer)
          {
@@ -566,6 +581,9 @@
              }
            else
              {
+               if (fp.args[i] == &ffi_type_charstr)
+                 fp.args[i] = &ffi_type_pointer;
+               
                if (it == libffi_type_charstr)
                  {
                    ___slogan_obj_to_charstring(___CDR(arg), &fp.sargs[fp.sargs_count]);
@@ -695,6 +713,13 @@
    return retval;
  }
 
+static ___SCMOBJ libffi_c_struct_to_slogan_obj(void *sptr, ___SCMOBJ stype)
+ {
+   int t;
+   ___slogan_obj_to_int(stype, &t);
+   return c_struct_to_slogan_obj(&sptr, t);
+ }
+ 
 static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
  {
    if (c_struct_count >= SLOGAN_LIBFFI_STRUCT_DEFS)
@@ -730,6 +755,15 @@ static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
    ++c_struct_count;
    return ___fix((c_struct_count + SLOGAN_LIBFFI_TYPE_COUNT) - 1);
  }
+
+ static ___SCMOBJ libffi_pointer_object_to_string(___SCMOBJ ptr)
+ {
+   ___SCMOBJ obj;
+   char *s;
+   ___slogan_obj_to_void_pointer(ptr, (void **)&s);
+   ___charstring_to_slogan_obj(s, &obj);
+   return obj;
+ }
  
 c-declare-end
 )
@@ -759,6 +793,12 @@ c-declare-end
 (define libffi-defstruct (c-lambda (scheme-object scheme-object)
                                    scheme-object
                                    "libffi_defstruct"))
+(define libffi-c-struct-to-slogan-obj (c-lambda (void-pointer scheme-object)
+                                                scheme-object
+                                                "libffi_c_struct_to_slogan_obj"))
+
+(define libffi-pointer-object-to-string (c-lambda (scheme-object) scheme-object
+                                                  "libffi_pointer_object_to_string"))
 
 (define (libffitype->int type)
   (let ((t (assv type *libffi-types*)))
@@ -843,3 +883,10 @@ c-declare-end
   (let ((sid (libffitype->int name)))
     (let ((mems (c-struct-members sid)))
       (cons (- sid *libffi-types-count*) (map cons mems values)))))
+
+(define (pointer_to_c_struct name ptr)
+  (let ((sid (libffitype->int name)))
+    (normalize-c-struct (libffi-c-struct-to-slogan-obj ptr sid) sid)))
+
+(define (pointer_object_to_string ptr)
+  (libffi-pointer-object-to-string ptr))
