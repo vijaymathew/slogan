@@ -835,8 +835,10 @@ c-declare-end
               (caar types)
               (loop (cdr types)))))))
 
-(define (c_struct_body s) (cdr s))
-
+(define (c_struct_get s memname)
+  (let ((v (assoc memname (cdr s))))
+    (if v (cdr v) #f)))
+        
 (define (c_struct_instance name values)
   (let ((sid (libffitype->int name)))
     (let ((mems (c-struct-members sid)))

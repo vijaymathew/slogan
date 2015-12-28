@@ -60,9 +60,8 @@ print_point(p);
 showln();
 
 showln(c_struct_name(p)); // => point
-define b = c_struct_body(p);
-showln(@(b, !x)); // => 100
-showln(@(b, !y)); // => 340
+showln(c_struct_get(p, !x)); // => 100
+showln(c_struct_get(p, !y)); // => 340
 
 // Create a c_struct instance in Slogan:
 define pp = c_struct_instance(!point, [10 20]);
