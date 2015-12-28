@@ -13,14 +13,18 @@ declare ffi "clib.so" [
     int person_age[pointer]
     charstring person_name[pointer]
     void free_person[pointer]
+    pointer clone_person[pointer]
 
+    // Dealing with nested structures:
+    pointer alloc_employee[pointer, float]
+    pointer employee_person[pointer]
+    float employee_salary[pointer]
+    void free_employee[pointer]
+
+    // Directly mapping to C structures:
     struct point[int:x, int:y]
     point make_point[int, int]
     void print_point[point]
-
-    struct ball[point:position, float:velocity]
-    ball make_ball[point, float]
-    void print_ball[ball]
 ];
 
 showln(add_i(10 20)); // => 30
@@ -39,11 +43,29 @@ showln(add_c(60 65)); // => 125
 define p = alloc_person("tom", 30);
 showln(person_age(p)); // => 30
 showln(person_name(p)); // => tom
+define copy = clone_person(p);
+showln(person_age(copy));
+showln(person_name(copy));
+free_person(copy);
+
+define e = alloc_employee(p, 1000.23);
+showln(person_age(employee_person(e))); // => 30
+showln(person_name(employee_person(e))); // => tom
+showln(employee_salary(e)); // => 1000.22998046875
+free_employee(e);
 free_person(p);
 
 p = make_point(100, 340);
 print_point(p);
-
 showln();
-define v = make_ball(p, 1000.34);
-//print_ball(v);
+
+showln(c_struct_name(p)); // => point
+define b = c_struct_body(p);
+showln(@(b, !x)); // => 100
+showln(@(b, !y)); // => 340
+
+// Create a c_struct instance in Slogan:
+define pp = c_struct_instance(!point, [10 20]);
+print_point(pp); // => 10:20
+
+

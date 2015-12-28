@@ -78,6 +78,37 @@ void free_person(person *p)
   free(p);
 }
 
+person *clone_person(person *p)
+{
+  person *copy = alloc_person(p->name, p->age);
+  return copy;
+}
+
+typedef struct employee {
+  person *p;
+  float salary;
+} employee;
+
+employee *alloc_employee(person *p, float s)
+{
+  employee *e = (employee *)malloc(sizeof(employee));
+  e->p = p;
+  e->salary = s;
+  return e;
+}
+
+person *employee_person(employee *e)
+{
+  return e->p;
+}
+
+float employee_salary(employee *e)
+{
+  return e->salary;
+}
+
+void free_employee(employee *e) { free(e); }
+
 typedef struct point {
   int x;
   int y;
@@ -96,21 +127,3 @@ void print_point(point p)
   fflush(stdout);
 }
 
-typedef struct ball {
-  point position;
-  float velocity;
-} ball;
-
-ball make_ball(point p, float v)
-{
-  ball vec;
-  vec.position = p; vec.velocity = v;
-  return vec;
-}
-
-void print_ball(ball v)
-{
-  print_point(v.position);
-  printf(",%f", v.velocity);
-  fflush(stdout);
-}
