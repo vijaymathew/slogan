@@ -63,10 +63,15 @@
 	 (if (or assemble exe)
 	     (let ((build-cmd 
                     (if exe 
-                        (string-append *gsc-compiler* " " 
-                                       (if cc_options cc_options "")
+                        (string-append *gsc-compiler* " -cc-options " 
+                                       (if cc_options
+                                           (string-append "\"" *default-cc-options* " " cc_options "\"")
+                                           (string-append "\"" *default-cc-options* "\""))
                                        " -o " (if output output (path-strip-extension script-name))
-                                       (if ld_options ld_options "")
+                                       " -ld-options "
+                                       (if ld_options
+                                           (string-append "\"" *default-ld-options* " " ld_options "\"")
+                                           (string-append "\"" *default-ld-options* "\""))
                                        " -exe "
                                        (string-append *prelude-root* "/*.scm ")
                                        out-file-name)

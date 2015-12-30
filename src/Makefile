@@ -1,8 +1,11 @@
-SLOGAN_HOME ?= ../
+SLOGAN_ROOT ?= ../
+
 INSTALL_DIR=/usr/bin
-SLOGAN_ROOT=/usr/slogan
-GSC=${SLOGAN_HOME}/platform/gsc/gsc/gsc
-LIBFFI_PATH=${SLOGAN_HOME}/platform/libffi-3.2.1
+CONFIG_DIR=/etc/slogan
+
+GSC=${SLOGAN_ROOT}/platform/gsc/gsc/gsc
+
+LIBFFI_PATH=${SLOGAN_ROOT}/platform/libffi-3.2.1
 LIBFFI_LIB=${LIBFFI_PATH}/target/usr/local/lib
 LIBFFI_INC=${LIBFFI_PATH}/target/usr/local/lib/libffi-3.2.1/include
 
@@ -11,9 +14,14 @@ all:
 
 install:
 	cp slogan ${INSTALL_DIR}
+	mkdir -p ${CONFIG_DIR}
+	rm -f ${CONFIG_DIR}/root
+	touch ${CONFIG_DIR}/root
+	echo ${SLOGAN_ROOT} > ${CONFIG_DIR}/root
 
 uninstall:
 	rm ${INSTALL_DIR}/slogan
+	rm -rf ${CONFIG_DIR}
 
 clean:
 	rm -f *.o*

@@ -247,9 +247,6 @@
 
 (define flush_output_port force-output)
 
-(define file_exists file-exists?)
-(define delete_file delete-file)
-
 (define (open-process-port-helper path direction arguments environment
                                   directory stdin_redirection
                                   stdout_redirection stderr_redirection

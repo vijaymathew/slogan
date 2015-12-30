@@ -6,10 +6,28 @@
 (define *slgn-extn* ".sn")
 (define *exe-extn* ".run")
 
-(define *slogan-root* (getenv "SLOGAN_ROOT" "."))
+(define *path-sep* "/")
+(define *slogan-config-dir* "/etc/slogan")
+
+(define (read-slogan-root)
+  (let ((root-file (string-append *slogan-config-dir* *path-sep* "root")))
+    (cond ((file-exists? root-file)
+           (call-with-input-file root-file
+             (lambda (p)
+               (read-line p))))
+          (else
+           (getenv "SLOGAN_ROOT" ".")))))
+
+(define *slogan-root* (read-slogan-root))
 (define *prelude-root* (string-append *slogan-root* "/src/prelude"))
 
 (define *gsc-compiler* (string-append *slogan-root* "/platform/gsc/gsc/gsc"))
+
+(define *libffi-path* (string-append *slogan-root* "/platform/libffi-3.2.1"))
+(define *libffi-lib* (string-append *libffi-path* "/target/usr/local/lib"))
+(define *libffi-inc* (string-append *libffi-path* "/target/usr/local/lib/libffi-3.2.1/include"))
+(define *default-cc-options* (string-append "-I" *libffi-inc*))
+(define *default-ld-options* (string-append "-L" *libffi-lib* " -lffi"))
 
 (define *default-eq* eqv?)
 
