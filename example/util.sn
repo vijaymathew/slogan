@@ -18,19 +18,19 @@ function bit_to_n(ba i)
     else 0;
 
 function image_show(img) 
-    let (s = open_string_output_port(), width = image_width(img)) {
-	show(port = s, "P3\n", image_width(img), " ", image_height(img) " 1\n");
+    let (s = open_string_output_stream(), width = image_width(img)) {
+	show(stream = s, "P3\n", image_width(img), " ", image_height(img) " 1\n");
 	let loop (pixels = image_pixels(img), w = width) 
 	    if (is_empty(pixels)) get_output_string(s)
 	    else let (pixel = first(pixels)) {
-		show(port = s, bit_to_n(pixel, 0), " "
+		show(stream = s, bit_to_n(pixel, 0), " "
 		     bit_to_n(pixel, 1), " ",
 		     bit_to_n(pixel, 2), " ");
 		if (is_zero(w - 1)) {
 		    newline(s);
 		    loop(tail(pixels), width)
 		} else {
-		    show(port = s, " ");
+		    show(stream = s, " ");
 		    loop(tail(pixels), dec(w))
 		}
 	    }
