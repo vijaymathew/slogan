@@ -468,9 +468,9 @@
 
 (define (pair-literal tokenizer expr)
   (tokenizer 'next)
-  (let ((stream-pair? (eq? (tokenizer 'peek) '*colon*)))
-    (if stream-pair? (tokenizer 'next))
-    (let ((tail-expr (if stream-pair? 
+  (let ((lpair? (eq? (tokenizer 'peek) '*colon*)))
+    (if lpair? (tokenizer 'next))
+    (let ((tail-expr (if lpair? 
 			 `(delay ,(expression tokenizer))
 			 (expression tokenizer))))
       (if (tokenizer 'quote-mode?)

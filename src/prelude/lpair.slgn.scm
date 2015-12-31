@@ -1,23 +1,23 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-;; A stream is a pair created by `(cons a (delay b))`.
+;; Lazy-pairs.
 
-(define-macro (stream-cons a b) `(cons ,a (delay ,b)))
+(define-macro (lpair-cons a b) `(cons ,a (delay ,b)))
 
 ;; Functions for working with sequences.
-;; A sequence can be either a normal list or a stream.
+;; A sequence can be either a normal list or a lazy-pair.
 
-(define (first stream) (head stream))
-(define (rest stream) (force (tail stream)))
+(define (first lpair) (head lpair))
+(define (rest lpair) (force (tail lpair)))
 
-(define (is_stream obj)
+(define (is_lpair obj)
   (and (pair? obj)
        (is_promise (cdr obj))))
 
-(define (stream-at i stream)
+(define (lpair-at i lpair)
   (if (= i 0)
-      (first stream)
-      (stream-at (- i 1) (rest stream))))
+      (first lpair)
+      (lpair-at (- i 1) (rest lpair))))
 
 (define (nth n seq) 
   (if (<= n 0)
@@ -40,11 +40,11 @@
 
 (define old-map map)
 
-(define (stream-map f ls more)
+(define (lpair-map f ls more)
   (if (null? more)
-      (stream-cons (f (first ls)) (stream-map f (rest ls) '()))
-      (stream-cons (apply f (first ls) (old-map first more))
-                   (stream-map f (rest ls) (old-map rest more)))))
+      (lpair-cons (f (first ls)) (lpair-map f (rest ls) '()))
+      (lpair-cons (apply f (first ls) (old-map first more))
+                   (lpair-map f (rest ls) (old-map rest more)))))
 
 (define (generic-map f ls more)
   (if (null? more)
@@ -62,37 +62,37 @@
               (cons a b))))))
 
 (define (map f ls . more)
-  (if (is_stream ls)
-      (stream-map f ls more)
+  (if (is_lpair ls)
+      (lpair-map f ls more)
       (generic-map f ls more)))
 
 (define (generic-for-each f ls . more)
-  (let ((stream? (is_stream ls)))
-    (let ((car (if stream? first car))
-	  (cdr (if stream? rest cdr)))
+  (let ((lpair? (is_lpair ls)))
+    (let ((car (if lpair? first car))
+	  (cdr (if lpair? rest cdr)))
       (do ((ls ls (cdr ls)) (more more (map cdr more)))
 	  ((null? ls))
 	(apply f (car ls) (map car more))))))
 
 (define for_each generic-for-each)
 
-(define (stream-filter fn stream #!key drill)
-  (cond ((null? stream) 
+(define (lpair-filter fn lpair #!key drill)
+  (cond ((null? lpair) 
 	 '())
-	((and (is_stream (first stream)) drill)
-	 (stream-cons
-	  (stream-filter fn (first stream) drill: drill)
-	  (stream-filter fn (rest stream) drill: drill)))
-	((fn (first stream))
-	 (stream-cons 
-	  (first stream)
-	  (stream-filter fn (rest stream) drill: drill)))
+	((and (is_lpair (first lpair)) drill)
+	 (lpair-cons
+	  (lpair-filter fn (first lpair) drill: drill)
+	  (lpair-filter fn (rest lpair) drill: drill)))
+	((fn (first lpair))
+	 (lpair-cons 
+	  (first lpair)
+	  (lpair-filter fn (rest lpair) drill: drill)))
 	(else
-	 (stream-filter fn (rest stream) drill: drill))))      
+	 (lpair-filter fn (rest lpair) drill: drill))))      
 
 (define (filter fn ls #!key drill)
-  (if (is_stream ls)
-      (stream-filter fn ls drill: drill)
+  (if (is_lpair ls)
+      (lpair-filter fn ls drill: drill)
       (let loop ((ls ls)
 		 (result '()))
 	(cond ((null? ls)
@@ -104,21 +104,21 @@
 	      (else
 	       (loop (cdr ls) result))))))
 
-(define (stream-accumulate fn initial stream)
-  (if (null? stream)
+(define (lpair-accumulate fn initial lpair)
+  (if (null? lpair)
       '()
-      (let ((r (fn initial (first stream))))
-        (stream-cons r (stream-accumulate fn r (rest stream))))))
+      (let ((r (fn initial (first lpair))))
+        (lpair-cons r (lpair-accumulate fn r (rest lpair))))))
 
 (define (accumulate fn initial seq)
-  (if (is_stream seq)
-      (stream-accumulate fn initial seq)
+  (if (is_lpair seq)
+      (lpair-accumulate fn initial seq)
       (fold_right fn initial seq)))
 
 (define (enumerate start end #!optional (cmpr <=) (next inc))
     (if (cmpr start end)
         (let ((elem (next start)))
-          (stream-cons start (enumerate elem end cmpr next)))
+          (lpair-cons start (enumerate elem end cmpr next)))
         '()))
 
 (define (drop n lst)
