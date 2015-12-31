@@ -863,7 +863,6 @@
     (else 'bit_array)))
 
 (define (array-literal tokenizer)
-  (tokenizer 'next)
   (let ((prefix (tokenizer 'peek)))
     (if (byte-array-prefix? prefix tokenizer)
         (tokenizer 'next)

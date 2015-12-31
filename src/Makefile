@@ -14,6 +14,7 @@ all:
 
 install:
 	cp slogan ${INSTALL_DIR}
+	mkdir -p /usr/include/slogan
 	mkdir -p ${CONFIG_DIR}
 	rm -f ${CONFIG_DIR}/root
 	touch ${CONFIG_DIR}/root

@@ -455,10 +455,14 @@
            int sindex = c_struct_index(elem);
            obj = c_struct_to_slogan_obj_(p, elem, sindex);
          }
+       ___release_scmobj(obj);
        retval = ___pair(obj, retval);
+       ___release_scmobj(retval);
        elem = s_type_elements[++i];
      }
-   return ___pair(___fix(struct_index), retval);
+   retval = ___pair(___fix(struct_index), retval);
+   ___release_scmobj(retval);
+   return retval;
  }
  
  static ___SCMOBJ c_struct_to_slogan_obj(void **p, int ret_type)
@@ -710,6 +714,7 @@
            if (has_allocated_pargs <= 0) break;
          }
      }
+   ___release_scmobj(retval);
    return retval;
  }
 
@@ -762,6 +767,7 @@ static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
    char *s;
    ___slogan_obj_to_void_pointer(ptr, (void **)&s);
    ___charstring_to_slogan_obj(s, &obj);
+   ___release_scmobj(obj);
    return obj;
  }
  
