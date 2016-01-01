@@ -308,13 +308,13 @@
            void *ptr = malloc(SLOGAN_LIBFFI_STRUCT_SIZE);
            if (ptr == NULL)
              {
-               fprintf(stderr, "failed to allocate memory for nested struct.");
+               fprintf(stderr, "failed to allocate memory for nested struct.\n");
                exit(1);
              }
            s = slogan_obj_to_c_struct(mem, &ptr);
            if (s > SLOGAN_LIBFFI_STRUCT_SIZE)
              {
-               fprintf(stderr, "nested struct too large, redefine SLOGAN_LIBFFI_STRUCT_SIZE");
+               fprintf(stderr, "nested struct too large, redefine SLOGAN_LIBFFI_STRUCT_SIZE.\n");
                exit(1);
              }
            memcpy(*p, ptr, s);
@@ -328,7 +328,7 @@
    *p = old_p;
    if (out_sz > SLOGAN_LIBFFI_STRUCT_SIZE)
      {
-       fprintf(stderr, "struct too large, redefine SLOGAN_LIBFFI_STRUCT_SIZE");
+       fprintf(stderr, "struct too large, redefine SLOGAN_LIBFFI_STRUCT_SIZE.\n");
        exit(1);
      }
    return out_sz;
@@ -443,11 +443,13 @@
        else if (elem == &ffi_type_charstr)
          {
            ___charstring_to_slogan_obj((char *)*p, &obj);
+           ___release_scmobj(obj);
            *p += sizeof(char *);
          }
        else if (elem == &ffi_type_pointer)
          {
            ___void_pointer_to_slogan_obj(*p, &obj);
+           ___release_scmobj(obj);
            *p += sizeof(void *);
          }
        else
@@ -455,13 +457,10 @@
            int sindex = c_struct_index(elem);
            obj = c_struct_to_slogan_obj_(p, elem, sindex);
          }
-       ___release_scmobj(obj);
        retval = ___pair(obj, retval);
-       ___release_scmobj(retval);
        elem = s_type_elements[++i];
      }
    retval = ___pair(___fix(struct_index), retval);
-   ___release_scmobj(retval);
    return retval;
  }
  
@@ -487,6 +486,7 @@
    int ret_type;
    ffi_type *ret_ffi_type;
    int i;
+   int ffi_ret;
 
    ___SCMOBJ retval = ___TRU;
    int dealloc_pargs[SLOGAN_LIBFFI_ARGC];
@@ -587,7 +587,6 @@
              {
                if (fp.args[i] == &ffi_type_charstr)
                  fp.args[i] = &ffi_type_pointer;
-               
                if (it == libffi_type_charstr)
                  {
                    ___slogan_obj_to_charstring(___CDR(arg), &fp.sargs[fp.sargs_count]);
@@ -608,8 +607,11 @@
      ret_ffi_type = &c_structs[ret_type - SLOGAN_LIBFFI_TYPE_COUNT];
    else ret_ffi_type = FFI_TYPE_MAP[ret_type];
 
-   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, fp.argc,
-                    ret_ffi_type, fp.args) == FFI_OK)
+   if (ret_ffi_type == &ffi_type_charstr)
+     ret_ffi_type = &ffi_type_pointer;
+   
+   if ((ffi_ret = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, fp.argc,
+                               ret_ffi_type, fp.args)) == FFI_OK)
      {
        if (ret_type <= libffi_type_sint)
          {
@@ -678,6 +680,7 @@
            char *rc;
            ffi_call(&cif, fn, &rc, fp.values);
            ___charstring_to_slogan_obj(rc, &retval);
+           ___release_scmobj(retval);
          }
        else if (ret_type == libffi_type_void)
          {
@@ -698,10 +701,20 @@
              {
                ffi_call(&cif, fn, &rc, fp.values);
                ___void_pointer_to_slogan_obj(rc, &retval);
+               ___release_scmobj(retval);
              }
          }
      }
-   else retval = ___FAL;
+   else
+     {
+       retval = ___FAL;
+       switch (ffi_ret)
+         {
+         case FFI_BAD_TYPEDEF: fprintf(stderr, "ffi_prep_cif - bad typedef\n"); break;
+         case FFI_BAD_ABI: fprintf(stderr, "ffi_prep_cif - bad ABI\n"); break;
+         default: fprintf(stderr, "ffi_prep_cif - error - %d\n", ffi_ret); break;
+         }
+     }
    if (has_allocated_pargs > 0)
      {
        for (i = 0; i < SLOGAN_LIBFFI_ARGC; ++i)
@@ -714,7 +727,6 @@
            if (has_allocated_pargs <= 0) break;
          }
      }
-   ___release_scmobj(retval);
    return retval;
  }
 
@@ -729,7 +741,7 @@ static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
  {
    if (c_struct_count >= SLOGAN_LIBFFI_STRUCT_DEFS)
      {
-       fprintf(stderr, "user struct definitions limit exceeded - %d", c_struct_count);
+       fprintf(stderr, "user struct definitions limit exceeded - %d\n", c_struct_count);
        return ___FAL;
      }
    ffi_type s_type;

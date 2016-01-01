@@ -52,6 +52,7 @@ static char *message = "hi from C";
 char *say_hello(char *msg)
 {
   printf("Slogan says: %s\n", msg);
+  fflush(stdout);
   return message;
 }
 
