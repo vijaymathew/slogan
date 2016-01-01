@@ -11,6 +11,12 @@
 #define ___int ___INT
 #define ___fix ___FIX
 
+#define ___SLOGAN_OBJ_to_CHAR ___SCMOBJ_to_CHAR
+#define ___slogan_obj_to_char(s, i) ((___SCMOBJ_to_CHAR (s, i, 0)))
+
+#define ___SLOGAN_OBJ_to_UCHAR ___SCMOBJ_to_UCHAR
+#define ___slogan_obj_to_uchar(s, i) ((___SCMOBJ_to_UCHAR (s, i, 0)))
+
 #define ___SLOGAN_OBJ_to_INT ___SCMOBJ_to_INT
 #define ___slogan_obj_to_int(s, i) ((___SCMOBJ_to_INT (s, i, 0)))
 
@@ -47,6 +53,12 @@
 #define ___NONNULLCHARSTRING_to_SLOGAN_OBJ ___NONNULLCHARSTRING_to_SCMOBJ
 #define ___nonnullcharstring_to_slogan_obj(c, s) ((___NONNULLCHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)))
 
+#define ___CHAR_to_SLOGAN_OBJ ___CHAR_to_SCMOBJ
+#define ___char_to_slogan_obj(c, s) ((___CHAR_to_SCMOBJ (___PSTATE, c, s, 0)))
+
+#define ___UCHAR_to_SLOGAN_OBJ ___UCHAR_to_SCMOBJ
+#define ___uchar_to_slogan_obj(c, s) ((___UCHAR_to_SCMOBJ (___PSTATE, c, s, 0)))
+
 #define ___UINT_to_SLOGAN_OBJ ___UINT_to_SCMOBJ
 #define ___uint_to_slogan_obj(c, s) ((___UINT_to_SCMOBJ (___PSTATE, c, s, 0)))
 
@@ -81,6 +93,66 @@
 #define ___is_empty ___NULLP
 
 #define ___body ___BODY
+
+#define ___array_length(x) ___int( ___VECTORLENGTH(x))
+#define ___array_at ___VECTORREF 
+#define ___array_set ___VECTORSET
+#define ___array_shrink ___VECTORSHRINK 
+
+#define ___s8array_length(x) ___int(___S8VECTORLENGTH(x))
+#define ___s8array_at ___S8VECTORREF 
+#define ___s8array_set ___S8VECTORSET 
+#define ___s8array_shrink ___S8VECTORSHRINK 
+
+#define ___u8array_length(x) ___int(___U8VECTORLENGTH(x))
+#define ___u8array_at ___U8VECTORREF 
+#define ___u8array_set ___U8VECTORSET
+#define ___u8array_shrink ___U8VECTORSHRINK
+
+#define ___s16array_length(x) ___int(___S16VECTORLENGTH(x))
+#define ___s16array_at ___S16VECTORREF
+#define ___s16array_set ___S16VECTORSET
+#define ___s16array_shrink ___S16VECTORSHRINK
+
+#define ___u16array_length(x) ___int(___U16VECTORLENGTH(x))
+#define ___u16array_at ___U16VECTORREF
+#define ___u16array_set ___U16VECTORSET
+#define ___u16array_shrink ___U16VECTORSHRINK
+
+#define ___s32array_length(x) ___int(___S32VECTORLENGTH(x))
+#define ___s32array_at ___S32VECTORREF
+#define ___s32array_set ___S32VECTORSET
+#define ___s32array_shrink ___S32VECTORSHRINK
+
+#define ___u32array_length(x) ___int(___U32VECTORLENGTH(x))
+#define ___u32array_at ___U32VECTORREF
+#define ___u32array_set ___U32VECTORSET
+#define ___u32array_shrink ___U32VECTORSHRINK
+
+#define ___s64array_length(x) ___int(___S64VECTORLENGTH(x))
+#define ___s64array_at ___S64VECTORREF
+#define ___s64array_set ___S64VECTORSET
+#define ___s64array_shrink ___S64VECTORSHRINK
+
+#define ___u64array_length(x) ___int(___U64VECTORLENGTH(x))
+#define ___u64array_at ___U64VECTORREF
+#define ___u64array_set ___U64VECTORSET
+#define ___u64array_shrink ___U64VECTORSHRINK
+
+#define ___f32array_length(x) ___int(___F32VECTORLENGTH(x))
+#define ___f32array_at ___F32VECTORREF
+#define ___f32array_set ___F32VECTORSET
+#define ___f32array_shrink ___F32VECTORSHRINK
+
+#define ___f64array_length(x) ___int(___F64VECTORLENGTH(x))
+#define ___f64array_at ___F64VECTORREF
+#define ___f64array_set ___F64VECTORSET
+#define ___f64array_shrink ___F64VECTORSHRINK
+
+#define ___string_length(x) ___int(___STRINGLENGTH(x))
+#define ___string_at ___STRINGREF
+#define ___string_set ___STRINGSET
+#define ___string_shrink ___STRINGSHRINK
 
 #define ___release_slogan_obj ___release_scmobj
 
