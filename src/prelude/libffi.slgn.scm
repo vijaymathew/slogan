@@ -95,13 +95,18 @@
 
  static void fpinit(struct fncall_param *fp)
  {
-   fp->argc = fp->iargs_count = fp->llargs_count = 0;
-   fp->largs_count = fp->fargs_count = fp->ldargs_count = 0;
+   int i;
+   fp->argc = fp->iargs_count = fp->uiargs_count = fp->llargs_count = 0;
+   fp->largs_count = fp->ulargs_count = fp->fargs_count = fp->ldargs_count = 0;
    fp->dargs_count = fp->sargs_count = fp->pargs_count = 0;
+   for (i = 0; i < SLOGAN_LIBFFI_ARGC; ++i)
+     fp->args[i] = NULL;
+   for (i = 0; i < SLOGAN_LIBFFI_ARGC; ++i)
+     fp->values[i] = NULL;
  }
 
  static ffi_type c_structs[SLOGAN_LIBFFI_STRUCT_DEFS];
- static int c_struct_count;
+ static int c_struct_count = 0;
 
  static int c_struct_index(ffi_type *ft)
  {
@@ -443,13 +448,11 @@
        else if (elem == &ffi_type_charstr)
          {
            ___charstring_to_slogan_obj((char *)*p, &obj);
-           ___release_scmobj(obj);
            *p += sizeof(char *);
          }
        else if (elem == &ffi_type_pointer)
          {
            ___void_pointer_to_slogan_obj(*p, &obj);
-           ___release_scmobj(obj);
            *p += sizeof(void *);
          }
        else
@@ -457,6 +460,10 @@
            int sindex = c_struct_index(elem);
            obj = c_struct_to_slogan_obj_(p, elem, sindex);
          }
+       
+       if (obj != ___NUL)
+         ___release_scmobj(obj);
+
        retval = ___pair(obj, retval);
        elem = s_type_elements[++i];
      }
@@ -680,7 +687,6 @@
            char *rc;
            ffi_call(&cif, fn, &rc, fp.values);
            ___charstring_to_slogan_obj(rc, &retval);
-           ___release_scmobj(retval);
          }
        else if (ret_type == libffi_type_void)
          {
@@ -701,9 +707,10 @@
              {
                ffi_call(&cif, fn, &rc, fp.values);
                ___void_pointer_to_slogan_obj(rc, &retval);
-               ___release_scmobj(retval);
              }
          }
+       if (retval != ___NUL)
+         ___release_scmobj(retval);
      }
    else
      {
