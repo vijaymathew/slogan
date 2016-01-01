@@ -1,4 +1,4 @@
-;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
+;; Copyright (C) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Linkage to libffi to provide a higher level of abstraction to C library calls.
 
 (c-declare #<<c-declare-end
@@ -294,8 +294,11 @@
        else if (elem == &ffi_type_charstr)
          {
            char *s;
+           size_t len;
+           
            ___slogan_obj_to_charstring(mem, &s);
-           memcpy(*p, &s, sizeof(s));
+           len = strlen(s);
+           memcpy(*p, &s, len);
            *p += sizeof(s);
            out_sz += sizeof(s);
          }
@@ -482,7 +485,7 @@
  {
    char c[SLOGAN_LIBFFI_STRUCT_SIZE];
  };
- 
+
  static  ___SCMOBJ libffi_fncall(void *fn,
                                  ___SCMOBJ arg_types_vals,
                                  ___SCMOBJ i_argc,
@@ -501,7 +504,7 @@
    
    for (i = 0; i < SLOGAN_LIBFFI_ARGC; ++i)
      dealloc_pargs[i] = 0;
-   
+
    fpinit(&fp);
    ___slogan_obj_to_int(i_argc, &fp.argc);
 

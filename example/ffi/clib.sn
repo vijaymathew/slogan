@@ -33,7 +33,6 @@ declare ffi clib [
 ];
 
 say_hello("hello from slogan!");
-
 showln(add_i(10 20)); // => 30
 showln(add_i(10, -20)); // => -10
 showln(add_ui(10 20)); // => 30
@@ -80,9 +79,8 @@ showln(c_struct_name(p)); // => point
 showln(c_struct_get(p, !x)); // => 100
 showln(c_struct_get(p, !y)); // => 340
 
-// // Create a c_struct instance in Slogan and pass it to a C function:
+// Create a c_struct instance in Slogan and pass it to a C function:
 define pp = c_struct_instance(!point, [10 20]);
 print_point(pp); // => 10:20
-
 
 ffi_close(clib);
