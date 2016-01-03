@@ -1,0 +1,70 @@
+;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
+;; A package system for Slogan.
+
+(define (build-package pkg-path)
+  (let* ((currdir (current-directory))
+         (build-cmd (string-append "cd " pkg-path "; ./build; cd " currdir)))
+    (let ((r (shell-command build-cmd)))
+      (display build-cmd) (newline) (display r) (newline)
+      (if (not (zero? r))
+          (error "build-package - build failed -" build-cmd ", " r)
+          #t))))
+
+(define (install-git-package pkg-name pkg-url pkg-path)
+  (let ((cmd (string-append "git clone " pkg-url pkg-path)))
+    (let ((r (shell-command cmd)))
+      (if (not (zero? r))
+          (error "install-git-package - clone failed -" cmd ", " r)
+          (build-package pkg-path))
+      pkg-name)))
+
+(define (copy-dir src dest)
+  (let ((cmd (string-append "cp -R " src " " dest)))
+    (let ((r (shell-command cmd)))
+      (if (not (zero? r))
+          (error "copy-dir - failed - " cmd ", " r)
+          #t))))
+
+(define (install-local-package pkg-name pkg-url pkg-path)
+  (if (file-exists? pkg-url)
+      (begin (copy-dir pkg-url pkg-path)
+             (build-package pkg-path))
+      (error "install-local-package - file not found - " pkg-url))
+  pkg-name)
+
+(define (load_package pkg-name compile-mode)
+  (let ((pkg-init-path (string-append *pkg-root* pkg-name "/init")))
+    (if (file-exists? (string-append pkg-init-path *slgn-extn*))
+        (if (compile pkg-init-path assemble: compile-mode)
+            (if compile-mode
+                (load pkg-init-path)
+                (load (string-append pkg-init-path *scm-extn*)))
+            #f)
+        (error "load_package - init file not found - " (string-append pkg-init-path *slgn-extn*)))
+    pkg-name))
+
+(define (install_package pkg-name pkg-type pkg-url #!optional force)
+  (if (not (file-exists? *pkg-root*))
+      (create-directory *pkg-root*))
+  (let* ((pkg-path (string-append *pkg-root* pkg-name))
+         (pkg-path-old (string-append pkg-path ".bck")))
+    (if (file-exists? pkg-path)
+        (if (not force)
+            (error "package already installed - " pkg-path)
+            (rename-file pkg-path pkg-path-old)))
+    (case pkg-type
+      ((git) (install-git-package pkg-name pkg-url pkg-path))
+      ((local) (install-local-package pkg-name pkg-url pkg-path))
+      (else (error "install_package - type not supported -" pkg-type)))
+    (if (file-exists? pkg-path-old)
+        (delete-directory pkg-path-old))
+    (load_package pkg-name #f)))
+
+(define (uninstall_package pkg-name)
+  (let ((pkg-path (string-append *pkg-root* pkg-name)))
+    (if (file-exists? pkg-path)
+        (if (zero? (shell-command (string-append "rm -rf " pkg-path)))
+            pkg-name
+            #f)
+        #f)))

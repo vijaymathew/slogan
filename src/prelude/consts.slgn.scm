@@ -20,6 +20,9 @@
 
 (define *slogan-root* (read-slogan-root))
 (define *prelude-root* (string-append *slogan-root* "/src/prelude"))
+(define *pkg-root* (string-append *slogan-root* "/packages/"))
+
+(define (slogan_root) *slogan-root*)
 
 (define *gsc-compiler* (string-append *slogan-root* "/platform/gsc/gsc/gsc"))
 
