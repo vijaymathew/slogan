@@ -35,6 +35,8 @@
   (println "     -e            Execute a script.")
   (println "     -c            Compile a script into a dynamically loadable object file.")
   (println "     -x            Compile a script into an executable binary.")
+  (println "     -i            Install a package.")
+  (println "     -u            Uninstall a package.")
   (println "     -ld-options   Additional options that will be passed to the system linker.")
   (println "     -cc-options   Additional options that will be passed to the system C compiler.") 
   (println "     -r            Launch REPL after performing other options.")
@@ -57,6 +59,15 @@
         (compile scriptname assemble: #t ld_options: ld-options
                  cc_options: cc-options))))
 
+(define (install-pkg args)
+  (if (not (= (length args) 3))
+      (error "-i \"package-name,type,location\"")
+      (install_package (nth 0 args) (string->symbol (nth 1 args))
+                       (nth 2 args))))
+
+(define (uninstall-pkg name)
+  (uninstall_package name))
+
 (define (command-line-has-options? args)
   (memp (lambda (s) (char=? (string-ref s 0) #\-)) args))
 
@@ -70,6 +81,10 @@
       (execute-script (get-arg-val "-e" args)))
   (if (has-arg? "-c" args)
       (compile-script (get-arg-val "-c" args) args))
+  (if (has-arg? "-i" args)
+      (install-pkg (string_split (get-arg-val "-i" args) #\,) args))
+  (if (has-arg? "-u" args)
+      (uninstall-pkg (get-arg-val "-u" args) args))
   (if (has-arg? "-x" args)
       (compile-script (get-arg-val "-x" args) args #t))
   (if (command-line-has-options? args)
