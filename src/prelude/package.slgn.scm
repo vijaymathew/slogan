@@ -43,6 +43,12 @@
         (error "load_package - init file not found - " (string-append pkg-init-path *slgn-extn*)))
     pkg-name))
 
+(define (force-rm-dir path)
+  (let ((r (shell-command (string-append "rm -rf " path))))
+    (if (zero? r)
+        #t
+        (error "failed to remove directory - " path ", " r))))
+
 (define (install_package pkg-name pkg-type pkg-url #!optional force)
   (if (not (file-exists? *pkg-root*))
       (create-directory *pkg-root*))
@@ -57,13 +63,13 @@
       ((local) (install-local-package pkg-name pkg-url pkg-path))
       (else (error "install_package - type not supported -" pkg-type)))
     (if (file-exists? pkg-path-old)
-        (delete-directory pkg-path-old))
+        (force-rm-dir pkg-path-old))
     (load_package pkg-name #f)))
 
 (define (uninstall_package pkg-name)
   (let ((pkg-path (string-append *pkg-root* pkg-name)))
     (if (file-exists? pkg-path)
-        (if (zero? (shell-command (string-append "rm -rf " pkg-path)))
+        (if (force-rm-dir pkg-path)
             pkg-name
             #f)
         #f)))
