@@ -1,7 +1,9 @@
 02-Jan-2016
 ===========
 
-  * Update all ffi_call_*** functions to take this function handle instead of function name.
   * Test the `declare ffi` extension - slogan_obj->c_struct conversion,
     test all types in function arguments, return values and struct members.
-  * Test the package manager for git packages.
+  * Document the package manager facilities - install/uninstall_package, load "pkg://name".
+  * Provide package-management and compilation as command-line args to the slogan command.
+  * A package build script should compile all .sn files to object-code. load-package should just load "init".
+  * Re-implement streams - in line of plan9?

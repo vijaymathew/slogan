@@ -5,6 +5,7 @@
 (define *scm-extn* ".scm")
 (define *slgn-extn* ".sn")
 (define *exe-extn* ".run")
+(define *obj-extn* ".o1")
 
 (define *path-sep* "/")
 (define *slogan-config-dir* "/etc/slogan")

@@ -11,7 +11,7 @@
           #t))))
 
 (define (install-git-package pkg-name pkg-url pkg-path)
-  (let ((cmd (string-append "git clone " pkg-url pkg-path)))
+  (let ((cmd (string-append "git clone " pkg-url " " pkg-path)))
     (let ((r (shell-command cmd)))
       (if (not (zero? r))
           (error "install-git-package - clone failed -" cmd ", " r)
@@ -32,16 +32,18 @@
       (error "install-local-package - file not found - " pkg-url))
   pkg-name)
 
-(define (load_package pkg-name compile-mode)
+(define (load-package pkg-name compile-mode)
   (let ((pkg-init-path (string-append *pkg-root* pkg-name "/init")))
-    (if (file-exists? (string-append pkg-init-path *slgn-extn*))
-        (if (compile pkg-init-path assemble: compile-mode)
-            (if compile-mode
-                (load pkg-init-path)
-                (load (string-append pkg-init-path *scm-extn*)))
-            #f)
-        (error "load_package - init file not found - " (string-append pkg-init-path *slgn-extn*)))
-    pkg-name))
+    (if (file-exists? (string-append pkg-init-path *obj-extn*))
+        (load pkg-init-path)
+        (if (file-exists? (string-append pkg-init-path *slgn-extn*))
+            (if (compile pkg-init-path assemble: compile-mode)
+                (if compile-mode
+                    (load pkg-init-path)
+                    (load (string-append pkg-init-path *scm-extn*)))
+                (error "load-package - failed to compile " (string-append pkg-init-path *slgn-extn*)))
+            (load pkg-init-path))))
+  pkg-name)
 
 (define (force-rm-dir path)
   (let ((r (shell-command (string-append "rm -rf " path))))
@@ -64,7 +66,7 @@
       (else (error "install_package - type not supported -" pkg-type)))
     (if (file-exists? pkg-path-old)
         (force-rm-dir pkg-path-old))
-    (load_package pkg-name #f)))
+    (load-package pkg-name #f)))
 
 (define (uninstall_package pkg-name)
   (let ((pkg-path (string-append *pkg-root* pkg-name)))
@@ -73,3 +75,11 @@
             pkg-name
             #f)
         #f)))
+
+(define (package-load? load-str)
+  (if (string? load-str)
+      (string-starts-with? load-str "pkg://")
+      #f))
+
+(define (package-name-from-load load-str)
+  (substring load-str 6 (string-length load-str)))
