@@ -6,7 +6,6 @@
   (let* ((currdir (current-directory))
          (build-cmd (string-append "cd " pkg-path "; ./build; cd " currdir)))
     (let ((r (shell-command build-cmd)))
-      (display build-cmd) (newline) (display r) (newline)
       (if (not (zero? r))
           (error "build-package - build failed -" build-cmd ", " r)
           #t))))
