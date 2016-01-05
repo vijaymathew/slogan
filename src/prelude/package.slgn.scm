@@ -18,6 +18,44 @@
           (build-package pkg-path))
       pkg-name)))
 
+(define (get-file-name-from-pkg-url url)
+  (let loop ((paths (string_split url #\/)))
+    (if (null? (cdr paths))
+        (car paths)
+        (loop (cdr paths)))))
+
+(define *untar-cmds* '((".gz" . "tar xzf") (".bz2" . "tar xjf") (".zip" . "unzip")))
+
+(define (untar-cmd file-name)
+  (let ((extn (path-extension file-name)))
+    (let ((cmd (assoc extn *untar-cmds*)))
+      (if cmd
+          (let ((in-file (string-append *pkg-root* file-name)))
+            (cons (string-append (cdr cmd) " " in-file
+                                 (if (string=? extn ".zip")
+                                     " -d " " -C ")
+                                 *pkg-root*)
+                  in-file))
+          (error "cannot decompress package - " file-name)))))
+
+(define (untar&build-package pkg-name pkg-url pkg-path)
+  (let ((file-name (get-file-name-from-pkg-url pkg-url)))
+    (let ((cmd&infile (untar-cmd file-name)))
+      (let ((r (shell-command (car cmd&infile))))
+        (delete_file (cdr cmd&infile))
+        (if (zero? r)
+            (build-package pkg-path)
+            (error "failed to decompress package - " (car cmd&infile) ", " r)))))
+  pkg-name)
+          
+(define (install-remote-package pkg-name pkg-url pkg-path)
+  (let ((cmd (string-append "curl " pkg-url " -o " (string-append *pkg-root* (get-file-name-from-pkg-url pkg-url)))))
+    (let ((r (shell-command cmd)))
+      (if (not (zero? r))
+          (error "install-remote-package failed -" cmd ", " r)
+          (untar&build-package pkg-name pkg-url pkg-path))))
+  pkg-name)
+
 (define (copy-dir src dest)
   (let ((cmd (string-append "cp -R " src " " dest)))
     (let ((r (shell-command cmd)))
@@ -27,23 +65,18 @@
 
 (define (install-local-package pkg-name pkg-url pkg-path)
   (if (file-exists? pkg-url)
-      (begin (copy-dir pkg-url pkg-path)
-             (build-package pkg-path))
+      (if (string=? "" (path-extension pkg-url))
+          (begin (copy-dir pkg-url pkg-path)
+                 (build-package pkg-path))
+          (begin (copy-file pkg-url (string-append *pkg-root* (get-file-name-from-pkg-url pkg-url)))
+                 (untar&build-package pkg-name pkg-url pkg-path)))
       (error "install-local-package - file not found - " pkg-url))
   pkg-name)
 
 (define (load-package pkg-name compile-mode)
   (let ((pkg-init-path (string-append *pkg-root* pkg-name "/init")))
-    (if (file-exists? (string-append pkg-init-path *obj-extn*))
-        (load pkg-init-path)
-        (if (file-exists? (string-append pkg-init-path *slgn-extn*))
-            (if (compile pkg-init-path assemble: compile-mode)
-                (if compile-mode
-                    (load pkg-init-path)
-                    (load (string-append pkg-init-path *scm-extn*)))
-                (error "load-package - failed to compile " (string-append pkg-init-path *slgn-extn*)))
-            (load pkg-init-path))))
-  pkg-name)
+    (load pkg-init-path)
+    pkg-name))
 
 (define (force-rm-dir path)
   (let ((r (shell-command (string-append "rm -rf " path))))
@@ -62,6 +95,7 @@
             (rename-file pkg-path pkg-path-old)))
     (case pkg-type
       ((git) (install-git-package pkg-name pkg-url pkg-path))
+      ((remote) (install-remote-package pkg-name pkg-url pkg-path))
       ((local) (install-local-package pkg-name pkg-url pkg-path))
       (else (error "install_package - type not supported -" pkg-type)))
     (if (file-exists? pkg-path-old)

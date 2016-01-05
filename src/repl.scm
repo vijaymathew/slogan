@@ -13,7 +13,7 @@
                (cadr args)))
           (else (loop (cdr args))))))
 
-(define *valid-command-line-options* '("-e" "-c" "-x" "-ld-options" "-cc-options" "-v" "-h" "-r"))
+(define *valid-command-line-options* '("-e" "-c" "-x" "-ld-options" "-cc-options" "-v" "-h" "-r" "-i" "-u"))
 
 (define (valid-command-line-option? opt)
   (member opt *valid-command-line-options*))
@@ -60,10 +60,12 @@
                  cc_options: cc-options))))
 
 (define (install-pkg args)
-  (if (not (= (length args) 3))
+  (if (not (>= (length args) 3))
       (error "-i \"package-name,type,location\"")
       (install_package (nth 0 args) (string->symbol (nth 1 args))
-                       (nth 2 args))))
+                       (nth 2 args) (if (> (length args) 3)
+                                        (= (nth 2 args) "true")
+                                        #f))))
 
 (define (uninstall-pkg name)
   (uninstall_package name))
@@ -80,11 +82,11 @@
   (if (has-arg? "-e" args)
       (execute-script (get-arg-val "-e" args)))
   (if (has-arg? "-c" args)
-      (compile-script (get-arg-val "-c" args) args))
+      (compile-script (get-arg-val "-c" args) args #f))
   (if (has-arg? "-i" args)
-      (install-pkg (string_split (get-arg-val "-i" args) #\,) args))
+      (install-pkg (string_split (get-arg-val "-i" args) #\,)))
   (if (has-arg? "-u" args)
-      (uninstall-pkg (get-arg-val "-u" args) args))
+      (uninstall-pkg (get-arg-val "-u" args)))
   (if (has-arg? "-x" args)
       (compile-script (get-arg-val "-x" args) args #t))
   (if (command-line-has-options? args)

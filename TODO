@@ -1,9 +1,9 @@
-02-Jan-2016
+04-Jan-2016
 ===========
 
   * Test the `declare ffi` extension - slogan_obj->c_struct conversion,
     test all types in function arguments, return values and struct members.
+
   * Document the package manager facilities - install/uninstall_package, load "pkg://name".
-  * Test package-management and compilation as command-line args to the slogan command.
-  * A package build script should compile all .sn files to object-code. load-package should just load "init".
+
   * Re-implement streams - in line of plan9?
