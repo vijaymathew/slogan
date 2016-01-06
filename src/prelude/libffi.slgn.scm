@@ -463,9 +463,6 @@
            int sindex = c_struct_index(elem);
            obj = c_struct_to_slogan_obj_(p, elem, sindex);
          }
-       
-       if (obj != ___NUL)
-         ___release_scmobj(obj);
 
        retval = ___pair(obj, retval);
        elem = s_type_elements[++i];
@@ -712,8 +709,6 @@
                ___void_pointer_to_slogan_obj(rc, &retval);
              }
          }
-       if (retval != ___NUL)
-         ___release_scmobj(retval);
      }
    else
      {
@@ -789,7 +784,6 @@ static  ___SCMOBJ libffi_defstruct(___SCMOBJ memtypes, ___SCMOBJ i_memcount)
    char *s;
    ___slogan_obj_to_void_pointer(ptr, (void **)&s);
    ___charstring_to_slogan_obj(s, &obj);
-   ___release_scmobj(obj);
    return obj;
  }
  

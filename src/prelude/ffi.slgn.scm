@@ -179,6 +179,20 @@
  }
 
  /* Implementation of functions declared in slogan.h */
+
+ ___slogan_obj ___fix(int i)
+ {
+   ___SCMOBJ p = ___FIX(i);
+   ___EXT(___release_scmobj)(p);
+   return p;
+ }
+ 
+ ___slogan_obj ___pair(___slogan_obj a, ___slogan_obj b)
+ {
+   ___SCMOBJ p = ___EXT(___make_pair)(___PSTATE, a, b);
+   ___EXT(___release_scmobj)(p);
+   return p;
+ }
  
  ___slogan_obj ___alloc_u8array(size_t size)
  {
@@ -191,9 +205,17 @@
  {
    ___SCMOBJ init = ___FAL;
    ___SCMOBJ result = ___EXT(___make_vector)(___PSTATE, size, init);
+   ___EXT(___release_scmobj)(result);
    return result;
  }
 
+ int _peek_refcount(___SCMOBJ s) {
+#define ___STILL_BODY_OFS 6
+#define ___STILL_REFCOUNT_OFS 1
+  return ___UNTAG(s)[___BODY_OFS - ___STILL_BODY_OFS + 
+                     ___STILL_REFCOUNT_OFS];
+ }
+ 
 c-declare-end
 )
 

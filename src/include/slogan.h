@@ -9,7 +9,7 @@
 
 #define ___slogan_obj ___SCMOBJ
 #define ___int ___INT
-#define ___fix ___FIX
+extern ___slogan_obj ___fix(int);
 
 #define ___SLOGAN_OBJ_to_CHAR ___SCMOBJ_to_CHAR
 #define ___slogan_obj_to_char(s, i) ((___SCMOBJ_to_CHAR (s, i, 0)))
@@ -47,47 +47,47 @@
 #define ___SLOGAN_OBJ_to_NONNULL_CHARSTRING ___SCMOBJ_to_NONNULLCHARSTRING
 #define ___slogan_obj_to_nonnull_charstring(s, c) ((___SCMOBJ_to_NONNULLCHARSTRING (s, c, 0)))
 
+#define ___SLOGAN_OBJ_to_POINTER ___SCMOBJ_to_POINTER
+#define ___slogan_obj_to_void_pointer(obj, p) ___SCMOBJ_to_POINTER(obj, p, ___FAL, 0)
+
 #define ___CHARSTRING_to_SLOGAN_OBJ ___CHARSTRING_to_SCMOBJ
-#define ___charstring_to_slogan_obj(c, s) ((___CHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___charstring_to_slogan_obj(c, s) ((___CHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___NONNULLCHARSTRING_to_SLOGAN_OBJ ___NONNULLCHARSTRING_to_SCMOBJ
-#define ___nonnullcharstring_to_slogan_obj(c, s) ((___NONNULLCHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___nonnullcharstring_to_slogan_obj(c, s) ((___NONNULLCHARSTRING_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___CHAR_to_SLOGAN_OBJ ___CHAR_to_SCMOBJ
-#define ___char_to_slogan_obj(c, s) ((___CHAR_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___char_to_slogan_obj(c, s) ((___CHAR_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___UCHAR_to_SLOGAN_OBJ ___UCHAR_to_SCMOBJ
-#define ___uchar_to_slogan_obj(c, s) ((___UCHAR_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___uchar_to_slogan_obj(c, s) ((___UCHAR_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___UINT_to_SLOGAN_OBJ ___UINT_to_SCMOBJ
-#define ___uint_to_slogan_obj(c, s) ((___UINT_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___uint_to_slogan_obj(c, s) ((___UINT_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___ULONG_to_SLOGAN_OBJ ___ULONG_to_SCMOBJ
-#define ___ulong_to_slogan_obj(c, s) ((___ULONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___ulong_to_slogan_obj(c, s) ((___ULONG_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___LONG_to_SLOGAN_OBJ ___LONG_to_SCMOBJ
-#define ___long_to_slogan_obj(c, s) ((___LONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___long_to_slogan_obj(c, s) ((___LONG_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___LONGLONG_to_SLOGAN_OBJ ___LONGLONG_to_SCMOBJ
-#define ___longlong_to_slogan_obj(c, s) ((___LONGLONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___longlong_to_slogan_obj(c, s) ((___LONGLONG_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___ULONGLONG_to_SLOGAN_OBJ ___ULONGLONG_to_SCMOBJ
-#define ___ulonglong_to_slogan_obj(c, s) ((___ULONGLONG_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___ulonglong_to_slogan_obj(c, s) ((___ULONGLONG_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___FLOAT_to_SLOGAN_OBJ ___FLOAT_to_SCMOBJ
-#define ___float_to_slogan_obj(c, s) ((___FLOAT_to_SCMOBJ (___PSTATE, c, s, 0)))
+#define ___float_to_slogan_obj(c, s) ((___FLOAT_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___DOUBLE_to_SLOGAN_OBJ ___DOUBLE_to_SCMOBJ
-#define ___double_to_slogan_obj(c, s) ((___DOUBLE_to_SCMOBJ (___PSTATE, c, s, 0)))
-
-#define ___SLOGAN_OBJ_to_POINTER ___SCMOBJ_to_POINTER
-#define ___slogan_obj_to_void_pointer(obj, p) ___SCMOBJ_to_POINTER(obj, p, ___FAL, 0);
+#define ___double_to_slogan_obj(c, s) ((___DOUBLE_to_SCMOBJ (___PSTATE, c, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___POINTER_to_SLOGAN_OBJ ___POINTER_to_SCMOBJ
-#define ___void_pointer_to_slogan_obj(c, s) ((___POINTER_to_SCMOBJ (___PSTATE, c, ___FAL, NULL, s, 0)))
+#define ___void_pointer_to_slogan_obj(c, s) ((___POINTER_to_SCMOBJ (___PSTATE, c, ___FAL, NULL, s, 0)));___EXT(___release_scmobj)(*s)
 
 #define ___PAIR ___make_pair
-#define ___pair(a, b) ((___make_pair (___PSTATE, a, b)))
+extern ___slogan_obj ___pair(___slogan_obj, ___slogan_obj);
 #define ___head ___CAR
 #define ___tail ___CDR
 #define ___is_empty ___NULLP
@@ -157,9 +157,11 @@
 #define ___release_slogan_obj ___release_scmobj
 
 extern  void ___setup_fn_call();
-
+ 
 /* Allocates space for arrays whose pointer is not relocated by the GC. */
 extern ___slogan_obj ___alloc_u8array(size_t size);
 extern ___slogan_obj ___alloc_array(size_t size);
+
+extern int _peek_refcount(___SCMOBJ s); /* A debug tool to check the reference count of an object. */
 
 #endif
