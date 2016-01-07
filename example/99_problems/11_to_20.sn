@@ -1,4 +1,4 @@
-load "1_to_10";
+link("1_to_10");
 
 // 11. (*) Modified run-length encoding.
 //         Modify the result of problem 10 in such a way that if an element

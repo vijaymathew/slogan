@@ -1,7 +1,7 @@
 
 // Examples of declarative concurrency.
 
-load "util";
+link("util");
         
 // Generate a squares from a list.
 // First we do that sequentially and then concurrently.

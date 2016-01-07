@@ -3,22 +3,6 @@
 (define (slogan tokenizer)
   (expression/statement tokenizer))
 
-(define (slgn-load tokenizer script-name)
-  (if (package-load? script-name)
-      `(load-package ,(package-name-from-load script-name) ,(tokenizer 'compile-mode?))
-      (let ((script-name (if (symbol? script-name)
-                             (symbol->string script-name)
-                             script-name)))
-        (let ((has-envvars (has-envvars? script-name)))
-          (let ((expanded-script-name (if has-envvars (expand_envvars script-name) script-name)))
-            (if (file-exists? (add-slgn-extn expanded-script-name))
-                (if (compile expanded-script-name assemble: (tokenizer 'compile-mode?))
-                    (if (tokenizer 'compile-mode?)
-                        `(load (if ,has-envvars (expand_envvars ,script-name) ,script-name))
-                        `(load ,(string-append (if has-envvars (expand_envvars script-name) script-name) *scm-extn*)))
-                    (error "failed to compile " script-name))
-                `(load (if ,has-envvars (expand_envvars ,script-name) ,script-name))))))))
-
 (define (expression/statement tokenizer #!optional (top #t))
   (if (eof-object? (tokenizer 'peek))
       (tokenizer 'next)
@@ -29,7 +13,7 @@
 
 (define (statement tokenizer)
   (if (eq? (tokenizer 'peek) '*semicolon*) *void*
-      (load-stmt tokenizer)))
+      (namespace-stmt tokenizer)))
 
 (define (highligted-line colno)
   (if (< colno 0)
@@ -78,12 +62,6 @@
         (if (eq? token '*semicolon*)
             (tokenizer 'next))
         (parser-error tokenizer "Statement or expression not properly terminated."))))
-
-(define (load-stmt tokenizer)
-  (cond ((eq? (tokenizer 'peek) 'load)
-         (tokenizer 'next)
-         (slgn-load tokenizer (tokenizer 'next)))
-        (else (namespace-stmt tokenizer))))
 
 (define (namespace-stmt tokenizer)
   (if (eq? (tokenizer 'peek) 'namespace)
@@ -1370,7 +1348,7 @@
 (define *reserved-names* '(fn function method define record true false
 			      if else let letseq letrec 
 			      case match where try trycc catch finally
-                              macro load namespace import declare))
+                              macro namespace import declare))
 
 (define (reserved-name? sym)
   (and (symbol? sym)

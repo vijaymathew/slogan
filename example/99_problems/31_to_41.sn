@@ -1,4 +1,4 @@
-load "1_to_10"; // for encode.
+link("1_to_10"); // for encode.
 
 // 31. (**) Determine whether a given integer number is prime.
 

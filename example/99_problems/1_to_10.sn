@@ -1,4 +1,4 @@
-load "../util";
+load_script("../util");
 
 // Problems on Lists - Part I.
 

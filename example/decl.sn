@@ -1,6 +1,6 @@
 // Some declarative programming examples.
 
-load "util";
+link("util");
 
 // Programming with lists:
 function len(xs) 

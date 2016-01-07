@@ -13,15 +13,15 @@ function token_to_html(token)
 function hlcode_loop(tokenizer, out_str) 
     let (token = get_token(tokenizer)) 
         if (not(is_eof_object(token))) {
-            print(port = out_str, token_to_html(token));
-            print(port = out_str, " ");
+            show(stream = out_str, token_to_html(token));
+            show(stream = out_str, " ");
             hlcode_loop(tokenizer, out_str)
         };
 
 function hlcode(program, @optional with_prompt = true)
-    let (p = open_string_input_port(program))
-    let (t = port_tokenizer(false, p))
-    let (s = open_string_output_port()) {
+    let (p = open_string_input_stream(program))
+    let (t = stream_tokenizer(false, p))
+    let (s = open_string_output_stream()) {
         hlcode_loop(t, s);
         let (s = get_output_string(s)) 
           if (with_prompt) string_append("<span class=\"nc\">slogan&gt; </span>", s)
@@ -29,11 +29,11 @@ function hlcode(program, @optional with_prompt = true)
     };
 
 function hlvalue(program)
-  let (p = open_string_input_port(program))
-  let (t = port_tokenizer(false, p))
+  let (p = open_string_input_stream(program))
+  let (t = stream_tokenizer(false, p))
   let (v = eval(slogan(t)))
-  let (o = open_string_output_port())
-   { show(port = o, "<span class=\"ge\">=&gt; ", v, "</span>");
+  let (o = open_string_output_stream())
+   { show(stream = o, "<span class=\"ge\">=&gt; ", v, "</span>");
      get_output_string(o) };
 
 function show_hlcode(program, @optional with_prompt = true) {

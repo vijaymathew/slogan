@@ -1,4 +1,4 @@
-load "util";
+link("util");
 
 // Demonstrates image generation using list-comprehension.
 

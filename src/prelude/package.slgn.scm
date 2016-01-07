@@ -73,7 +73,7 @@
       (error "install-local-package - file not found - " pkg-url))
   pkg-name)
 
-(define (load-package pkg-name compile-mode)
+(define (load_package pkg-name)
   (let ((pkg-init-path (string-append *pkg-root* pkg-name "/init")))
     (load pkg-init-path)
     pkg-name))
@@ -100,7 +100,7 @@
       (else (error "install_package - type not supported -" pkg-type)))
     (if (file-exists? pkg-path-old)
         (force-rm-dir pkg-path-old))
-    (load-package pkg-name #f)))
+    (load_package pkg-name)))
 
 (define (uninstall_package pkg-name)
   (let ((pkg-path (string-append *pkg-root* pkg-name)))
@@ -109,11 +109,3 @@
             pkg-name
             #f)
         #f)))
-
-(define (package-load? load-str)
-  (if (string? load-str)
-      (string-starts-with? load-str "pkg://")
-      #f))
-
-(define (package-name-from-load load-str)
-  (substring load-str 6 (string-length load-str)))

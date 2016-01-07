@@ -1,4 +1,4 @@
-load "21_to_28"; // for combinations
+link("21_to_28"); // for combinations
 
 // 46. (**) Define predicates and/2, or/2, nand/2, nor/2, xor/2, impl/2
 //          and equ/2 (for logical equivalence) which succeed or fail according

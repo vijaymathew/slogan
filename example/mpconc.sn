@@ -1,6 +1,6 @@
 // Message-passing concurrency.
 
-load "util";
+link("util");
 
 /* 
    A Slogan task has an associated "mail box" or "message queue" where 

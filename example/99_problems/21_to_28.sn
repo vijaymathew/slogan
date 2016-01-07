@@ -1,4 +1,4 @@
-load "../util";
+link("../util");
 
 // 21. (*) Insert an element at a given position into a list.
 
