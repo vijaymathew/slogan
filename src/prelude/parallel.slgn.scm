@@ -21,7 +21,7 @@
 
 ;;;; Fast-channels are meant to be used in the request-reply pattern.
 ;;;; Parent and child callbacks has to agree on a protocol that makes
-;;;; sure the flow of messages happen in the correct sequence.
+;;;; sure the communication start and flow in the correct sequence.
 
 ;; fn pcb(pinfo) { task_sleep(2); p_broadcast(pinfo, fn(pid) pid:"hello"); task_sleep(1); p_receive(pinfo) };
 ;; fn ccb(pinfo) { showln("child got - " let loop (r = false) { r = p_get(p_ichannel(pinfo), false, true); if (is_eof_object(tail(r))) { task_sleep(.05); loop(r) } else r }); p_put(p_ochannel(pinfo), "thanks!", false, true) };
