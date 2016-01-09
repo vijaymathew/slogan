@@ -1,18 +1,32 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Multi-core programming support.
 
-;;;; Usage of the primitives:
+;;;; The primitive `p_spawn` starts new child processes with a channel for communication
+;;;; with the parent process. Parent and child processes are represented by the two callback
+;;;; functions passed to `p_spawn`. The default channel allows very large messages to be exchanged
+;;;; between the processes in arbitrary order. `p_spawn` can also work with `fast-channels` that
+;;;; is suitable for problems that require the exchange of a lot of small messages.
+;;;; The functions shown in the following examples are meant to be primitives on top of which
+;;;; more powerful parallel programming constructs can be built. They are not meant for direct
+;;;; consumption by application developers.
+
+;;;; An example with the default channels:
 
 ;; define x = "hi!";
 ;; fn pcb(pinfo) { p_broadcast(pinfo, fn(pid) pid:"hello"); showln("parent got: " p_receive(pinfo)) };
 ;; fn ccb(pinfo) { let (d = tail(p_get(p_ichannel(pinfo)))) { showln("client got: " d); p_put(p_ochannel(pinfo), d) }};
-;; p_spawn(pcb ccb 1);
+;; // starts two child-processes
+;; p_spawn(pcb ccb 2); 
 
-;;;; With fast channels:
 
-;; fn pcb(pinfo) { p_put(first(p_ochannels(pinfo)), "hello", false, true) };
-;; fn ccb(pinfo) { showln("child got - " p_get(p_ichannel(pinfo), false, true)) };
-;; p_spawn(pcb ccb 1 true);
+;;;; Fast-channels are meant to be used in the request-reply pattern.
+;;;; Parent and child callbacks has to agree on a protocol that makes
+;;;; sure the flow of messages happen in the correct sequence.
+
+;; fn pcb(pinfo) { task_sleep(2); p_broadcast(pinfo, fn(pid) pid:"hello"); task_sleep(1); p_receive(pinfo) };
+;; fn ccb(pinfo) { showln("child got - " let loop (r = false) { r = p_get(p_ichannel(pinfo), false, true); if (is_eof_object(tail(r))) { task_sleep(.05); loop(r) } else r }); p_put(p_ochannel(pinfo), "thanks!", false, true) };
+;; // starts 10 child-processes over a fast reply-request channel.
+;; p_spawn(pcb ccb 10 true);
 
 (c-declare #<<c-declare-end
  
@@ -124,7 +138,7 @@
  {
    sem_t *s;
    if (creat)
-     s = sem_open(name, O_CREAT | O_RDWR, 0644, 0);
+     s = sem_open(name, O_CREAT | O_RDWR, 0644, 1);
    else
      s = sem_open(name, O_RDWR);
    if (s == SEM_FAILED)
@@ -257,7 +271,7 @@ c-declare-end
 (define (mk-semname bn)
   (string-append bn "_lock"))
 
-(define-structure fast-channel fd semaphore buffer name bufsz should-lock?)
+(define-structure fast-channel fd semaphore buffer name bufsz)
 (define-structure io-channel in out)
 (define-structure process-info fast? pids channels)
 
@@ -309,14 +323,14 @@ c-declare-end
                             (make-process-info
                              #t #f
                              (make-io-channel
-                              (make-fast-channel fd_p sem_p data_p bn_p bufsz #t)
-                              (make-fast-channel fd_c sem_c data_c bn_c bufsz #f))))))
+                              (make-fast-channel fd_p sem_p data_p bn_p bufsz)
+                              (make-fast-channel fd_c sem_c data_c bn_c bufsz))))))
                         (else
                          (loop (+ i 1) (cons pid pids)
                                (cons
                                 (make-io-channel
-                                 (make-fast-channel fd_c sem_c data_c bn_c bufsz #t)
-                                 (make-fast-channel fd_p sem_p data_p bn_p bufsz #f))
+                                 (make-fast-channel fd_c sem_c data_c bn_c bufsz)
+                                 (make-fast-channel fd_p sem_p data_p bn_p bufsz))
                                 channels))))))))
           (parent-callback (make-process-info #t pids channels))))))
 
@@ -397,20 +411,17 @@ c-declare-end
   (let* ((bufsz (fast-channel-bufsz channel))
          (len (string-length str))
          (new-bufsz (if (> len bufsz) len bufsz))
-         (lock? (fast-channel-should-lock? channel))
          (sem (fast-channel-semaphore channel)))
     (let loop ((e 0))
       (if (and timeout (< timeout *proc-io-min-timeout*))
           (error 'timeout))
-      (set! e (if lock? ((if timeout call-sem-trywait call-sem-wait) sem) 0))
+      (set! e ((if timeout call-sem-trywait call-sem-wait) sem))
       (cond ((zero? e)
              (let ((r (call-shm-write (fast-channel-fd channel) 
                                       (fast-channel-buffer channel)
                                       str len new-bufsz)))
                (if (not r)
                    (error "proc-write-fast failed."))
-               (if (not lock?)
-                   (fast-channel-should-lock?-set! channel #t))
                (call-sem-post sem)
                (if (> new-bufsz bufsz)
                    (fast-channel-bufsz-set! channel new-bufsz))
