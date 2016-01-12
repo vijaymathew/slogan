@@ -220,7 +220,9 @@
       file-name
       (string-append file-name *slgn-extn*)))
 
-(define (load_script script)
+(define (load_script script #!optional force-compile)
+  (if force-compile
+      (delete-file (string-append script *scm-extn*)))
   (with-exception-catcher
    (lambda (e)
      (if (file-exists? (add-slgn-extn script))
