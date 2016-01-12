@@ -39,3 +39,5 @@
 (define *scheme-reprs* '((#t . true) (#f . false)))
 
 (define *void* '#!void)
+
+(define scheme-write write)

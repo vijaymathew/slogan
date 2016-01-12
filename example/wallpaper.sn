@@ -20,7 +20,7 @@ function wallpaper(corna, cornb, side)
 
 // Usage:
 /*
-define f = open_file_output_stream("wallpaper.ppm");
+define f = file_writer("wallpaper.ppm");
 show(stream = f, wallpaper(9, 5, 5));
 close_stream(f);
 */

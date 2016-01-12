@@ -1,10 +1,10 @@
 function http_server() 
-  handler(open_tcp_server_stream(8080));
+  handler(tcp_server_stream(7000));
 
 function handler(server) 
   let (client = read(server)) 
-    { display("hello, world", client);
-      close_stream(client);
-      handler(server) };
+  { write("hello, world", client);
+    close_stream(client);
+    handler(server) };
 
 http_server();

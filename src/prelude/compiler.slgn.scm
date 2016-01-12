@@ -43,7 +43,7 @@
                                             program-text
                                             compile-mode: (or assemble exe)))))
           (if (not (null? exprs))
-              (begin (write (car exprs) out-port)
+              (begin (scheme-write (car exprs) out-port)
                      (newline out-port)
                      (loop (cdr exprs)))))))))
 

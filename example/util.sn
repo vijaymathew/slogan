@@ -18,7 +18,7 @@ function bit_to_n(ba i)
     else 0;
 
 function image_show(img) 
-    let (s = open_string_output_stream(), width = image_width(img)) {
+    let (s = string_writer(), width = image_width(img)) {
 	show(stream = s, "P3\n", image_width(img), " ", image_height(img) " 1\n");
 	let loop (pixels = image_pixels(img), w = width) 
 	    if (is_empty(pixels)) get_output_string(s)

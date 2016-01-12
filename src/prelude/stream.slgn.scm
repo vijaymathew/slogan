@@ -95,17 +95,17 @@
     (if permissions (set! settings (append settings (list permissions: permissions))))
     (open-file (append settings (list buffering: (get-buffering-for-stream buffer-mode))))))
 
-(define (open_file_input_stream path #!optional options buffer-mode tcoder)
-  (open-file-stream-helper path 'input options buffer-mode tcoder #f))
+(define (file_reader path #!key options buffer_mode transcoder)
+  (open-file-stream-helper path 'input options buffer_mode transcoder #f))
 
-(define (open_file_output_stream path #!optional options buffer-mode tcoder (permissions #o666))
-  (open-file-stream-helper path 'output options buffer-mode tcoder permissions))
+(define (file_writer path #!key options buffer_mode transcoder (permissions #o666))
+  (open-file-stream-helper path 'output options buffer_mode transcoder permissions))
 
-(define (open_file_input_output_stream path #!optional options buffer-mode tcoder (permissions #o666))
-  (open-file-stream-helper path 'input-output options buffer-mode tcoder permissions))
+(define (file_stream path #!key options buffer_mode transcoder (permissions #o666))
+  (open-file-stream-helper path 'input-output options buffer_mode transcoder permissions))
 
-(define current_input_stream current-input-port)
-(define current_output_stream current-output-port)
+(define current_reader current-input-port)
+(define current_writer current-output-port)
 (define current_error_stream current-error-port)
 
 (define (open-byte-stream-helper openfn invalue tcoder)
@@ -120,27 +120,27 @@
           (if opt (set! settings (append settings (list eol-encoding: opt)))))
         (openfn settings))))
 
-(define (open_byte_array_input_stream byte_array #!optional tcoder)
-  (open-byte-stream-helper open-input-u8vector byte_array tcoder))
+(define (byte_array_reader byte_array #!key transcoder)
+  (open-byte-stream-helper open-input-u8vector byte_array transcoder))
 
-(define (open_byte_array_output_stream #!optional tcoder)
-  (open-byte-stream-helper open-output-u8vector '() tcoder))
+(define (byte_array_writer #!key transcoder)
+  (open-byte-stream-helper open-output-u8vector '() transcoder))
 
-(define (open_string_input_stream str)
+(define (string_reader str)
   (open-byte-stream-helper open-input-string str #f))
 
-(define (open_string_output_stream)
+(define (string_writer)
   (open-byte-stream-helper open-output-string '() #f))
 
 (define get_output_string get-output-string)
 (define get_output_bytes get-output-u8vector)
 
 (define is_stream port?)
-(define is_input_stream input-port?)
-(define is_output_stream output-port?)
+(define is_reader input-port?)
+(define is_writer output-port?)
 (define close_stream close-port)
-(define close_input_stream close-input-port)
-(define close_output_stream close-output-port)
+(define close_reader close-input-port)
+(define close_writer close-output-port)
 
 (define (stream_position p)
   (if (input-port? p)
@@ -245,7 +245,7 @@
 (define (write_n_chars str start end #!optional (p (current-output-port)))
   (write-substring str start end p))
 
-(define flush_output_stream force-output)
+(define flush_writer force-output)
 
 (define (open-process-stream-helper path direction arguments environment
                                     directory stdin_redirection
@@ -270,11 +270,10 @@
       (if opt (set! settings (append settings (list eol-encoding: opt)))))
     (open-process settings)))
 
-(define (open_process_stream path #!key (direction 'input_output) (arguments '()) environment
-                             directory (stdin_redirection #t) (stdout_redirection #t)
-                             stderr_redirection pseudo_terminal
-                             show_console transcoder)
-  (if (eq? direction 'input_output) (set! direction 'input-output))
+(define (open-pipe-stream path #!key (direction 'input-output) (arguments '()) environment
+                          directory (stdin_redirection #t) (stdout_redirection #t)
+                          stderr_redirection pseudo_terminal
+                          show_console transcoder)
   (open-process-stream-helper path direction arguments environment directory stdin_redirection
                               stdout_redirection stderr_redirection pseudo_terminal show_console
                               transcoder))
@@ -282,7 +281,46 @@
 (define process_pid process-pid)
 (define process_status process-status)
 
-(define (open_tcp_client_stream addr #!key port_number keep_alive (coalesce #t) transcoder)
+(define (pipe_reader path #!key (arguments '()) environment
+                     directory (stdin_redirection #t) (stdout_redirection #t)
+                     stderr_redirection pseudo_terminal
+                     show_console transcoder)
+  (open-pipe-stream path direction: 'input arguments: arguments
+                    environment: environment directory: directory
+                    stdin_redirection: stdin_redirection
+                    stdout_redirection: stdout_redirection
+                    stderr_redirection: stderr_redirection
+                    pseudo_terminal: pseudo_terminal
+                    show_console: show_console
+                    transcoder: transcoder))
+
+(define (pipe_writer path #!key (arguments '()) environment
+                     directory (stdin_redirection #t) (stdout_redirection #t)
+                     stderr_redirection pseudo_terminal
+                     show_console transcoder)
+  (open-pipe-stream path direction: 'output arguments: arguments
+                    environment: environment directory: directory
+                    stdin_redirection: stdin_redirection
+                    stdout_redirection: stdout_redirection
+                    stderr_redirection: stderr_redirection
+                    pseudo_terminal: pseudo_terminal
+                    show_console: show_console
+                    transcoder: transcoder))
+
+(define (pipe_stream path #!key (arguments '()) environment
+                     directory (stdin_redirection #t) (stdout_redirection #t)
+                     stderr_redirection pseudo_terminal
+                     show_console transcoder)
+  (open-pipe-stream path direction: 'input-output arguments: arguments
+                    environment: environment directory: directory
+                    stdin_redirection: stdin_redirection
+                    stdout_redirection: stdout_redirection
+                    stderr_redirection: stderr_redirection
+                    pseudo_terminal: pseudo_terminal
+                    show_console: show_console
+                    transcoder: transcoder))
+
+(define (tcp_client_stream addr #!key port_number keep_alive (coalesce #t) transcoder)
   (let ((settings (list)))
     (if (string? addr)
         (set! settings (append settings (list server-address: addr)))
@@ -315,7 +353,7 @@
     (if cbfn (fn settings cbfn)
         (fn settings))))
 
-(define (open_tcp_server_stream addr #!key port_number (backlog 128) (reuse_address #t) transcoder)
+(define (tcp_server_stream addr #!key port_number (backlog 128) (reuse_address #t) transcoder)
   (open-tcp-server-helper open-tcp-server addr port_number backlog reuse_address transcoder))
 
 (define (make-delimited-tokenizer stream delimiters)
@@ -368,3 +406,10 @@
 	(begin (slgn-display (car objs) display-string: #t port: stream)
 	       (loop (cdr objs)))))
   (newline stream))
+
+(define (write obj #!optional (stream (current-output-port)))
+  (slgn-display obj display-string: #f port: stream))
+
+(define (writeln obj #!optional (stream (current-output-port)))
+  (slgn-display obj display-string: #f port: stream)
+  (newline))

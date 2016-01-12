@@ -101,7 +101,7 @@
   (with-exception-catcher
    (lambda (e) #f)
    (lambda ()
-     (let ((p (open_process_stream "uname")))
+     (let ((p (open-pipe-stream "uname")))
        (let ((n (read p)))
          (close_stream p)
          n)))))

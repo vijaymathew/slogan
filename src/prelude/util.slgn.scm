@@ -80,7 +80,7 @@
             ((string? val)
              (if display-string
                  (display val port)
-                 (write val port)))
+                 (scheme-write val port)))
 	    ((thread? val)
 	     (slgn-display-task port))
             ((error-exception? val)
@@ -144,7 +144,7 @@
    (lambda (ex)
      (let ((s (with-output-to-string
                 '()
-                (lambda () (write c)))))
+                (lambda () (scheme-write c)))))
        (if (char=? #\# (string-ref s 0))
            (display (substring s 1 (string-length s)) port)
            (display s port))))
