@@ -406,10 +406,3 @@
 	(begin (slgn-display (car objs) display-string: #t port: stream)
 	       (loop (cdr objs)))))
   (newline stream))
-
-(define (write obj #!optional (stream (current-output-port)))
-  (slgn-display obj display-string: #f port: stream))
-
-(define (writeln obj #!optional (stream (current-output-port)))
-  (slgn-display obj display-string: #f port: stream)
-  (newline))
