@@ -2,7 +2,7 @@
 
 ;; Lazy-pairs.
 
-(define-macro (lpair-cons a b) `(cons ,a (delay ,b)))
+(define-macro (lpair-cons a b) `(scm-cons ,a (delay ,b)))
 
 ;; Functions for working with sequences.
 ;; A sequence can be either a normal list or a lazy-pair.
@@ -12,7 +12,7 @@
 
 (define (is_lpair obj)
   (and (pair? obj)
-       (is_promise (cdr obj))))
+       (is_promise (scm-cdr obj))))
 
 (define (lpair-at i lpair)
   (if (= i 0)
@@ -51,15 +51,15 @@
       (let map1 ((ls ls))
         (if (null? ls)
             '()
-            (let ((a (f (car ls)))
-                  (b (map1 (cdr ls))))
-              (cons a b))))
+            (let ((a (f (scm-car ls)))
+                  (b (map1 (scm-cdr ls))))
+              (scm-cons a b))))
       (let map-more ((ls ls) (more more))
         (if (null? ls)
             '()
-            (let ((a (apply f (car ls) (old-map car more)))
-                  (b (map-more (cdr ls) (old-map cdr more))))
-              (cons a b))))))
+            (let ((a (apply f (scm-car ls) (old-map car more)))
+                  (b (map-more (scm-cdr ls) (old-map cdr more))))
+              (scm-cons a b))))))
 
 (define (map f ls . more)
   (if (is_lpair ls)
@@ -68,11 +68,11 @@
 
 (define (generic-for-each f ls . more)
   (let ((lpair? (is_lpair ls)))
-    (let ((car (if lpair? first car))
-	  (cdr (if lpair? rest cdr)))
-      (do ((ls ls (cdr ls)) (more more (map cdr more)))
+    (let ((scm-car (if lpair? first car))
+	  (scm-cdr (if lpair? rest cdr)))
+      (do ((ls ls (scm-cdr ls)) (more more (map cdr more)))
 	  ((null? ls))
-	(apply f (car ls) (map car more))))))
+	(apply f (scm-car ls) (map car more))))))
 
 (define for_each generic-for-each)
 
@@ -96,13 +96,13 @@
       (let loop ((ls ls)
 		 (result '()))
 	(cond ((null? ls)
-	       (reverse result))
-	      ((and (list? (car ls)) drill)
-	       (loop (cdr ls) (cons (filter fn (car ls) drill: drill) result)))
-	      ((fn (car ls))
-	       (loop (cdr ls) (cons (car ls) result)))
+	       (scm-reverse result))
+	      ((and (list? (scm-car ls)) drill)
+	       (loop (scm-cdr ls) (scm-cons (filter fn (scm-car ls) drill: drill) result)))
+	      ((fn (scm-car ls))
+	       (loop (scm-cdr ls) (scm-cons (scm-car ls) result)))
 	      (else
-	       (loop (cdr ls) result))))))
+	       (loop (scm-cdr ls) result))))))
 
 (define (lpair-accumulate fn initial lpair)
   (if (null? lpair)
@@ -141,10 +141,10 @@
 		 (result '()))
 	(if (or (zero? n)
 		(null? lst))
-	    (reverse result)
+	    (scm-reverse result)
 	    (loop (rest lst)
 		  (- n 1)
-		  (cons (first lst) result))))))
+		  (scm-cons (first lst) result))))))
 
 (define (drop_while predic lst)
   (let loop ((lst lst))
@@ -158,8 +158,8 @@
 	     (result '()))
     (if (or (null? lst)
 	    (not (predic (first lst))))
-	(reverse result)
+	(scm-reverse result)
 	(loop (rest lst)
-	      (cons (first lst) result)))))
+	      (scm-cons (first lst) result)))))
 
   

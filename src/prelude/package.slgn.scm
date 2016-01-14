@@ -20,18 +20,18 @@
 
 (define (get-file-name-from-pkg-url url)
   (let loop ((paths (string_split url #\/)))
-    (if (null? (cdr paths))
-        (car paths)
-        (loop (cdr paths)))))
+    (if (null? (scm-cdr paths))
+        (scm-car paths)
+        (loop (scm-cdr paths)))))
 
 (define *untar-cmds* '((".gz" . "tar xzf") (".bz2" . "tar xjf") (".zip" . "unzip")))
 
 (define (untar-cmd file-name)
   (let ((extn (path-extension file-name)))
-    (let ((cmd (assoc extn *untar-cmds*)))
+    (let ((cmd (scm-assoc extn *untar-cmds*)))
       (if cmd
           (let ((in-file (string-append *pkg-root* file-name)))
-            (cons (string-append (cdr cmd) " " in-file
+            (scm-cons (string-append (scm-cdr cmd) " " in-file
                                  (if (string=? extn ".zip")
                                      " -d " " -C ")
                                  *pkg-root*)
@@ -41,11 +41,11 @@
 (define (untar&build-package pkg-name pkg-url pkg-path)
   (let ((file-name (get-file-name-from-pkg-url pkg-url)))
     (let ((cmd&infile (untar-cmd file-name)))
-      (let ((r (shell-command (car cmd&infile))))
-        (delete_file (cdr cmd&infile))
+      (let ((r (shell-command (scm-car cmd&infile))))
+        (delete_file (scm-cdr cmd&infile))
         (if (zero? r)
             (build-package pkg-path)
-            (error "failed to decompress package - " (car cmd&infile) ", " r)))))
+            (error "failed to decompress package - " (scm-car cmd&infile) ", " r)))))
   pkg-name)
           
 (define (install-remote-package pkg-name pkg-url pkg-path)

@@ -1,9 +1,5 @@
-04-Jan-2016
+12-Jan-2016
 ===========
 
-  * Test the `declare ffi` extension - slogan_obj->c_struct conversion,
-    test all types in function arguments, return values and struct members.
-
-  * Document the package manager facilities - install/uninstall_package, load "pkg://name".
-
-  * Re-implement streams - in line of plan9?
+  * implement higher-level parallelism constructs.
+  * implement a crypto package (based on http://nacl.cr.yp.to/index.html or https://github.com/jedisct1/libsodium?)

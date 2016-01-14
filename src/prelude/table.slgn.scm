@@ -44,16 +44,16 @@
 
 (define (hashtable_keys ht)
   (let ((keys '()))
-    (table-for-each (lambda (k v) (set! keys (cons k keys))) (hashtable-table ht))
-    (list->vector (reverse keys))))
+    (table-for-each (lambda (k v) (set! keys (scm-cons k keys))) (hashtable-table ht))
+    (list->vector (scm-reverse keys))))
 
 (define (hashtable_values ht)
   (let ((e '()))
-    (table-for-each (lambda (k v) (set! e (cons v e))) (hashtable-table ht))
-    (list->vector (reverse e))))
+    (table-for-each (lambda (k v) (set! e (scm-cons v e))) (hashtable-table ht))
+    (list->vector (scm-reverse e))))
 
 (define (hashtable_entries ht)
-  (cons (hashtable_keys ht) (hashtable_values ht)))
+  (scm-cons (hashtable_keys ht) (hashtable_values ht)))
 
 (define (hashtable_for_each proc ht)
   (table-for-each proc (hashtable-table ht)))

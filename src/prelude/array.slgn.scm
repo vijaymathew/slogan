@@ -11,12 +11,12 @@
                      (else a)))
              (constructor dim fill)))
         ((list? dim)
-         (if (null? (cdr dim))
-             (make-array (car dim) fill constructor)
-             (make-array (car dim) (lambda () (make-array (cdr dim) fill constructor)) constructor)))
+         (if (null? (scm-cdr dim))
+             (make-array (scm-car dim) fill constructor)
+             (make-array (scm-car dim) (lambda () (make-array (scm-cdr dim) fill constructor)) constructor)))
         (else (error "invalid array dimension. " dim))))
 
-(define array vector)
+(define array scm-vector)
 (define (make_array dim #!optional fill) (make-array dim fill make-vector))
 
 (define is_array vector?)
@@ -27,17 +27,17 @@
 (define (array_at arr dim)
   (if (list? dim)
       (if (null? dim) arr
-          (array_at (vector-ref arr (car dim)) (cdr dim)))
+          (array_at (vector-ref arr (scm-car dim)) (scm-cdr dim)))
       (vector-ref arr dim)))
 
 (define (array_set arr dim obj)
   (if (list? dim)
       (cond ((null? dim) 
              (error "array dimension cannot be empty."))
-            ((= 1 (length dim))
-             (vector-set! arr (car dim) obj)
+            ((= 1 (scm-length dim))
+             (vector-set! arr (scm-car dim) obj)
              *void*)
-            (else (array_set (vector-ref arr (car dim)) (cdr dim) obj)))
+            (else (array_set (vector-ref arr (scm-car dim)) (scm-cdr dim) obj)))
       (begin (vector-set! arr dim obj)
              *void*)))      
 
@@ -57,8 +57,8 @@
         (len (vector-length arr)))
     (let loop ((s s) (i 0))
       (if (null? s) arr
-          (begin (vector-set! arr i (car s))
-                 (loop (cdr s) (+ i 1)))))))
+          (begin (vector-set! arr i (scm-car s))
+                 (loop (scm-cdr s) (+ i 1)))))))
 
 (define (vector-map f vec . vectors)
   (if (not (null? vectors))
@@ -66,7 +66,7 @@
   (let ((len (vector-length vec)))
     (if (null? vectors)
         (generic-map1! f (make-vector len) vec len vector-ref vector-set!)
-        (generic-map2+! f (make-vector len) (cons vec vectors) len vectors-ref vector-set!))))
+        (generic-map2+! f (make-vector len) (scm-cons vec vectors) len vectors-ref vector-set!))))
 
 (define (vector-for-each f vec . vectors)
   (if (not (null? vectors))
@@ -74,7 +74,7 @@
   (let ((len (vector-length vec)))
     (if (null? vectors)
         (generic-map1! f #f vec len vector-ref vector-set!)
-        (generic-map2+! f #f (cons vec vectors) len vectors-ref vector-set!))))
+        (generic-map2+! f #f (scm-cons vec vectors) len vectors-ref vector-set!))))
 
 (define array_map vector-map)
 (define array_for_each vector-for-each)
@@ -88,7 +88,7 @@
 
 ;; byte arrays.
 
-(define u8array u8vector)
+(define u8array scm-u8vector)
 (define (make_u8array dim #!optional (fill 0)) (make-u8vector dim fill))
 (define is_u8array u8vector?)
 (define u8array_length u8vector-length)
@@ -115,7 +115,7 @@
           (begin (write-char (integer->char (u8vector-ref u8 i)) out)
                  (loop (+ i 1)))))))
 
-(define s8array s8vector)
+(define s8array scm-s8vector)
 (define (make_s8array dim #!optional (fill 0)) (make-s8vector dim fill))
 (define is_s8array s8vector?)
 (define s8array_length s8vector-length)
@@ -131,7 +131,7 @@
 (define subs8array_move subs8vector-move!)
 (define s8array_shrink s8vector-shrink!)
 
-(define s16array s16vector)
+(define s16array scm-s16vector)
 (define (make_s16array dim #!optional (fill 0)) (make-s16vector dim fill))
 (define is_s16array s16vector?)
 (define s16array_length s16vector-length)
@@ -147,7 +147,7 @@
 (define subs16array_move subs16vector-move!)
 (define s16array_shrink s16vector-shrink!)
 
-(define u16array u16vector)
+(define u16array scm-u16vector)
 (define (make_u16array dim #!optional (fill 0)) (make-u16vector dim fill))
 (define is_u16array u16vector?)
 (define u16array_length u16vector-length)
@@ -163,7 +163,7 @@
 (define subu16array_move subu16vector-move!)
 (define u16array_shrink u16vector-shrink!)
 
-(define s32array s32vector)
+(define s32array scm-s32vector)
 (define (make_s32array dim #!optional (fill 0)) (make-s32vector dim fill))
 (define is_s32array s32vector?)
 (define s32array_length s32vector-length)
@@ -179,7 +179,7 @@
 (define subs32array_move subs32vector-move!)
 (define s32array_shrink s32vector-shrink!)
 
-(define u32array u32vector)
+(define u32array scm-u32vector)
 (define (make_u32array dim #!optional (fill 0)) (make-u32vector dim fill))
 (define is_u32array u32vector?)
 (define u32array_length u32vector-length)
@@ -195,7 +195,7 @@
 (define subu32array_move subu32vector-move!)
 (define u32array_shrink u32vector-shrink!)
 
-(define s64array s64vector)
+(define s64array scm-s64vector)
 (define (make_s64array dim #!optional (fill 0)) (make-s64vector dim fill))
 (define is_s64array s64vector?)
 (define s64array_length s64vector-length)
@@ -211,7 +211,7 @@
 (define subs64array_move subs64vector-move!)
 (define s64array_shrink s64vector-shrink!)
 
-(define u64array u64vector)
+(define u64array scm-u64vector)
 (define (make_u64array dim #!optional (fill 0)) (make-u64vector dim fill))
 (define is_u64array u64vector?)
 (define u64array_length u64vector-length)
@@ -227,7 +227,7 @@
 (define subu64array_move subu64vector-move!)
 (define u64array_shrink u64vector-shrink!)
 
-(define f64array f64vector)
+(define f64array scm-f64vector)
 (define (make_f64array dim #!optional (fill 0.0)) (make-f64vector dim fill))
 (define is_f64array f64vector?)
 (define f64array_length f64vector-length)
@@ -243,7 +243,7 @@
 (define subf64array_move subf64vector-move!)
 (define f64array_shrink f64vector-shrink!)
 
-(define f32array f32vector)
+(define f32array scm-f32vector)
 (define (make_f32array dim #!optional (fill 0.0)) (make-f32vector dim fill))
 (define is_f32array f32vector?)
 (define f32array_length f32vector-length)

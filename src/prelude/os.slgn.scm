@@ -4,8 +4,12 @@
 ;; These functions are specific to this implementation of Slogan.
 ;; Right now we have some of the most useful Gambit "Host environment" functions here.
 
+(define getpid (c-lambda () int "getpid"))
+(define getppid (c-lambda () int "getppid"))
+(define kill (c-lambda (int int) int "kill")) 
+
 (define (list_directory dirname #!optional (ignore_hidden #t))
-  (let ((d (open-directory (list path: dirname ignore-hidden: (if (symbol? ignore_hidden) 
+  (let ((d (open-directory (scm-list path: dirname ignore-hidden: (if (symbol? ignore_hidden) 
                                                                   (slgn-symbol->scm-sym/kw ignore_hidden string->symbol) 
                                                                   ignore_hidden)))))
     (let ((ls (read-all d)))
@@ -13,7 +17,7 @@
       ls)))
 
 (define (create_directory path #!optional (permissions #o777))
-  (create-directory (list path: path permissions: permissions)))
+  (create-directory (scm-list path: path permissions: permissions)))
 
 (define delete_directory delete-directory)
 (define current_directory current-directory)
@@ -102,6 +106,6 @@
    (lambda (e) #f)
    (lambda ()
      (let ((p (open-pipe-stream "uname")))
-       (let ((n (read p)))
+       (let ((n (scm-read p)))
          (close_stream p)
          n)))))

@@ -805,7 +805,7 @@ c-declare-end
     (longdouble . 18) (charstring . 19)
     (pointer . 20) (void . 21)))
 
-(define *libffi-types-count* (length *libffi-types*))
+(define *libffi-types-count* (scm-length *libffi-types*))
 
 (define *c-struct-defs* '())
 
@@ -824,13 +824,13 @@ c-declare-end
 
 (define (libffitype->int type)
   (let ((t (assv type *libffi-types*)))
-    (if t (cdr t)
+    (if t (scm-cdr t)
         (error "Invalid c type - " type))))
 
 (define (c-struct-defs sid accessor)
   (let ((sdef (assv sid *c-struct-defs*)))
     (if sdef
-        (accessor (cdr sdef))
+        (accessor (scm-cdr sdef))
         (error "c_struct defintion not found" sid))))
 
 (define (c-struct-types sid) (c-struct-defs sid car))
@@ -839,33 +839,33 @@ c-declare-end
 (define (normalize-c-struct result sid)
   (let loop ((types (c-struct-types sid))
              (mems (c-struct-members sid))
-             (values (reverse (cdr result)))
+             (values (scm-reverse (scm-cdr result)))
              (r '()))
             (if (null? values)
-                (cons (car result) (reverse r))
-                (loop (cdr types) (cdr mems) (cdr values)
-                      (cons (cons (car mems)
-                                  (if (>= (car types) *libffi-types-count*)
-                                      (normalize-c-struct (car values) (car types))
-                                      (car values)))
+                (scm-cons (scm-car result) (scm-reverse r))
+                (loop (scm-cdr types) (scm-cdr mems) (scm-cdr values)
+                      (scm-cons (scm-cons (scm-car mems)
+                                  (if (>= (scm-car types) *libffi-types-count*)
+                                      (normalize-c-struct (scm-car values) (scm-car types))
+                                      (scm-car values)))
                             r)))))
 
 (define (def-c-struct name memtypes)
   (let ((types (map libffitype->int (map car memtypes))))
-    (let ((sid (libffi-defstruct types (length memtypes))))
+    (let ((sid (libffi-defstruct types (scm-length memtypes))))
       (cond (sid
-             (set! *libffi-types* (cons (cons name sid) *libffi-types*))
-             (set! *c-struct-defs* (cons (cons sid (cons types (map cdr memtypes))) *c-struct-defs*))
+             (set! *libffi-types* (scm-cons (scm-cons name sid) *libffi-types*))
+             (set! *c-struct-defs* (scm-cons (scm-cons sid (scm-cons types (map cdr memtypes))) *c-struct-defs*))
              name)
             (else (error "Failed to define c structure - " name))))))
 
 (define (mk-c-fn-param-names plen)
   (let loop ((i 0) (pnames '()))
     (if (< i plen)
-        (loop (+ i 1) (cons (string->symbol
+        (loop (+ i 1) (scm-cons (string->symbol
                              (string-append "p" (number->string i)))
                             pnames))
-        (reverse pnames))))
+        (scm-reverse pnames))))
 
 (define (mk-c-fn-args ptypes pnames)
   (let loop ((ptypes ptypes)
@@ -873,11 +873,11 @@ c-declare-end
              (expr '(list)))
     (if (null? ptypes)
         expr
-        (loop (cdr ptypes) (cdr pnames)
-              (append expr (list `(cons (libffitype->int ',(car ptypes)) ,(car pnames))))))))
+        (loop (scm-cdr ptypes) (scm-cdr pnames)
+              (scm-append expr (scm-list `(scm-cons (libffitype->int ',(scm-car ptypes)) ,(scm-car pnames))))))))
        
 (define (def-c-fn libhandle c-fn-name name paramtypes rettype)
-  (let ((plen (length paramtypes)))
+  (let ((plen (scm-length paramtypes)))
     (let ((pnames (mk-c-fn-param-names plen)))
       `(define ,name (let ((fhandle (ffi_fn ,libhandle ,(symbol->string c-fn-name))))
                        (lambda ,pnames
@@ -889,22 +889,22 @@ c-declare-end
                                  result)))))))))
 
 (define (c_struct_name s)
-  (let ((sid (+ (car s) *libffi-types-count*)))
+  (let ((sid (+ (scm-car s) *libffi-types-count*)))
     (let loop ((types *libffi-types*))
       (if (null? types)
           #f
-          (if (= (cdar types) sid)
-              (caar types)
-              (loop (cdr types)))))))
+          (if (= (scm-cdar types) sid)
+              (scm-caar types)
+              (loop (scm-cdr types)))))))
 
 (define (c_struct_get s memname)
-  (let ((v (assoc memname (cdr s))))
-    (if v (cdr v) #f)))
+  (let ((v (scm-assoc memname (scm-cdr s))))
+    (if v (scm-cdr v) #f)))
         
 (define (c_struct_instance name values)
   (let ((sid (libffitype->int name)))
     (let ((mems (c-struct-members sid)))
-      (cons (- sid *libffi-types-count*) (map cons mems values)))))
+      (scm-cons (- sid *libffi-types-count*) (map cons mems values)))))
 
 (define (pointer_to_c_struct name ptr)
   (let ((sid (libffitype->int name)))

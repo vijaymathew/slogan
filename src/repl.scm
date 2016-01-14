@@ -2,16 +2,16 @@
 
 
 (define (has-arg? arg args)
-  (memp (lambda (s) (string=? s arg)) args))
+  (scm-memp (lambda (s) (string=? s arg)) args))
 
 (define (get-arg-val arg args)
   (let loop ((args args))
     (cond ((null? args) #f)
-          ((string=? arg (car args))
-           (if (null? (cdr args))
+          ((string=? arg (scm-car args))
+           (if (null? (scm-cdr args))
                (error "Argument expects a parameter." arg)
-               (cadr args)))
-          (else (loop (cdr args))))))
+               (scm-cadr args)))
+          (else (loop (scm-cdr args))))))
 
 (define *valid-command-line-options* '("-e" "-c" "-x" "-ld-options" "-cc-options" "-v" "-h" "-r" "-i" "-u"))
 
@@ -21,10 +21,10 @@
 (define (assert-command-line-options args)
   (let loop ((args args))
     (if (null? args) #t
-        (begin (if (char=? (string-ref (car args) 0) #\-)
-                   (if (not (valid-command-line-option? (car args)))
-                       (error "Invalid command line option." (car args))))
-               (loop (cdr args))))))
+        (begin (if (char=? (string-ref (scm-car args) 0) #\-)
+                   (if (not (valid-command-line-option? (scm-car args)))
+                       (error "Invalid command line option." (scm-car args))))
+               (loop (scm-cdr args))))))
 
 (define (show-usage)
   (println "Usage: slogan [options]")
@@ -71,7 +71,7 @@
   (uninstall_package name))
 
 (define (command-line-has-options? args)
-  (memp (lambda (s) (char=? (string-ref s 0) #\-)) args))
+  (scm-memp (lambda (s) (char=? (string-ref s 0) #\-)) args))
 
 (define (process-args args)
   (assert-command-line-options args)

@@ -231,10 +231,10 @@ c-declare-end
         (let loop ((ld-paths ld-paths))
           (if (null? ld-paths) 
               #f
-              (let ((libname (string-append (car ld-paths) "/" libname)))
+              (let ((libname (string-append (scm-car ld-paths) "/" libname)))
                 (if (file-exists? libname)
                     (_ffi_open libname)
-                    (loop (cdr ld-paths)))))))
+                    (loop (scm-cdr ld-paths)))))))
       (_ffi_open libname)))
 
 (define _ffi_close (c-lambda (void-pointer) int "dlclose"))

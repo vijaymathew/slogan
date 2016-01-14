@@ -17,9 +17,9 @@
     (if (not (eof-object? v))
         (if (not (void? v)) 
             (loop (slogan tokenizer)
-                  (cons v exprs))
+                  (scm-cons v exprs))
             (loop (slogan tokenizer) exprs))
-        (reverse exprs))))
+        (scm-reverse exprs))))
 
 (define (read-script-file script-name)
   (call-with-input-file (add-slgn-extn script-name)
@@ -43,9 +43,9 @@
                                             program-text
                                             compile-mode: (or assemble exe)))))
           (if (not (null? exprs))
-              (begin (write (car exprs) out-port)
+              (begin (scm-write (scm-car exprs) out-port)
                      (newline out-port)
-                     (loop (cdr exprs)))))))))
+                     (loop (scm-cdr exprs)))))))))
 
 (define (compile script-name #!key assemble exe
 		 ld_options cc_options output
@@ -127,9 +127,9 @@
     (show_exception ex s)
     (let loop ((lines (string_split (get_output_string s) #\newline)))
       (if (not (null? lines))
-          (begin (display (car lines))
+          (begin (display (scm-car lines))
                  (newline)
-                 (loop (cdr lines)))))))
+                 (loop (scm-cdr lines)))))))
 
 (define (slogan-repl port #!key (prompt "slogan> "))
   (if prompt (display prompt))
@@ -163,7 +163,7 @@
                                         program-text)))
                (val #!void))
       (if (not (null? exprs))
-          (loop (cdr exprs) (eval (car exprs)))
+          (loop (scm-cdr exprs) (eval (scm-car exprs)))
           (if (not (void? val))
               (begin (slgn-display val)
                      (newline)))))))

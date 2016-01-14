@@ -1,10 +1,10 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Multi-core programming support.
 
-;;;; The primitive `p_spawn` starts new child processes with a channel for communication
+;;;; The primitive `p-spawn` starts new child processes with a channel for communication
 ;;;; with the parent process. Parent and child processes are represented by the two callback
-;;;; functions passed to `p_spawn`. The default channel allows very large messages to be exchanged
-;;;; between the processes in arbitrary order. `p_spawn` can also work with `fast-channels` that
+;;;; functions passed to `p-spawn`. The default channel allows very large messages to be exchanged
+;;;; between the processes in arbitrary order. `p-spawn` can also work with `fast-channels` that
 ;;;; is suitable for problems that require the exchange of a lot of small messages.
 ;;;; The functions shown in the following examples are meant to be primitives on top of which
 ;;;; more powerful parallel programming constructs can be built. They are not meant for direct
@@ -13,20 +13,20 @@
 ;;;; An example with the default channels:
 
 ;; define x = "hi!";
-;; fn pcb(pinfo) { p_broadcast(pinfo, fn(pid) pid:"hello"); showln("parent got: " p_receive(pinfo)) };
-;; fn ccb(pinfo) { let (d = tail(p_get(p_ichannel(pinfo)))) { showln("client got: " d); p_put(p_ochannel(pinfo), d) }};
+;; fn pcb(pinfo) { `p-broadcast`(pinfo, fn(pid) pid:"hello"); showln("parent got: " `p-receive`(pinfo)) };
+;; fn ccb(pinfo) { let (d = tail(`p-get`(`p-ichannel`(pinfo)))) { showln("client got: " d); `p-put`(`p-ochannel`(pinfo), d) }};
 ;; // starts two child-processes
-;; p_spawn(pcb ccb 2); 
+;; `p-spawn`(pcb ccb 2); 
 
 
 ;;;; Fast-channels are meant to be used in the request-reply pattern.
 ;;;; Parent and child callbacks has to agree on a protocol that makes
 ;;;; sure the communication start and flow in the correct sequence.
 
-;; fn pcb(pinfo) { task_sleep(2); p_broadcast(pinfo, fn(pid) pid:"hello"); task_sleep(1); p_receive(pinfo) };
-;; fn ccb(pinfo) { showln("child got - " let loop (r = false) { r = p_get(p_ichannel(pinfo), false, true); if (is_eof_object(tail(r))) { task_sleep(.05); loop(r) } else r }); p_put(p_ochannel(pinfo), "thanks!", false, true) };
+;; fn pcb(pinfo) { task_sleep(2); `p-broadcast`(pinfo, fn(pid) pid:"hello"); task_sleep(1); `p-receive`(pinfo) };
+;; fn ccb(pinfo) { showln("child got - " let loop (r = false) { r = `p-get`(`p-ichannel`(pinfo), false, true); if (is_eof_object(tail(r))) { task_sleep(.05); loop(r) } else r }); `p-put`(`p-ochannel`(pinfo), "thanks!", false, true) };
 ;; // starts 10 child-processes over a fast reply-request channel.
-;; p_spawn(pcb ccb 10 true);
+;; `p-spawn`(pcb ccb 10 true);
 
 (c-declare #<<c-declare-end
  
@@ -326,8 +326,8 @@ c-declare-end
                               (make-fast-channel fd_p sem_p data_p bn_p bufsz)
                               (make-fast-channel fd_c sem_c data_c bn_c bufsz))))))
                         (else
-                         (loop (+ i 1) (cons pid pids)
-                               (cons
+                         (loop (+ i 1) (scm-cons pid pids)
+                               (scm-cons
                                 (make-io-channel
                                  (make-fast-channel fd_c sem_c data_c bn_c bufsz)
                                  (make-fast-channel fd_p sem_p data_p bn_p bufsz))
@@ -337,15 +337,15 @@ c-declare-end
 (define (kill-all pids)
   (let loop ((pids pids))
     (if (not (null? pids))
-        (begin (call-kill (car pids) 9)
-               (loop (cdr pids))))))
+        (begin (call-kill (scm-car pids) 9)
+               (loop (scm-cdr pids))))))
 
 (define (close-all-pipes fds)
   (let loop ((fds fds))
     (if (not (null? fds))
-        (begin (call-close (caar fds))
-               (call-close (cdar fds))
-               (loop (cdr fds))))))
+        (begin (call-close (scm-caar fds))
+               (call-close (scm-cdar fds))
+               (loop (scm-cdr fds))))))
 
 (define (proc-spawn parent-callback child-callback num-children
                     fast-channels #!optional (fast-channel-bufsz 1024))
@@ -361,16 +361,16 @@ c-declare-end
                   (error "proc-spawn - failed to create child communication channel."))
               (let ((pid (call-fork)))
                 (cond ((zero? pid)
-                       (call-close (cdr fds_p))
-                       (call-close (car fds_c))
-                       (child-callback (make-process-info #f #f (make-io-channel (car fds_p) (cdr fds_c)))))
+                       (call-close (scm-cdr fds_p))
+                       (call-close (scm-car fds_c))
+                       (child-callback (make-process-info #f #f (make-io-channel (scm-car fds_p) (scm-cdr fds_c)))))
                       ((> pid 0)
-                       (call-close (car fds_p))
-                       (call-close (cdr fds_c))
-                       (loop (+ i 1) (cons pid pids) (cons (make-io-channel (car fds_c) (cdr fds_p)) pipe-fds)))
+                       (call-close (scm-car fds_p))
+                       (call-close (scm-cdr fds_c))
+                       (loop (+ i 1) (scm-cons pid pids) (scm-cons (make-io-channel (scm-car fds_c) (scm-cdr fds_p)) pipe-fds)))
                       (else
                        (kill-all pids)
-                       (close-all-pipes (cons fds_p (cons fds_c pipe-fds)))
+                       (close-all-pipes (scm-cons fds_p (scm-cons fds_c pipe-fds)))
                        (error "proc-spawn - failed to start child process.")))))
             (parent-callback (make-process-info #f pids pipe-fds))))))
 
@@ -381,9 +381,9 @@ c-declare-end
     (if (and timeout (< timeout *proc-io-min-timeout*))
         (error 'timeout))
     (cond ((pair? r)
-           (if (zero? (car r))
-               (string-append s (cdr r))
-               (loop (call-read fd) (string-append s (cdr r)))))
+           (if (zero? (scm-car r))
+               (string-append s (scm-cdr r))
+               (loop (call-read fd) (string-append s (scm-cdr r)))))
           ((zero? r) s)
           ((= r -1) 
            (if (and timeout (> timeout *proc-io-min-timeout*))
@@ -457,8 +457,8 @@ c-declare-end
   (map (lambda (fdo fdi)
          (call-close fdo)
          (call-close fdi))
-       (p_ochannels pinfo)
-       (p_ichannels pinfo)))
+       (p-ochannels pinfo)
+       (p-ichannels pinfo)))
 
 (define (parent-fast-done pinfo)
   (map (lambda (ich och)
@@ -474,54 +474,69 @@ c-declare-end
                       (fast-channel-name ich))
          (shm-destroy (fast-channel-fd och)
                       (fast-channel-name och)))
-       (p_ichannels pinfo)
-       (p_ochannels pinfo)))
+       (p-ichannels pinfo)
+       (p-ochannels pinfo)))
 
 (define (child-done pinfo)
-  (call-close (p_ochannel pinfo))
-  (call-close (p_ichannel pinfo))
+  (call-close (p-ochannel pinfo))
+  (call-close (p-ichannel pinfo))
   (exit))
 
 (define (child-fast-done pinfo)
-  (let ((och (p_ochannel pinfo))
-        (ich (p_ichannel pinfo)))
+  (let ((och (p-ochannel pinfo))
+        (ich (p-ichannel pinfo)))
     (shm-destroy (fast-channel-fd och)
                  (fast-channel-name och))
     (shm-destroy (fast-channel-fd ich)
                  (fast-channel-name ich)))
   (exit))
 
-(define (p_spawn parent-callback child-callback
+(define parent-process? process-info-pids)
+
+(define (process-info-close pinfo)
+  (let ((parent? (parent-process? pinfo))
+        (fast? (process-info-fast? pinfo)))
+    (if parent?
+        ((if fast? parent-fast-done parent-done)
+         pinfo)
+        ((if fast? child-fast-done child-done)
+         pinfo))))
+
+(define (p-spawn parent-callback child-callback
                  #!optional (num-children 1)
                  fast-channels (fast-channel-bufsz 1024))
   (if (< num-children 1)
-      (error "p_spawn - number of child processes must be a positive number."))
+      (error "p-spawn - number of child processes must be a positive number."))
   (let ((p-done (if fast-channels parent-fast-done parent-done))
         (c-done (if fast-channels child-fast-done child-done)))
-    (let ((pcb (lambda (pinfo)
-                 (with-exception-catcher
-                  (lambda (e)
-                    (p-done pinfo) (raise e))
-                  (lambda ()
-                    (let ((r (parent-callback pinfo)))
-                      (p-done pinfo)
-                      r)))))
-          (ccb (lambda (pinfo)
-                 (with-exception-catcher
-                  (lambda (e)
-                    (c-done pinfo))
-                  (lambda ()
-                    (child-callback pinfo)
-                    (c-done pinfo))))))
+    (let ((pcb (if parent-callback
+                   (lambda (pinfo)
+                     (with-exception-catcher
+                      (lambda (e)
+                        (p-done pinfo) (raise e))
+                      (lambda ()
+                        (let ((r (parent-callback pinfo)))
+                          (p-done pinfo)
+                          r))))
+                   scm-identity))
+          (ccb (if child-callback
+                   (lambda (pinfo)
+                     (with-exception-catcher
+                      (lambda (e)
+                        (c-done pinfo))
+                      (lambda ()
+                        (child-callback pinfo)
+                        (c-done pinfo))))
+                   scm-identity)))
       (proc-spawn pcb ccb num-children fast-channels))))
 
-(define (p_put channel obj #!optional timeout fast-channel)
+(define (p-put channel obj #!optional timeout fast-channel)
   (if (and timeout (not (> timeout 0)))
-      (error "pput - timeout must be a positive number."))
+      (error "p-put - timeout must be a positive number."))
   (let ((buf (open-output-string)))
-    (write obj buf)
+    (scm-write obj buf)
     (with-exception-catcher
-     (lambda (e) (cons 'error e))
+     (lambda (e) (scm-cons 'error e))
      (lambda ()
        ((if fast-channel
             proc-write-fast
@@ -530,39 +545,77 @@ c-declare-end
     (close-output-port buf)
     #t))
 
-(define (p_get channel #!optional timeout fast-channel)
+(define (p-get channel #!optional timeout fast-channel)
   (if (and timeout (not (> timeout 0)))
-      (error "pget - timeout must be a positive number."))
+      (error "p-get - timeout must be a positive number."))
   (with-exception-catcher
-   (lambda (e) (cons 'error e))
+   (lambda (e) (scm-cons 'error e))
    (lambda ()
      (let ((str ((if fast-channel proc-read-fast proc-read) channel timeout)))
        (let ((buf (open-input-string str)))
-         (let ((obj (read buf)))
+         (let ((obj (scm-read buf)))
            (close-input-port buf)
-           (cons 'ok obj)))))))
+           (scm-cons 'ok obj)))))))
 
-(define (p_broadcast pinfo putfn #!optional timeout)
+(define (p-broadcast pinfo putfn #!optional timeout)
   (map (lambda (pid ch)
-         (p_put ch (putfn pid) timeout (process-info-fast? pinfo)))
-       (p_ids pinfo) (p_ochannels pinfo)))
+         (p-put ch (putfn pid) timeout (process-info-fast? pinfo)))
+       (process-info-pids pinfo) (p-ochannels pinfo)))
 
-(define (p_receive pinfo #!optional timeout getfn default-value)
+(define (p-receive pinfo #!optional timeout getfn default-value)
   (map (lambda (pid ch) (if getfn
                             (if (getfn pid)
-                                (p_get ch timeout (process-info-fast? pinfo))
+                                (p-get ch timeout (process-info-fast? pinfo))
                                 default-value)
-                            (p_get ch timeout (process-info-fast? pinfo))))
-       (p_ids pinfo) (p_ichannels pinfo)))
-
-(define p_is_fast_channels process-info-fast?)
-(define p_ids process-info-pids)
-(define p_channels process-info-channels)
+                            (p-get ch timeout (process-info-fast? pinfo))))
+       (process-info-pids pinfo) (p-ichannels pinfo)))
 
 ;; To be called by a child process
-(define (p_ichannel pinfo) (io-channel-in (process-info-channels pinfo)))
-(define (p_ochannel pinfo) (io-channel-out (process-info-channels pinfo)))
+(define (p-ichannel pinfo) (io-channel-in (process-info-channels pinfo)))
+(define (p-ochannel pinfo) (io-channel-out (process-info-channels pinfo)))
 
 ;; To be called by a parent process
-(define (p_ochannels pinfo) (map io-channel-out (process-info-channels pinfo)))
-(define (p_ichannels pinfo) (map io-channel-in (process-info-channels pinfo)))
+(define (p-ochannels pinfo) (map io-channel-out (process-info-channels pinfo)))
+(define (p-ichannels pinfo) (map io-channel-in (process-info-channels pinfo)))
+
+(define default-channel-options (list (cons 'buffer_size 1024)))
+
+(define (process child_callback #!key parent_callback 
+                 (count 1) (use_fast_channel #t)
+                 (channel_options default-channel-options))
+  (p-spawn parent_callback child_callback count
+           use_fast_channel
+           (if channel_options
+               (assoc 'buffer_size channel_options)
+               #f)))
+
+(define is_parent_process parent-process?)
+
+(define (process_send pinfo obj #!key timeout default_value)
+  (let ((parent? (parent-process? pinfo))
+        (fast? (process-info-fast? pinfo)))
+    (with-exception-catcher
+     (lambda (e)
+       (if (eq? e 'timeout)
+           default_value
+           (raise e)))
+     (lambda ()
+       (if parent?
+           (map (lambda (ch) (p-put ch obj timeout fast?))
+                (p-ochannels pinfo))
+           (p-put (p-ochannel pinfo) obj timeout fast?))))))
+
+(define (process_receive pinfo #!key timeout default_value)
+  (let ((parent? (parent-process? pinfo))
+        (fast? (process-info-fast? pinfo)))
+    (with-exception-catcher
+     (lambda (e)
+       (if (eq? e 'timeout)
+           default_value
+           (raise e)))
+     (lambda ()
+       (if parent?
+           (map (lambda (ch) (p-get ch timeout fast?))
+                (p-ichannels pinfo))
+           (p-get (p-ichannel pinfo) timeout fast?))))))
+                                            

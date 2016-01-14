@@ -10,7 +10,7 @@
 (define (validate-codec codec)
   (if (not (symbol? codec))
       (error "Codec must be a symbol."))
-  (if (not (memq (string->symbol (string_upcase (symbol->string codec)))
+  (if (not (scm-memq (string->symbol (string_upcase (symbol->string codec)))
                  *supported-codecs*))
       (error "Unsupported codec." codec))
   codec)
@@ -18,19 +18,19 @@
 (define *error-modes* '(replace raise ignore))
 
 (define (validate-error-handling-mode mode)
-  (if (memq mode *error-modes*) mode
+  (if (scm-memq mode *error-modes*) mode
       (error "Invalid error handling mode." mode)))
 
 (define *eol-styles* '(lf cr crlf))
 
 (define (validate-eol-style eol-style)
-  (if (memq eol-style *eol-styles*) eol-style
+  (if (scm-memq eol-style *eol-styles*) eol-style
       (error "Unsupported eol-style." eol-style)))
 
-(define (error-handling-mode->boolean mode) (eq? mode 'replace))
+(define (error-handling-mode->boolean mode) (scm-eq? mode 'replace))
 
 (define (eol-style->encoding eol-style)
-  (if (eq? eol-style 'crlf) 'cr-lf
+  (if (scm-eq? eol-style 'crlf) 'cr-lf
       eol-style))
 
 (define (transcoder codec #!optional (eol-style 'crlf) (error-handling-mode 'ignore))
@@ -43,7 +43,7 @@
 
 (define (get-stream-option options key #!optional default)
   (if (list? options)
-      (if (memq key options) #t
+      (if (scm-memq key options) #t
           default)
       default))
 
@@ -54,7 +54,7 @@
 (define (get-error-handling-mode-from-transcoder tcoder)
   (if tcoder 
       (let ((em (text-transcoder-error-handling-mode tcoder)))
-	(if (eq? em 'ignore) #f
+	(if (scm-eq? em 'ignore) #f
 	    (error-handling-mode->boolean em)))
       #f))
 
@@ -74,26 +74,26 @@
 (define (replace-underscores sym) (slgn-symbol->scm-sym/kw sym string->symbol))
 
 (define (open-file-stream-helper path direction options buffer-mode tcoder permissions)
-  (let ((settings (list path: path direction: direction)))
+  (let ((settings (scm-list path: path direction: direction)))
     (let ((opt (get-stream-option options 'append)))
-      (if opt (set! settings (append settings (list append: opt)))))
-    (if (not (eq? direction 'input))
+      (if opt (set! settings (scm-append settings (scm-list append: opt)))))
+    (if (not (scm-eq? direction 'input))
         (let ((opt (get-stream-option options 'create)))
-          (if opt (set! settings (append settings (list create: #t)))
+          (if opt (set! settings (scm-append settings (scm-list create: #t)))
               (let ((opt (get-stream-option options 'no_create)))
-                (if opt (set! settings (append settings (list create: #f)))
+                (if opt (set! settings (scm-append settings (scm-list create: #f)))
                     (let ((opt (get-stream-option options 'maybe_create)))
-                      (if opt (set! settings (append settings (list create: 'maybe))))))))))
+                      (if opt (set! settings (scm-append settings (scm-list create: 'maybe))))))))))
     (let ((opt (get-stream-option options 'truncate)))
-      (if opt (set! settings (append settings (list truncate: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list truncate: opt)))))
     (let ((opt (get-codec-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list eol-encoding: opt)))))
-    (if permissions (set! settings (append settings (list permissions: permissions))))
-    (open-file (append settings (list buffering: (get-buffering-for-stream buffer-mode))))))
+      (if opt (set! settings (scm-append settings (scm-list eol-encoding: opt)))))
+    (if permissions (set! settings (scm-append settings (scm-list permissions: permissions))))
+    (open-file (scm-append settings (scm-list buffering: (get-buffering-for-stream buffer-mode))))))
 
 (define (file_reader path #!key options buffer_mode transcoder)
   (open-file-stream-helper path 'input options buffer_mode transcoder #f))
@@ -111,13 +111,13 @@
 (define (open-byte-stream-helper openfn invalue tcoder)
   (if (not tcoder)
       (openfn invalue)
-      (let ((settings (list init: invalue)))
+      (let ((settings (scm-list init: invalue)))
         (let ((opt (get-codec-from-transcoder tcoder)))
-          (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
+          (if opt (set! settings (scm-append settings (scm-list char-encoding: (replace-underscores opt))))))
         (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
-          (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+          (if opt (set! settings (scm-append settings (scm-list char-encoding-errors: opt)))))
         (let ((opt (get-eol-encoding-from-transcoder tcoder)))
-          (if opt (set! settings (append settings (list eol-encoding: opt)))))
+          (if opt (set! settings (scm-append settings (scm-list eol-encoding: opt)))))
         (openfn settings))))
 
 (define (byte_array_reader byte_array #!key transcoder)
@@ -252,7 +252,7 @@
                                     stdout_redirection stderr_redirection
                                     pseudo_terminal show_console
                                     tcoder)
-  (let ((settings (list path: path 
+  (let ((settings (scm-list path: path 
                         direction: direction
                         arguments: arguments 
                         environment: environment
@@ -263,11 +263,11 @@
                         pseudo-terminal: pseudo_terminal
                         show-console: show_console)))
     (let ((opt (get-codec-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder tcoder)))
-      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list eol-encoding: opt)))))
     (open-process settings)))
 
 (define (open-pipe-stream path #!key (direction 'input-output) (arguments '()) environment
@@ -323,33 +323,33 @@
 (define (tcp_client_stream addr #!key port_number keep_alive (coalesce #t) transcoder)
   (let ((settings (list)))
     (if (string? addr)
-        (set! settings (append settings (list server-address: addr)))
+        (set! settings (scm-append settings (scm-list server-address: addr)))
         (set! port_number addr))
     (if (integer? port_number)
-        (set! settings (append settings (list port-number: port_number))))
-    (set! settings (append settings (list keep-alive: keep_alive coalesce: coalesce)))
+        (set! settings (scm-append settings (scm-list port-number: port_number))))
+    (set! settings (scm-append settings (scm-list keep-alive: keep_alive coalesce: coalesce)))
     (let ((opt (get-codec-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list eol-encoding: opt)))))
     (open-tcp-client settings)))
 
 (define (open-tcp-server-helper fn addr port_number backlog reuse_address transcoder #!optional cbfn)
   (let ((settings (list)))
     (if (string? addr)
-        (set! settings (append settings (list server-address: addr)))
+        (set! settings (scm-append settings (scm-list server-address: addr)))
         (set! port_number addr))
     (if (integer? port_number)
-        (set! settings (append settings (list port-number: port_number))))
-    (set! settings (append settings (list backlog: backlog reuse-address: reuse_address)))
+        (set! settings (scm-append settings (scm-list port-number: port_number))))
+    (set! settings (scm-append settings (scm-list backlog: backlog reuse-address: reuse_address)))
     (let ((opt (get-codec-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list char-encoding: (replace-underscores opt))))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding: (replace-underscores opt))))))
     (let ((opt (get-error-handling-mode-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list char-encoding-errors: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list char-encoding-errors: opt)))))
     (let ((opt (get-eol-encoding-from-transcoder transcoder)))
-      (if opt (set! settings (append settings (list eol-encoding: opt)))))
+      (if opt (set! settings (scm-append settings (scm-list eol-encoding: opt)))))
     (if cbfn (fn settings cbfn)
         (fn settings))))
 
@@ -381,8 +381,8 @@
           (if (or (eof-object? c)
                   (cmpr c delimiters))
               (begin (read-char stream)
-                     (list->string (reverse str)))
-              (loop (cons (read-char stream) str) (peek-char stream)))))))
+                     (list->string (scm-reverse str)))
+              (loop (scm-cons (read-char stream) str) (peek-char stream)))))))
 
 (define (stream_tokenizer delimiters #!optional (stream (current-input-port))) 
   (if delimiters (make-delimited-tokenizer stream delimiters)
@@ -397,12 +397,12 @@
 (define (show #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (not (null? objs))
-	(begin (slgn-display (car objs) display-string: #t port: stream)
-	       (loop (cdr objs))))))
+	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
+	       (loop (scm-cdr objs))))))
 
 (define (showln #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (not (null? objs))
-	(begin (slgn-display (car objs) display-string: #t port: stream)
-	       (loop (cdr objs)))))
+	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
+	       (loop (scm-cdr objs)))))
   (newline stream))

@@ -9,8 +9,8 @@
 (define is_symbol symbol?)
 (define is_promise ##promise?)
 
-(define (is_true obj) (eq? obj #t))
-(define (is_false obj) (eq? obj #f))
+(define (is_true obj) (scm-eq? obj #t))
+(define (is_false obj) (scm-eq? obj #f))
 
 (define (is_object obj) (not (void? obj)))
 
@@ -32,30 +32,28 @@
              (display #\space port)
              (let loop ((args (error-exception-parameters e)))
                (if (not (null? args))
-                   (begin (slgn-display (car args) display-string: #t port: port)
+                   (begin (slgn-display (scm-car args) display-string: #t port: port)
                           (display #\space port)
-                          (loop (cdr args))))))
+                          (loop (scm-cdr args))))))
       (display-exception e port)))
 
 (define callcc call/cc)
 (define dynamic_wind dynamic-wind)
 (define call_with_values call-with-values)
 
-(define (identity x) x)
-
 (define (compose #!rest fns)
-  (if (null? fns) (set! fns (list identity)))
-  (let ((fns (reverse fns)))
+  (if (null? fns) (set! fns (scm-list identity)))
+  (let ((fns (scm-reverse fns)))
     (lambda (#!rest args)
-      (let loop ((fns (cdr fns))
-                 (result (apply (car fns) args)))
+      (let loop ((fns (scm-cdr fns))
+                 (result (apply (scm-car fns) args)))
         (if (not (null? fns))
-            (loop (cdr fns) ((car fns) result))
+            (loop (scm-cdr fns) ((scm-car fns) result))
             result)))))
 
 (define (mapfn f) (lambda (xs #!rest ys) (apply map f xs ys)))
 
-(define (partial f #!rest args) (lambda (#!rest args2) (apply f (append args2 args))))
+(define (partial f #!rest args) (lambda (#!rest args2) (apply f (scm-append args2 args))))
 
 (define (until p f x) (if (p x) x (until p f (f x))))
 
@@ -77,7 +75,7 @@
 
 (define (map-mutate tab key val)
   (cond ((list? tab)
-         (set-cdr! (assoc key tab) val))
+         (set-cdr! (scm-assoc key tab) val))
         ((vector? tab)
          (vector-set! tab key val))
         (else
@@ -95,9 +93,6 @@
 
 (define (@ tab key #!key (value *void*) (default #f))
   (let ((v (map-access tab key default)))
-    (if (not (eq? value *void*))
+    (if (not (scm-eq? value *void*))
         (map-mutate tab key value))
     v))
-
-      
-      

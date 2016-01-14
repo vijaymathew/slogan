@@ -8,9 +8,9 @@
 (define %bitvect-masks% (list->u32vector (let loop ((res '())
                                                     (i 0))
                                            (if (< i %bitvect-bpi%)
-                                               (loop (cons (arithmetic-shift %bitvect-mask% i) res)
+                                               (loop (scm-cons (arithmetic-shift %bitvect-mask% i) res)
                                                      (+ i 1))
-                                               (reverse res)))))
+                                               (scm-reverse res)))))
 (define %bitvect-all-on% #b11111111111111111111111111111111)
 (define %bitvect-all-off% #b00000000000000000000000000000000)
 
@@ -26,11 +26,11 @@
 (define (bit_array . rest)
   (let loop ((rest rest)
              (i 0)
-             (ba (make-bitvector (length rest))))
+             (ba (make-bitvector (scm-length rest))))
     (if (null? rest) ba
-        (begin (if (not (= 0 (car rest)))
+        (begin (if (not (= 0 (scm-car rest)))
                    (bitvector-set! ba i))
-               (loop (cdr rest) (+ i 1) ba)))))
+               (loop (scm-cdr rest) (+ i 1) ba)))))
 
 (define make_bit_array make-bitvector)
 
@@ -109,9 +109,9 @@
   (let ((res '()))
     (bitvector-for-each 
      (lambda (i)
-       (set! res (cons i res)))
+       (set! res (scm-cons i res)))
      self)
-    (reverse res)))
+    (scm-reverse res)))
 
 (define bit_array_to_list bitvector->list)
 
@@ -208,13 +208,13 @@
       (bitvector-blit! b 0 self lena lenb))))
 
 (define (bit_arrays_concat bitvect-list)
-  (if (= 1 (length bitvect-list))
-      (car bitvect-list)
-      (let loop ((self (car bitvect-list))
-                 (bitvect-list (cdr bitvect-list)))
+  (if (= 1 (scm-length bitvect-list))
+      (scm-car bitvect-list)
+      (let loop ((self (scm-car bitvect-list))
+                 (bitvect-list (scm-cdr bitvect-list)))
         (if (not (null? bitvect-list))
-            (loop (bit-array-append self (car bitvect-list))
-                  (cdr bitvect-list))
+            (loop (bit-array-append self (scm-car bitvect-list))
+                  (scm-cdr bitvect-list))
             self))))
 
 (define (subbitarray self offset count)
