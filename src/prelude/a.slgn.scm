@@ -35,3 +35,4 @@
 
 (define (identity x) x)
 (define scm-identity identity)
+(define scm-force force)

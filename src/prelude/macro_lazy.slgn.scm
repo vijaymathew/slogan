@@ -232,7 +232,7 @@
 
 (define (expr-forcify expr params)
   (let ((params (normalize-lazy-params params)))
-    (replace-macro-args params (map (lambda (x) (scm-list 'force x)) params) expr)))
+    (replace-macro-args params (map (lambda (x) (scm-list 'scm-force x)) params) expr)))
 
 (define (declare-lazy name)
   (if (symbol? name)

@@ -8,7 +8,7 @@
 ;; A sequence can be either a normal list or a lazy-pair.
 
 (define (first lpair) (head lpair))
-(define (rest lpair) (force (tail lpair)))
+(define (rest lpair) (scm-force (tail lpair)))
 
 (define (is_lpair obj)
   (and (pair? obj)
@@ -25,7 +25,7 @@
       (nth (- n 1) (rest seq))))
 
 (define (nth_tail n seq)
-  (if (<= n 0) (force seq)
+  (if (<= n 0) (scm-force seq)
       (nth_tail (- n 1) (rest seq))))
       
 (define (second seq) (nth 1 seq))
