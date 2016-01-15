@@ -222,7 +222,7 @@
 
    ___slogan_obj_to_nonnull_charstring(sbuf, &buf);
  write_again:
-   write(fd, buf, len);
+   r = write(fd, buf, len);
    if (r == -1)
      {
        if (errno == EAGAIN || errno == EWOULDBLOCK)

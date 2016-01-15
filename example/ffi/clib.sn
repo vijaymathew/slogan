@@ -1,4 +1,4 @@
-define clib = ffi_open("clib.so");
+define clib = ffi_open("./clib.so");
 declare ffi clib [
     int add_i[int, int]
     uint add_ui[uint, uint]

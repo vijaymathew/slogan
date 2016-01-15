@@ -9,8 +9,16 @@ LIBFFI_PATH=${SLOGAN_ROOT}/platform/libffi-3.2.1
 LIBFFI_LIB=${LIBFFI_PATH}/target/usr/local/lib
 LIBFFI_INC=${LIBFFI_PATH}/target/usr/local/lib/libffi-3.2.1/include
 
+OS := $(shell uname)
+OPT_LIBS=""
+ifeq ($(OS), Linux)
+	OPT_LIBS=-lffi -lpthread -lrt
+else
+	OPT_LIBS=-lffi
+endif
+
 all:
-	${GSC} -o slogan -cc-options "-I${LIBFFI_INC}" -ld-options "-L${LIBFFI_LIB} -lffi" -exe ./prelude/*.scm repl.scm
+	${GSC} -o slogan -cc-options "-I${LIBFFI_INC}" -ld-options "-L${LIBFFI_LIB} ${OPT_LIBS}" -exe ./prelude/*.scm repl.scm
 
 install:
 	cp slogan ${INSTALL_DIR}

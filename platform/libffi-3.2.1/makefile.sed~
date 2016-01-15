@@ -32,7 +32,7 @@ s/ [a-zA-Z0-9-]*-all [a-zA-Z0-9-]*-all-all//g
 /-all-all/d
 a\
 	@ HOST="$(HOST)\" \\\
-	; test ".$$HOST" = "." && HOST=` sh /Users/vijaym/Projects/slogan/platform/libffi-3.2.1/config.guess ` \\\
+	; test ".$$HOST" = "." && HOST=` sh /home/vijay/Projects/slogan/platform/libffi-3.2.1/config.guess ` \\\
 	; BUILD=` grep "^#### $$HOST " Makefile | sed -e 's/.*|//' ` \\\
 	; use=` basename "$\@" -all `; n=` echo $$BUILD | wc -w ` \\\
 	; echo "MAKE $$HOST : $$n * $\@"; if test "$$n" -eq "0" ; then : \\\
@@ -43,7 +43,7 @@ a\
 	; (cd "$$i" && test ! -f configure && $(MAKE) $$use) || exit; done
 /dist-all *:/a\
 	@ HOST="$(HOST)\" \\\
-	; test ".$$HOST" = "." && HOST=` sh /Users/vijaym/Projects/slogan/platform/libffi-3.2.1/config.guess ` \\\
+	; test ".$$HOST" = "." && HOST=` sh /home/vijay/Projects/slogan/platform/libffi-3.2.1/config.guess ` \\\
 	; BUILD=` grep "^#### $$HOST " Makefile | sed -e 's/.*|//' ` \\\
 	; found=` echo $$BUILD | wc -w ` \\\
 	; echo "MAKE $$HOST : $$found $(PACKAGE)-$(VERSION).tar.*" \\\
@@ -65,7 +65,7 @@ a\
 	; do test -f "$$f" && mv "$$f" $(PUB). ; done ; break ; done
 /distclean-all *:/a\
 	@ HOST="$(HOST)\" \\\
-	; test ".$$HOST" = "." && HOST=` sh /Users/vijaym/Projects/slogan/platform/libffi-3.2.1/config.guess ` \\\
+	; test ".$$HOST" = "." && HOST=` sh /home/vijay/Projects/slogan/platform/libffi-3.2.1/config.guess ` \\\
 	; BUILD=` grep "^#### .*|" Makefile | sed -e 's/.*|//' ` \\\
 	; use=` basename "$\@" -all `; n=` echo $$BUILD | wc -w ` \\\
 	; echo "MAKE $$HOST : $$n * $\@ (all local builds)" \\\
