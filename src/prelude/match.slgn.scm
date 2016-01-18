@@ -21,8 +21,8 @@
                      (make-record-pattern name (scm-reverse members)))
                     (else 
                      (if (keyword? (scm-car lst))
-                         (loop name (cddr lst)
-                               (scm-cons (scm-cons (keyword->string (scm-car lst)) (cadr lst)) members))
+                         (loop name (scm-cddr lst)
+                               (scm-cons (scm-cons (keyword->string (scm-car lst)) (scm-cadr lst)) members))
                          (loop name (scm-cdr lst)
                                (scm-cons (scm-car lst) members))))))
             lst))
@@ -91,7 +91,7 @@
                        ,(match-pattern-helper (scm-car pattern) bindings))
                      (if *match-found*
                          (let ((*value* (rest *value*)))
-                           ,(match-pattern-helper (cadr pattern) bindings))))
+                           ,(match-pattern-helper (scm-cadr pattern) bindings))))
               (set! *match-found* #f)))
         ((list? pattern)
          (if (scm-eq? (scm-car pattern) 'quote)
@@ -176,7 +176,7 @@
             (set! *value* (first *value*))
             ,(expand-consequent (scm-car pattern) #f)
             (set! *value* *rest*)
-            ,(expand-consequent (cadr pattern) consequent)))
+            ,(expand-consequent (scm-cadr pattern) consequent)))
         ((list? pattern)
          (if (scm-eq? (scm-car pattern) 'quote)
              consequent

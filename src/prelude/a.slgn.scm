@@ -10,6 +10,7 @@
 (define scm-caar caar)
 (define scm-cdar cdar)
 (define scm-cadr cadr)
+(define scm-cddr cddr)
 (define scm-cadar cadar)
 (define scm-list list)
 (define scm-length length)

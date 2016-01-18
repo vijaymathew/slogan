@@ -238,7 +238,12 @@
 
 (define (load_script script #!optional force-compile)
   (if force-compile
-      (delete-file (string-append script *scm-extn*)))
+      (with-exception-catcher
+       (lambda (e)
+         (if (not (no-such-file-or-directory-exception? e))
+             (raise e)))
+       (lambda ()
+         (delete-file (string-append script *scm-extn*)))))
   (with-exception-catcher
    (lambda (e)
      (if (file-exists? (add-slgn-extn script))

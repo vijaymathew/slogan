@@ -551,7 +551,7 @@
           (if (not (scm-eq? (tokenizer 'peek) '*inserter*))
               (parser-error tokenizer "Missing -> after pattern.")
               (tokenizer 'next))
-          (let ((scm-consequent (func-body-expr tokenizer #f #t)))
+          (let ((consequent (func-body-expr tokenizer #f #t)))
             (if (not (scm-eq? guard #t))
                 (set! consequent `(if ,guard 
                                       ,consequent 
@@ -1346,7 +1346,7 @@
       expr))
 
 (define *reserved-names* '(fn function method define record true false
-			      if else let letseq letrec 
+			      if else let letseq letrec task
 			      case match where try trycc catch finally
                               macro namespace import declare))
 

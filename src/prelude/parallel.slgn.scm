@@ -14,7 +14,7 @@
 
 ;; define x = "hi!";
 ;; fn pcb(pinfo) { `p-broadcast`(pinfo, fn(pid) pid:"hello"); showln("parent got: " `p-receive`(pinfo)) };
-;; fn ccb(pinfo) { let (d = tail(`p-get`(`p-ichannel`(pinfo)))) { showln("client got: " d); `p-put`(`p-ochannel`(pinfo), d) }};
+;; fn ccb(pinfo) { let (d = `p-get`(`p-ichannel`(pinfo))) { showln("client got: " d); `p-put`(`p-ochannel`(pinfo), d) }};
 ;; // starts two child-processes
 ;; `p-spawn`(pcb ccb 2); 
 
@@ -24,7 +24,7 @@
 ;;;; sure the communication start and flow in the correct sequence.
 
 ;; fn pcb(pinfo) { task_sleep(2); `p-broadcast`(pinfo, fn(pid) pid:"hello"); task_sleep(1); `p-receive`(pinfo) };
-;; fn ccb(pinfo) { showln("child got - " let loop (r = false) { r = `p-get`(`p-ichannel`(pinfo), false, true); if (is_eof_object(tail(r))) { task_sleep(.05); loop(r) } else r }); `p-put`(`p-ochannel`(pinfo), "thanks!", false, true) };
+;; fn ccb(pinfo) { showln("child got - " let loop (r = false) { r = `p-get`(`p-ichannel`(pinfo), false, true); if (is_eof_object(r)) { task_sleep(.05); loop(r) } else r }); `p-put`(`p-ochannel`(pinfo), "thanks!", false, true) };
 ;; // starts 10 child-processes over a fast reply-request channel.
 ;; `p-spawn`(pcb ccb 10 true);
 
@@ -134,11 +134,11 @@
    return r;
  }
 
- static void *c_sem_open(char *name, int creat)
+ static void *c_sem_open(char *name, int creat, int c)
  {
    sem_t *s;
    if (creat)
-     s = sem_open(name, O_CREAT | O_RDWR, 0644, 1);
+     s = sem_open(name, O_CREAT | O_RDWR, 0644, c);
    else
      s = sem_open(name, O_RDWR);
    if (s == SEM_FAILED)
@@ -161,7 +161,7 @@
    fprintf(stderr, "sem_trywait failed - %d.\n", errno);
    return -2;
  }
- 
+
  static void set_nonblocking(int fd)
  {
    int flags = fcntl(fd, F_GETFL);
@@ -257,7 +257,7 @@ c-declare-end
 (define call-shm-unlink (c-lambda (char-string) int "shm_unlink"))
 (define call-shm-write (c-lambda (int void-pointer scheme-object int int) scheme-object "c_shm_write"))
 (define call-shm-read (c-lambda (void-pointer) scheme-object "c_shm_read"))
-(define call-sem-open (c-lambda (char-string int) void-pointer "c_sem_open"))
+(define call-sem-open (c-lambda (char-string int int) void-pointer "c_sem_open"))
 (define call-sem-wait (c-lambda (void-pointer) int "sem_wait"))
 (define call-sem-trywait (c-lambda (void-pointer) int "c_sem_trywait"))
 (define call-sem-post (c-lambda (void-pointer) int "sem_post"))
@@ -303,8 +303,8 @@ c-declare-end
                   (begin (shm-destroy fd_p bn_p)
                          (shm-destroy fd_c bn_c)
                          (error "failed to initialize queue for communication channels")))
-              (let ((sem_p (call-sem-open sn_p 1))
-                    (sem_c (call-sem-open sn_c 1)))
+              (let ((sem_p (call-sem-open sn_p 1 0))
+                    (sem_c (call-sem-open sn_c 1 1)))
                 (if (or (not sem_p) (not sem_c))
                     (begin (shm-destroy fd_p bn_p)
                            (shm-destroy fd_c bn_c)
@@ -315,8 +315,8 @@ c-declare-end
                          (shm-destroy fd_c bn_c)
                          (error "failed to spawn child process"))
                         ((= pid 0)
-                         (let ((sem_p (call-sem-open sn_p 0))
-                               (sem_c (call-sem-open sn_c 0)))
+                         (let ((sem_p (call-sem-open sn_p 0 1))
+                               (sem_c (call-sem-open sn_c 0 0)))
                            (if (or (not sem_p) (not sem_c))
                                (error "failed to open sync objects - " sem_p ", " sem_c))
                            (child-callback
@@ -430,7 +430,7 @@ c-declare-end
              (if (and timeout (> timeout *proc-io-min-timeout*))
                  (begin (set! timeout (- timeout *proc-io-min-timeout*))
                         (thread-sleep! *proc-io-min-timeout*))
-                 (error 'semaphore))
+                 (error (cons "write" 'semaphore)))
              (loop e))
             (else (error "proc-write-fast failed to acquire lock- " e))))))
 
@@ -444,13 +444,18 @@ c-declare-end
       (cond ((zero? e)
              (let ((str (call-shm-read buf)))
                (call-sem-post sem)
-               str))
+               (cond ((= 0 (string-length str))
+                      (if (and timeout (> timeout *proc-io-min-timeout*))
+                          (begin (thread-sleep! *proc-io-min-timeout*)
+                                 (set! timeout (- timeout *proc-io-min-timeout*))))
+                      (loop e))
+                     (else str))))
             ((= e -1)
              (if (and timeout (> timeout *proc-io-min-timeout*))
                  (begin (set! timeout (- timeout *proc-io-min-timeout*))
                         (thread-sleep! *proc-io-min-timeout*))
-                 (error 'semaphore))
-             (loop e))             
+                 (error (cons "read" 'semaphore)))
+             (loop e))
             (else (error "proc-read-fast failed to acquire lock- " e))))))
 
 (define (parent-done pinfo)
@@ -536,26 +541,24 @@ c-declare-end
   (let ((buf (open-output-string)))
     (scm-write obj buf)
     (with-exception-catcher
-     (lambda (e) (scm-cons 'error e))
+     (lambda (e)
+       (close-output-port buf)
+       (raise e))
      (lambda ()
        ((if fast-channel
             proc-write-fast
             proc-write)
         channel (get-output-string buf) timeout)))
-    (close-output-port buf)
     #t))
 
 (define (p-get channel #!optional timeout fast-channel)
   (if (and timeout (not (> timeout 0)))
       (error "p-get - timeout must be a positive number."))
-  (with-exception-catcher
-   (lambda (e) (scm-cons 'error e))
-   (lambda ()
-     (let ((str ((if fast-channel proc-read-fast proc-read) channel timeout)))
-       (let ((buf (open-input-string str)))
-         (let ((obj (scm-read buf)))
-           (close-input-port buf)
-           (scm-cons 'ok obj)))))))
+  (let ((str ((if fast-channel proc-read-fast proc-read) channel timeout)))
+    (let ((buf (open-input-string str)))
+      (let ((obj (scm-read buf)))
+        (close-input-port buf)
+        obj))))
 
 (define (p-broadcast pinfo putfn #!optional timeout)
   (map (lambda (pid ch)
@@ -618,4 +621,11 @@ c-declare-end
            (map (lambda (ch) (p-get ch timeout fast?))
                 (p-ichannels pinfo))
            (p-get (p-ichannel pinfo) timeout fast?))))))
-                                            
+
+(define proc-kill kill)
+
+(define (process_kill pinfo)
+  (if (parent-process? pinfo)
+      (map (lambda (pid) (proc-kill pid 9)) (process-info-pids pinfo))
+      #f))
+
