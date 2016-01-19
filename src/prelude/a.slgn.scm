@@ -37,3 +37,8 @@
 (define (identity x) x)
 (define scm-identity identity)
 (define scm-force force)
+
+;; These reactive-variable releated functions and set! in task.slgn.scm.
+(define scm-rvar #f)
+(define scm-rbind #f)
+(define scm-rget #f)

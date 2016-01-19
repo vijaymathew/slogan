@@ -429,9 +429,9 @@
                  (let ((sym (normalize-rvar sym)))
                    (if def
                        `(begin
-                          (define ,sym (rvar))
-                          (rbind ,sym ,(expression tokenizer)))
-                       (scm-list 'rbind sym (expression tokenizer))))
+                          (define ,sym (scm-rvar))
+                          (scm-rbind ,sym ,(expression tokenizer)))
+                       (scm-list 'scm-rbind sym (expression tokenizer))))
                  (scm-list (if def 'define 'set!) sym (expression tokenizer))))
       (parser-error tokenizer "Expected assignment.")))
 
@@ -704,7 +704,7 @@
 
 (define (handle-rvar-access sym)
   (if (rvar? sym)
-      (scm-list 'rget (normalize-rvar sym))
+      (scm-list 'scm-rget (normalize-rvar sym))
       sym))
 
 (define (token->neg-number token)
@@ -768,7 +768,7 @@
 (define (handle-symbol token tokenizer)
   (cond ((scm-eq? token '?)                        
 	 (tokenizer 'next)
-	 (scm-list 'rvar))
+	 (scm-list 'scm-rvar))
 	(else (let ((var (tokenizer 'next)))
 		(if (scm-eq? (tokenizer 'peek) '*period*)
 		    (begin (tokenizer 'next)
@@ -1346,7 +1346,7 @@
       expr))
 
 (define *reserved-names* '(fn function method define record true false
-			      if else let letseq letrec task
+			      if else let letseq letrec
 			      case match where try trycc catch finally
                               macro namespace import declare))
 

@@ -125,3 +125,7 @@
                    (mutex-unlock! (reactive-var-mtx dfv) cv)
                    (mutex-unlock! (reactive-var-mtx dfv)))
                (condition-variable-specific cv)))))
+
+(set! scm-rvar rvar)
+(set! scm-rbind rbind)
+(set! scm-rget rget)
