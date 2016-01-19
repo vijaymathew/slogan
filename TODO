@@ -1,5 +1,5 @@
-12-Jan-2016
+19-Jan-2016
 ===========
 
-  * implement higher-level parallelism constructs.
+  * create a `futures` abstraction based on processes.
   * implement a crypto package (based on http://nacl.cr.yp.to/index.html or https://github.com/jedisct1/libsodium?)

@@ -22,8 +22,8 @@
     '()
     (lambda ()
       (let loop ((n 0))
-	(if (= n colno) (display #\^)
-	    (begin (display #\space)
+	(if (= n colno) (scm-display #\^)
+	    (begin (scm-display #\space)
 		   (loop (+ n 1))))))))
 
 (define (highligted-error-line tokenizer #!optional token)
@@ -31,7 +31,7 @@
         (tlen (if token
                   (string-length (if (symbol? token) (symbol->string token) token))
                   0)))
-    (display curr-tok-len) (newline)
+    (scm-display curr-tok-len) (scm-newline)
     (let loop ((line-no (tokenizer 'line)) 
                (n 1)
                (program-text (tokenizer 'program-text)))
@@ -47,12 +47,12 @@
            '()
            (lambda ()
              (if tokenizer
-                 (println "at [line: "(tokenizer 'line) 
+                 (scm-println "at [line: "(tokenizer 'line) 
                           ", column: " (tokenizer 'column) "]. " 
                           msg))
              (let ((hl (highligted-error-line tokenizer token)))
-               (if hl (begin (println (scm-car hl))
-                             (println (scm-cdr hl)))))))))
+               (if hl (begin (scm-println (scm-car hl))
+                             (scm-println (scm-cdr hl)))))))))
 
 (define (assert-semicolon tokenizer)
   (let ((token (tokenizer 'peek)))
@@ -1119,9 +1119,9 @@
   (scm-list 'if (scm-list 'not precond) (scm-list 'error (with-output-to-string 
                                                '()
                                                (lambda () 
-                                                 (display "Precondition failed: ")
-                                                 (display precond)
-                                                 (display ".")))
+                                                 (scm-display "Precondition failed: ")
+                                                 (scm-display precond)
+                                                 (scm-display ".")))
                                       mem)))
 
 (define (mk-record-precond-exprs preconds mems)
@@ -1185,9 +1185,9 @@
             (parser-error tokenizer (with-output-to-string
                                       '()
                                       (lambda ()
-                                        (display "Missing comma or ") 
+                                        (scm-display "Missing comma or ") 
                                         (slgn-display end-seq-char) 
-                                        (display "."))))))))
+                                        (scm-display "."))))))))
 
 (define (func-args-expr tokenizer lazy-fn)
   (let loop ((args '()))

@@ -211,7 +211,7 @@
              (let loop ((args args))
                (if (not (null? args))
                    (begin (slgn-display (scm-car args) display-string: #t)
-                          (display " ")
+                          (scm-display " ")
                           (loop (scm-cdr args)))))))))
 
 (define (fetch-same-operator port c opr)

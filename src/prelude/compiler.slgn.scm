@@ -13,7 +13,7 @@
 (define (compile->scheme tokenizer)
   (let loop ((v (eliminate-voids (slogan tokenizer)))
              (exprs '()))
-    (if *compiler-log* (begin (display v) (newline)))
+    (if *compiler-log* (begin (scm-display v) (scm-newline)))
     (if (not (eof-object? v))
         (if (not (void? v)) 
             (loop (slogan tokenizer)
@@ -44,7 +44,7 @@
                                             compile-mode: (or assemble exe)))))
           (if (not (null? exprs))
               (begin (scm-write (scm-car exprs) out-port)
-                     (newline out-port)
+                     (scm-newline out-port)
                      (loop (scm-cdr exprs)))))))))
 
 (define (compile script-name #!key assemble exe
@@ -87,11 +87,11 @@
       (let loop ((len (- (string-length prompt) 2))
                  (i 0))
         (if (< len 0)
-            (display "> ")
+            (scm-display "> ")
             (if (< i len)
-                (begin (display " ")
+                (begin (scm-display " ")
                        (loop len (+ i 1)))
-                (display "> "))))))
+                (scm-display "> "))))))
 
 (define (braces-matches? s)
   (let ((bcount 0)
@@ -122,17 +122,17 @@
          (zero? scount))))
 
 (define (repl-exception-handler ex)
-  (display "error: ")
+  (scm-display "error: ")
   (let ((s (open-output-string)))
     (show_exception ex s)
     (let loop ((lines (string_split (get_output_string s) #\newline)))
       (if (not (null? lines))
-          (begin (display (scm-car lines))
-                 (newline)
+          (begin (scm-display (scm-car lines))
+                 (scm-newline)
                  (loop (scm-cdr lines)))))))
 
 (define (slogan-repl port #!key (prompt "slogan> "))
-  (if prompt (display prompt))
+  (if prompt (scm-display prompt))
   (with-exception-catcher
    repl-exception-handler
    (lambda ()
@@ -142,7 +142,7 @@
                          (let ((tokenizer (make-tokenizer (open-input-string line) 
                                                           line)))
                            (let loop ((expr (slogan tokenizer)))
-			     (if *compiler-log* (begin (display expr) (newline)))
+			     (if *compiler-log* (begin (scm-display expr) (scm-newline)))
                              (if (not (eof-object? (tokenizer 'peek)))
                                  (begin (eval expr)
                                         (loop (slogan tokenizer)))
@@ -153,7 +153,7 @@
                                      (read-line port #\newline #t))))))))
        (if (and (not (void? val)))
            (begin (slgn-display val)
-                  (newline))))))
+                  (scm-newline))))))
   (slogan-repl port prompt: prompt))
 
 (define (run-slgn-script script-name) 
@@ -166,5 +166,5 @@
           (loop (scm-cdr exprs) (eval (scm-car exprs)))
           (if (not (void? val))
               (begin (slgn-display val)
-                     (newline)))))))
+                     (scm-newline)))))))
 

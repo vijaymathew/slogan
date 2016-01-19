@@ -33,6 +33,11 @@
 (define scm-u8vector u8vector)
 (define scm-read read)
 (define scm-write write)
+(define scm-display display)
+(define scm-newline newline)
+(define scm-print print)
+(define scm-println println)
+(define scm-exit exit)
 
 (define (identity x) x)
 (define scm-identity identity)

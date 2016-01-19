@@ -405,4 +405,4 @@
     (if (not (null? objs))
 	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
 	       (loop (scm-cdr objs)))))
-  (newline stream))
+  (scm-newline stream))

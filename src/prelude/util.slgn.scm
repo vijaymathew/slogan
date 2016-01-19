@@ -69,7 +69,7 @@
              (slgn-display-pair val port))
             ((string? val)
              (if display-string
-                 (display val port)
+                 (scm-display val port)
                  (scm-write val port)))
             ((char? val)
              (slgn-display-char val port))
@@ -102,7 +102,7 @@
             ((error-exception? val)
              (display-exception val port))
             ((eof-object? val)
-             (display '<eof> port))
+             (scm-display '<eof> port))
             ((reactive-var? val)
              (slgn-display-rvar port))
             ((##promise? val)
@@ -110,11 +110,11 @@
             ((condition-variable? val)
              (slgn-display-special-obj "monitor" port))
             (else
-             (display (scm-repr->slgn-repr val) port)))))
+             (scm-display (scm-repr->slgn-repr val) port)))))
 
 (define (slgn-display-special-obj tag port)
-  (display "<" port) (display tag port)
-  (display ">" port))
+  (scm-display "<" port) (scm-display tag port)
+  (scm-display ">" port))
   
 (define (slgn-display-rvar port) 
   (slgn-display-special-obj "rvar" port))
@@ -133,39 +133,39 @@
       (set! *sep-char* #f)))
 
 (define (slgn-display-list lst port)
-  (display "[" port)
+  (scm-display "[" port)
   (let loop ((lst lst))
     (cond ((null? lst)
-           (display "]" port))
+           (scm-display "]" port))
           (else
            (slgn-display (scm-car lst) port: port)
            (if (not (null? (scm-cdr lst)))
-               (begin (if *sep-char* (display *sep-char* port))
-                      (display #\space port)))
+               (begin (if *sep-char* (scm-display *sep-char* port))
+                      (scm-display #\space port)))
            (loop (scm-cdr lst))))))
 
 (define (slgn-display-pair p port)
   (slgn-display (scm-car p) port: port)
-  (display " : " port)
+  (scm-display " : " port)
   (slgn-display (scm-cdr p) port: port))
 
 (define (slgn-display-array a port 
                             prefix tolist)
-  (display prefix port)
+  (scm-display prefix port)
   (slgn-display-list (tolist a) port))
 
 (define (slgn-display-char c port)
-  (display "'" port)
+  (scm-display "'" port)
   (with-exception-catcher
    (lambda (ex)
      (let ((s (with-output-to-string
                 '()
                 (lambda () (scm-write c)))))
        (if (char=? #\# (string-ref s 0))
-           (display (substring s 1 (string-length s)) port)
-           (display s port))))
-   (lambda () (print port: port c)))
-  (display "'" port))
+           (scm-display (substring s 1 (string-length s)) port)
+           (scm-display s port))))
+   (lambda () (scm-print port: port c)))
+  (scm-display "'" port))
 
 (define (slgn-display-task port)
   (slgn-display-special-obj "task" port))
@@ -224,7 +224,7 @@
             (if (char=? c #\$)
                 (let ((evar (extract-envvar path (+ i 1) len)))
                   (if evar
-                      (begin (display (getenv evar) buff)
+                      (begin (scm-display (getenv evar) buff)
                              (loop (+ i 1 (string-length evar))))
                       (loop (+ i 1))))
                 (begin (write-char c buff)
