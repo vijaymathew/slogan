@@ -91,7 +91,7 @@
 
 (define (print-env env)
     (let loop ((env (macro-env-bindings env)))
-      (if (not (null? env))
+      (if (scm-not (null? env))
           (begin (newline)
                  (table-for-each (lambda (k v) 
                                    (display k)
@@ -117,7 +117,7 @@
 
 (define (update-macro-env! env sym)
   (let ((t (scm-car (macro-env-bindings env))))
-    (if (not (scm-eq? (table-ref t sym '*unbound*) '*unbound*))
+    (if (scm-not (scm-eq? (table-ref t sym '*unbound*) '*unbound*))
         (table-set! t sym sym))
     env))
 
@@ -127,7 +127,7 @@
     (let loop ((expr expr))
       (if (null? expr) env
           (let ((sym (extractor expr)))
-            (if (not (scm-eq? (table-ref t sym '*unbound*) '*unbound*))
+            (if (scm-not (scm-eq? (table-ref t sym '*unbound*) '*unbound*))
                 (table-set! t sym sym))
             (loop (scm-cdr expr)))))))
 
@@ -159,7 +159,7 @@
 
 (define (replace-macro-args-helper expr env)
   (cond ((null? expr) expr)
-        ((not (pair? expr))
+        ((scm-not (pair? expr))
          (if (symbol? expr)
              (get-macro-env-value env expr expr)
              expr))
@@ -176,7 +176,7 @@
                                             (replace-macro-args-helper 
                                              (if named-let (cdddr expr) (cddr expr))
                                              (if (null? vals) env (push-macro-env! env (scm-car vals) caar))))))
-                             (if (not (null? vals)) (pop-macro-env! env))
+                             (if (scm-not (null? vals)) (pop-macro-env! env))
                              r))))
                       ((scm-eq? sym 'lambda)
                        (let ((r (scm-append (scm-list sym (cadr expr))
@@ -195,8 +195,6 @@
                       ((scm-eq? sym 'set!)
                        (scm-append (scm-list sym (cadr expr))
                                (replace-macro-args-helper (cddr expr) env)))
-                      ((scm-eq? sym '~@)
-                       (eval (scm-car (replace-macro-args-helper (scm-cdr expr) env))))
                       (else (let ((a (replace-macro-args-helper sym env))
                                   (b (replace-macro-args-helper (scm-cdr expr) env)))
                               (scm-cons a b))))))))
@@ -232,21 +230,21 @@
 
 (define (expr-forcify expr params)
   (let ((params (normalize-lazy-params params)))
-    (replace-macro-args params (map (lambda (x) (scm-list 'scm-force x)) params) expr)))
+    (replace-macro-args params (scm-map (lambda (x) (scm-list 'scm-force x)) params) expr)))
 
 (define (declare-lazy name)
   (if (symbol? name)
-      (if (not (get-lazy-def name))
+      (if (scm-not (get-lazy-def name))
           (def-lazy name (make-lazy #f #f)))
       (let loop ((names name))
-        (if (not (null? names))
+        (if (scm-not (null? names))
             (begin (declare-lazy (scm-car names))
                    (loop (scm-cdr names)))))))
       
 (define (push-func-params params)
   (if (list? params)
       (let loop ((params params))
-	(if (not (null? params))
+	(if (scm-not (null? params))
 	    (begin (cond ((valid-identifier? (scm-car params))
 			  (remove-macro-lazy-fns-def (scm-car params)))
 			 ((pair? (scm-car params))

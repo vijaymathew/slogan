@@ -43,7 +43,7 @@
 (define (lpair-map f ls more)
   (if (null? more)
       (lpair-cons (f (first ls)) (lpair-map f (rest ls) '()))
-      (lpair-cons (apply f (first ls) (old-map first more))
+      (lpair-cons (scm-apply f (first ls) (old-map first more))
                    (lpair-map f (rest ls) (old-map rest more)))))
 
 (define (generic-map f ls more)
@@ -57,7 +57,7 @@
       (let map-more ((ls ls) (more more))
         (if (null? ls)
             '()
-            (let ((a (apply f (scm-car ls) (old-map car more)))
+            (let ((a (scm-apply f (scm-car ls) (old-map car more)))
                   (b (map-more (scm-cdr ls) (old-map cdr more))))
               (scm-cons a b))))))
 
@@ -70,9 +70,9 @@
   (let ((lpair? (is_lpair ls)))
     (let ((scm-car (if lpair? first car))
 	  (scm-cdr (if lpair? rest cdr)))
-      (do ((ls ls (scm-cdr ls)) (more more (map cdr more)))
+      (do ((ls ls (scm-cdr ls)) (more more (scm-map scm-cdr more)))
 	  ((null? ls))
-	(apply f (scm-car ls) (map car more))))))
+	(scm-apply f (scm-car ls) (scm-map scm-car more))))))
 
 (define for_each generic-for-each)
 
@@ -149,7 +149,7 @@
 (define (drop_while predic lst)
   (let loop ((lst lst))
     (if (or (null? lst)
-	    (not (predic (first lst))))
+	    (scm-not (predic (first lst))))
 	lst
 	(loop (rest lst)))))
 
@@ -157,7 +157,7 @@
   (let loop ((lst lst)
 	     (result '()))
     (if (or (null? lst)
-	    (not (predic (first lst))))
+	    (scm-not (predic (first lst))))
 	(scm-reverse result)
 	(loop (rest lst)
 	      (scm-cons (first lst) result)))))

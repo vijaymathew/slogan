@@ -14,10 +14,10 @@
 (define string_is_ci_gt string-ci>?)
 
 (define (strings-ref ss i)
-  (map (lambda (s) (string-ref s i)) ss))
+  (scm-map (lambda (s) (string-ref s i)) ss))
 
 (define (string-map f s . ss)
-  (if (not (null? ss))
+  (if (scm-not (null? ss))
       (assert-equal-lengths s ss string-length))
   (let ((len (string-length s)))
     (if (null? ss)
@@ -25,7 +25,7 @@
         (generic-map2+! f (make-string len) (scm-cons s ss) len strings-ref string-set!))))
 
 (define (string-for-each f s . ss)
-  (if (not (null? ss))
+  (if (scm-not (null? ss))
       (assert-equal-lengths s ss string-length))
   (let ((len (string-length s)))
     (if (null? ss)
@@ -59,7 +59,7 @@
 (define (string-ends-with? s prefix #!optional (eq string=?))
   (let ((plen (string-length prefix))
         (slen (string-length s)))
-    (if (and (not (zero? plen)) (not (zero? slen)) 
+    (if (and (scm-not (zero? plen)) (scm-not (zero? slen)) 
              (<= plen slen))
         (let ((subs (substring s (- slen plen) slen)))
           (eq subs prefix))
@@ -121,7 +121,7 @@
 
 (define (string_split str #!optional (delim char-whitespace?)
                       (include-empty-strings #f))
-  (if (not (or (char? delim)
+  (if (scm-not (or (char? delim)
                (list? delim)
                (procedure? delim))) str
       (let ((len (string-length str)))
@@ -133,7 +133,7 @@
                 ((or (and (list? delim) (member (string-ref str i) delim))
                      (and (char? delim) (char=? (string-ref str i) delim))
                      (and (procedure? delim) (delim (string-ref str i))))
-                 (loop (if (and (null? currstr) (not include-empty-strings)) 
+                 (loop (if (and (null? currstr) (scm-not include-empty-strings)) 
                            result 
                            (scm-cons (list->string (scm-reverse currstr)) result)) '() 
                            (+ i 1)))
@@ -169,7 +169,7 @@
           (let ((c (string-ref s i)))
             (cond 
              (word-start 
-              (if (not (char-whitespace? c))
+              (if (scm-not (char-whitespace? c))
                   (begin (string-set! result i (char-upcase c))
                          (loop #f (+ i 1)))
                   (begin (string-set! result i (char-downcase c))

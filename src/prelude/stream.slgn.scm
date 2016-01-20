@@ -8,9 +8,9 @@
 			     UCS_4 UCS_4LE UCS_4BE))
 
 (define (validate-codec codec)
-  (if (not (symbol? codec))
+  (if (scm-not (symbol? codec))
       (error "Codec must be a symbol."))
-  (if (not (scm-memq (string->symbol (string_upcase (symbol->string codec)))
+  (if (scm-not (scm-memq (string->symbol (string_upcase (symbol->string codec)))
                  *supported-codecs*))
       (error "Unsupported codec." codec))
   codec)
@@ -77,7 +77,7 @@
   (let ((settings (scm-list path: path direction: direction)))
     (let ((opt (get-stream-option options 'append)))
       (if opt (set! settings (scm-append settings (scm-list append: opt)))))
-    (if (not (scm-eq? direction 'input))
+    (if (scm-not (scm-eq? direction 'input))
         (let ((opt (get-stream-option options 'create)))
           (if opt (set! settings (scm-append settings (scm-list create: #t)))
               (let ((opt (get-stream-option options 'no_create)))
@@ -109,7 +109,7 @@
 (define current_error_stream current-error-port)
 
 (define (open-byte-stream-helper openfn invalue tcoder)
-  (if (not tcoder)
+  (if (scm-not tcoder)
       (openfn invalue)
       (let ((settings (scm-list init: invalue)))
         (let ((opt (get-codec-from-transcoder tcoder)))
@@ -278,8 +278,8 @@
                               stdout_redirection stderr_redirection pseudo_terminal show_console
                               transcoder))
 
-(define process_pid process-pid)
-(define process_status process-status)
+(define pipe_process_pid process-pid)
+(define pipe_process_status process-status)
 
 (define (pipe_reader path #!key (arguments '()) environment
                      directory (stdin_redirection #t) (stdout_redirection #t)
@@ -361,13 +361,13 @@
     (lambda (msg)
       (case msg
         ((next)
-         (if (not current-token)
+         (if (scm-not current-token)
              (next-delimited-token stream delimiters)
              (let ((tmp current-token))
                (set! current-token #f)
                tmp)))
         ((peek)
-         (if (not current-token)
+         (if (scm-not current-token)
              (set! current-token (next-delimited-token stream delimiters)))
          current-token)
         (else (error "Invalid message received by delimited-tokenizer. " msg))))))
@@ -396,13 +396,13 @@
 
 (define (show #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
-    (if (not (null? objs))
+    (if (scm-not (null? objs))
 	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
 	       (loop (scm-cdr objs))))))
 
 (define (showln #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
-    (if (not (null? objs))
+    (if (scm-not (null? objs))
 	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
 	       (loop (scm-cdr objs)))))
   (scm-newline stream))

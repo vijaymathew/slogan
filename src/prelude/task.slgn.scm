@@ -4,7 +4,7 @@
   (let ((t (if args 
                (task-with-args fn args name group)
                (task-with-no-args fn name group))))
-    (if (not suspended)
+    (if (scm-not suspended)
         (thread-start! t))
     t))
 
@@ -14,14 +14,14 @@
   (let ((t (if args 
                (root-task-with-args fn args name group input_port output_port)
                (root-task-with-no-args fn name group input_port output_port))))
-    (if (not suspended)
+    (if (scm-not suspended)
         (thread-start! t))
     t))
 
 (define (task-with-args fn args name group)
   (if group
-      (make-thread (lambda () (apply fn args)) name group)
-      (make-thread (lambda () (apply fn args)) name)))
+      (make-thread (lambda () (scm-apply fn args)) name group)
+      (make-thread (lambda () (scm-apply fn args)) name)))
 
 (define (task-with-no-args fn name group)
   (if group
@@ -32,8 +32,8 @@
 
 (define (root-task-with-args fn args name group ip op)
   (if group
-      (make-root-thread (lambda () (apply fn args)) name group ip op)
-      (make-root-thread (lambda () (apply fn args)) name)))
+      (make-root-thread (lambda () (scm-apply fn args)) name group ip op)
+      (make-root-thread (lambda () (scm-apply fn args)) name)))
 
 (define (root-task-with-no-args fn name group ip op)
   (if group
@@ -109,8 +109,8 @@
   (mutex-lock! (reactive-var-mtx dfv))
   (let ((cv (reactive-var-cv dfv))
 	(err #f))
-    (if (and (not (unbound? (condition-variable-specific cv)))
-             (not (equal? value (condition-variable-specific cv))))
+    (if (and (scm-not (unbound? (condition-variable-specific cv)))
+             (scm-not (equal? value (condition-variable-specific cv))))
         (begin (mutex-unlock! (reactive-var-mtx dfv))
                (error "cannot rebind reactive variable to a new value."))
         (begin (condition-variable-specific-set! cv value)
@@ -118,7 +118,7 @@
                (mutex-unlock! (reactive-var-mtx dfv))))))
 
 (define (rget dfv)
-  (if (not (reactive-var? dfv)) dfv
+  (if (scm-not (reactive-var? dfv)) dfv
       (begin (mutex-lock! (reactive-var-mtx dfv))
              (let ((cv (reactive-var-cv dfv)))
                (if (unbound? (condition-variable-specific cv))

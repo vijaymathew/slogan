@@ -851,11 +851,11 @@ c-declare-end
                             r)))))
 
 (define (def-c-struct name memtypes)
-  (let ((types (map libffitype->int (map car memtypes))))
+  (let ((types (scm-map libffitype->int (scm-map scm-car memtypes))))
     (let ((sid (libffi-defstruct types (scm-length memtypes))))
       (cond (sid
              (set! *libffi-types* (scm-cons (scm-cons name sid) *libffi-types*))
-             (set! *c-struct-defs* (scm-cons (scm-cons sid (scm-cons types (map cdr memtypes))) *c-struct-defs*))
+             (set! *c-struct-defs* (scm-cons (scm-cons sid (scm-cons types (scm-map scm-cdr memtypes))) *c-struct-defs*))
              name)
             (else (error "Failed to define c structure - " name))))))
 
@@ -904,7 +904,7 @@ c-declare-end
 (define (c_struct_instance name values)
   (let ((sid (libffitype->int name)))
     (let ((mems (c-struct-members sid)))
-      (scm-cons (- sid *libffi-types-count*) (map cons mems values)))))
+      (scm-cons (- sid *libffi-types-count*) (scm-map scm-cons mems values)))))
 
 (define (pointer_to_c_struct name ptr)
   (let ((sid (libffitype->int name)))

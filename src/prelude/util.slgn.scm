@@ -38,7 +38,7 @@
   (slgn-symbol->scm-sym/kw s string->keyword))
 
 (define (slgn-symbol-quote? s)
-  (and (list? s) (not (null? s))
+  (and (list? s) (scm-not (null? s))
        (scm-eq? (scm-car s) 'quote)))
 
 (define (slgn-path/settings->scm-path/settings path-or-settings)
@@ -60,7 +60,7 @@
 (define (void? val) (scm-eq? *void* val))
 
 (define (slgn-display val #!key display-string (port (current-output-port)))
-  (if (not (void? val))
+  (if (scm-not (void? val))
       (cond ((procedure? val)
              (slgn-display-function port))
             ((list? val)
@@ -139,7 +139,7 @@
            (scm-display "]" port))
           (else
            (slgn-display (scm-car lst) port: port)
-           (if (not (null? (scm-cdr lst)))
+           (if (scm-not (null? (scm-cdr lst)))
                (begin (if *sep-char* (scm-display *sep-char* port))
                       (scm-display #\space port)))
            (loop (scm-cdr lst))))))
@@ -182,15 +182,15 @@
   (let loop ((i 0))
     (if (>= i len) 
         (if result result *void*)
-        (let ((res (apply f (reff vecs i)))) 
+        (let ((res (scm-apply f (reff vecs i)))) 
           (if result (setf result i res))
           (loop (+ i 1))))))
 
 (define (assert-equal-lengths seq rest #!optional (lenf length))
   (let ((len (lenf seq)))
     (let loop ((rest rest))
-      (if (not (null? rest))
-          (begin (if (not (scm-eq? (lenf (scm-car rest)) len))
+      (if (scm-not (null? rest))
+          (begin (if (scm-not (scm-eq? (lenf (scm-car rest)) len))
                      (error (with-output-to-string 
                               "Object is not of proper length: " 
                               (lambda () (slgn-display (scm-car rest))))))
@@ -210,7 +210,7 @@
     (let loop ((i offset))
       (if (< i len)
           (let ((c (string-ref path i)))
-            (if (not (or (char=? c #\/) (char=? c #\\)))
+            (if (scm-not (or (char=? c #\/) (char=? c #\\)))
                 (begin (write-char c buff)
                        (loop (+ i 1)))))))
     (get-output-string buff)))
@@ -240,7 +240,7 @@
   (if force-compile
       (with-exception-catcher
        (lambda (e)
-         (if (not (no-such-file-or-directory-exception? e))
+         (if (scm-not (no-such-file-or-directory-exception? e))
              (raise e)))
        (lambda ()
          (delete-file (string-append script *scm-extn*)))))
@@ -257,7 +257,7 @@
   (with-exception-catcher
    (lambda (e)
      (if (file-exists? (add-slgn-extn script))
-         (if (not (compile script assemble: #t))
+         (if (scm-not (compile script assemble: #t))
              (error "failed to compile script" script)))
      (load script))
    (lambda () (load script))))

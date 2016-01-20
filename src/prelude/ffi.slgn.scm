@@ -224,7 +224,7 @@ c-declare-end
 (define _ffi_open (c-lambda (char-string) void-pointer "dlopen_lazy"))
 
 (define (ffi_open libname)
-  (if (not (file-exists? libname))
+  (if (scm-not (file-exists? libname))
       (let ((ld-paths (getenv "LD_LIBRARY_PATH"))) ;; DYLD_LIBRARY_PATH in Darwin??
         (if ld-paths
             (set! ld-paths (string_split ld-paths '(#\:))))
@@ -317,4 +317,4 @@ c-declare-end
                                                          "ffi_call_char_string_with_void_pointer"))
 
 (c-define (___call-fn f args) (scheme-object scheme-object) scheme-object "___call_fn" ""
-          (apply f args))
+          (scm-apply f args))

@@ -12,7 +12,7 @@
 (define (is_true obj) (scm-eq? obj #t))
 (define (is_false obj) (scm-eq? obj #f))
 
-(define (is_object obj) (not (void? obj)))
+(define (is_object obj) (scm-not (void? obj)))
 
 (define (current_exception_handler) 
   (current-exception-handler))
@@ -31,7 +31,7 @@
       (begin (slgn-display (error-exception-message e) display-string: #t port: port)
              (scm-display #\space port)
              (let loop ((args (error-exception-parameters e)))
-               (if (not (null? args))
+               (if (scm-not (null? args))
                    (begin (slgn-display (scm-car args) display-string: #t port: port)
                           (scm-display #\space port)
                           (loop (scm-cdr args))))))
@@ -46,18 +46,18 @@
   (let ((fns (scm-reverse fns)))
     (lambda (#!rest args)
       (let loop ((fns (scm-cdr fns))
-                 (result (apply (scm-car fns) args)))
-        (if (not (null? fns))
+                 (result (scm-apply (scm-car fns) args)))
+        (if (scm-not (null? fns))
             (loop (scm-cdr fns) ((scm-car fns) result))
             result)))))
 
-(define (mapfn f) (lambda (xs #!rest ys) (apply map f xs ys)))
+(define (mapfn f) (lambda (xs #!rest ys) (scm-apply map f xs ys)))
 
-(define (partial f #!rest args) (lambda (#!rest args2) (apply f (scm-append args2 args))))
+(define (partial f #!rest args) (lambda (#!rest args2) (scm-apply f (scm-append args2 args))))
 
 (define (until p f x) (if (p x) x (until p f (f x))))
 
-(define (complement f) (lambda (#!rest args) (not (apply f args))))
+(define (complement f) (lambda (#!rest args) (scm-not (scm-apply f args))))
 
 (define (safe-equal? a b #!optional final)
   (if (equal? a b) (if final #t b) #f))
@@ -93,6 +93,6 @@
 
 (define (@ tab key #!key (value *void*) (default #f))
   (let ((v (map-access tab key default)))
-    (if (not (scm-eq? value *void*))
+    (if (scm-not (scm-eq? value *void*))
         (map-mutate tab key value))
     v))

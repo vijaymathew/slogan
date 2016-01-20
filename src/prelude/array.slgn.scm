@@ -22,7 +22,7 @@
 (define is_array vector?)
 
 (define (vectors-ref vectors i)
-  (map (lambda (v) (array_at v i)) vectors))
+  (scm-map (lambda (v) (array_at v i)) vectors))
 
 (define (array_at arr dim)
   (if (list? dim)
@@ -61,7 +61,7 @@
                  (loop (scm-cdr s) (+ i 1)))))))
 
 (define (vector-map f vec . vectors)
-  (if (not (null? vectors))
+  (if (scm-not (null? vectors))
       (assert-equal-lengths vec vectors vector-length))
   (let ((len (vector-length vec)))
     (if (null? vectors)
@@ -69,7 +69,7 @@
         (generic-map2+! f (make-vector len) (scm-cons vec vectors) len vectors-ref vector-set!))))
 
 (define (vector-for-each f vec . vectors)
-  (if (not (null? vectors))
+  (if (scm-not (null? vectors))
       (assert-equal-lengths vec vectors vector-length))
   (let ((len (vector-length vec)))
     (if (null? vectors)

@@ -3,19 +3,19 @@
 (define *compiler-log* #f)
 
 (define (compiler-log)
-  (set! *compiler-log* (not *compiler-log*)))
+  (set! *compiler-log* (scm-not *compiler-log*)))
 
 (define (eliminate-voids exprs)
   (if (list? exprs)
-      (filter (lambda (x) (not (void? x))) exprs drill: #t)
+      (filter (lambda (x) (scm-not (void? x))) exprs drill: #t)
       exprs))
 
 (define (compile->scheme tokenizer)
   (let loop ((v (eliminate-voids (slogan tokenizer)))
              (exprs '()))
     (if *compiler-log* (begin (scm-display v) (scm-newline)))
-    (if (not (eof-object? v))
-        (if (not (void? v)) 
+    (if (scm-not (eof-object? v))
+        (if (scm-not (void? v)) 
             (loop (slogan tokenizer)
                   (scm-cons v exprs))
             (loop (slogan tokenizer) exprs))
@@ -28,7 +28,7 @@
         '()
         (lambda ()
           (let loop ((c (read-char port)))
-            (if (not (eof-object? c))
+            (if (scm-not (eof-object? c))
                 (begin (write-char c)
                        (loop (read-char port))))))))))
 
@@ -42,7 +42,7 @@
                                             (open-input-string program-text) 
                                             program-text
                                             compile-mode: (or assemble exe)))))
-          (if (not (null? exprs))
+          (if (scm-not (null? exprs))
               (begin (scm-write (scm-car exprs) out-port)
                      (scm-newline out-port)
                      (loop (scm-cdr exprs)))))))))
@@ -56,7 +56,7 @@
      (lambda ()
        (let ((out-file-name 
               (if is-scm script-name (string-append script-name *scm-extn*))))
-	 (if (not is-scm) 
+	 (if (scm-not is-scm) 
              (compile-slgn-script->scm-script 
               script-name out-file-name 
               assemble exe))
@@ -98,7 +98,7 @@
         (pcount 0)
         (scount 0))
     (if (and (> (string-length s) 0)
-             (not (char=? (string-ref s 0) #\")))
+             (scm-not (char=? (string-ref s 0) #\")))
         (string-for-each 
          (lambda (c)
            (cond ((char=? c #\{)
@@ -126,7 +126,7 @@
   (let ((s (open-output-string)))
     (show_exception ex s)
     (let loop ((lines (string_split (get_output_string s) #\newline)))
-      (if (not (null? lines))
+      (if (scm-not (null? lines))
           (begin (scm-display (scm-car lines))
                  (scm-newline)
                  (loop (scm-cdr lines)))))))
@@ -143,15 +143,15 @@
                                                           line)))
                            (let loop ((expr (slogan tokenizer)))
 			     (if *compiler-log* (begin (scm-display expr) (scm-newline)))
-                             (if (not (eof-object? (tokenizer 'peek)))
-                                 (begin (eval expr)
+                             (if (scm-not (eof-object? (tokenizer 'peek)))
+                                 (begin (scm-eval expr)
                                         (loop (slogan tokenizer)))
-                                 (eval expr)))))
+                                 (scm-eval expr)))))
                         (else (show-waiting-prompt prompt)
                               (loop (string-append 
                                      line 
                                      (read-line port #\newline #t))))))))
-       (if (and (not (void? val)))
+       (if (and (scm-not (void? val)))
            (begin (slgn-display val)
                   (scm-newline))))))
   (slogan-repl port prompt: prompt))
@@ -162,9 +162,9 @@
                                         (open-input-string program-text) 
                                         program-text)))
                (val #!void))
-      (if (not (null? exprs))
-          (loop (scm-cdr exprs) (eval (scm-car exprs)))
-          (if (not (void? val))
+      (if (scm-not (null? exprs))
+          (loop (scm-cdr exprs) (scm-eval (scm-car exprs)))
+          (if (scm-not (void? val))
               (begin (slgn-display val)
                      (scm-newline)))))))
 

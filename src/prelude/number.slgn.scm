@@ -74,9 +74,9 @@
 (define fxmult fx*)
 
 (define (fxdiv f1 f2)
-  (if (not (fixnum? f1))
+  (if (scm-not (fixnum? f1))
       (error "(Argument 1) FIXNUM expected"))
-  (if (not (fixnum? f2))
+  (if (scm-not (fixnum? f2))
       (error "(Argument 2) FIXNUM expected"))
   (inexact->exact (floor (/ f1 f2))))
 
@@ -117,9 +117,9 @@
 (define fldiv fl/)
 
 (define (flmod fl1 fl2)
-  (if (not (flonum? fl1))
+  (if (scm-not (flonum? fl1))
       (error "(Argument 1) FLONUM expected"))
-  (if (not (flonum? fl2))
+  (if (scm-not (flonum? fl2))
       (error "(Argument 2) FLONUM expected"))
   (mod fl1 fl2))
 
@@ -163,14 +163,14 @@
 (define bitwise_length integer-length)
 
 (define (bitwise_copy_bit i index bit)
-  (if (not (or (= bit 1) (= bit 0)))
+  (if (scm-not (or (= bit 1) (= bit 0)))
       (error "Bit flag must be either 0 or 1."))
   (if (= bit 1)
       (bitwise-ior i (arithmetic-shift 1 index))
       (bitwise-and i (bitwise-not (arithmetic-shift 1 index)))))
 
 (define (assert-nonneg-int i msg)
-  (if (or (not (integer? i)) (< i 0))
+  (if (or (scm-not (integer? i)) (< i 0))
       (error msg i)))
 
 (define (assert-bw-range start end)

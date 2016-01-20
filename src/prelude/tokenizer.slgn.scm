@@ -28,14 +28,14 @@
     (lambda (msg . args)
       (case msg
         ((peek) 
-         (if (not current-token)
+         (if (scm-not current-token)
              (if (= 0 (scm-length lookahead-stack))
                  (set! current-token (next-token port))
                  (begin (set! current-token (scm-car lookahead-stack))
                         (set! lookahead-stack (scm-cdr lookahead-stack)))))
          current-token)
         ((next)
-         (if (not current-token)
+         (if (scm-not current-token)
              (if (= 0 (scm-length lookahead-stack))
                  (next-token port)
                  (let ((tmp (scm-car lookahead-stack)))
@@ -59,9 +59,9 @@
         ((pattern-mode-off) (set! pattern-mode #f))
         ((pattern-mode?) pattern-mode)
 	((quote-mode-on) (set! quote-mode (+ quote-mode 1)))
-	((quote-mode-off) (if (not (zero? quote-mode)) 
+	((quote-mode-off) (if (scm-not (zero? quote-mode)) 
                               (set! quote-mode (- quote-mode 1))))
-	((quote-mode?) (not (zero? quote-mode)))
+	((quote-mode?) (scm-not (zero? quote-mode)))
 	((macro-mode-on) (set! macro-mode #t))
 	((macro-mode-off) (set! macro-mode #f))
 	((macro-mode?) macro-mode)
@@ -209,7 +209,7 @@
            (lambda ()
              (slgn-display msg display-string: #t)
              (let loop ((args args))
-               (if (not (null? args))
+               (if (scm-not (null? args))
                    (begin (slgn-display (scm-car args) display-string: #t)
                           (scm-display " ")
                           (loop (scm-cdr args)))))))))
@@ -249,7 +249,7 @@
            (tokenizer-error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
 
 (define (numeric-string->number s #!optional (radix 10))
-  (string->number (list->string (filter (lambda (c) (not (char=? c #\_))) (string->list s))) radix))
+  (string->number (list->string (filter (lambda (c) (scm-not (char=? c #\_))) (string->list s))) radix))
 
 (define (read-number port prefix #!optional (radix 10))
   (let loop ((c (port-pos-peek-char port))
@@ -282,7 +282,7 @@
   
 (define (read-number-with-radix-prefix port #!optional (radix 10))
   (let ((radix-prefix (radix-prefix? (port-pos-peek-char port))))
-    (if (not radix-prefix)
+    (if (scm-not radix-prefix)
 	(read-number port #\0 radix)
         (let ((c (port-pos-read-char! port))
               (result '()))
@@ -303,7 +303,7 @@
                        (loop (port-pos-peek-char port) c
                              (scm-cons c result)))
                 (let ((n (numeric-string->number (string-append radix-prefix (list->string (scm-reverse result))) radix)))
-                  (if (not n)
+                  (if (scm-not n)
                       (tokenizer-error "read-number-with-radix-prefix failed. invalid number format.")
                       n))))))))
 
@@ -428,13 +428,13 @@
 (define (skip-line-comment port)
   (let loop ((c (port-pos-peek-char port)))
     (if (and (char? c)
-             (not (char=? c #\newline)))
+             (scm-not (char=? c #\newline)))
         (begin (port-pos-read-char! port)
                (loop (port-pos-peek-char port))))))
 
 (define (skip-block-comment port)
   (let loop ((c (port-pos-peek-char port)))
-    (if (not (eof-object? c))
+    (if (scm-not (eof-object? c))
         (begin (port-pos-read-char! port)
                (if (char=? c #\*)
                    (if (char=? (port-pos-peek-char port) #\/)
@@ -447,7 +447,7 @@
       (let ((c (if (char=? (port-pos-peek-char port) #\\)
                    (read-special-character port)
                    (port-pos-read-char! port))))
-        (if (not (char=? (port-pos-peek-char port) #\'))
+        (if (scm-not (char=? (port-pos-peek-char port) #\'))
             (if (char=? c #\') 
                 #\nul
                 (tokenizer-error "invalid character constant."))
@@ -468,7 +468,7 @@
         (loop (scm-cons (port-pos-read-char! port) result) (port-pos-peek-char port)))))
 
 (define (eval-unicode-literal s)
-  (eval (with-input-from-string s read)))
+  (scm-eval (with-input-from-string s read)))
 
 (define (hexchar-prefix len)
   (cond ((= len 2)

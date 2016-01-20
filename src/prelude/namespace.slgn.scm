@@ -38,7 +38,7 @@
   #t)
 
 (define (namespace_create namespace-name symbols)
-  (if (not (symbol? namespace-name))
+  (if (scm-not (symbol? namespace-name))
       (error "namespace name must be a symbol - " namespace-name)
       (if (and (list? symbols) (for_all symbol? symbols))
           (begin (table-set! *active-namespaces* namespace-name symbols)
@@ -51,11 +51,11 @@
                            *namespaces*)))
 
 (define (pop-namespace)
-  (if (not (null? *namespaces*))
+  (if (scm-not (null? *namespaces*))
       (let ((top (scm-car *namespaces*)))
 	  (set! *namespaces* (scm-cdr *namespaces*))
 	  (let ((expr `(table-set! *active-namespaces* ',(scm-car top) ',(scm-cdr top))))
-	    (eval expr)
+	    (scm-eval expr)
 	    expr))
       #f))
 
@@ -73,7 +73,7 @@
 
 (define (import-from-namespace name #!optional defs prefix)
   (let ((n (find-namespace name)))
-    (if (and (not n) (not defs)) (error "namespace not found -" name))
+    (if (and (scm-not n) (scm-not defs)) (error "namespace not found -" name))
     (if (and n defs) (validate-import-names defs n))
     (let loop ((defs (if defs defs n))
                (imports '()))
@@ -88,7 +88,7 @@
 (define (validate-import-names defs namespace)
   (let loop ((defs defs))
     (if (null? defs) #t
-        (if (not (scm-memq (scm-car defs) namespace))
+        (if (scm-not (scm-memq (scm-car defs) namespace))
             (error "Name not found in namespace." (scm-car defs))
             (loop (scm-cdr defs))))))
 
@@ -110,7 +110,7 @@
       def))
   
 (define (update-namespace-defs-list! name)
-    (if (not (scm-memq name (scm-cdar *namespaces*)))
+    (if (scm-not (scm-memq name (scm-cdar *namespaces*)))
         (set-cdr! (scm-car *namespaces*) (scm-cons name (scm-cdar *namespaces*)))))
 
 (define (add-namespace-prefix name)
@@ -122,10 +122,10 @@
 
 (define (add-def-to-namespace expr top)
   (if top
-      (if (and (pair? expr) (not (null? expr)))
+      (if (and (pair? expr) (scm-not (null? expr)))
           (cond ((and (or (scm-eq? (scm-car expr) 'define)
                           (scm-eq? (scm-car expr) 'define-structure))
-                      (not (null? *namespaces*)))
+                      (scm-not (null? *namespaces*)))
                  (let ((snamespace-name (symbol->string (scm-caar *namespaces*)))
                        (svar (symbol->string (cadr expr))))
                    (update-namespace-defs-list! (cadr expr))
@@ -198,7 +198,7 @@
          expr)
         ((symbol? expr)
          (let ((name (scm-memq expr defs)))
-           (if (not name) expr
+           (if (scm-not name) expr
                (get-name-from-namespace (scm-car name) namespace-name))))
         (else (let ((sym (scm-car expr)))
                 (cond ((or (scm-eq? sym 'let) (scm-eq? sym 'letrec) (scm-eq? sym 'let*))
@@ -238,7 +238,7 @@
                               (scm-cons a b))))))))
 
 (define (add-to-declared-imported! name)
-  (if (not (in-declared-imports? name))
+  (if (scm-not (in-declared-imports? name))
       (set! *declared-imported* (scm-cons name *declared-imported*)))
   `(define ,name *void*))
 

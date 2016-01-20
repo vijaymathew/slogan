@@ -28,7 +28,7 @@
              (i 0)
              (ba (make-bitvector (scm-length rest))))
     (if (null? rest) ba
-        (begin (if (not (= 0 (scm-car rest)))
+        (begin (if (scm-not (= 0 (scm-car rest)))
                    (bitvector-set! ba i))
                (loop (scm-cdr rest) (+ i 1) ba)))))
 
@@ -47,7 +47,7 @@
 (define (bitvector-set? self i)
   (let ((vec (%bitvector-vector self))
         (idx (fxwraplogical-shift-right i %bitvect-shift%)))
-    (not (zero? (bitwise-and (u32vector-ref %bitvect-masks% (- i (* %bitvect-bpi% idx)))
+    (scm-not (zero? (bitwise-and (u32vector-ref %bitvect-masks% (- i (* %bitvect-bpi% idx)))
                              (u32vector-ref vec idx))))))
 
 (define bit_array_is_set bitvector-set?)
@@ -94,7 +94,7 @@
                (i 0))
       (if (and res (< i len))
           (loop (= %bitvect-all-off% (u32vector-ref v i)) (+ i 1))
-          (not res)))))
+          (scm-not res)))))
 
 (define bit_array_is_any_set bitvector-one-set?)
 
@@ -115,7 +115,7 @@
 
 (define bit_array_to_list bitvector->list)
 
-(define (list->bitvector lst) (apply bit_array lst))
+(define (list->bitvector lst) (scm-apply bit_array lst))
 
 (define list_to_bit_array list->bitvector)
 
@@ -127,7 +127,7 @@
        (cond ((char=? c #\1)
               (bitvector-set! b i))
              (else
-              (if (not (char=? c #\0))
+              (if (scm-not (char=? c #\0))
                   (error "Not a valid bitstring."))))
        (set! i (+ i 1)))
      (string->list s))
@@ -212,7 +212,7 @@
       (scm-car bitvect-list)
       (let loop ((self (scm-car bitvect-list))
                  (bitvect-list (scm-cdr bitvect-list)))
-        (if (not (null? bitvect-list))
+        (if (scm-not (null? bitvect-list))
             (loop (bit-array-append self (scm-car bitvect-list))
                   (scm-cdr bitvect-list))
             self))))

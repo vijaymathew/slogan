@@ -2,8 +2,8 @@
 
 (define is_list list?)
 (define is_pair pair?)
-(define (is_atom x) (and (not (pair? x))
-                         (not (null? x))))
+(define (is_atom x) (and (scm-not (pair? x))
+                         (scm-not (null? x))))
 
 (define nil '())
 
@@ -85,7 +85,7 @@
 (define (quicksort l #!optional (test <))
   (if (null? l) '()
       (scm-append (quicksort (filter 
-                          (lambda (x) (not (test (scm-car l) x)))
+                          (lambda (x) (scm-not (test (scm-car l) x)))
                           (scm-cdr l)) 
                          test)
               (scm-list (scm-car l))
@@ -96,10 +96,10 @@
 
 (define (+merge+ xs ys test) 
   (cond ((and (is_empty xs) 
-              (not (is_empty ys)))
+              (scm-not (is_empty ys)))
          ys)
         ((and (is_empty ys) 
-              (not (is_empty xs)))
+              (scm-not (is_empty xs)))
          xs) 
         ((test (head xs) (head ys))
          (scm-cons (head xs) 
@@ -135,9 +135,9 @@
 ;; 
 
 (define (copy_list lst)
-  (if (not (pair? lst))
+  (if (scm-not (pair? lst))
       (error "(Argument 1) PAIR expected\n" lst))
-  (if (not (list? lst))
+  (if (scm-not (list? lst))
       (scm-cons (scm-car lst) (scm-cdr lst))
       (let loop ((lst lst) (result '()))
         (cond ((null? lst) (scm-reverse result))
@@ -208,33 +208,33 @@
         (loop (scm-cdr a) (scm-cdr b) (scm-cons (f (scm-car a) (scm-car b)) result)))))
 
 (define (exists f ls . more)
-  (if (not (null? more)) 
+  (if (scm-not (null? more)) 
       (assert-equal-lengths ls more))
-  (and (not (null? ls))
+  (and (scm-not (null? ls))
        (let exists ((x (scm-car ls)) (ls (scm-cdr ls)) (more more))
          (if (null? ls)
-             (apply f x (map car more))
-             (or (apply f x (map car more))
-                 (exists (scm-car ls) (scm-cdr ls) (map cdr more)))))))
+             (scm-apply f x (scm-map scm-car more))
+             (or (scm-apply f x (scm-map scm-car more))
+                 (exists (scm-car ls) (scm-cdr ls) (scm-map scm-cdr more)))))))
 
 (define (for_all f ls . more)
-  (if (not (null? more)) 
+  (if (scm-not (null? more)) 
       (assert-equal-lengths ls more))
   (or (null? ls)
       (let for-all ((x (scm-car ls)) (ls (scm-cdr ls)) (more more))
         (if (null? ls)
-            (apply f x (map car more))
-            (and (apply f x (map car more))
-                 (for-all (scm-car ls) (scm-cdr ls) (map cdr more)))))))
+            (scm-apply f x (scm-map scm-car more))
+            (and (scm-apply f x (scm-map scm-car more))
+                 (for-all (scm-car ls) (scm-cdr ls) (scm-map scm-cdr more)))))))
 
 (define (fold_left f obj ls . more)
-  (if (not (null? more))
+  (if (scm-not (null? more))
       (assert-equal-lengths ls more))
   (let fold-left ((obj obj) (ls ls) (more more))
     (if (null? ls) obj
-        (fold-left (apply f (scm-car ls) obj (map car more)) 
+        (fold-left (scm-apply f (scm-car ls) obj (scm-map scm-car more)) 
                    (scm-cdr ls) 
-                   (map cdr more)))))
+                   (scm-map scm-cdr more)))))
 
 
 ;; Taken from http://srfi.schemers.org/srfi-1/srfi-1-reference.scm:
@@ -253,13 +253,13 @@
     (if (pair? lists) (scm-cons (scm-caar lists) (recur (scm-cdr lists))) (scm-list last-elt))))
 
 (define (fold_right f obj ls . more)
-  (if (not (null? more))
+  (if (scm-not (null? more))
       (assert-equal-lengths ls more))
   (if (pair? more)
       (let recur ((lists (scm-cons ls more)))
 	(let ((cdrs (%cdrs lists)))
 	  (if (null? cdrs) obj
-	      (apply f (%cars+ lists (recur cdrs))))))
+	      (scm-apply f (%cars+ lists (recur cdrs))))))
       (let recur ((ls ls))
 	(if (null? ls) obj
 	    (let ((head (scm-car ls)))
@@ -296,7 +296,7 @@
         (scm-append 
          expr-acc 
          `(let *comprehension-loop* ((*list* ,(first lists)))
-            (if (not (null? *list*))
+            (if (scm-not (null? *list*))
                 (let ((,(first vars) (first *list*)))
                   (if ,(first filters)
                       ,(mk-comprehension-loop 
