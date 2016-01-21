@@ -12,7 +12,7 @@ LIBFFI_INC=${LIBFFI_PATH}/target/usr/local/lib/libffi-3.2.1/include
 OPT_LIBS=-lffi
 
 all:
-	${GSC} -o slogan -cc-options "-I${LIBFFI_INC}" -ld-options "-L${LIBFFI_LIB} ${OPT_LIBS}" -exe ./prelude/*.scm repl.scm
+	${GSC} -o slogan -cc-options "-I${LIBFFI_INC}" -ld-options "-L${LIBFFI_LIB} ${OPT_LIBS}" -exe ./core/*.scm repl.scm
 
 install:
 	cp slogan ${INSTALL_DIR}
@@ -28,6 +28,6 @@ uninstall:
 
 clean:
 	rm -f *.o*
-	rm -f ./prelude/*.o*
+	rm -f ./core/*.o*
 	rm -f ./slogan
 

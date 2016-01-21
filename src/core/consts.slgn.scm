@@ -22,7 +22,7 @@
            (getenv "SLOGAN_ROOT" ".")))))
 
 (define *slogan-root* (read-slogan-root))
-(define *prelude-root* (string-append *slogan-root* "/src/prelude"))
+(define *prelude-root* (string-append *slogan-root* "/src/core"))
 (define *pkg-root* (string-append *slogan-root* "/packages/"))
 
 (define (slogan_root) *slogan-root*)
