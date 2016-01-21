@@ -19,9 +19,9 @@ function hlcode_loop(tokenizer, out_str)
         };
 
 function hlcode(program, @optional with_prompt = true)
-    let (p = open_string_input_stream(program))
+    let (p = string_reader(program))
     let (t = stream_tokenizer(false, p))
-    let (s = open_string_output_stream()) {
+    let (s = string_writer()) {
         hlcode_loop(t, s);
         let (s = get_output_string(s)) 
           if (with_prompt) string_append("<span class=\"nc\">slogan&gt; </span>", s)
@@ -29,10 +29,10 @@ function hlcode(program, @optional with_prompt = true)
     };
 
 function hlvalue(program)
-  let (p = open_string_input_stream(program))
+  let (p = string_reader(program))
   let (t = stream_tokenizer(false, p))
   let (v = eval(slogan(t)))
-  let (o = open_string_output_stream())
+  let (o = string_writer())
    { show(stream = o, "<span class=\"ge\">=&gt; ", v, "</span>");
      get_output_string(o) };
 

@@ -5,7 +5,6 @@
 (define is_equal equal?)
 (define is_boolean boolean?)
 (define is_function procedure?)
-(define is_procedure procedure?)
 (define is_symbol symbol?)
 (define is_promise ##promise?)
 

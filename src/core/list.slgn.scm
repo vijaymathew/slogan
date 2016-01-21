@@ -232,7 +232,7 @@
       (assert-equal-lengths ls more))
   (let fold-left ((obj obj) (ls ls) (more more))
     (if (null? ls) obj
-        (fold-left (scm-apply f (scm-car ls) obj (scm-map scm-car more)) 
+        (fold-left (scm-apply f (scm-car ls) (scm-append (scm-map scm-car more) (list obj)))
                    (scm-cdr ls) 
                    (scm-map scm-cdr more)))))
 

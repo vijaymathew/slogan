@@ -4,9 +4,9 @@
 ;; These functions are specific to this implementation of Slogan.
 ;; Right now we have some of the most useful Gambit "Host environment" functions here.
 
-(define getpid (c-lambda () int "getpid"))
-(define getppid (c-lambda () int "getppid"))
-(define kill (c-lambda (int int) int "kill")) 
+(define scm-getpid (c-lambda () int "getpid"))
+(define scm-getppid (c-lambda () int "getppid"))
+(define scm-kill (c-lambda (int int) int "kill")) 
 
 (define (list_directory dirname #!optional (ignore_hidden #t))
   (let ((d (open-directory (scm-list path: dirname ignore-hidden: (if (symbol? ignore_hidden) 

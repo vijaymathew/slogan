@@ -1,10 +1,6 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Multi-core programming support.
 
-;;  define p = process(fn(cp) showln("server says: " process_receive(cp)));
-;;  process_send(p, "hello");
-;;  process_close(p);
-
 (c-declare #<<c-declare-end
            
 #include <stdio.h>
@@ -117,10 +113,7 @@
        if (errno == EAGAIN || errno == EWOULDBLOCK)
          return ___fix(-2);
        else
-         {
-           fprintf(stderr, "recv failed - %d. %s\n", errno, strerror(errno));
-           return ___FAL;
-         }
+         return ___FAL;
      }
    else if (n >= 0 && n < C_RECV_BUFSZ)
      done = 1;
@@ -139,10 +132,7 @@
        if (errno == EAGAIN || errno == EWOULDBLOCK)
          return -2;
        else
-         {
-           fprintf(stderr, "send failed - %d. %s\n", errno, strerror(errno));
-           return -1;
-         }
+         return -1;
      }
    return n;          
  }
@@ -176,13 +166,11 @@ c-declare-end
 
 (define process_id process-info-id)
 
-(define scm-kill kill)
-
 (define (process_close pinfo)
   (if (process-info-child-socket pinfo)
       (begin (call-close (process-info-child-socket pinfo))
              (scm-kill (process-info-id pinfo) 9)))
-  (call-close (process-info-socket pinfo)))
+  (zero? (call-close (process-info-socket pinfo))))
 
 (define (invoke-child-callback cb sock)
   (with-exception-catcher
@@ -262,7 +250,7 @@ c-declare-end
                           (thread-sleep! *min-time-to-sleep*))
                       (loop 0))
                      (else (close-output-port buf)
-                           (error "process-send failed")))))))))
+                           (error 'send_failed)))))))))
 
 (define (process_receive pinfo #!optional timeout default)
   (if (and timeout (scm-not (> timeout 0)))
@@ -278,7 +266,7 @@ c-declare-end
              (set! object (call-recv channel))
              (cond ((scm-not object)
                     (close-output-port buf)
-                    (error "process-recv failed."))
+                    (error 'receive_failed))
                    ((number? object)
                     (cond ((= -2 object)
                            (if timeout
@@ -298,3 +286,24 @@ c-declare-end
                                    (close-input-port inbuf)
                                    r)))))
                    (else (error "process-recv - invalid return value - " object))))))))
+
+(define (spawn child-callback #!key timeout
+               send_timeout recv_timeout recv_default)
+  (define (cb pinfo)
+    (let ((message (process_receive pinfo recv_timeout recv_default)))
+      (cond ((not (eq? message 'quit))
+             (process_send pinfo (child-callback message) send_timeout)
+             (cb pinfo)))))
+  (let ((pinfo (process cb timeout)))
+    (lambda (message)
+      (cond ((eq? message 'info)
+             pinfo)
+            ((eq? message 'quit)
+             (process_send pinfo message send_timeout)
+             (process_close pinfo))
+            (else
+             (process_send pinfo message send_timeout)
+             (process_receive pinfo recv_timeout recv_default))))))
+
+(define (process_terminate pinfo)
+  (zero? (scm-kill (process-info-id pinfo) 9)))
