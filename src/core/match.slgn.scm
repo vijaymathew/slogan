@@ -30,7 +30,7 @@
 
 (define (scm-cons? pattern)
   (and (list? pattern)
-       (scm-eq? (scm-car pattern) 'cons)))
+       (scm-eq? (scm-car pattern) 'scm-cons)))
 
 (define-structure pattern-vars bindings)
 

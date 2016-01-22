@@ -112,7 +112,7 @@
       (func-def-stmt tokenizer)))
 
 (define (normalize-c-struct-members memtypes)
-  (scm-map (lambda (m) (scm-cons (cadr m) (caddr m))) memtypes))
+  (scm-map (lambda (m) (scm-cons (scm-cadr m) (scm-caddr m))) memtypes))
 
 (define (c-struct-stmt tokenizer)
   (let ((struct-name (tokenizer 'next)))
@@ -299,7 +299,7 @@
           (if (scm-eq? type-name '@rest)
               (loop (cddr types)
                     (scm-cdr args)
-                    (scm-cons `(for_all ,(mk-predic-name (cadr types)) ,(scm-car args)) chk-expr))
+                    (scm-cons `(for_all ,(mk-predic-name (scm-cadr types)) ,(scm-car args)) chk-expr))
               (loop (scm-cdr types) 
                     (scm-cdr args) 
                     (scm-cons `(,(mk-predic-name (scm-car types)) ,(scm-car args)) chk-expr)))))))
@@ -339,10 +339,10 @@
 (define (mk-method-def method-def)
   (let ((func-def (scm-cdr method-def))
 	(types (scm-car method-def)))
-    (let ((name (cadr func-def))
-	  (params (cadr (caddr func-def)))
-	  (args (params->args (cadr (caddr func-def))))
-	  (body (caddr (caddr func-def))))
+    (let ((name (scm-cadr func-def))
+	  (params (scm-cadr (scm-caddr func-def)))
+	  (args (params->args (scm-cadr (scm-caddr func-def))))
+	  (body (scm-caddr (scm-caddr func-def))))
       (let ((types-chk (mk-method-types-chk types args))
 	    (old-name (string->symbol 
 		       (string-append 
@@ -624,7 +624,7 @@
 (define (normalize-sym s)
   (if (and (list? s)
            (scm-eq? (scm-car s) 'quote))
-      (cadr s)
+      (scm-cadr s)
       s))
 
 (define (expression-with-semicolon tokenizer)
@@ -825,9 +825,9 @@
                         (tokenizer 'put var)
                         (scm-list (scm-reverse vars) (scm-reverse lists) 
                               (scm-reverse filters))))))))
-    (let ((expr (list-comprehension (cadr vars-lists-filters) 
+    (let ((expr (list-comprehension (scm-cadr vars-lists-filters) 
                                     (scm-car vars-lists-filters) 
-                                    (caddr vars-lists-filters) 
+                                    (scm-caddr vars-lists-filters) 
                                     result-expr)))
       (let ((t (tokenizer 'next)))
         (if (scm-not (scm-eq? t '*close-bracket*))
@@ -888,10 +888,10 @@
                (scm-append expr '(*table*)))
         (let ((keyval (expression tokenizer)))
           (if (scm-not (and (pair? keyval)
-                        (scm-eq? (scm-car keyval) 'cons)))
+                        (scm-eq? (scm-car keyval) 'scm-cons)))
               (parser-error tokenizer "Key-value must be a pair.")
               (begin (assert-comma-separator tokenizer '*close-brace*)
-                     (loop (scm-append expr (scm-list `(hashtable_set *table* ,(cadr keyval) ,(caddr keyval)))))))))))
+                     (loop (scm-append expr (scm-list `(hashtable_set *table* ,(scm-cadr keyval) ,(scm-caddr keyval)))))))))))
     
 (define (array-or-table-literal tokenizer)
   (tokenizer 'next)
@@ -1337,7 +1337,7 @@
 
 (define (swap-operands expr)
   (if (= 3 (scm-length expr))
-      (scm-list (scm-car expr) (caddr expr) (cadr expr))
+      (scm-list (scm-car expr) (scm-caddr expr) (scm-cadr expr))
       expr))
 
 (define *reserved-names* '(fn function method define record true false

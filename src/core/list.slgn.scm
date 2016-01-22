@@ -144,7 +144,7 @@
               ((is_atom lst) (scm-reverse (scm-cons lst result)))
               (else (loop (scm-cdr lst) (scm-cons (scm-car lst) result)))))))
 
-(define (list_of n #!optional fill-with)
+(define (list_of fill-with n)
   (let ((opr (if (< n 0) + -)))
     (let loop ((r '())
                (n n))

@@ -127,8 +127,8 @@
                           (scm-eq? (scm-car expr) 'define-structure))
                       (scm-not (null? *namespaces*)))
                  (let ((snamespace-name (symbol->string (scm-caar *namespaces*)))
-                       (svar (symbol->string (cadr expr))))
-                   (update-namespace-defs-list! (cadr expr))
+                       (svar (symbol->string (scm-cadr expr))))
+                   (update-namespace-defs-list! (scm-cadr expr))
                    (scm-append `(,(scm-car expr) ,(string->symbol (string-append snamespace-name "_" svar)))
                            (intern-to-top-namespace (cddr expr) top))))
                 ((scm-eq? (scm-car expr) 'begin)
@@ -202,11 +202,11 @@
                (get-name-from-namespace (scm-car name) namespace-name))))
         (else (let ((sym (scm-car expr)))
                 (cond ((or (scm-eq? sym 'let) (scm-eq? sym 'letrec) (scm-eq? sym 'let*))
-                       (let* ((named-let (symbol? (cadr expr)))
-                              (let-expr (if named-let (scm-list sym (cadr expr))
+                       (let* ((named-let (symbol? (scm-cadr expr)))
+                              (let-expr (if named-let (scm-list sym (scm-cadr expr))
                                             (scm-list sym))))
                          (let ((vals (let ((v (intern-to-namespace-let-vars
-                                               (if named-let (caddr expr) (cadr expr))
+                                               (if named-let (scm-caddr expr) (scm-cadr expr))
                                                namespace-name
                                                defs)))
                                        (if (null? v) v (scm-list v)))))
@@ -216,19 +216,19 @@
                                     namespace-name
                                     (if (null? vals) defs (filtered-defs defs (let-vars (scm-car vals)))))))))
                       ((scm-eq? sym 'lambda)
-                       (scm-append (scm-list sym (cadr expr))
+                       (scm-append (scm-list sym (scm-cadr expr))
                                (intern-to-namespace
                                 (cddr expr)
                                 namespace-name
-                                (filtered-defs defs (cadr expr)))))
+                                (filtered-defs defs (scm-cadr expr)))))
                       ((scm-eq? sym 'define)
-                       (scm-append (scm-list sym (cadr expr))
+                       (scm-append (scm-list sym (scm-cadr expr))
                                (intern-to-namespace
                                 (cddr expr)
                                 namespace-name
                                 defs)))
                       ((scm-eq? sym 'set!)
-                       (scm-append (scm-list sym (intern-to-namespace (cadr expr) namespace-name defs))
+                       (scm-append (scm-list sym (intern-to-namespace (scm-cadr expr) namespace-name defs))
                                (intern-to-namespace 
                                 (cddr expr) 
                                 namespace-name
