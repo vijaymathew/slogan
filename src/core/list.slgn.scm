@@ -227,6 +227,15 @@
             (and (scm-apply f x (scm-map scm-car more))
                  (for-all (scm-car ls) (scm-cdr ls) (scm-map scm-cdr more)))))))
 
+(define (fold f obj ls . more)
+  (if (scm-not (null? more))
+      (assert-equal-lengths ls more))
+  (let fold-left ((obj obj) (ls ls) (more more))
+    (if (null? ls) obj
+        (fold-left (scm-apply f obj (scm-car ls) (scm-map scm-car more))
+                   (scm-cdr ls) 
+                   (scm-map scm-cdr more)))))
+
 (define (fold_left f obj ls . more)
   (if (scm-not (null? more))
       (assert-equal-lengths ls more))
