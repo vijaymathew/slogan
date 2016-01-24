@@ -33,7 +33,6 @@
         (tlen (if token
                   (string-length (if (symbol? token) (symbol->string token) token))
                   0)))
-    (scm-display curr-tok-len) (scm-newline)
     (let loop ((line-no (tokenizer 'line)) 
                (n 1)
                (program-text (tokenizer 'program-text)))
