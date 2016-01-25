@@ -1,5 +1,4 @@
-Slogan is a general purpose programming language with facilities for concurrent computing.
-This implementation comes with an interpreter and a compiler for generating platform specific executable binaries.
+Slogan is a general purpose programming language with facilities for concurrent and parallel computing.
 
 ###Building and running Slogan
 
