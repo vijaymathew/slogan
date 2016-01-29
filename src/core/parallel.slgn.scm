@@ -98,26 +98,83 @@
    set_nonblocking(s2);
    return s2;
  }
- 
+
  static ___SCMOBJ c_recv(int s)
  {
-   char str[C_RECV_BUFSZ];
    ___SCMOBJ ret;
-   int n, done;
+   int n, done = 0;
+   int len = 0;
 
-   done = 0;
-   memset(str, 0, C_RECV_BUFSZ);
-   n = recv(s, str, C_RECV_BUFSZ, 0);
-   if (n < 0)
+   n = recv(s, &len, sizeof(len), 0);
+   if (len == 0) return ___fix(-2);
+   if (n != sizeof(int))
      {
-       if (errno == EAGAIN || errno == EWOULDBLOCK)
-         return ___fix(-2);
-       else
-         return ___FAL;
+       fprintf(stderr, "failed to recieve meta information - %d, %s\n", errno, strerror(errno));
+       return ___FAL;
      }
-   else if (n >= 0 && n < C_RECV_BUFSZ)
-     done = 1;
-   ___nonnullcharstring_to_slogan_obj(str, &ret);     
+   if (len <= C_RECV_BUFSZ)
+     {
+       char str[C_RECV_BUFSZ];
+       n = recv(s, str, len, 0);
+       if (n < 0)
+         {
+           if (errno == EAGAIN || errno == EWOULDBLOCK)
+             return ___fix(-2);
+           else
+             return ___FAL;
+         }
+       else if (n == len)
+         {
+           done = 1;
+           if (len < C_RECV_BUFSZ)
+             memset(str + len, 0, C_RECV_BUFSZ - len);
+         }
+       ___nonnullcharstring_to_slogan_obj(str, &ret);
+     }
+   else
+     {
+       char *str = NULL;
+       int received = 0;
+       int rlen = C_RECV_BUFSZ;
+       while (len > 0)
+         {
+           if (str == NULL)
+             str = calloc(rlen, sizeof(char));
+           else
+             {
+               str = realloc(str, received + rlen);
+               memset(str + received, 0, rlen);
+             }
+           if (str == NULL)
+             {
+               fprintf(stderr, "failed to allocate receive buffer");
+               return ___FAL;
+             }
+           n = recv(s, str + received, rlen, 0);
+           if (n > 0)
+             {
+               int oldr = received;
+               received += n;
+               len -= n;
+               if (len < C_RECV_BUFSZ) rlen = len;
+             }
+           if (n == 0 || len <= 0)
+             {
+               done = 1;
+               ___nonnullcharstring_to_slogan_obj(str, &ret);
+               free(str);
+               break;
+             }
+           else if (n < 0)
+             {
+               if (errno != EAGAIN && errno != EWOULDBLOCK)
+                 {
+                   if (str != NULL) free(str);
+                   return ___FAL;
+                 }
+             }
+         }
+     }
    if (done)
      return ___pair(___TRU, ret);
    else
@@ -126,7 +183,39 @@
 
  static int c_send(int s, char *str, int len)
  {
-   int n = send(s, str, len, 0);
+   int n = 0;
+   int orig_len = len;
+
+   if (send(s, &len, sizeof(int), 0) != sizeof(int))
+     {
+       fprintf(stderr, "failed to send meta information - %d, %s\n", errno, strerror(errno));
+       return -1;
+     }
+   if (len > C_RECV_BUFSZ)
+     {
+       int slen = C_RECV_BUFSZ;
+       int tries = 0;
+
+       while (len > 0)
+         {
+           n = send(s, str, slen, 0);
+           if (n > 0 && n <= slen)
+             {
+               str += n;
+               len -= n;
+               if (len < slen) slen = len;
+             }
+           else if (errno != EAGAIN && errno != EWOULDBLOCK)
+             break;
+           if (tries >= 5)
+             {
+               sleep(1);
+               tries = 0;
+             }
+           else ++tries;
+         }
+     }
+   else n = send(s, str, len, 0);
    if (n < 0)
      {
        if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -134,7 +223,7 @@
        else
          return -1;
      }
-   return n;          
+   return orig_len;          
  }
  
 c-declare-end
@@ -303,7 +392,11 @@ c-declare-end
              (process_close pinfo))
             (else
              (process_send pinfo message send_timeout)
-             (process_receive pinfo recv_timeout recv_default))))))
+             (let ((value *void*))
+               (lambda (#!key timeout default)
+                 (if (scm-eq? value *void*)
+                     (set! value (process_receive pinfo timeout default)))
+                 value)))))))
 
 (define (process_terminate pinfo)
   (zero? (scm-kill (process-info-id pinfo) 9)))
