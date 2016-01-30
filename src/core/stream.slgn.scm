@@ -406,3 +406,7 @@
 	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
 	       (loop (scm-cdr objs)))))
   (scm-newline stream))
+
+(define reader_timeout input-port-timeout-set!)
+(define writer_timeout output-port-timeout-set!)
+
