@@ -21,11 +21,32 @@
 
 (define process_id process-info-id)
 
+(define (process-channel pinfo fid)
+  (let ((info ((case fid
+                 ((self) tcp-client-self-socket-info)
+                 ((peer) tcp-client-peer-socket-info)
+                 ((remote) tcp-server-socket-info))
+               (process-info-socket pinfo))))
+    (scm-cons (socket-info-address info)
+              (socket-info-port-number info))))
+
+(define (process_self_channel pinfo)
+  (process-channel pinfo 'self))
+
+(define (process_peer_channel pinfo)
+  (process-channel pinfo 'peer))
+
+(define (process_channel pinfo)
+  (process-channel pinfo 'remote))
+
 (define (process_close pinfo)
   (close-port (process-info-socket pinfo))
-  (if (and (parent-process? pinfo)
-           (number? (process-info-id pinfo)))
-      (scm-kill (process-info-id pinfo) 9))
+  (if (parent-process? pinfo)
+      (let ((pid (process-info-id pinfo)))
+        (cond ((number? pid)
+               (zero? (scm-kill pid 9)))
+              ((thread? pid)
+               (thread-terminate! pid)))))
   #t)
 
 (define (invoke-child-callback cb sock)
@@ -39,28 +60,49 @@
      (close-port sock)
      (scm-exit))))
 
-(define (process-connect address)
-  (let ((child (open-tcp-client (list server-address: address
+(define (process_connect channel)
+  (let ((child (open-tcp-client (list server-address: (scm-car channel)
+                                      port-number: (scm-cdr channel)
                                       keep-alive: #t))))
-    (make-process-info #f child)))
+    (let ((ch (make-process-info #f child)))
+      (if (not (eq? (process_receive ch) 'hi))
+          (begin (close-port child)
+                 (error "failed to establish connection."))
+          ch))))
 
-(define (process child-callback/address #!optional timeout)
-  (if (string? child-callback/address)
-      (process-connect child-callback/address)
-      (let ((port-number (next-free-port)))
-        (let ((pid (call-fork)))
-          (cond ((zero? pid)
-                 (let ((sock (open-tcp-client port-number)))
-                   (invoke-child-callback child-callback/address sock)))
-                ((> pid 0)
-                 (let ((sock (open-tcp-server port-number)))
-                   (if timeout
-                       (input-port-timeout-set! sock timeout))
-                   (let ((conn (scm-read sock)))
-                     (if (eof-object? conn)
-                         (error "timedout waiting for child process.")
-                         (make-process-info pid conn)))))
-                (else #f))))))
+(define (process_service handler #!optional port-number)
+  (if (not port-number)
+      (set! port-number (next-free-port)))
+  (let ((sock (open-tcp-server port-number)))
+    (let ((service-thread (make-thread
+                           (lambda ()
+                             (let loop ((p (scm-read sock)))
+                               (thread-start!
+                                (make-thread
+                                 (lambda ()
+                                   (let ((ch (make-process-info #f p)))
+                                     (process_send ch 'hi)
+                                     (handler ch)))))
+                               (thread-yield!)
+                               (loop (scm-read sock)))))))
+      (thread-start! service-thread)
+      (make-process-info service-thread sock))))
+
+(define (process child-callback #!optional timeout)
+  (let ((port-number (next-free-port)))
+    (let ((pid (call-fork)))
+      (cond ((zero? pid)
+             (let ((sock (open-tcp-client port-number)))
+               (invoke-child-callback child-callback sock)))
+            ((> pid 0)
+             (let ((sock (open-tcp-server port-number)))
+               (if timeout
+                   (input-port-timeout-set! sock timeout))
+               (let ((conn (scm-read sock)))
+                 (if (eof-object? conn)
+                     (error "timedout waiting for child process.")
+                     (make-process-info pid conn)))))
+            (else #f)))))
 
 (define (process_send pinfo object #!optional timeout)
   (let ((out (process-info-socket pinfo)))
@@ -79,12 +121,13 @@
             (error "process-recv - timeout must be a positive number.")
             (input-port-timeout-set! in timeout)))
     (let ((r (read-line in)))
-      (if (and timeout (eof-object? r))
-          default
-          (let ((buf (open-input-string r)))
-            (let ((r (scm-read buf)))
-              (close-input-port buf)
-              r))))))
+      (cond ((eof-object? r)
+             (if timeout default r))
+            (else
+             (let ((buf (open-input-string r)))
+               (let ((r (scm-read buf)))
+                 (close-input-port buf)
+                 r)))))))
          
 (define (spawn child-callback #!optional timeout default)
   (define (cb pinfo)
@@ -107,7 +150,3 @@
                      (set! value (process_receive pinfo timeout default)))
                  value)))))))
 
-(define (process_terminate pinfo)
-  (if (number? (process-info-id pinfo))
-      (zero? (scm-kill (process-info-id pinfo) 9))
-      #f))
