@@ -11,7 +11,7 @@
       (close-port port)
       port-number)))
 
-(define-structure process-info id socket)
+(define-structure process-info id socket server-socket)
 
 (define (parent-process? pinfo)
   (let ((pid (process-info-id pinfo)))
@@ -43,6 +43,7 @@
   (close-port (process-info-socket pinfo))
   (if (parent-process? pinfo)
       (let ((pid (process-info-id pinfo)))
+        (close-port (process-info-server-socket pinfo))
         (cond ((number? pid)
                (zero? (scm-kill pid 9)))
               ((thread? pid)
@@ -56,7 +57,7 @@
      (scm-println "exiting after exception - " e)
      (scm-exit 1))
    (lambda ()
-     (cb (make-process-info 0 sock))
+     (cb (make-process-info 0 sock #f))
      (close-port sock)
      (scm-exit))))
 
@@ -64,29 +65,11 @@
   (let ((child (open-tcp-client (list server-address: (scm-car channel)
                                       port-number: (scm-cdr channel)
                                       keep-alive: #t))))
-    (let ((ch (make-process-info #f child)))
+    (let ((ch (make-process-info #f child #f)))
       (if (not (eq? (process_receive ch) 'hi))
           (begin (close-port child)
                  (error "failed to establish connection."))
           ch))))
-
-(define (process_service handler #!optional port-number)
-  (if (not port-number)
-      (set! port-number (next-free-port)))
-  (let ((sock (open-tcp-server port-number)))
-    (let ((service-thread (make-thread
-                           (lambda ()
-                             (let loop ((p (scm-read sock)))
-                               (thread-start!
-                                (make-thread
-                                 (lambda ()
-                                   (let ((ch (make-process-info #f p)))
-                                     (process_send ch 'hi)
-                                     (handler ch)))))
-                               (thread-yield!)
-                               (loop (scm-read sock)))))))
-      (thread-start! service-thread)
-      (make-process-info service-thread sock))))
 
 (define (process child-callback #!optional timeout)
   (let ((port-number (next-free-port)))
@@ -101,7 +84,7 @@
                (let ((conn (scm-read sock)))
                  (if (eof-object? conn)
                      (error "timedout waiting for child process.")
-                     (make-process-info pid conn)))))
+                     (make-process-info pid conn sock)))))
             (else #f)))))
 
 (define (process_send pinfo object #!optional timeout)
