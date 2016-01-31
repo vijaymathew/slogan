@@ -54,7 +54,7 @@
   (with-exception-catcher
    (lambda (e)
      (close-port sock)
-     (scm-println "exiting after exception - " e)
+     (scm-println "child process exiting on exception - " e)
      (scm-exit 1))
    (lambda ()
      (cb (make-process-info 0 sock #f))
@@ -75,10 +75,12 @@
   (let ((port-number (next-free-port)))
     (let ((pid (call-fork)))
       (cond ((zero? pid)
-             (let ((sock (open-tcp-client port-number)))
+             (let ((sock (open-tcp-client (list port-number: port-number
+                                                keep-alive: #t))))
                (invoke-child-callback child-callback sock)))
             ((> pid 0)
-             (let ((sock (open-tcp-server port-number)))
+             (let ((sock (open-tcp-server (list port-number: port-number
+                                                coalesce: #f))))
                (if timeout
                    (input-port-timeout-set! sock timeout))
                (let ((conn (scm-read sock)))
