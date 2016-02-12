@@ -475,7 +475,7 @@
                       (if (scm-eq? (tokenizer 'peek) 'if)
                           (scm-append expr (scm-list (if-expr tokenizer)))
                           (scm-append expr (scm-list (func-body-expr tokenizer #f #t)))))
-               expr)))
+               (scm-append expr '(#f)))))
         (else (case-expr tokenizer))))
 
 (define (case-expr tokenizer)
@@ -498,8 +498,10 @@
                          (tokenizer 'next)
                          (set! le #t))
                      (loop (tokenizer 'peek) le
-                           (scm-cons (scm-list (if (or (list? expr) (scm-eq? expr 'else)) expr (scm-cons expr '()))
-                                       result) body))))))))
+                           (if (and le (scm-not (scm-eq? expr 'else)))
+                               (scm-cons '(else #f) (scm-cons (scm-list (if (list? expr) expr (scm-cons expr '())) result) body))
+                               (scm-cons (scm-list (if (or (list? expr) (scm-eq? expr 'else)) expr (scm-cons expr '()))
+                                                   result) body)))))))))
         (else (match-expr tokenizer))))
 
 (define (case-pattern-expression tokenizer)

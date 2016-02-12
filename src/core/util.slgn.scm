@@ -263,8 +263,9 @@
    (lambda () (load script))))
 
 (define (check-for-? name tokenizer)
-  (if (>= (string-indexof (symbol->string name) #\?) 0)
-      (parser-error tokenizer "Invalid character `?` in variable name.")))
+  (let ((name (if (pair? name) (cadr name) name)))
+    (if (>= (string-indexof (symbol->string name) #\?) 0)
+        (parser-error tokenizer "Invalid character `?` in variable name."))))
 
 (define (sanitize-expression tokenizer expr)
   (if (and (list? expr) (scm-not (null? expr)))
