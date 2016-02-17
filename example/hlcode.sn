@@ -1,3 +1,5 @@
+// Emits HTML that has syntax-highlighting for Slogan source code.
+    
 function add_span_class(token, classname, convfn) 
     string_append("<span class=\"", classname, "\">", convfn(token), "</span>");
 

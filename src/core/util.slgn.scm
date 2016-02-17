@@ -236,7 +236,7 @@
       file-name
       (string-append file-name *slgn-extn*)))
 
-(define (load_script script #!optional force-compile)
+(define (load script #!optional force-compile)
   (if force-compile
       (with-exception-catcher
        (lambda (e)
@@ -248,10 +248,12 @@
    (lambda (e)
      (if (file-exists? (add-slgn-extn script))
          (if (compile script assemble: #f)
-             (load (string-append script *scm-extn*))
+             (scm-load (string-append script *scm-extn*))
              (error "failed to compile script" script))
          (error "file not found " script)))
-   (lambda () (load script))))
+   (lambda () (scm-load script))))
+
+(define (reload script) (load script #t))
 
 (define (link script)
   (with-exception-catcher
@@ -259,8 +261,8 @@
      (if (file-exists? (add-slgn-extn script))
          (if (scm-not (compile script assemble: #t))
              (error "failed to compile script" script)))
-     (load script))
-   (lambda () (load script))))
+     (scm-load script))
+   (lambda () (scm-load script))))
 
 (define (check-for-? name tokenizer)
   (let ((name (if (pair? name) (cadr name) name)))

@@ -52,3 +52,40 @@ function factorial(n)
   
   fact_iter(n, 1) };
 
+// An implementation of mergesort:
+
+function merge(xs, ys) 
+    match(xs:ys) 
+        []:ys         -> ys,
+        xs:[]         -> xs,
+        (x:xr):(y:yr) -> 
+            if (x < y) x:merge(xr, ys)
+            else y:merge(xs, yr);
+
+function split(xs) 
+{ function iter(xs, xrs, yrs) 
+      match(xs) 
+          []       -> xrs:yrs,
+          [x]      -> (x:xrs):yrs,
+          x1:x2:xr -> iter(xr, x1:xrs, x2:yrs);
+    iter(xs, [], []) };
+
+function mergesort(xs) 
+    match(xs) 
+        []  -> [],
+        [x] -> [x],
+        _   -> let (parts = split(xs)) 
+            merge(mergesort(head(parts)),
+                  mergesort(tail(parts)));
+
+// Amortized constant-time ephemeral queue
+function make_queue() []:[];
+
+function check_queue(q)
+    match(q)
+        []:r -> reverse(r):[],
+        _ -> q;
+
+function insert_queue(q, x) match(q) f:r -> check_queue(f:(x:r));
+function delete_queue(q) match(q) f:r -> check_queue(tail(f):r);
+function is_empty_queue(q) match(q) f:r -> is_empty(f);
