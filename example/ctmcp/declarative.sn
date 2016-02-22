@@ -89,3 +89,52 @@ function check_queue(q)
 function insert_queue(q, x) match(q) f:r -> check_queue(f:(x:r));
 function delete_queue(q) match(q) f:r -> check_queue(tail(f):r);
 function is_empty_queue(q) match(q) f:r -> is_empty(f);
+
+// Ordered binary trees
+record leaf();
+define default_leaf = leaf();
+record tree(key, value, left = default_leaf, right = default_leaf);
+
+function lookup(k, tree)
+    match(tree)
+        leaf() -> !notfound,
+        tree(key, value, left, right) -> 
+            if (k < key) lookup(k, left)
+            else if (k > key) lookup(k, right)
+            else value;
+
+// There is an alternative way to write `lookup` using `where` guards.
+// This is more declarative and makes it easy to verify that no cases
+// are overlooked.
+function lookup_2(k, tree) 
+    match(tree) 
+        leaf() -> !notfound,
+        tree(key, value, _, _) where key == k -> value,
+        tree(key, _, left, _) where k < key -> lookup_2(k, left),
+        tree(key, _, _, right) where k > key -> lookup_2(k, right);
+
+function insert(k, v, t)
+    match(t)
+        leaf() -> tree(key = k, value = v),
+        tree(key, value, left, right) where key == k -> make_tree(k, v, left, right),
+        tree(key, value, left, right) where k < key -> make_tree(key, value, insert(k, v, left), right),
+        tree(key, value, left, right) where k > key -> make_tree(key, value, left, insert(k, v, right));
+
+function delete(x, tree)
+    match(tree)
+        leaf() -> default_leaf,
+        tree(key, value, left, right) where key == x ->
+        { match(remove_smallest(right))
+            [] -> left,
+            yp:vp:tp -> make_tree(yp, vp, left, tp) },
+        tree(key, value, left, right) where x < key -> make_tree(key, value, delete(x, left), right),
+        tree(key, value, left, right) where x > key -> make_tree(key, value, left, delete(x, right));
+
+function remove_smallest(tree)
+    match(tree)
+        leaf() -> [],
+        tree(key, value, left, right) ->
+        { match(remove_smallest(left))
+            [] -> key:value:right,
+            yp:vp:tp -> yp:vp:make_tree(key, value, tp, right) };
+

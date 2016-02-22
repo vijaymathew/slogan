@@ -1,5 +1,4 @@
-19-Jan-2016
+20-Feb-2016
 ===========
 
-  * create a `futures` abstraction based on processes.
-  * implement a crypto package (based on http://nacl.cr.yp.to/index.html or https://github.com/jedisct1/libsodium?)
+  * Remove unnecessare `(if #t)` check in generated code for empty precondition in record constructor.
