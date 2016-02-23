@@ -362,8 +362,6 @@
 (define core_array_sort array_sort)
 (define core_array_map array_map)
 (define core_array_for_each array_for_each)
-(define core_is_u8array is_u8array)
-(define core_is_s8array is_s8array)
 (define core_u8array u8array)
 (define core_s8array s8array)
 (define core_make_u8array make_u8array)
@@ -394,6 +392,135 @@
 (define core_subs8array_fill subs8array_fill)
 (define core_subu8array_move subu8array_move)
 (define core_subs8array_move subs8array_move)
+
+(define core_is_s16array is_s16array)
+(define core_s16array s16array)
+(define core_make_s16array make_s16array)
+(define core_s16array_length s16array_length)
+(define core_s16array_at s16array_at)
+(define core_s16array_set s16array_set)
+(define core_s16array_to_list s16array_to_list)
+(define core_list_to_s16array list_to_s16array)
+(define core_s16array_fill s16array_fill)
+(define core_s16array_append s16array_append)
+(define core_s16array_copy s16array_copy)
+(define core_s16array_shrink s16array_shrink)
+(define core_subs16array subs16array)
+(define core_subs16array_fill subs16array_fill)
+(define core_subs16array_move subs16array_move)
+
+(define core_is_s32array is_s32array)
+(define core_s32array s32array)
+(define core_make_s32array make_s32array)
+(define core_s32array_length s32array_length)
+(define core_s32array_at s32array_at)
+(define core_s32array_set s32array_set)
+(define core_s32array_to_list s32array_to_list)
+(define core_list_to_s32array list_to_s32array)
+(define core_s32array_fill s32array_fill)
+(define core_s32array_append s32array_append)
+(define core_s32array_copy s32array_copy)
+(define core_s32array_shrink s32array_shrink)
+(define core_subs32array subs32array)
+(define core_subs32array_fill subs32array_fill)
+(define core_subs32array_move subs32array_move)
+
+(define core_is_u32array is_u32array)
+(define core_u32array u32array)
+(define core_make_u32array make_u32array)
+(define core_u32array_length u32array_length)
+(define core_u32array_at u32array_at)
+(define core_u32array_set u32array_set)
+(define core_u32array_to_list u32array_to_list)
+(define core_list_to_u32array list_to_u32array)
+(define core_u32array_fill u32array_fill)
+(define core_u32array_append u32array_append)
+(define core_u32array_copy u32array_copy)
+(define core_u32array_shrink u32array_shrink)
+(define core_subu32array subu32array)
+(define core_subu32array_fill subu32array_fill)
+(define core_subu32array_move subu32array_move)
+
+(define core_is_u16array is_u16array)
+(define core_u16array u16array)
+(define core_make_u16array make_u16array)
+(define core_u16array_length u16array_length)
+(define core_u16array_at u16array_at)
+(define core_u16array_set u16array_set)
+(define core_u16array_to_list u16array_to_list)
+(define core_list_to_u16array list_to_u16array)
+(define core_u16array_fill u16array_fill)
+(define core_u16array_append u16array_append)
+(define core_u16array_copy u16array_copy)
+(define core_u16array_shrink u16array_shrink)
+(define core_subu16array subu16array)
+(define core_subu16array_fill subu16array_fill)
+(define core_subu16array_move subu16array_move)
+
+(define core_is_s64array is_s64array)
+(define core_s64array s64array)
+(define core_make_s64array make_s64array)
+(define core_s64array_length s64array_length)
+(define core_s64array_at s64array_at)
+(define core_s64array_set s64array_set)
+(define core_s64array_to_list s64array_to_list)
+(define core_list_to_s64array list_to_s64array)
+(define core_s64array_fill s64array_fill)
+(define core_s64array_append s64array_append)
+(define core_s64array_copy s64array_copy)
+(define core_s64array_shrink s64array_shrink)
+(define core_subs64array subs64array)
+(define core_subs64array_fill subs64array_fill)
+(define core_subs64array_move subs64array_move)
+
+(define core_is_u64array is_u64array)
+(define core_u64array u64array)
+(define core_make_u64array make_u64array)
+(define core_u64array_length u64array_length)
+(define core_u64array_at u64array_at)
+(define core_u64array_set u64array_set)
+(define core_u64array_to_list u64array_to_list)
+(define core_list_to_u64array list_to_u64array)
+(define core_u64array_fill u64array_fill)
+(define core_u64array_append u64array_append)
+(define core_u64array_copy u64array_copy)
+(define core_u64array_shrink u64array_shrink)
+(define core_subu64array subu64array)
+(define core_subu64array_fill subu64array_fill)
+(define core_subu64array_move subu64array_move)
+
+(define core_is_f32array is_f32array)
+(define core_f32array f32array)
+(define core_make_f32array make_f32array)
+(define core_f32array_length f32array_length)
+(define core_f32array_at f32array_at)
+(define core_f32array_set f32array_set)
+(define core_f32array_to_list f32array_to_list)
+(define core_list_to_f32array list_to_f32array)
+(define core_f32array_fill f32array_fill)
+(define core_f32array_append f32array_append)
+(define core_f32array_copy f32array_copy)
+(define core_f32array_shrink f32array_shrink)
+(define core_subf32array subf32array)
+(define core_subf32array_fill subf32array_fill)
+(define core_subf32array_move subf32array_move)
+
+(define core_is_f64array is_f64array)
+(define core_f64array f64array)
+(define core_make_f64array make_f64array)
+(define core_f64array_length f64array_length)
+(define core_f64array_at f64array_at)
+(define core_f64array_set f64array_set)
+(define core_f64array_to_list f64array_to_list)
+(define core_list_to_f64array list_to_f64array)
+(define core_f64array_fill f64array_fill)
+(define core_f64array_append f64array_append)
+(define core_f64array_copy f64array_copy)
+(define core_f64array_shrink f64array_shrink)
+(define core_subf64array subf64array)
+(define core_subf64array_fill subf64array_fill)
+(define core_subf64array_move subf64array_move)
+
 (define core_is_bit_array is_bit_array)
 (define core_bit_array bit_array)
 (define core_make_bit_array make_bit_array)
@@ -727,7 +854,7 @@
                                   string_to_symbol symbol_to_string gensym is_true is_false void is_void is_object array make_array
                                   array_length array_at arrays_at array_set array_fill array_to_list list_to_array array_copy
                                   array_append array_shrink subarray subarray_fill subarray_move array_sort array_map array_for_each
-                                  is_u8array is_s8array u8array s8array make_u8array make_s8array u8array_length s8array_length
+                                  u8array s8array make_u8array make_s8array u8array_length s8array_length
                                   u8array_at s8array_at u8array_set s8array_set u8array_to_list s8array_to_list list_to_u8array
                                   list_to_s8array object_to_u8array u8array_to_object u8array_fill s8array_fill u8array_append
                                   s8array_append u8array_copy s8array_copy u8array_shrink s8array_shrink subu8array subs8array
@@ -772,4 +899,28 @@
                                   ffi_call_void_with_void_pointer ffi_call_void_pointer_with_void_pointer ffi_call_char_string_with_void_pointer
                                   ffi_call_int_with_void_pointer ffi_call_uint_with_void_pointer ffi_call_int64_with_void_pointer
                                   ffi_call_float_with_void_pointer ffi_call_double_with_void_pointer ffi_call_obj_with_void_pointer
-                                  install_package uninstall_package load_package))
+                                  install_package uninstall_package load_package is_s16array s16array make_s16array s16array_length s16array_at
+                                  s16array_set s16array_to_list list_to_s16array s16array_fill
+                                  s16array_append s16array_copy s16array_shrink subs16array
+                                  subs16array_fill subs16array_move is_s32array s32array
+                                  make_s32array s32array_length s32array_at s32array_set
+                                  s32array_to_list list_to_s32array s32array_fill s32array_append
+                                  s32array_copy s32array_shrink subs32array subs32array_fill subs32array_move
+                                  is_u32array u32array make_u32array u32array_length u32array_at u32array_set
+                                  u32array_to_list list_to_u32array u32array_fill u32array_append u32array_copy
+                                  u32array_shrink subu32array subu32array_fill subu32array_move is_u16array
+                                  u16array make_u16array u16array_length u16array_at u16array_set u16array_to_list
+                                  list_to_u16array u16array_fill u16array_append u16array_copy u16array_shrink
+                                  subu16array subu16array_fill subu16array_move is_s64array s64array make_s64array
+                                  s64array_length s64array_at s64array_set s64array_to_list list_to_s64array
+                                  s64array_fill s64array_append s64array_copy s64array_shrink subs64array
+                                  subs64array_fill subs64array_move is_u64array u64array make_u64array
+                                  u64array_length u64array_at u64array_set u64array_to_list list_to_u64array
+                                  u64array_fill u64array_append u64array_copy u64array_shrink subu64array
+                                  subu64array_fill subu64array_move is_f32array f32array make_f32array
+                                  f32array_length f32array_at f32array_set f32array_to_list list_to_f32array
+                                  f32array_fill f32array_append f32array_copy f32array_shrink subf32array
+                                  subf32array_fill subf32array_move is_f64array f64array make_f64array
+                                  f64array_length f64array_at f64array_set f64array_to_list list_to_f64array
+                                  f64array_fill f64array_append f64array_copy f64array_shrink subf64array
+                                  subf64array_fill subf64array_move))

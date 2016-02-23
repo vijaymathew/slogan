@@ -335,7 +335,7 @@ comments have been removed."
 
 (defconst js-possibly-braceless-keyword-re
   (regexp-opt
-   '("function" "method" "fn" "let" "letrec" "letseq" "catch" "else" "finally"
+   '("method" "let" "letrec" "letseq" "catch" "else" "finally"
      "if" "try" "trycc" "match" "case")
    'words)
   "Regular expression matching keywords that are optionally
