@@ -336,6 +336,7 @@
 (define core_list_to_string list_to_string)
 (define core_string_to_u8array string_to_u8array)
 (define core_u8array_to_string u8array_to_string)
+(define core_u8array_to_bit_array u8array_to_bit_array)
 (define core_string_to_symbol string_to_symbol)
 (define core_symbol_to_string symbol_to_string)
 (define core_gensym gensym)
@@ -854,7 +855,7 @@
                                   string_to_symbol symbol_to_string gensym is_true is_false void is_void is_object array make_array
                                   array_length array_at arrays_at array_set array_fill array_to_list list_to_array array_copy
                                   array_append array_shrink subarray subarray_fill subarray_move array_sort array_map array_for_each
-                                  u8array s8array make_u8array make_s8array u8array_length s8array_length
+                                  u8array s8array make_u8array make_s8array u8array_length s8array_length u8array_to_bit_array
                                   u8array_at s8array_at u8array_set s8array_set u8array_to_list s8array_to_list list_to_u8array
                                   list_to_s8array object_to_u8array u8array_to_object u8array_fill s8array_fill u8array_append
                                   s8array_append u8array_copy s8array_copy u8array_shrink s8array_shrink subu8array subs8array

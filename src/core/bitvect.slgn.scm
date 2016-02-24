@@ -219,3 +219,32 @@
 
 (define (subbitarray self offset count)
   (bitvector-blit! self offset (make-bitvector (- count offset)) 0 count))
+
+(define *u8array-pad* (make-u8vector 1))
+
+(define (pad-u8array u8arr len)
+  (let loop ((u8arr u8arr) (len len))
+    (if (not (zero? (mod len 4)))
+        (loop (u8vector-append u8arr *u8array-pad*)
+              (+ len 1))
+        u8arr)))
+
+(define (pack-u8->u32 u8arr offset len)
+  (let loop ((i 0) (offset offset) (n 0))
+    (cond ((< i 4)
+           (set! n (arithmetic-shift n 8))
+           (loop (+ i 1) (+ offset 1)
+                 (bitwise-ior n (bitwise-and (u8vector-ref u8arr offset) #xFF))))
+          (else n))))
+
+(define (u8array_to_bit_array u8arr)
+  (let ((u8arr (pad-u8array u8arr (u8vector-length u8arr))))
+    (let* ((len (u8vector-length u8arr))
+           (barr (make-u32vector
+                  (let ((blen (scm-quotient len 4)))
+                    (if (zero? blen) 1 blen)))))
+      (let loop ((i 0) (j 0))
+        (cond ((< i len)
+               (u32vector-set! barr j (pack-u8->u32 u8arr i len))
+               (loop (+ i 4) (+ j 1)))
+              (else (make-bitvector (* len 8) barr)))))))

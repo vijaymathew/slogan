@@ -45,6 +45,7 @@
 (define scm-eval eval)
 (define scm-not not)
 (define scm-load load)
+(define scm-quotient quotient)
 
 (define (identity x) x)
 (define scm-identity identity)
