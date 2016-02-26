@@ -651,6 +651,17 @@
 (define core_task_receive task_receive)
 (define core_task_messages_next task_messages_next)
 (define core_task_messages_rewind task_messages_rewind)
+(define core_task_state task_state)
+(define core_task_state_is_uninitialized task_state_is_uninitialized)
+(define core_task_state_is_initialized task_state_is_initialized)
+(define core_task_state_is_active task_state_is_active)
+(define core_task_state_active_waiting_for task_state_active_waiting_for)
+(define core_task_state_active_timeout task_state_active_timeout)
+(define core_task_state_is_normally_terminated task_state_is_normally_terminated)
+(define core_task_state_normally_terminated_result task_state_normally_terminated_result)
+(define core_task_state_is_abnormally_terminated task_state_is_abnormally_terminated)
+(define core_task_state_abnormally_terminated_reason task_state_abnormally_terminated_reason)
+
 (define core_task_group task_group)
 (define core_is_task_group is_task_group)
 (define core_task_group_name task_group_name)
@@ -877,6 +888,9 @@
                                   current_task is_task task root_task task_run task_yield task_sleep task_terminate task_join task_name
                                   task_set_data task_data task_set_base_priority task_base_priority task_set_priority_boost task_priority_boost
                                   task_base_priority task_set_quantum task_quantum task_send task_receive task_messages_next task_messages_rewind
+                                  task_state task_state_is_uninitialized task_state_is_initialized task_state_is_active task_state_active_waiting_for
+                                  task_state_active_timeout task_state_is_normally_terminated task_state_normally_terminated_result
+                                  task_state_is_abnormally_terminated task_state_abnormally_terminated_reason
                                   task_group is_task_group task_group_name task_group_parent task_group_resume task_group_suspend task_group_terminate
                                   mutex is_mutex mutex_name mutex_set_data mutex_data mutex_state mutex_lock mutex_unlock monitor is_monitor
                                   monitor_name monitor_set_data monitor_data monitor_notify monitor_broadcast rvar rbind rget process process_send

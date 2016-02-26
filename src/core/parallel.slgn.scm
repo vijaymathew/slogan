@@ -1,7 +1,6 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Multi-core programming support.
 
-
 (define call-fork (c-lambda () int "fork"))
 
 ;; Here we do a best effort to find a free port.

@@ -67,6 +67,17 @@
       (thread-mailbox-extract-and-rewind)
       (thread-mailbox-rewind)))
 
+(define task_state thread-state)
+(define task_state_is_uninitialized thread-state-uninitialized?)
+(define task_state_is_initialized thread-state-initialized?)
+(define task_state_is_active thread-state-active?)
+(define task_state_active_waiting_for thread-state-active-waiting-for)
+(define task_state_active_timeout thread-state-active-timeout)
+(define task_state_is_normally_terminated thread-state-normally-terminated?)
+(define task_state_normally_terminated_result thread-state-normally-terminated-result)
+(define task_state_is_abnormally_terminated thread-state-abnormally-terminated?)
+(define task_state_abnormally_terminated_reason thread-state-abnormally-terminated-reason)
+
 (define task_group make-thread-group)
 (define is_task_group thread-group?)
 (define task_group_name thread-group-name)

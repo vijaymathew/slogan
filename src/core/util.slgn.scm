@@ -75,6 +75,8 @@
              (slgn-display-char val port))
             ((vector? val)
              (slgn-display-array val port "#" vector->list))
+            ((hashtable? val)
+             (slgn-display-hashtable val port))
             ((u8vector? val)
              (slgn-display-array val port "#u8" u8vector->list))
             ((s8vector? val)
@@ -111,6 +113,23 @@
              (slgn-display-special-obj "monitor" port))
             (else
              (scm-display (scm-repr->slgn-repr val) port)))))
+
+(define (slgn-display-hashtable ht port)
+  (scm-display "#{" port)
+  (let ((t (hashtable-table ht)))
+    (let ((len (- (table-length t) 1))
+          (i 0))
+      (table-for-each (lambda (k v)
+                        (slgn-display k port: port)
+                        (scm-display " : " port)
+                        (slgn-display v port: port)
+                        (set! i (+ 1 i))
+                        (if (not (> i len))
+                            (begin
+                              (if *sep-char* (scm-display *sep-char* port))
+                              (scm-display #\space port))))
+                      t)))
+  (scm-display #\} port))
 
 (define (slgn-display-special-obj tag port)
   (scm-display "<" port) (scm-display tag port)
