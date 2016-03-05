@@ -12,6 +12,7 @@ If you don't want to do a system-wide installation of Slogan,
 execute `./src/slogan` from this directory to launch the REPL.
 
 Visit http://schemer.in/slogan/ for tutorials and detailed documentation on the language.
-Please send your comments, suggestions and bug reports to vijay.the.lisper@gmail.com.
 
-Copyright (c) 2013, 2014, 2015, 2016 by Vijay Mathew Pandyalakal.
+You can help improve Slogan by reporting/fixing bugs and commenting on the enhancement proposals - https://github.com/vijaymathew/slogan/issues
+
+Copyright (c) 2013, 2014, 2015, 2016 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
