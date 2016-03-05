@@ -1,4 +1,2 @@
 20-Feb-2016
 ===========
-
-  * Remove unnecessare `(if #t)` check in generated code for empty precondition in record constructor.

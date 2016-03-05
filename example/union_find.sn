@@ -1,0 +1,80 @@
+// Some solutions to the dynamic connectivity problem.
+// See Chapter 1 of Algorithms (4th edition) by Sedgewick.
+
+function uf(arr) array_length(arr):arr;
+
+function count(ufo) head(ufo);
+
+function is_connected(ufo p q find) find(ufo p) == find(ufo q);
+
+// Quick find
+namespace qf;
+
+function find(ufo p) array_at(tail(ufo) p);
+
+function union(ufo p q)
+  let (pid = find(ufo p),
+       qid = find(ufo q))
+    if (pid == qid) ufo
+    else let (ids = tail(ufo), i = 0)
+    { array_for_each(fn(id) { if (id == pid) array_set(ids i qid); i = i + 1 }
+                     ids);
+      set_head(ufo, count(ufo)-1); ufo };
+
+namespace;
+
+// Quick union
+namespace qu;
+
+function find(ufo p)
+  let (pid = array_at(tail(ufo) p))
+    if (pid == p) pid
+    else find(ufo pid);
+
+function union(ufo p q)
+  let (proot = find(ufo p)
+       qroot = find(ufo q))
+    if (proot == qroot) ufo
+    else { array_set(tail(ufo), proot, qroot);
+           set_head(ufo, count(ufo)-1); ufo };
+    
+namespace;
+
+define guf = uf;
+
+// Weighted quick union-find
+namespace wquf;
+
+function uf(arr) guf(arr):list_to_array(range(0, array_length(arr) - 1));
+
+function count(ufo) head(head(ufo));
+
+function set_count(ufo, c) set_head(head(ufo), c);
+
+function sizes(ufo) tail(ufo);
+
+function identifiers(ufo) tail(head(ufo));
+
+function find(ufo p)
+let (pid = array_at(identifiers(ufo) p))
+    if (pid == p) pid
+    else find(ufo pid);
+
+function union(ufo p q)
+  let (i = find(ufo p)
+       j = find(ufo q))
+    if (i == j) ufo
+    else let (szs = sizes(ufo)
+              ids = identifiers(ufo))
+      let (szs_j = array_at(szs, j)
+           szs_i = array_at(szs, i))
+      { if (szs_i < szs_j)
+        { array_set(ids, i, j);
+          array_set(szs, szs_j, szs_j + szs_i) }
+        else
+        { array_set(ids, j, i);
+          array_set(szs, szs_i, szs_i + szs_j) };
+        set_count(ufo, count(ufo)-1); ufo };
+
+namespace;
+
