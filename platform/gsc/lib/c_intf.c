@@ -8,7 +8,7 @@
  */
 
 #define ___INCLUDED_FROM_C_INTF
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
 #include "os_base.h"
@@ -3546,6 +3546,7 @@ void **x;
 int arg_num;
 int char_encoding;)
 {
+  ___SCMOBJ ___temp;
   ___SCMOBJ e;
   void **string_list;
   ___SCMOBJ list1;

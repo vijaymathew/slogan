@@ -2,7 +2,7 @@
 
 ;;; File: "intf#.scm"
 
-;;; Copyright (c) 2011-2012 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 2011-2015 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -58,18 +58,26 @@ kSystemSoundID_FlashScreen
 kSystemSoundID_Vibrate
 kSystemSoundID_UserPreferredAlert
 
+set-ext-keys
 set-navigation
 show-cancelButton
 hide-cancelButton
 show-textView
 show-webView
+show-imageView
+show-currentView
 set-textView-font
 set-textView-content
 get-textView-content
 add-output-to-textView
-add-input-to-textView
+add-text-input-to-textView
+add-key-input-to-textView
 set-webView-content
 set-webView-content-from-file
+add-text-input-to-webView
+add-key-input-to-webView
+add-text-input-to-currentView
+add-key-input-to-currentView
 eval-js-in-webView
 
 open-URL
@@ -77,12 +85,17 @@ send-SMS
 pick-image
 set-idle-timer
 set-toolbar-alpha
+show-toolbar
+hide-toolbar
+toggle-toolbar
 segm-ctrl-set-title
 segm-ctrl-insert
 set-pref
 get-pref
 set-pasteboard
 get-pasteboard
+get-documents-dir
+request-icloud-container-dir
 popup-alert
 setup-location-updates
 
@@ -90,8 +103,10 @@ set-navigation-bar
 
 send-input
 send-event
-send-key
-handle-key
+send-text-input
+send-key-input
+handle-text-input
+handle-key-input
 heartbeat
 next-heartbeat-interval
 interval-runnable
@@ -109,14 +124,15 @@ set-event-handler
 set-location-update-event-handler
 show-view
 set-view-content
-set-page
-set-page-content
 
 has-prefix?
 get-event-parameters
 
 contained-path-resolve
-app-dir
+
+iCloudAccountAvailabilityChanged
+iCloudContainerDirChanged
+app-icloud-container-dir
 
 ))
 

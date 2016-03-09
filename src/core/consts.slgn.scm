@@ -33,7 +33,10 @@
 (define *libffi-lib* (string-append *libffi-path* "/target/usr/local/lib"))
 (define *libffi-inc* (string-append *libffi-path* "/target/usr/local/lib/libffi-3.2.1/include"))
 (define *default-cc-options* (string-append "-I" *libffi-inc*))
-(define *default-ld-options* (string-append "-L" *libffi-lib* " -lffi"))
+
+(define *libslogan-path* (string-append *slogan-root* "/src/libslogan.a"))
+
+(define *default-ld-options* (string-append "-L" *libffi-lib* " -lffi " *libslogan-path*))
 
 (define *default-eq* eqv?)
 

@@ -1,13 +1,13 @@
 /* File: "os_base.c" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved. */
 
 /*
  * This module implements the most basic operating system services.
  */
 
 #define ___INCLUDED_FROM_OS_BASE
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
 #include "os_base.h"
@@ -741,6 +741,47 @@ char **msgs;)
 }
 
 
+ ___SIZE_T ___write_console_fallback
+   ___P((void *buf,
+         ___SIZE_T size),
+        (buf,
+         size)
+void *buf;
+___SIZE_T size;)
+{
+#ifdef USE_syslog
+
+  static char line_buf[128];
+  static int line_len = 0;
+  int i = 0;
+  char *b = ___CAST(char*,buf);
+
+  while (i < size)
+    {
+      char c;
+      if (line_len == sizeof(line_buf)-1 ||
+          (c = b[i++]) == '\n')
+        {
+          line_buf[line_len] = '\0';
+          syslog (LOG_ERR, "%s", line_buf);
+          line_len = 0;
+        }
+      else
+        line_buf[line_len++] = c;
+    }
+
+#endif
+
+#ifndef USE_syslog
+
+  ___fwrite (buf, 1, size, ___stderr); /* ignore error */
+
+#endif
+
+  return size;
+}
+
+
 /* Conversion of OS error codes to Scheme error codes. */
 
 
@@ -964,6 +1005,51 @@ int code;)
   return ___FIX(e);
 }
 
+
+#endif
+
+
+#ifdef USE_OPENSSL
+
+___HIDDEN const char *tls_error_to_string
+   ___P((int code),
+        (code)
+int code;)
+{
+
+  static char *tls_messages[] =
+    {
+      "OpenSSL library version mismatch",
+      "Error initializing TLS library",
+      "Wrong TLS version",
+      "TLS protocol security alert. Aborting.",
+      "Not enough entropy in the pool",
+      "Server mode context expected",
+      "Library version does not support empty fragment insertion",
+      "Library version does not support Diffie-Hellman key exchange",
+      "Library version does not support elliptic curves",
+      "Diffie-Hellman parameters internal error",
+      "Error reading Diffie-Hellman parameters from file",
+      "Elliptic curve internal error",
+      "Unknown Elliptic Curve name",
+      "Error reading Certificate Authorities file",
+      "Certificate file error",
+      "Private key file error",
+      "Private key and Certificate don't match",
+    };
+
+  /* Codes between 65000 and 65536 are reserved for high-level TLS errors, below
+     are library-specific codes. Since we are dealing here only with high-level
+     errors, we need to offset the error to use it as index. */
+  int generic_err_code = code - 65000;
+  if (generic_err_code >= 0 && code <= 65536)
+    {
+      return tls_messages[generic_err_code];
+    }
+
+  return "Unknown resolver error";
+
+}
 
 #endif
 
@@ -1361,6 +1447,28 @@ ___SCMOBJ err;)
 
 #endif
     }
+  else if (facility >= ___ERR_CODE_FACILITY_TLS)
+    {
+
+#ifdef USE_OPENSSL
+
+      int tls_error = ___TLS_ERR_FROM_ERR_CODE(err_code);
+      const char *msg = NULL;
+
+      if (tls_error > 65000) /* See tls_error_to_string */
+        msg = tls_error_to_string (tls_error);
+      else
+        msg = ERR_error_string (tls_error, NULL);
+
+      if (msg == NULL)
+        msg = "Unknown error";
+
+      append_charstring (buf, &pos, "TLS ERROR: ");
+      append_charstring (buf, &pos, msg);
+
+#endif
+
+    }
   else
     {
       /* Windows HRESULT error code */
@@ -1577,19 +1685,7 @@ ___SCMOBJ ___setup_base_module ___PVOID
 
 #ifdef ___DEBUG
 
-      ___base_mod.debug = NULL;
-
-#ifdef USE_POSIX
-#if 1
-      ___base_mod.debug = ___fopen ("console", "w");
-#else
-      ___base_mod.debug = ___fopen ("/dev/console", "w");
-#endif
-#endif
-
-#ifdef USE_WIN32
-      ___base_mod.debug = ___fopen ("con:", "w");
-#endif
+      ___base_mod.debug = ___fopen ("gambit.log", "w");
 
       if (___base_mod.debug == NULL)
         ___base_mod.debug = ___stderr;
@@ -1625,7 +1721,7 @@ void ___cleanup_base_module ___PVOID
                      ___base_mod.free_mem_calls);
         }
 
-      if (___base_mod.debug != ___stdout)
+      if (___base_mod.debug != ___stderr)
         ___fclose (___base_mod.debug);
 
 #endif

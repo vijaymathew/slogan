@@ -1,6 +1,6 @@
-/* File: "os_tty.h", Time-stamp: <2009-01-31 00:21:36 feeley> */
+/* File: "os_tty.h" */
 
-/* Copyright (c) 1994-2009 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved. */
 
 #ifndef ___OS_TTY_H
 #define ___OS_TTY_H
@@ -92,6 +92,7 @@ MAKE_TEXT_ATTRS(TEXT_STYLE_NORMAL,DEFAULT_TEXT_COLOR,DEFAULT_TEXT_COLOR)
 
 
 #define LINEEDITOR_EV_NONE            0
+#define LINEEDITOR_EV_EOF             -1
 #define LINEEDITOR_EV_KEY             1
 #define LINEEDITOR_EV_RETURN          2
 #define LINEEDITOR_EV_BACK            3
@@ -316,14 +317,6 @@ typedef struct ___device_tty_struct
 
     tty_text_attrs terminal_attrs;  /* attributes of text sent to terminal */
 
-#ifdef USE_WIN32
-#define NORMAL_FOREGROUND TEXT_COLOR_WHITE
-#define NORMAL_BACKGROUND TEXT_COLOR_BLACK
-#else
-#define NORMAL_FOREGROUND TEXT_COLOR_BLACK
-#define NORMAL_BACKGROUND TEXT_COLOR_WHITE
-#endif
-
     /* input and output buffers */
 
     int input_byte_lo;         /* start of remaining input in "input_byte"   */
@@ -402,6 +395,7 @@ typedef struct ___device_tty_struct
     HANDLE hout;
     DWORD hin_initial_mode;
     DWORD hout_initial_mode;
+    CONSOLE_SCREEN_BUFFER_INFO hout_initial_info;
     INPUT_RECORD ir;
     char *key_seq;
 

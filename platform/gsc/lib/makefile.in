@@ -1,6 +1,6 @@
-# makefile for Gambit-C library.
+# makefile for Gambit library.
 
-# Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+# Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 herefromroot = lib
 rootfromhere = ..
@@ -28,12 +28,15 @@ FLAGS_EXE = @FLAGS_EXE_MF@
 DEFS = @DEFS@
 LIBS = @LIBS@
 
-GAMBCLIB_DEFS = @GAMBCLIB_DEFS_MF@
+GAMBITLIB_DEFS = @GAMBITLIB_DEFS_MF@
 LIB_PREFIX = @LIB_PREFIX@
+LIB_VERSION_SUFFIX = @LIB_VERSION_SUFFIX@
+LIB_MAJOR_VERSION_SUFFIX = @LIB_MAJOR_VERSION_SUFFIX@
+
 LIB_EXTENSION = @LIB_EXTENSION@
-GAMBCLIB = @GAMBCLIB@
-GAMBCGSCLIB = @GAMBCGSCLIB@
-GAMBCGSILIB = @GAMBCGSILIB@
+GAMBITLIB = @GAMBITLIB@
+GAMBITGSCLIB = @GAMBITGSCLIB@
+GAMBITGSILIB = @GAMBITGSILIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_LIB = @INSTALL_LIB@
@@ -66,16 +69,23 @@ mandir = @mandir@
 .SUFFIXES:
 .SUFFIXES: .scm .c @obj@
 
-NORMAL_C = main.c setup.c mem.c os.c os_base.c os_thread.c os_time.c os_shell.c os_files.c os_dyn.c os_tty.c os_io.c c_intf.c
+NORMAL_C = main.c setup.c mem.c os.c os_base.c os_thread.c os_time.c os_shell.c os_files.c os_dyn.c os_tty.c os_io.c c_intf.c actlog.c
 NORMAL_CPP =
-NORMAL_H = setup.h mem.h os.h os_base.h os_thread.h os_time.h os_shell.h os_files.h os_dyn.h os_tty.h os_io.h c_intf.h dead.h
-NORMAL_O = main@obj@ setup@obj@ mem@obj@ c_intf@obj@ os@obj@ os_base@obj@ os_thread@obj@ os_time@obj@ os_shell@obj@ os_files@obj@ os_dyn@obj@ os_tty@obj@ os_io@obj@
-NORMAL_O_PLUS = +main@obj@ +setup@obj@ +mem@obj@ +c_intf@obj@ +os@obj@ +os_base@obj@ +os_thread@obj@ +os_time@obj@ +os_shell@obj@ +os_files@obj@ +os_dyn@obj@ +os_tty@obj@ +os_io@obj@
-NORMAL_O_COMMA = main@obj@,setup@obj@,mem@obj@,c_intf@obj@,os@obj@,os_base@obj@,os_thread@obj@,os_time@obj@,os_shell@obj@,os_files@obj@,os_dyn@obj@,os_tty@obj@,os_io@obj@
+NORMAL_H = setup.h mem.h os.h os_base.h os_thread.h os_time.h os_shell.h os_files.h os_dyn.h os_tty.h os_io.h c_intf.h actlog.h dead.h
+NORMAL_O = main@obj@ setup@obj@ mem@obj@ c_intf@obj@ actlog@obj@ os@obj@ os_base@obj@ os_thread@obj@ os_time@obj@ os_shell@obj@ os_files@obj@ os_dyn@obj@ os_tty@obj@ os_io@obj@
+NORMAL_O_PLUS = +main@obj@ +setup@obj@ +mem@obj@ +c_intf@obj@ +actlog@obj@ +os@obj@ +os_base@obj@ +os_thread@obj@ +os_time@obj@ +os_shell@obj@ +os_files@obj@ +os_dyn@obj@ +os_tty@obj@ +os_io@obj@
+NORMAL_O_COMMA = main@obj@,setup@obj@,mem@obj@,c_intf@obj@,actlog@obj@,os@obj@,os_base@obj@,os_thread@obj@,os_time@obj@,os_shell@obj@,os_files@obj@,os_dyn@obj@,os_tty@obj@,os_io@obj@
 NORMAL_SOURCES = $(NORMAL_C) $(NORMAL_CPP) $(NORMAL_H)
 
 HEADERS_SCM = "_kernel\#.scm" "_system\#.scm" "_num\#.scm" "_std\#.scm" \
-"_eval\#.scm" "_io\#.scm" "_nonstd\#.scm" "_thread\#.scm" "_repl\#.scm"
+"_eval\#.scm" "_io\#.scm" "_nonstd\#.scm" "_thread\#.scm" "_repl\#.scm" \
+"_gambit\#.scm" "gambit\#.scm" \
+"r5rs\#.scm" "r4rs\#.scm" "digest\#.scm" \
+_define-syntax.scm _syntax-boot.scm _syntax-case-xform-boot.scm \
+_syntax-case-xform.scm _syntax-common.scm _syntax-pattern.scm \
+_syntax-rules-xform.scm _syntax-template.scm \
+_syntax-xform-boot.scm _syntax-xform.scm \
+_syntax.scm _with-syntax-boot.scm
 MODULES = _kernel _system _num _std \
 _eval _io _nonstd _thread _repl
 MODULES_SCM = _kernel.scm _system.scm _num.scm _std.scm \
@@ -88,23 +98,22 @@ MODULES_O_PLUS = +_kernel@obj@ +_system@obj@ +_num@obj@ +_std@obj@ \
 +_eval@obj@ +_io@obj@ +_nonstd@obj@ +_thread@obj@ +_repl@obj@
 MODULES_O_COMMA = _kernel@obj@,_system@obj@,_num@obj@,_std@obj@,\
 +_eval@obj@,_io@obj@,_nonstd@obj@,_thread@obj@,_repl@obj@
-NORMAL_O_IN_COMPILE_ORDER = main@obj@ os_tty@obj@ c_intf@obj@ \
+NORMAL_O_IN_COMPILE_ORDER = main@obj@ os_tty@obj@ c_intf@obj@ actlog@obj@ \
 os_io@obj@ setup@obj@ mem@obj@ os_files@obj@ os@obj@ os_base@obj@ \
-os_thread@obj@ os_time@obj@ os_shell@obj@ os_dyn@obj@ 
+os_thread@obj@ os_time@obj@ os_shell@obj@ os_dyn@obj@
 MODULES_O_IN_COMPILE_ORDER = _io@obj@ _num@obj@ _std@obj@ \
-_kernel@obj@ _nonstd@obj@ _repl@obj@ _eval@obj@ _thread@obj@ _system@obj@ 
+_repl@obj@ _eval@obj@ _nonstd@obj@ _kernel@obj@ _thread@obj@ _system@obj@
 
-LIBRARIES_SCM = $(HEADERS_SCM) "_gambit\#.scm" "gambit\#.scm" \
-"r5rs\#.scm" "r4rs\#.scm" "digest\#.scm" digest.scm syntax-case.scm
+LIBRARIES_SCM = $(HEADERS_SCM) digest.scm syntax-case.scm
 
-LIBRARY = $(LIB_PREFIX)$(GAMBCLIB)$(LIB_EXTENSION)
-LIBRARY_OBJECTS = $(NORMAL_O) $(MODULES_O) _$(GAMBCLIB)@obj@
-LIBRARY_OBJECTS_PLUS = $(NORMAL_O_PLUS) $(MODULES_O_PLUS) +_$(GAMBCLIB)@obj@
-LIBRARY_OBJECTS_COMMA = $(NORMAL_O_COMMA),$(MODULES_O_COMMA),_$(GAMBCLIB)@obj@
+LIBRARY = $(LIB_PREFIX)$(GAMBITLIB)$(LIB_EXTENSION)
+LIBRARY_OBJECTS = $(NORMAL_O) $(MODULES_O) _$(GAMBITLIB)@obj@
+LIBRARY_OBJECTS_PLUS = $(NORMAL_O_PLUS) $(MODULES_O_PLUS) +_$(GAMBITLIB)@obj@
+LIBRARY_OBJECTS_COMMA = $(NORMAL_O_COMMA),$(MODULES_O_COMMA),_$(GAMBITLIB)@obj@
 LIBRARY_OBJECTS_IN_COMPILE_ORDER = $(MODULES_O_IN_COMPILE_ORDER) \
-$(NORMAL_O_IN_COMPILE_ORDER) _$(GAMBCLIB)@obj@
+$(NORMAL_O_IN_COMPILE_ORDER) _$(GAMBITLIB)@obj@
 
-LIBRARIES = $(LIBRARY)
+LIBRARIES = $(LIBRARY)$(LIB_VERSION_SUFFIX)
 
 LIBRARY_LIBS =
 
@@ -116,69 +125,87 @@ psyntax69c.pp psyntax69c.ss psyntax73.pp psyntax73.ss \
 syntax-case-build syntax-case-expand-file \
 syntax-case-postlude.scm syntax-case-prelude.scm
 
-GENDISTFILES = $(MODULES_C) _$(GAMBCLIB).c
+GAMBIT_LIB_C = _$(GAMBITLIB).c
+
+GAMBIT_LIB_java = _$(GAMBITLIB).java
+GAMBIT_LIB_js = _$(GAMBITLIB).js
+GAMBIT_LIB_php = _$(GAMBITLIB).php
+GAMBIT_LIB_python = _$(GAMBITLIB).py
+GAMBIT_LIB_ruby = _$(GAMBITLIB).rb
+
+GAMBIT_LIBS_UNIV = $(GAMBIT_LIB_java) $(GAMBIT_LIB_js) $(GAMBIT_LIB_php) $(GAMBIT_LIB_python) $(GAMBIT_LIB_ruby)
+
+GAMBIT_LIBS = $(GAMBIT_LIB_C)
+
+GENDISTFILES = $(MODULES_C) $(GAMBIT_LIB_C)
 
 DISTFILES = $(RCFILES) $(GENDISTFILES)
 
-INSTFILES_LIB_DATA = _$(GAMBCLIB).c $(LIBRARIES_SCM)
+INSTFILES_LIB_DATA = $(LIBRARIES_SCM) $(GAMBIT_LIBS)
 
-GAMBCDIR_INCLUDE = $(rootfromhere)/include
-GAMBCDIR_LIB = $(rootfromhere)/lib
-GAMBCDIR_LIB_GSI = $(rootfromhere)/gsi
-GAMBCDIR_LIB_GSC = $(rootfromhere)/gsc
+GAMBITDIR_INCLUDE = $(rootfromhere)/include
+GAMBITDIR_LIB = $(rootfromhere)/lib
+GAMBITDIR_LIB_GSI = $(rootfromhere)/gsi
+GAMBITDIR_LIB_GSC = $(rootfromhere)/gsc
 
 BUILD_OBJ_OUTPUT_FILENAME = $*@obj@
-BUILD_OBJ_CC_OPTIONS =  -I$(srcdir) $(DEFS) $(GAMBCLIB_DEFS) -D___PRIMAL
+BUILD_OBJ_CC_OPTIONS =  -I$(srcdir) $(DEFS) $(GAMBITLIB_DEFS) -D___PRIMAL
 BUILD_OBJ_INPUT_FILENAMES = $(srcdirpfx)$*.c
+
+PRELUDE_OPT = -prelude "(\#\#include \"$(srcdirpfx)header.scm\")"
 
 all:
 
 all-pre:
 
-all-post: $(LIBRARY) _$(GAMBCLIB).c
+all-post: $(LIBRARY) $(GAMBIT_LIBS)
 
 .c@obj@:
 	@BUILD_OBJ@ -D___LIBRARY
 
 .scm.c:
-	@SETDLPATHBOOT@ $(rootfromhere)/gsc-boot -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -c @COMPILATION_OPTIONS@ $(srcdirpfx)$*.scm
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc-boot -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -c @COMPILATION_OPTIONS@ $(PRELUDE_OPT) $(srcdirpfx)$*.scm
 
 $(LIBRARY): $(LIBRARY_OBJECTS_IN_COMPILE_ORDER)
-	rm -f $(LIBRARY)
+	rm -f "$(LIBRARY)$(LIB_VERSION_SUFFIX)" "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)" "$(LIBRARY)"
 	@MAKE_LIBRARY@
+	if test "$(LIB_VERSION_SUFFIX)" != ""; then \
+	  $(LN_S) "$(LIBRARY)$(LIB_VERSION_SUFFIX)" "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)"; \
+	  $(LN_S) "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)" "$(LIBRARY)"; \
+	fi
 
-_$(GAMBCLIB).c: $(MODULES_C)
-	@SETDLPATHBOOT@ $(rootfromhere)/gsc-boot -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -link -flat -o _$(GAMBCLIB).c -preload $(MODULES_C)
+$(GAMBIT_LIB_C): $(MODULES_C)
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc-boot -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -warnings -link -flat -o $@ -preload $(MODULES_C)
 
-main@obj@: main.c $(srcdirpfx)$(rootfromhere)/include/gambit.h
+$(GAMBIT_LIB_java):
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -target java $(PRELUDE_OPT) -o $@ $(srcdirpfx)$(rootfromhere)/lib/_univlib.scm
 
-setup@obj@: setup.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h setup.h mem.h c_intf.h
+$(GAMBIT_LIB_js):
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -target js $(PRELUDE_OPT) -o $@ $(srcdirpfx)$(rootfromhere)/lib/_univlib.scm
 
-mem@obj@: mem.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h setup.h mem.h c_intf.h
+$(GAMBIT_LIB_php):
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -target php $(PRELUDE_OPT) -o $@ $(srcdirpfx)$(rootfromhere)/lib/_univlib.scm
 
-c_intf@obj@: c_intf.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h setup.h mem.h c_intf.h
+$(GAMBIT_LIB_python):
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -target python $(PRELUDE_OPT) -o $@ $(srcdirpfx)$(rootfromhere)/lib/_univlib.scm
 
-os@obj@: os.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_base.h os_thread.h os_time.h os_shell.h os_files.h os_dyn.h os_tty.h os_io.h setup.h mem.h c_intf.h
+$(GAMBIT_LIB_ruby):
+	@SETDLPATHBOOT@ $(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -f -target ruby $(PRELUDE_OPT) -o $@ $(srcdirpfx)$(rootfromhere)/lib/_univlib.scm
 
-os_base@obj@: os_base.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_base.h
+$(GAMBIT_LIB_java) $(GAMBIT_LIB_js) $(GAMBIT_LIB_php) $(GAMBIT_LIB_python) $(GAMBIT_LIB_ruby): \
+$(srcdirpfx)$(rootfromhere)/lib/_univlib.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_kernel.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_system.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_num.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_std.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_eval.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_io.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_nonstd.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_thread.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_repl.scm
 
-os_thread@obj@: os_thread.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_thread.h
-
-os_time@obj@: os_time.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_time.h
-
-os_shell@obj@: os_shell.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_shell.h os_files.h
-
-os_files@obj@: os_files.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_files.h
-
-os_dyn@obj@: os_dyn.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_dyn.h
-
-os_tty@obj@: os_tty.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_tty.h
-
-os_io@obj@: os_io.c $(srcdirpfx)$(rootfromhere)/include/gambit.h os.h os_io.h
-
-$(MODULES_C): $(srcdirpfx)$(rootfromhere)/lib/header.scm \
-$(srcdirpfx)$(rootfromhere)/lib/gambit\#.scm \
-$(srcdirpfx)$(rootfromhere)/lib/_gambit\#.scm \
+$(GAMBIT_LIB_java) $(GAMBIT_LIB_js) $(GAMBIT_LIB_php) $(GAMBIT_LIB_python) $(GAMBIT_LIB_ruby) $(MODULES_C): \
+$(srcdirpfx)$(rootfromhere)/lib/header.scm \
 $(srcdirpfx)$(rootfromhere)/lib/gambit\#.scm \
 $(srcdirpfx)$(rootfromhere)/lib/_gambit\#.scm \
 $(srcdirpfx)$(rootfromhere)/lib/_kernel\#.scm \
@@ -189,17 +216,66 @@ $(srcdirpfx)$(rootfromhere)/lib/_eval\#.scm \
 $(srcdirpfx)$(rootfromhere)/lib/_io\#.scm \
 $(srcdirpfx)$(rootfromhere)/lib/_nonstd\#.scm \
 $(srcdirpfx)$(rootfromhere)/lib/_thread\#.scm \
-$(srcdirpfx)$(rootfromhere)/lib/_repl\#.scm
+$(srcdirpfx)$(rootfromhere)/lib/_repl\#.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_define-syntax.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-boot.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-case-xform-boot.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-case-xform.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-common.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-pattern.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-rules-xform.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-template.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-xform-boot.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax-xform.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_syntax.scm \
+$(srcdirpfx)$(rootfromhere)/lib/_with-syntax-boot.scm
 
-$(MODULES_O): $(srcdirpfx)$(rootfromhere)/include/gambit.h
+$(MODULES_O) $(NORMAL_O): $(srcdirpfx)$(rootfromhere)/include/gambit.h
 
-_kernel.o: $(srcdirpfx)$(rootfromhere)/include/stamp.h
+_kernel@obj@: $(srcdirpfx)$(rootfromhere)/include/stamp.h os.h os_base.h os_time.h os_shell.h os_files.h os_dyn.h os_tty.h os_io.h setup.h mem.h c_intf.h
+
+_std@obj@: os.h
+
+_num@obj@: mem.h
+
+main@obj@: main.c os.h os_base.h os_shell.h setup.h
+
+setup@obj@: setup.c os.h os_base.h os_files.h os_dyn.h os_thread.h setup.h mem.h c_intf.h
+
+mem@obj@: mem.c os.h os_base.h os_time.h setup.h mem.h c_intf.h actlog.h
+
+c_intf@obj@: c_intf.c os.h os_base.h os_dyn.h setup.h mem.h c_intf.h
+
+actlog@obj@: actlog.c os.h os_base.h os_time.h actlog.h
+
+os@obj@: os.c os.h os_thread.h os_base.h os_time.h os_shell.h os_files.h os_dyn.h os_tty.h os_io.h setup.h mem.h c_intf.h
+
+os_base@obj@: os_base.c os.h os_base.h setup.h
+
+os_thread@obj@: os_thread.c os.h os_base.h os_thread.h
+
+os_time@obj@: os_time.c os.h os_base.h os_time.h
+
+os_shell@obj@: os_shell.c os.h os_base.h os_shell.h os_files.h
+
+os_files@obj@: os_files.c os.h os_base.h os_shell.h os_files.h setup.h
+
+os_dyn@obj@: os_dyn.c os.h os_base.h os_shell.h os_files.h os_dyn.h
+
+os_tty@obj@: os_tty.c os.h os_base.h os_tty.h os_shell.h os_io.h mem.h c_intf.h
+
+os_io@obj@: os_io.c os.h os_base.h os_io.h os_tty.h os_files.h setup.h c_intf.h
 
 bootstrap-pre:
 
 bootstrap-post:
 	if test "@ENABLE_SHARED@" = "yes"; then \
-	  cp $(LIBRARY) $(rootfromhere)/$(LIBRARY); \
+	  cp $(LIBRARY)$(LIB_VERSION_SUFFIX) $(rootfromhere)/$(LIBRARY)$(LIB_VERSION_SUFFIX); \
+	  if test "$(LIB_VERSION_SUFFIX)" != ""; then \
+	    cd $(rootfromhere); \
+	    $(LN_S) "$(LIBRARY)$(LIB_VERSION_SUFFIX)" "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)"; \
+	    $(LN_S) "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)" "$(LIBRARY)"; \
+	  fi \
 	fi
 
 install-pre:
@@ -207,71 +283,75 @@ install-pre:
 install-post-comp-sc: all
 	@echo "*** Compiling ~~lib/syntax-case.scm (this may take a while)"
 	rm -f syntax-case.o*
-	@SETDLPATH@ $(srcdirpfx)$(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include syntax-case
+	@SETDLPATH@ $(srcdirpfx)$(rootfromhere)/gsc/gsc -:~~bin=$(srcdirpfx)$(rootfromhere)/bin,~~lib=$(srcdirpfx)$(rootfromhere)/lib,~~include=$(srcdirpfx)$(rootfromhere)/include -warnings syntax-case
 
 install-post: all
-	c_libdir=$(DESTDIR)$(prefix)/lib; \
-	i_libdir=$(DESTDIR)$(libdir); \
-	t_libdir=$$i_libdir; \
-	$(srcdirpfx)$(rootfromhere)/mkidirs $$i_libdir; \
+	c_libdir="$(DESTDIR)$(prefix)/lib"; \
+	i_libdir="$(DESTDIR)$(libdir)"; \
+	t_libdir="$$i_libdir"; \
+	$(srcdirpfx)$(rootfromhere)/mkidirs "$$i_libdir"; \
 	if test "@ENABLE_SYMLINKS@" = "yes"; then \
-	  $(srcdirpfx)$(rootfromhere)/mkidirs $$c_libdir; \
-	  t_libdir=$$c_libdir; \
+	  $(srcdirpfx)$(rootfromhere)/mkidirs "$$c_libdir"; \
+	  t_libdir="$$c_libdir"; \
 	fi; \
 	for file in $(INSTFILES_LIB_DATA); do \
-	  $(INSTALL_DATA) $$file $$t_libdir/$$file; \
+	  $(INSTALL_DATA) "$$file" "$$t_libdir/$$file"; \
 	done; \
 	for file in $(LIBRARIES); do \
-	  $(INSTALL_LIB) $$file $$t_libdir/$$file; \
+	  $(INSTALL_LIB) "$$file" "$$t_libdir/$$file"; \
+	  @FIXLIB@ "$$t_libdir/$$file"; \
 	done; \
+	if test "$(LIB_VERSION_SUFFIX)" != ""; then \
+	  (cd "$$t_libdir" && $(LN_S) "$(LIBRARY)$(LIB_VERSION_SUFFIX)" "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)" && $(LN_S) "$(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX)" "$(LIBRARY)"); \
+	fi; \
 	if test "$$t_libdir" != "$$i_libdir"; then \
 	  r_libdir=`$(rootfromhere)/relpath "$$t_libdir" "$$i_libdir" @ENABLE_MULTIPLE_VERSIONS@`; \
 	  for file in $(INSTFILES_LIB_DATA) $(LIBRARIES); do \
-	    (cd $$i_libdir && $(LN_S) $$r_libdir$$file $$file); \
+	    (cd "$$i_libdir" && $(LN_S) "$$r_libdir$$file" "$$file"); \
 	  done; \
 	fi
 
 uninstall-pre:
 
 uninstall-post:
-	c_libdir=$(DESTDIR)$(prefix)/lib; \
-	i_libdir=$(DESTDIR)$(libdir); \
-	t_libdir=$$i_libdir; \
+	c_libdir="$(DESTDIR)$(prefix)/lib"; \
+	i_libdir="$(DESTDIR)$(libdir)"; \
+	t_libdir="$$i_libdir"; \
 	if test "@ENABLE_SYMLINKS@" = "yes"; then \
-	  t_libdir=$$c_libdir; \
+	  t_libdir="$$c_libdir"; \
 	fi; \
-	for file in $(INSTFILES_LIB_DATA) $(LIBRARIES); do \
-	  rm -f $$t_libdir/$$file; \
+	for file in $(INSTFILES_LIB_DATA) $(LIBRARIES) $(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX) $(LIBRARY); do \
+	  rm -f "$$t_libdir/$$file"; \
 	done; \
 	if test "$$t_libdir" != "$$i_libdir"; then \
-	  for file in $(INSTFILES_LIB_DATA) $(LIBRARIES); do \
-	    rm -f $$i_libdir/$$file; \
+	  for file in $(INSTFILES_LIB_DATA) $(LIBRARIES) $(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX) $(LIBRARY); do \
+	    rm -f "$$i_libdir/$$file"; \
 	  done; \
 	fi; \
-	rmdir $$t_libdir 2> /dev/null; \
+	rmdir "$$t_libdir" 2> /dev/null; \
 	if test "$$t_libdir" != "$$i_libdir"; then \
-	  rmdir $$i_libdir 2> /dev/null; \
+	  rmdir "$$i_libdir" 2> /dev/null; \
 	fi
 
 select-gen-for-commit-pre:
 
 select-gen-for-commit-post:
-	$(RC) update-index --no-assume-unchanged $(MODULES_C) _$(GAMBCLIB).c
+	$(RC) update-index --no-assume-unchanged $(MODULES_C) $(GAMBIT_LIB_C)
 
 deselect-gen-for-commit-pre:
 
 deselect-gen-for-commit-post:
-	$(RC) update-index --assume-unchanged $(MODULES_C) _$(GAMBCLIB).c
+	$(RC) update-index --assume-unchanged $(MODULES_C) $(GAMBIT_LIB_C)
 
 mostlyclean-pre:
 
 mostlyclean-post:
-	rm -f $(OBJECTS) $(LIBRARY)
+	rm -f $(OBJECTS) $(LIBRARY)$(LIB_VERSION_SUFFIX) $(LIBRARY)$(LIB_MAJOR_VERSION_SUFFIX) $(LIBRARY)
 
 clean-pre: mostlyclean-pre
 
 clean-post: mostlyclean-post
-	rm -f *.da *.bb *.bbg *.gcov *.gcno *.gcda
+	rm -f *.da *.bb *.bbg *.gcov *.gcno *.gcda $(GAMBIT_LIBS_UNIV)
 
 distclean-pre: clean-pre
 
@@ -280,7 +360,7 @@ distclean-post: clean-post
 bootclean-pre: distclean-pre
 
 bootclean-post: distclean-post
-	rm -f $(MODULES_C) _$(GAMBCLIB).c
+	rm -f $(MODULES_C) $(GAMBIT_LIB_C)
 
 realclean-pre: bootclean-pre
 
@@ -301,6 +381,8 @@ dist-pre dist-devel-pre:
 	  ln $(srcdirpfx)$$file $(rootfromhere)/$(PACKAGE_TARNAME)/$(herefromroot) 2> /dev/null \
 	    || cp -p $(srcdirpfx)$$file $(rootfromhere)/$(PACKAGE_TARNAME)/$(herefromroot); \
 	done
+	@echo "    $(herefromroot)/guide"
+	(cd $(srcdir) ; COPYFILE_DISABLE=1 tar cf - guide) | (cd $(rootfromhere)/$(PACKAGE_TARNAME)/$(herefromroot) ; tar xf -)
 
 dist-post dist-devel-post:
 

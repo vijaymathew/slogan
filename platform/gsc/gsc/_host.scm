@@ -23,7 +23,7 @@
 ;; The host dependent variables:
 ;; ----------------------------
 
-'(begin ; *** remove the quote at the start of this line if not using Gambit-C
+'(begin ; *** remove the quote at the start of this line if not using Gambit
 
 ;; These procedures are the interface to 'keyword objects'.  On a
 ;; system which lacks native support for them, keywords are implemented
@@ -621,9 +621,9 @@
 
 ;;;============================================================================
 
-;; Definitions when host system is Gambit-C:
+;; Definitions when host system is Gambit:
 
-;" *** remove the semicolon at the start of this line if not using Gambit-C
+;" *** remove the semicolon at the start of this line if not using Gambit
 
 (define (string->keyword-object str)
   (##string->keyword str))
@@ -644,12 +644,6 @@
 (define (absent-object? obj)
   (eq? obj absent-object))
 
-(##define-macro (macro-unused-obj)
-  `(##type-cast -14 (macro-type-special)))
-
-(##define-macro (macro-deleted-obj)
-  `(##type-cast -15 (macro-type-special)))
-
 (define unused-object (macro-unused-obj))
 
 (define (unused-object? obj)
@@ -666,10 +660,10 @@
   (eq? obj void-object))
 
 (define (unbound1-object? obj)
-  (eq? obj (##type-cast -7 2)));;;;;;;;;;;;;
+  (eq? obj (macro-unbound1-obj)))
 
 (define (unbound2-object? obj)
-  (eq? obj (##type-cast -8 2)));;;;;;;;;;;;
+  (eq? obj (macro-unbound2-obj)))
 
 (define end-of-file-object #!eof)
 
@@ -778,22 +772,12 @@
 (define (format-filepos path filepos pinpoint?)
   (##format-filepos path filepos pinpoint?))
 
-(define (path-expand path . dir)
-  (if (##null? dir)
-    (##path-expand path)
-    (##path-expand path (##car dir))))
-
-(define (path-extension path)
-  (##path-extension path))
-
-(define (path-strip-extension path)
-  (##path-strip-extension path))
-
-(define (path-directory path)
-  (##path-directory path))
-
-(define (path-strip-directory path)
-  (##path-strip-directory path))
+;; The path functions are already defined by Gambit
+;;(define path-expand path-expand)
+;;(define path-extension path-extension)
+;;(define path-strip-extension path-strip-extension)
+;;(define path-directory path-directory)
+;;(define path-strip-directory path-strip-directory)
 
 (define scheme-file-extensions ##scheme-file-extensions)
 
@@ -870,7 +854,7 @@
 (define (vector-object? obj)
   (vector? obj))
 
-(define float-copysign ##flonum.copysign)
+(define float-copysign ##flcopysign)
 
 (define (**comply-to-standard-scheme?) #f);;;;;;;;;;;;;;;;;;;;;;
 (define **main-readtable #f);;;;;;;

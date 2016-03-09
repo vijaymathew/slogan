@@ -1,6 +1,6 @@
-/* File: "os_time.c", Time-stamp: <2011-03-22 14:38:49 feeley> */
+/* File: "os_time.c" */
 
-/* Copyright (c) 1994-2008 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved. */
 
 /*
  * This module implements the operating system specific routines
@@ -8,7 +8,7 @@
  */
 
 #define ___INCLUDED_FROM_OS_TIME
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
 #include "os_base.h"
@@ -168,9 +168,9 @@ void ___time_get_current_time
         (tim)
 ___time *tim;)
 {
-#ifndef USE_clock_gettime
+#ifndef USE_clock_gettime_realtime
 #ifndef USE_getclock
-#ifndef USE_GetSystemTime
+#ifndef USE_GetSystemTimeAsFileTime
 #ifndef USE_gettimeofday
 #ifndef USE_ftime
 #ifndef USE_time
@@ -186,7 +186,7 @@ ___time *tim;)
 #endif
 #endif
 
-#ifdef USE_clock_gettime
+#ifdef USE_clock_gettime_realtime
 
   /* The clock_gettime function is in POSIX.1b (realtime programming). */
 
@@ -210,20 +210,11 @@ ___time *tim;)
 
 #endif
 
-#ifdef USE_GetSystemTime
+#ifdef USE_GetSystemTimeAsFileTime
 
-  SYSTEMTIME st;
   FILETIME ft;
-  GetSystemTime (&st);
-  if (SystemTimeToFileTime (&st, &ft))
-    {
-      LONGLONG x = *___CAST(LONGLONG*,&ft);
-      ___SM32 secs = x / 10000000 - JAN_1(1601LL);
-      ___SM32 nsecs = x % 10000000 * 100;
-      ___time_from_nsecs (tim, secs, nsecs);
-    }
-  else
-    *tim = ___time_mod.time_neg_infinity;
+  GetSystemTimeAsFileTime (&ft);
+  ___time_from_FILETIME (tim, ft);
 
 #endif
 
@@ -296,20 +287,125 @@ ___time *tim;)
 }
 
 
-void ___time_to_seconds
-   ___P((___time tim,
-         ___F64 *seconds),
-        (tim,
-         seconds)
-___time tim;
-___F64 *seconds;)
+___U64 ___time_get_monotonic_time ___PVOID
 {
+#ifndef USE_mach_absolute_time
+#ifndef USE_QueryPerformanceCounter
+#ifndef USE_clock_gettime_monotonic
+
+  ___time tim;
+
+  ___time_get_current_time (&tim);
+
 #ifdef ___FLOAT_TIME_REPRESENTATION
-  *seconds = tim;
+
+  return ___U64_from_ULONGLONG(tim*1e9);
+
 #endif
 
 #ifdef ___INT_TIME_REPRESENTATION
-  *seconds = tim.secs + tim.nsecs / 1000000000.0;
+
+  return ___U64_add_U64_U64(___U64_mul_UM32_UM32(tim.secs, 1000000000),
+                            ___U64_from_UM32(tim.nsecs));
+
+#endif
+
+#endif
+#endif
+#endif
+
+#ifdef USE_mach_absolute_time
+
+  return mach_absolute_time ();
+
+#endif
+
+#ifdef USE_QueryPerformanceCounter
+
+  LARGE_INTEGER count;
+
+  if (QueryPerformanceCounter (&count))
+    return ___U64_from_ULONGLONG(count.QuadPart);
+  else
+    return ___U64_from_UM32(0);
+
+#endif
+
+#ifdef USE_clock_gettime_monotonic
+
+  /* The clock_gettime function is in POSIX.1b (realtime programming). */
+
+  struct timespec ts;
+
+  if (clock_gettime (CLOCK_MONOTONIC, &ts) == 0)
+    return ___U64_add_U64_U64(___U64_mul_UM32_UM32(ts.tv_sec, 1000000000),
+                              ___U64_from_UM32(ts.tv_nsec));
+  else
+    return ___U64_from_UM32(0);
+
+#endif
+}
+
+
+___U64 ___time_get_monotonic_time_frequency ___PVOID
+{
+#ifndef USE_mach_absolute_time
+#ifndef USE_QueryPerformanceCounter
+#ifndef USE_clock_gettime_monotonic
+
+  return ___U64_from_UM32(1000000000);
+
+#endif
+#endif
+#endif
+
+#ifdef USE_mach_absolute_time
+
+  mach_timebase_info_data_t info;
+
+  mach_timebase_info (&info);
+
+  return ___U64_from_ULONGLONG(1000000000ULL * info.denom / info.numer);
+
+#endif
+
+#ifdef USE_QueryPerformanceCounter
+
+  LARGE_INTEGER freq;
+
+  if (QueryPerformanceFrequency (&freq))
+    return ___U64_from_ULONGLONG(freq.QuadPart);
+  else
+    return ___U64_from_UM32(1);
+
+#endif
+
+#ifdef USE_clock_gettime_monotonic
+
+  /* The clock_getres function is in POSIX.1b (realtime programming). */
+
+  struct timespec ts;
+
+  if (clock_getres (CLOCK_MONOTONIC, &ts) == 0)
+    return ___U64_from_ULONGLONG(1000000000ULL / (1000000000ULL * ts.tv_sec + ts.tv_nsec));
+  else
+    return ___U64_from_UM32(1);
+
+#endif
+}
+
+
+___F64 ___time_to_seconds
+   ___P((___time tim),
+        (tim)
+___time tim;)
+{
+#ifdef ___FLOAT_TIME_REPRESENTATION
+  return tim;
+#endif
+
+#ifdef ___INT_TIME_REPRESENTATION
+  return tim.secs + tim.nsecs / 1000000000.0;
 #endif
 }
 
@@ -444,19 +540,39 @@ ___time tim;)
 #endif
 
 
-#ifdef USE_POSIX
+#ifdef USE_timeval
 
 
-#ifdef ___TIMEVAL_NOT_LIMITED
-#define ___TIMEVAL_SEC_LIMIT 2147483647 /* in seconds = 68 years */
-#else
-/* Mac OS X gives an error when the seconds > 100000000 (3.2 years) */
-/* We'll be conservative in case other systems have limits */
-#define ___TIMEVAL_SEC_LIMIT 9999999 /* in seconds = 118 days */
+void ___absolute_time_to_timeval
+   ___P((___time tim,
+         struct timeval *tv),
+        (tim,
+         tv)
+___time tim;
+struct timeval *tv;)
+{
+#ifdef ___FLOAT_TIME_REPRESENTATION
+
+  if (tim < -2147483648.0)
+    tim = -2147483648.0;
+  else if (tim > 2147483647.999999)
+    tim = 2147483647.999999;
+
+  tv->tv_sec = ___CAST(int,tim);
+  tv->tv_usec = ___CAST(int,(tim - tv->tv_sec) * 1000000.0);
+
 #endif
 
+#ifdef ___INT_TIME_REPRESENTATION
 
-void ___absolute_time_to_nonnegative_timeval
+  tv->tv_sec = tim.secs;
+  tv->tv_usec = tim.nsecs / 1000;
+
+#endif
+}
+
+
+void ___absolute_time_to_nonnegative_timeval_maybe_NULL
    ___P((___time tim,
          struct timeval **tv),
         (tim,
@@ -470,34 +586,26 @@ struct timeval **tv;)
 
       if (___time_positive (tim))
         {
-#ifdef ___FLOAT_TIME_REPRESENTATION
-          if (tim >= (___TIMEVAL_SEC_LIMIT+1.0))
-            {
-              t->tv_sec = ___TIMEVAL_SEC_LIMIT;
-              t->tv_usec = 999999;
-            }
-          else
-            {
-              t->tv_sec = ___CAST(int,tim);
-              t->tv_usec = ___CAST(int,(tim - t->tv_sec) * 1000000.0);
-            }
-#endif
+          ___absolute_time_to_timeval (tim, t);
 
-#ifdef ___INT_TIME_REPRESENTATION
-          if (tim.secs > ___TIMEVAL_SEC_LIMIT)
+#ifndef ___TIMEVAL_NOT_LIMITED
+
+/* Mac OS X gives an error when the seconds > 100000000 (3.2 years) */
+/* We'll be conservative in case other systems have limits */
+
+#define ___TIMEVAL_SEC_LIMIT 9999999 /* in seconds = 118 days */
+
+          if (t->tv_sec > ___TIMEVAL_SEC_LIMIT)
             {
               t->tv_sec = ___TIMEVAL_SEC_LIMIT;
               t->tv_usec = 999999;
             }
-          else
-            {
-              t->tv_sec = tim.secs;
-              t->tv_usec = tim.nsecs / 1000;
-            }
+
 #endif
         }
       else
         {
+          /* prevent negative timeval */
           t->tv_sec = 0;
           t->tv_usec = 0;
         }
@@ -547,7 +655,7 @@ DWORD *ms;)
 #endif
         }
       else
-        *ms = 0;
+        *ms = 0; /* prevent negative msecs */
     }
   else
     *ms = INFINITE;
@@ -555,6 +663,81 @@ DWORD *ms;)
 
 
 #endif
+
+
+#ifdef USE_FILETIME
+
+
+void ___time_to_FILETIME
+   ___P((___time tim,
+         FILETIME *ft),
+        (tim,
+         ft)
+___time tim;
+FILETIME *ft;)
+{
+  *___CAST(LONGLONG*,ft) = (___time_to_seconds (tim) + JAN_1(1601LL)) * 1.0e7;
+}
+
+
+void ___time_from_FILETIME
+   ___P((___time *tim,
+         FILETIME ft),
+        (tim,
+         ft)
+___time *tim;
+FILETIME ft;)
+{
+  LONGLONG x = *___CAST(LONGLONG*,&ft);
+  ___time_from_nsecs (tim,
+                      x / 10000000 - JAN_1(1601LL),
+                      x % 10000000 * 100);
+}
+
+
+___F64 ___FILETIME_to_seconds
+   ___P((FILETIME ft),
+        (ft)
+FILETIME ft;)
+{
+  return *___CAST(LONGLONG*,&ft) / 1.0e7;
+}
+
+
+#endif
+
+
+
+___HIDDEN void setup_time_management ___PVOID
+{
+#ifdef USE_HIGH_RES_TIMING
+#ifdef HAVE_TIMEBEGINPERIOD
+
+  /*
+   * On Windows, timers have a resolution that depends on the version
+   * of the OS.  A test program gives a resolution of 10 ms on Windows
+   * XP, 16 ms on Windows 7, and 1 ms on Windows 8.  Calling
+   * timeBeginPeriod (1) will set the resolution to 1 ms (at least
+   * according to the Windows documentation and documents found on the
+   * web).  However this seems to improve the resolution by very
+   * little, or not at all, in some environments.  So YMMV.
+   */
+
+  timeBeginPeriod (1); /* ignore error */
+
+#endif
+#endif
+}
+
+
+___HIDDEN void cleanup_time_management ___PVOID
+{
+#ifdef USE_HIGH_RES_TIMING
+#ifdef HAVE_TIMEBEGINPERIOD
+  timeEndPeriod (1); /* ignore error */
+#endif
+#endif
+}
 
 
 /*---------------------------------------------------------------------------*/
@@ -599,8 +782,8 @@ ___F64 *real;)
 
   if (GetProcessTimes (p, &creation_time, &exit_time, &sys_time, &user_time))
     {
-      *user = FILETIME_TO_SECONDS(user_time);
-      *sys = FILETIME_TO_SECONDS(sys_time);;
+      *user = ___FILETIME_to_seconds (user_time);
+      *sys = ___FILETIME_to_seconds (sys_time);
     }
   else
     {
@@ -700,12 +883,10 @@ ___F64 *real;)
 
   {
     ___time now;
-    ___F64 seconds;
 
     ___time_get_current_time (&now);
-    ___time_to_seconds (now, &seconds);
 
-    *real = seconds - ___time_mod.process_start_seconds;
+    *real = ___time_to_seconds (now) - ___time_mod.process_start_seconds;
   }
 }
 
@@ -1250,6 +1431,14 @@ ___F64 ___set_heartbeat_interval
         (seconds)
 ___F64 seconds;)
 {
+  /*
+   * By default Windows will use a 64 Hz timer to implement thread
+   * scheduling and this limits the resolution of the heartbeat.  For
+   * higher resolution heartbeats, USE_HIGH_RES_TIMING must be defined
+   * so that timeBeginPeriod(1) is called in the setup_time_management
+   * function above.
+   */
+
   ___time_mod.current_heartbeat_interval = seconds;
 
   if (seconds < 0.0) /* turn heartbeat off */
@@ -1374,6 +1563,7 @@ void (*heartbeat_interrupt_handler) ___PVOID;)
   if (!___time_mod.setup)
     {
       ___time_mod.heartbeat_interrupt_handler = heartbeat_interrupt_handler;
+      setup_time_management ();
       setup_process_times ();
       if ((e = ___setup_heartbeat_interrupt_handling ()) != ___FIX(___NO_ERR))
         return e;
@@ -1391,6 +1581,7 @@ void ___cleanup_time_module ___PVOID
     {
       ___cleanup_heartbeat_interrupt_handling ();
       cleanup_process_times ();
+      cleanup_time_management ();
       ___time_mod.setup = 0;
     }
 }

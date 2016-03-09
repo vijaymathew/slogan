@@ -1,6 +1,6 @@
 /* File: "os_io.h" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved. */
 
 #ifndef ___OS_IO_H
 #define ___OS_IO_H
@@ -59,6 +59,13 @@ typedef struct ___device_group_struct
 #define ___STREAM_OPTIONS_INPUT(options) ((options)&((1<<15)-1))
 #define ___STREAM_OPTIONS_OUTPUT(options) (((options)>>15)&((1<<15)-1))
 
+#ifdef USE_OPENSSL
+#define ___TLS_OPTION_SERVER_MODE 1
+#define ___TLS_OPTION_USE_DIFFIE_HELLMAN 1<<1
+#define ___TLS_OPTION_USE_ELLIPTIC_CURVES 1<<2
+#define ___TLS_OPTION_REQUEST_CLIENT_AUTHENTICATION 1<<3
+#define ___TLS_OPTION_INSERT_EMPTY_FRAGMENTS 1<<8
+#endif
 
 typedef struct ___device_struct
   {
@@ -802,7 +809,8 @@ extern ___SCMOBJ ___os_device_process_status
 extern ___SCMOBJ ___os_device_tcp_client_open
    ___P((___SCMOBJ server_addr,
          ___SCMOBJ port_num,
-         ___SCMOBJ options),
+         ___SCMOBJ options,
+         ___SCMOBJ tls_context),
         ());
 
 extern ___SCMOBJ ___os_device_tcp_client_socket_info
@@ -818,7 +826,8 @@ extern ___SCMOBJ ___os_device_tcp_server_open
    ___P((___SCMOBJ server_addr,
          ___SCMOBJ port_num,
          ___SCMOBJ backlog,
-         ___SCMOBJ options),
+         ___SCMOBJ options,
+         ___SCMOBJ tls_context),
         ());
 
 extern ___SCMOBJ ___os_device_tcp_server_read
@@ -827,6 +836,20 @@ extern ___SCMOBJ ___os_device_tcp_server_read
 
 extern ___SCMOBJ ___os_device_tcp_server_socket_info
    ___P((___SCMOBJ dev),
+        ());
+
+/*   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   */
+
+/* TLS context. */
+
+extern ___SCMOBJ ___os_make_tls_context
+   ___P((___SCMOBJ min_tls_version,
+         ___SCMOBJ options,
+         ___SCMOBJ certificate_path,
+         ___SCMOBJ private_key_path,
+         ___SCMOBJ dh_params_path,
+         ___SCMOBJ elliptic_curve_name,
+         ___SCMOBJ client_ca_path),
         ());
 
 /*   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   */
@@ -878,6 +901,16 @@ extern ___SCMOBJ ___os_port_decode_chars
 
 extern ___SCMOBJ ___os_port_encode_chars
    ___P((___SCMOBJ port),
+        ());
+
+/*   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   */
+
+/* Change file times. */
+
+extern ___SCMOBJ ___os_file_times_set
+   ___P((___SCMOBJ path,
+         ___SCMOBJ modification_time,
+         ___SCMOBJ access_time),
         ());
 
 /*   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   */

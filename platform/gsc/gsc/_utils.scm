@@ -1,8 +1,8 @@
 ;;;============================================================================
 
-;;; File: "_utils.scm", Time-stamp: <2008-01-10 15:50:42 feeley>
+;;; File: "_utils.scm"
 
-;;; Copyright (c) 1994-2007 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 (include "fixnum.scm")
 
@@ -29,6 +29,12 @@
       (begin
         (proc (car lst) i)
         (loop (cdr lst) (+ i 1))))))
+
+(define (map-index proc lst)
+  (let loop ((lst lst) (i 0) (rev-result '()))
+    (if (pair? lst)
+        (loop (cdr lst) (+ i 1) (cons (proc (car lst) i) rev-result))
+        (reverse rev-result))))
 
 (define (pos-in-list x l)
   (let loop ((l l) (i 0))
@@ -403,6 +409,9 @@
 (define (ptset-empty)              ; return the empty set
   '())
 
+(define (list->ptset lst)          ; convert list to set
+  lst)
+
 (define (ptset->list set)          ; convert set to list
   set)
 
@@ -629,6 +638,12 @@
         (proc (car lst) i)
         (loop (cdr lst) (+ i 1))))))
 
+(define (map-index proc lst)
+  (let loop ((lst lst) (i 0) (rev-result '()))
+    (if (pair? lst)
+        (loop (cdr lst) (+ i 1) (cons (proc (car lst) i) rev-result))
+        (reverse rev-result))))
+
 (define (pos-in-list x l)
   (let loop ((l l) (i 0))
     (cond ((not (pair? l)) #f)
@@ -753,16 +768,25 @@
       l
       (loop (cons (string-ref s i) l) (- i 1)))))
 
+(define (read-line* in)
+  (let loop ((lst '()))
+    (let ((c (read-char in)))
+      (if (or (eof-object? c)
+              (char=? c #\return)
+              (char=? c #\newline))
+          (list->str (reverse lst))
+          (loop (cons c lst))))))
+
 ;;;----------------------------------------------------------------------------
 
 ;; Strechable vectors
 ;; ------------------
 
 (define (make-stretchable-vector init)
-  (vector '#() init))
+  (vector '#() init 0))
 
 (define (stretchable-vector-length sv)
-  (vector-length (vector-ref sv 0)))
+  (vector-ref sv 2))
 
 (define (stretchable-vector-ref sv i)
   (let* ((v (vector-ref sv 0))
@@ -774,6 +798,8 @@
 (define (stretchable-vector-set! sv i x)
   (let* ((v (vector-ref sv 0))
          (len (vector-length v)))
+    (if (not (< i (vector-ref sv 2)))
+        (vector-set! sv 2 (+ i 1)))
     (if (< i len)
       (vector-set! v i x)
       (let ((new-v
@@ -801,23 +827,32 @@
 
 (define (stretchable-vector-copy sv)
   (let* ((v1 (vector-ref sv 0))
-         (n (vector-length v1))
+         (n (vector-ref sv 2))
          (v2 (make-vector n)))
     (let loop ((i (- n 1)))
       (if (>= i 0)
         (begin
           (vector-set! v2 i (vector-ref v1 i))
           (loop (- i 1)))
-        (vector v2 (vector-ref sv 1))))))
+        (vector v2 (vector-ref sv 1) n)))))
 
 (define (stretchable-vector-for-each proc sv)
-  (let* ((v (vector-ref sv 0))
-         (n (vector-length v)))
+  (let ((v (vector-ref sv 0))
+        (n (vector-ref sv 2)))
     (let loop ((i 0))
       (if (< i n)
         (begin
           (proc (vector-ref v i) i)
           (loop (+ i 1)))))))
+
+(define (stretchable-vector->list sv)
+  (let ((v (vector-ref sv 0))
+        (n (vector-ref sv 2)))
+    (let loop ((i (- n 1)) (lst '()))
+      (if (< i 0)
+          lst
+          (loop (- i 1)
+                (cons (vector-ref v i) lst))))))
 
 ;;;----------------------------------------------------------------------------
 
@@ -1103,14 +1138,23 @@
 
 ;; Parse tree sets
 
-(define ptset-empty-set
-  (vector '() '() '() '() '() '() '() '() '() '() '()))
-
 (define (ptset-empty)              ; return the empty set
   (vector '() '() '() '() '() '() '() '() '() '() '()))
 
+(define ptset-empty-set
+  (ptset-empty))
+
+(define (list->ptset lst)          ; convert list to set
+  (let ((set (ptset-empty)))
+    (let loop ((lst lst))
+      (if (pair? lst)
+          (begin
+            (ptset-adjoin set (car lst))
+            (loop (cdr lst)))
+          set))))
+
 (define (ptset->list set)          ; convert set to list
-  (apply append (vect->list set)))
+  (append-lists (vect->list set)))
 
 (define (ptset-size set)           ; return cardinality of set
   (apply + (map list-length (vect->list set))))

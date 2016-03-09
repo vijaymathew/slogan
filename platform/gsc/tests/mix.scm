@@ -1,4 +1,4 @@
-; File: "mix.scm", Time-stamp: <2008-10-23 10:53:18 feeley>
+; File: "mix.scm", Time-stamp: <2015-01-16 14:02:30 feeley>
 
 ; Copyright (c) 1998-2007 by Marc Feeley, All Rights Reserved.
 
@@ -664,13 +664,24 @@
            (lambda (exc)
              (continuation-capture
               (lambda (cont)
-                (display-exception-in-context
+                (display-exception-in-context-but-not-heap-overflow
                  exc
                  (##continuation-first-frame cont #f)
                  (current-output-port))
                 (return 'error))))
            thunk))))
     'error))
+
+(define (display-exception-in-context-but-not-heap-overflow exc cont port)
+  (##display-situation
+   (##exception->kind exc)
+   (##exception->procedure exc cont)
+   (if (heap-overflow-exception? exc)
+       #f
+       (##exception->locat exc cont))
+   port)
+  (##write-string " -- " port)
+  (##display-exception exc port))
 
 (define max-fixnum ##max-fixnum)
 
@@ -1650,8 +1661,8 @@
 (define (quartic-root x)
   (root x 4))
 
-(define (square x)
-  (* x x))
+;;(define (square x)
+;;  (* x x))
 
 ; Compute pi using the 'brent-salamin' method.
 

@@ -1,6 +1,6 @@
 /* File: "os_dyn.c" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved. */
 
 /*
  * This module implements the operating system specific routines
@@ -8,12 +8,13 @@
  */
 
 #define ___INCLUDED_FROM_OS_DYN
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
 #include "os_base.h"
-#include "os_dyn.h"
 #include "os_shell.h"
+#include "os_files.h"
+#include "os_dyn.h"
 
 
 /*---------------------------------------------------------------------------*/
@@ -676,7 +677,7 @@ ___LOCAL void sync_icache_and_dcache (void *start, int length)
 #ifdef ___CPU_x86
 
   /*
-   * The x86 processor automatically keeps the icache and dcache in
+   * X86 family processors automatically keeps the icache and dcache in
    * sync, as long as there's a jump instruction between the code
    * modification and the use of the modified code.
    */
@@ -772,7 +773,7 @@ void *converter;)
    *
    *   1) stores its own address in the global variable "c_closure_self"
    *   2) jumps to the "converter" function (which is a C function generated
-   *      by the Gambit-C compiler's C-interface)
+   *      by the Gambit compiler's C-interface)
    *
    * The code must not change any processor register or stack location
    * that is used in the C calling convention.  In this way, the

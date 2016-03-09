@@ -2,13 +2,13 @@
 
 ;;; File: "_kernel.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
-(##include "header.scm")
+(macro-case-target
 
-;;;============================================================================
+ ((C)
 
 (c-declare #<<c-declare-end
 
@@ -173,7 +173,7 @@ end-of-code
 
    /* prepare for next interrupt */
 
-   ___EXT(___begin_interrupt_service_pstate) (___PSPNC);
+   ___EXT(___begin_interrupt_service_pstate) (___ps);
 
    if (___ps->intr_enabled != ___FIX(0))
      {
@@ -182,10 +182,10 @@ end-of-code
        ___COVER_STACK_LIMIT_HANDLER_INTR_ENABLED;
 
        for (i=0; i<___NB_INTRS; i++)
-         if (___EXT(___check_interrupt_pstate) (___PSP i))
+         if (___EXT(___check_interrupt_pstate) (___ps, i))
            break;
 
-       ___EXT(___end_interrupt_service_pstate) (___PSP i+1);
+       ___EXT(___end_interrupt_service_pstate) (___ps, i+1);
 
        if (i < ___NB_INTRS)
          {
@@ -197,7 +197,7 @@ end-of-code
          }
      }
    else
-     ___EXT(___end_interrupt_service_pstate) (___PSP 0);
+     ___EXT(___end_interrupt_service_pstate) (___ps, 0);
 
    ___COVER_STACK_LIMIT_HANDLER_END;
 
@@ -965,7 +965,7 @@ end-of-code
          ___COVER_RETURN_TO_C_HANDLER_FIRST_RETURN;
          ___FRAME_STORE_RA(___GSTATE->handler_return_to_c)
          ___W_ALL
-         ___THROW(___FIX(___UNWIND_C_STACK));  /* jump back inside ___call */
+         ___throw_error (___PSP ___FIX(___UNWIND_C_STACK));  /* jump back inside ___call */
        }
      else
        {
@@ -1083,11 +1083,11 @@ end-of-code
 
    cf = ___STK(-___BREAK_FRAME_NEXT); /* pointer to caller's frame */
 
-   if (___TYP(cf) == ___tFIXNUM)
+   if (___TYP(cf) != ___tSUBTYPED)
      {
        /* caller's frame is in the stack */
 
-       /* cf can't be equal to ___FIX(0) */
+       /* cf can't be equal to the end of continuation marker */
 
        fp = ___CAST(___SCMOBJ*,cf);
 
@@ -1117,7 +1117,6 @@ end-of-code
            /* first frame of that section */
 
            ___COVER_BREAK_HANDLER_STACK_FIRST_FRAME;
-
            ___SET_STK(-___BREAK_FRAME_NEXT,
                       ___FP_STK(fp,-___BREAK_FRAME_NEXT))
          }
@@ -1240,6 +1239,8 @@ end-of-code
    (let () (##declare (not warnings)) (0))) ; create a return point
 )
 
+;;;----------------------------------------------------------------------------
+
 (define-prim (##dynamic-env-bind denv thunk)
   (##declare (not interrupts-enabled))
   (let* ((current-thread
@@ -1261,6 +1262,8 @@ end-of-code
           (macro-thread-denv-cache2-set! current-thread x)
           (macro-thread-denv-cache3-set! current-thread x)
           results)))))
+
+))
 
 ;;;----------------------------------------------------------------------------
 
@@ -1288,13 +1291,17 @@ end-of-code
 
 ;;; Interrupt system.
 
+(macro-case-target
+
+ ((C)
+
 (define-prim (##disable-interrupts!)
   (##declare (not interrupts-enabled))
-  (##c-code "___EXT(___disable_interrupts_pstate) (___PSPNC); ___RESULT = ___VOID;"))
+  (##c-code "___EXT(___disable_interrupts_pstate) (___ps); ___RESULT = ___VOID;"))
 
 (define-prim (##enable-interrupts!)
   (##declare (not interrupts-enabled))
-  (##c-code "___EXT(___enable_interrupts_pstate) (___PSPNC); ___RESULT = ___VOID;"))
+  (##c-code "___EXT(___enable_interrupts_pstate) (___ps); ___RESULT = ___VOID;"))
 
 (define ##interrupt-vector
   (##vector #f #f #f #f #f #f #f #f))
@@ -1327,11 +1334,117 @@ end-of-code
 end-of-code
 
    seconds
-   (##flonum.<-fixnum 0)))
+   (let ()
+     (##declare (not constant-fold)) ;; force allocation of a flonum
+     (##fixnum->flonum 0))))
+
+))
+
+;;;----------------------------------------------------------------------------
+
+;; Argument list transformation used when some exceptions are raised.
+
+(define-prim (##argument-list-remove-absent! lst tail)
+  (let loop ((lst1 tail)
+             (lst2 #f)
+             (lst3 lst))
+    (if (##pair? lst3)
+      (let ((val (##car lst3)))
+        (if (##eq? val (macro-absent-obj))
+          (loop lst1
+                lst2
+                (##cdr lst3))
+          (loop (if lst2
+                  (begin
+                    (##set-cdr! lst2 lst3)
+                    lst1)
+                  lst3)
+                lst3
+                (##cdr lst3))))
+      (begin
+        (if lst2
+          (##set-cdr! lst2 tail))
+        lst1))))
+
+(define-prim (##argument-list-remove-absent-keys! lst)
+  (let loop ((lst1 #f)
+             (lst2 #f)
+             (lst3 lst))
+    (if (and (##pair? lst3) (##keyword? (##car lst3)))
+      (let ((val (##cadr lst3)))
+        (if (##eq? val (macro-absent-obj))
+          (loop lst1
+                lst2
+                (##cddr lst3))
+          (loop (if lst2
+                  (begin
+                    (##set-cdr! lst2 lst3)
+                    lst1)
+                  lst3)
+                (##cdr lst3)
+                (##cddr lst3))))
+      (let ((tail (if (##pair? lst3) (##car lst3) '())))
+        (if lst2
+          (begin
+            (##set-cdr! lst2 tail)
+            lst1)
+          tail)))))
+
+(define-prim (##argument-list-fix-rest-param! lst)
+  (let loop ((curr #f) (next lst))
+    (let ((tail (##cdr next)))
+      (if (##pair? tail)
+        (loop next tail)
+        (if curr
+          (begin
+            (##set-cdr! curr (##car next))
+            lst)
+          (##car next))))))
+
+(define-prim (##extract-procedure-and-arguments proc args val1 val2 val3 cont)
+  (cond ((##null? proc)
+         (cont (##car args)
+               (##argument-list-remove-absent!
+                (##argument-list-fix-rest-param! (##cdr args))
+                '())
+               val1
+               val2
+               val3))
+        ((##pair? proc)
+         (cont (##car proc)
+               (##argument-list-remove-absent!
+                args
+                (##argument-list-remove-absent-keys! (##cdr proc)))
+               val1
+               val2
+               val3))
+        (else
+         (cont proc
+               (##argument-list-remove-absent! args '())
+               val1
+               val2
+               val3))))
 
 ;;;----------------------------------------------------------------------------
 
 ;;; Implementation of exceptions.
+
+(implement-library-type-type-exception)
+
+(define-prim (##raise-type-exception arg-num type-id proc args)
+  (##extract-procedure-and-arguments
+   proc
+   args
+   arg-num
+   type-id
+   #f
+   (lambda (procedure arguments arg-num type-id dummy)
+     (macro-raise
+      (macro-make-type-exception procedure arguments arg-num type-id)))))
+
+(macro-case-target
+
+ ((C)
 
 (implement-library-type-heap-overflow-exception)
 
@@ -1434,19 +1547,6 @@ end-of-code
   (macro-raise
    (macro-make-number-of-arguments-limit-exception proc args)))
 
-(implement-library-type-type-exception)
-
-(define-prim (##raise-type-exception arg-num type-id proc args)
-  (##extract-procedure-and-arguments
-   proc
-   args
-   arg-num
-   type-id
-   #f
-   (lambda (procedure arguments arg-num type-id dummy)
-     (macro-raise
-      (macro-make-type-exception procedure arguments arg-num type-id)))))
-
 (implement-library-type-os-exception)
 
 (define-prim (##raise-os-exception message code proc . args)
@@ -1458,110 +1558,35 @@ end-of-code
    #f
    (lambda (procedure arguments message code dummy)
      (macro-raise
-      (if (##fixnum.= code ##err-code-ENOENT)
+      (if (##fx= code ##err-code-ENOENT)
         (macro-make-no-such-file-or-directory-exception procedure arguments)
         (macro-make-os-exception procedure arguments message code))))))
 
-(define-prim (##argument-list-remove-absent! lst tail)
-  (let loop ((lst1 tail)
-             (lst2 #f)
-             (lst3 lst))
-    (if (##pair? lst3)
-      (let ((val (##car lst3)))
-        (if (##eq? val (macro-absent-obj))
-          (loop lst1
-                lst2
-                (##cdr lst3))
-          (loop (if lst2
-                  (begin
-                    (##set-cdr! lst2 lst3)
-                    lst1)
-                  lst3)
-                lst3
-                (##cdr lst3))))
-      (begin
-        (if lst2
-          (##set-cdr! lst2 tail))
-        lst1))))
+;;; Implementation of promises.
 
-(define-prim (##argument-list-remove-absent-keys! lst)
-  (let loop ((lst1 #f)
-             (lst2 #f)
-             (lst3 lst))
-    (if (and (##pair? lst3) (##keyword? (##car lst3)))
-      (let ((val (##cadr lst3)))
-        (if (##eq? val (macro-absent-obj))
-          (loop lst1
-                lst2
-                (##cddr lst3))
-          (loop (if lst2
-                  (begin
-                    (##set-cdr! lst2 lst3)
-                    lst1)
-                  lst3)
-                (##cdr lst3)
-                (##cddr lst3))))
-      (let ((tail (if (##pair? lst3) (##car lst3) '())))
-        (if lst2
-          (begin
-            (##set-cdr! lst2 tail)
-            lst1)
-          tail)))))
-
-(define-prim (##argument-list-fix-rest-param! lst)
-  (let loop ((curr #f) (next lst))
-    (let ((tail (##cdr next)))
-      (if (##pair? tail)
-        (loop next tail)
-        (if curr
-          (begin
-            (##set-cdr! curr (##car next))
-            lst)
-          (##car next))))))
-
-(define-prim (##extract-procedure-and-arguments proc args val1 val2 val3 cont)
-  (cond ((##null? proc)
-         (cont (##car args)
-               (##argument-list-remove-absent!
-                (##argument-list-fix-rest-param! (##cdr args))
-                '())
-               val1
-               val2
-               val3))
-        ((##pair? proc)
-         (cont (##car proc)
-               (##argument-list-remove-absent!
-                args
-                (##argument-list-remove-absent-keys! (##cdr proc)))
-               val1
-               val2
-               val3))
-        (else
-         (cont proc
-               (##argument-list-remove-absent! args '())
-               val1
-               val2
-               val3))))
-
-;;;----------------------------------------------------------------------------
-
-;;; Implementation of force.
+(define-prim (##make-promise thunk))
+(define-prim (##promise-thunk promise))
+(define-prim (##promise-thunk-set! promise thunk))
+(define-prim (##promise-result promise))
+(define-prim (##promise-result-set! promise result))
 
 (define-prim (##force-undetermined promise thunk)
   (let ((result (##force (thunk))))
     (##c-code #<<end-of-code
 
-     if (___FIELD(___ARG1,___PROMISE_RESULT) == ___ARG1)
+     if (___PROMISERESULT(___ARG1) == ___ARG1)
        {
-         ___FIELD(___ARG1,___PROMISE_RESULT) = ___ARG2;
-         ___FIELD(___ARG1,___PROMISE_THUNK) = ___FAL;
+         ___PROMISERESULTSET(___ARG1,___ARG2)
+         ___PROMISETHUNKSET(___ARG1,___FAL)
        }
-     ___RESULT = ___FIELD(___ARG1,___PROMISE_RESULT);
+     ___RESULT = ___PROMISERESULT(___ARG1);
 
 end-of-code
 
      promise
      result)))
+
+))
 
 ;;;----------------------------------------------------------------------------
 
@@ -1597,6 +1622,10 @@ end-of-code
 ;;;----------------------------------------------------------------------------
 
 ;;; Garbage collection.
+
+(macro-case-target
+
+ ((C)
 
 (define-prim (##check-heap-limit)
   (##declare (not interrupts-enabled))
@@ -1725,12 +1754,12 @@ end-of-code
   (let ((will
          (##c-code #<<end-of-code
 
-          ___SCMOBJ will = ___ps->executable_wills;
+          ___SCMOBJ will = ___VMSTATE_FROM_PSTATE(___ps)->mem.executable_wills_;
           if (___UNTAG(will) == 0) /* end of list? */
             ___RESULT = ___FAL;
           else
             {
-              ___ps->executable_wills = ___BODY(will)[0];
+              ___VMSTATE_FROM_PSTATE(___ps)->mem.executable_wills_ = ___BODY(will)[0];
               ___RESULT = will;
             }
 
@@ -1826,13 +1855,13 @@ end-of-code
   (##c-code
    "___set_standard_level (___INT(___ARG1)); ___RESULT = ___VOID;"
    level))
- 
-(define-prim (##set-gambcdir! dir)
+
+(define-prim (##set-gambitdir! dir)
   (##declare (not interrupts-enabled))
   ((##c-lambda (UCS-2-string) void
-               "___addref_string (___arg1); ___set_gambcdir (___arg1);")
+               "___addref_string (___arg1); ___set_gambitdir (___arg1);")
    dir))
-   
+
 (define-prim (##set-debug-settings! mask new-settings)
   (##declare (not interrupts-enabled))
   (##c-code
@@ -1911,41 +1940,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = n + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+___LWS)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sVECTOR, n<<___LWS);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = n + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sVECTOR, n<<___LWS);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_WORDS(n, ___sVECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_WORDS(n, ___sVECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result))
@@ -1974,41 +2006,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS((n<<___LCS)) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+___LCS)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sSTRING, n<<___LCS);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS((n<<___LCS)) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sSTRING, n<<___LCS);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<___LCS), ___sSTRING);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<___LCS), ___sSTRING);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2034,41 +2069,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS(n) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>___LF))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sS8VECTOR, n);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS(n) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sS8VECTOR, n);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES(n, ___sS8VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES(n, ___sS8VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2094,41 +2132,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS(n) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>___LF))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sU8VECTOR, n);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS(n) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sU8VECTOR, n);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES(n, ___sU8VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES(n, ___sU8VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2154,41 +2195,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS((n<<1)) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+1)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sS16VECTOR, n<<1);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS((n<<1)) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sS16VECTOR, n<<1);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<1), ___sS16VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<1), ___sS16VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2214,41 +2258,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS((n<<1)) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+1)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sU16VECTOR, n<<1);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS((n<<1)) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sU16VECTOR, n<<1);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<1), ___sU16VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<1), ___sU16VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2274,41 +2321,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS((n<<2)) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+2)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sS32VECTOR, n<<2);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS((n<<2)) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sS32VECTOR, n<<2);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<2), ___sS32VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<2), ___sS32VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2334,41 +2384,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS((n<<2)) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+2)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sU32VECTOR, n<<2);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS((n<<2)) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sU32VECTOR, n<<2);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<2), ___sU32VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<2), ___sU32VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2394,50 +2447,53 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-#if ___WS == 4
-___SIZE_TS words = ___WORDS((n<<3)) + 2;
-#else
-___SIZE_TS words = ___WORDS((n<<3)) + 1;
-#endif
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+3)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sS64VECTOR, n<<3);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+#if ___WS == 4
+    ___SIZE_TS words = ___WORDS((n<<3)) + 2;
+#else
+    ___SIZE_TS words = ___WORDS((n<<3)) + 1;
+#endif
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sS64VECTOR, n<<3);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-#if ___WS == 4
-        result = ___TAG(___CAST(___SCMOBJ*,___CAST(___SCMOBJ,___hp+2)&~7)-1,
-                        ___tSUBTYPED);
-#else
-        result = ___TAG(___hp, ___tSUBTYPED);
-#endif
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<3), ___sS64VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+#if ___WS == 4
+            result = ___TAG(___CAST(___SCMOBJ*,___CAST(___SCMOBJ,___hp+2)&~7)-1,
+                            ___tSUBTYPED);
+#else
+            result = ___TAG(___hp, ___tSUBTYPED);
+#endif
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<3), ___sS64VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2463,50 +2519,53 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-#if ___WS == 4
-___SIZE_TS words = ___WORDS((n<<3)) + 2;
-#else
-___SIZE_TS words = ___WORDS((n<<3)) + 1;
-#endif
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+3)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sU64VECTOR, n<<3);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+#if ___WS == 4
+    ___SIZE_TS words = ___WORDS((n<<3)) + 2;
+#else
+    ___SIZE_TS words = ___WORDS((n<<3)) + 1;
+#endif
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sU64VECTOR, n<<3);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-#if ___WS == 4
-        result = ___TAG(___CAST(___SCMOBJ*,___CAST(___SCMOBJ,___hp+2)&~7)-1,
-                        ___tSUBTYPED);
-#else
-        result = ___TAG(___hp, ___tSUBTYPED);
-#endif
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<3), ___sU64VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+#if ___WS == 4
+            result = ___TAG(___CAST(___SCMOBJ*,___CAST(___SCMOBJ,___hp+2)&~7)-1,
+                            ___tSUBTYPED);
+#else
+            result = ___TAG(___hp, ___tSUBTYPED);
+#endif
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<3), ___sU64VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2532,41 +2591,44 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-___SIZE_TS words = ___WORDS((n<<2)) + 1;
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+2)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sF32VECTOR, n<<2);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+    ___SIZE_TS words = ___WORDS((n<<2)) + 1;
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sF32VECTOR, n<<2);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-        result = ___TAG(___hp, ___tSUBTYPED);
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<2), ___sF32VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+            result = ___TAG(___hp, ___tSUBTYPED);
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<2), ___sF32VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2593,50 +2655,53 @@ end-of-code
 
 ___SIZE_TS i;
 ___SIZE_TS n = ___INT(___ARG1);
-#if ___WS == 4
-___SIZE_TS words = ___WORDS((n<<3)) + 2;
-#else
-___SIZE_TS words = ___WORDS((n<<3)) + 1;
-#endif
 ___SCMOBJ result;
 if (n > ___CAST(___WORD, ___LMASK>>(___LF+3)))
   result = ___FIX(___HEAP_OVERFLOW_ERR); /* requested object is too big! */
-else if (words > ___MSECTION_BIGGEST)
-  {
-    ___FRAME_STORE_RA(___R0)
-    ___W_ALL
-    result = ___EXT(___alloc_scmobj) (___ps, ___sF64VECTOR, n<<3);
-    ___R_ALL
-    ___SET_R0(___FRAME_FETCH_RA)
-    if (!___FIXNUMP(result))
-      ___still_obj_refcount_dec (result);
-  }
 else
   {
-    ___BOOL overflow = 0;
-    ___hp += words;
-    if (___hp > ___ps->heap_limit)
+#if ___WS == 4
+    ___SIZE_TS words = ___WORDS((n<<3)) + 2;
+#else
+    ___SIZE_TS words = ___WORDS((n<<3)) + 1;
+#endif
+    if (words > ___MSECTION_BIGGEST)
       {
         ___FRAME_STORE_RA(___R0)
         ___W_ALL
-        overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+        result = ___EXT(___alloc_scmobj) (___ps, ___sF64VECTOR, n<<3);
         ___R_ALL
         ___SET_R0(___FRAME_FETCH_RA)
+        if (!___FIXNUMP(result))
+          ___still_obj_refcount_dec (result);
       }
     else
-      ___hp -= words;
-    if (overflow)
-      result = ___FIX(___HEAP_OVERFLOW_ERR);
-    else
       {
-#if ___WS == 4
-        result = ___TAG(___CAST(___SCMOBJ*,___CAST(___SCMOBJ,___hp+2)&~7)-1,
-                        ___tSUBTYPED);
-#else
-        result = ___TAG(___hp, ___tSUBTYPED);
-#endif
-        ___HEADER(result) = ___MAKE_HD_BYTES((n<<3), ___sF64VECTOR);
+        ___BOOL overflow = 0;
         ___hp += words;
+        if (___hp > ___ps->heap_limit)
+          {
+            ___FRAME_STORE_RA(___R0)
+            ___W_ALL
+            overflow = ___heap_limit (___PSPNC) && ___garbage_collect (___PSP 0);
+            ___R_ALL
+            ___SET_R0(___FRAME_FETCH_RA)
+          }
+        else
+          ___hp -= words;
+        if (overflow)
+          result = ___FIX(___HEAP_OVERFLOW_ERR);
+        else
+          {
+#if ___WS == 4
+            result = ___TAG(___CAST(___SCMOBJ*,___CAST(___SCMOBJ,___hp+2)&~7)-1,
+                            ___tSUBTYPED);
+#else
+            result = ___TAG(___hp, ___tSUBTYPED);
+#endif
+            ___HEADER(result) = ___MAKE_HD_BYTES((n<<3), ___sF64VECTOR);
+            ___hp += words;
+          }
       }
   }
 if (!___FIXNUMP(result) && ___ARG2 != ___ABSENT)
@@ -2656,6 +2721,51 @@ end-of-code
         (##raise-heap-overflow-exception)
         (##make-f64vector k fill))
       v)))
+)
+
+  (else
+
+   (define-prim (##make-vector k #!optional (fill 0))
+     (##make-vector k fill))
+
+   (define-prim (##make-string k #!optional (fill #\nul))
+     (##make-string k fill))
+
+   (define-prim (##make-s8vector k #!optional (fill 0))
+     (##make-s8vector k fill))
+
+   (define-prim (##make-u8vector k #!optional (fill 0))
+     (##make-u8vector k fill))
+
+   (define-prim (##make-s16vector k #!optional (fill 0))
+     (##make-s16vector k fill))
+
+   (define-prim (##make-u16vector k #!optional (fill 0))
+     (##make-u16vector k fill))
+
+   (define-prim (##make-s32vector k #!optional (fill 0))
+     (##make-s32vector k fill))
+
+   (define-prim (##make-u32vector k #!optional (fill 0))
+     (##make-u32vector k fill))
+
+   (define-prim (##make-s64vector k #!optional (fill 0))
+     (##make-s64vector k fill))
+
+   (define-prim (##make-u64vector k #!optional (fill 0))
+     (##make-u64vector k fill))
+
+   (define-prim (##make-f32vector k #!optional (fill 0.0))
+     (##make-f32vector k fill))
+
+   (define-prim (##make-f64vector k #!optional (fill 0.0))
+     (##make-f64vector k fill))
+
+))
+
+(macro-case-target
+
+ ((C)
 
 (define-prim (##make-machine-code-block len)
   ((c-lambda (size_t)
@@ -2763,6 +2873,24 @@ end-of-code
 
 ;;;----------------------------------------------------------------------------
 
+;;; Values.
+
+(define-prim (##make-values len #!optional (init 0))
+  (let ((vals (##make-vector len init)))
+    (##subtype-set! vals (macro-subtype-boxvalues))
+    vals))
+
+(define-prim (##values-length vals)
+  (##vector-length vals))
+
+(define-prim (##values-ref vals i)
+  (##vector-ref vals i))
+
+(define-prim (##values-set! vals i val)
+  (##vector-set! vals i val))
+
+;;;----------------------------------------------------------------------------
+
 ;;; Closures and subprocedures.
 
 (define-prim (##closure? proc)
@@ -2770,6 +2898,12 @@ end-of-code
   (##c-code
    "___RESULT = ___BOOLEAN(___HD_TYP(___HEADER(___ARG1)) != ___PERM);"
    proc))
+
+(define-prim (##make-closure code nb-closed)
+  (let ((closure (##make-vector (##fx+ nb-closed 1))))
+    (##vector-set! closure 0 code)
+    (##subtype-set! closure (macro-subtype-procedure))
+    closure))
 
 (define-prim (##closure-length closure))
 (define-prim (##closure-code closure))
@@ -2920,29 +3054,36 @@ end-of-code
 
 (define-prim (##continuation-frame cont)
   (let ((frame (##vector-ref cont 0)))
-    (if (or (##eq? frame 0) (##frame? frame))
+    (if (or (##eq? frame (macro-end-of-cont-marker))
+            (##frame? frame))
       frame
       (begin
         (##gc)
         (##continuation-frame cont)))))
 
+(define-prim (##continuation-frame-set! cont frame)
+  (macro-continuation-frame-set! cont frame))
+
 (define-prim (##continuation-denv cont)
   (##declare (not interrupts-enabled))
   (macro-continuation-denv cont))
 
+(define-prim (##continuation-denv-set! cont denv)
+  (macro-continuation-denv-set! cont denv))
+
 (define-prim (##explode-frame frame)
   (let ((fs (##frame-fs frame)))
-    (let ((v (##make-vector (##fixnum.+ fs 1))))
+    (let ((v (##make-vector (##fx+ fs 1))))
       (##vector-set! v 0 (##frame-ret frame))
       (let loop ((i fs))
-        (if (##fixnum.< 0 i)
+        (if (##fx< 0 i)
           (begin
             (if (##frame-slot-live? frame i)
               (##vector-set!
                v
-               (##fixnum.+ (##fixnum.- fs i) 1)
+               i
                (##frame-ref frame i)))
-            (loop (##fixnum.- i 1)))
+            (loop (##fx- i 1)))
           v)))))
 
 (define-prim (##frame-ret frame)
@@ -3079,7 +3220,7 @@ end-of-code
    else
      ___RETN_GET_FS_LINK(ra,fs,link)
 
-   ___RESULT = ___FIX(link);
+   ___RESULT = ___FIX(link+1);
 
 end-of-code
 
@@ -3117,7 +3258,7 @@ end-of-code
          ___RETN_GET_FS_LINK(ra,fs,link)
      }
 
-   ___RESULT = ___FIX(link);
+   ___RESULT = ___FIX(link+1);
 
 end-of-code
 
@@ -3248,8 +3389,9 @@ end-of-code
   (##declare (not interrupts-enabled))
   (##c-code #<<end-of-code
 
-   ___SCMOBJ frame = ___FIELD(___ARG1,___CONTINUATION_FRAME);
+   ___SCMOBJ cont = ___ARG1;
    int i = ___INT(___ARG2);
+   ___SCMOBJ frame = ___FIELD(cont,___CONTINUATION_FRAME);
    ___SCMOBJ ra;
    int fs;
    int link;
@@ -3292,6 +3434,84 @@ end-of-code
    cont
    i))
 
+(define-prim (##continuation-set! cont i val)
+  (##declare (not interrupts-enabled))
+  (##c-code #<<end-of-code
+
+   ___SCMOBJ cont = ___ARG1;
+   int i = ___INT(___ARG2);
+   ___SCMOBJ val = ___ARG3;
+   ___SCMOBJ frame = ___FIELD(cont,___CONTINUATION_FRAME);
+   ___SCMOBJ ra;
+   int fs;
+   int link;
+
+   if (___TYP(frame) == ___tSUBTYPED)
+     {
+       /* continuation frame is in the heap */
+
+       ra = ___FIELD(frame,0);
+
+       if (ra == ___GSTATE->internal_return)
+         ___RETI_GET_FS_LINK(___BODY_AS(frame,___tSUBTYPED)[___FRAME_RETI_RA],fs,link)
+       else
+         ___RETN_GET_FS_LINK(ra,fs,link)
+
+       ___BODY_AS(frame,___tSUBTYPED)[fs-i+1] = val;  /* what if i==link and frame is first in section???? */
+     }
+   else
+     {
+       /* continuation frame is in the stack */
+
+       ra = ___CAST(___SCMOBJ*,frame)[___FRAME_STACK_RA];
+
+       if (ra == ___GSTATE->internal_return)
+         ___RETI_GET_FS_LINK(___CAST(___SCMOBJ*,frame)[-___RETI_RA],fs,link)
+       else
+         ___RETN_GET_FS_LINK(ra,fs,link)
+
+       ___CAST(___SCMOBJ*,frame)[___FRAME_SPACE(fs)-i] = val;  /* what if i==link and frame is first in section???? */
+#if 0
+      if (i == link) ___RESULT = ___FIX(999999);/***********/
+#endif
+     }
+
+   ___RESULT = cont;
+
+end-of-code
+
+   cont
+   i
+   val))
+
+(define-prim (##make-frame ret)
+  (let ((fs (##return-fs ret)))
+    (let ((frame (##make-vector (##fx+ fs 1) 0)))
+      (##vector-set! frame 0 ret)
+      (##subtype-set! frame (macro-subtype-frame))
+      frame)))
+
+(define-prim (##make-continuation frame denv)
+  (##declare (not interrupts-enabled))
+  (let ((cont
+         (##c-code #<<end-of-code
+
+          ___SCMOBJ frame = ___ARG1;
+          ___SCMOBJ denv  = ___ARG2;
+
+          ___hp[0]=___MAKE_HD_WORDS(___CONTINUATION_SIZE,___sCONTINUATION);
+          ___ADD_VECTOR_ELEM(0,frame);
+          ___ADD_VECTOR_ELEM(1,denv);
+          ___hp+=___CONTINUATION_SIZE+1;
+          ___RESULT = ___GET_VECTOR(___CONTINUATION_SIZE);
+
+end-of-code
+
+          frame
+          denv)))
+    (##check-heap)
+    cont))
+
 (define-prim (##continuation-copy cont)
   (##declare (not interrupts-enabled))
   (let ((cont-copy
@@ -3306,7 +3526,7 @@ end-of-code
           ___ADD_VECTOR_ELEM(1,denv);
           ___hp+=___CONTINUATION_SIZE+1;
           ___RESULT = ___GET_VECTOR(___CONTINUATION_SIZE);
-       
+
 end-of-code
 
           cont)))
@@ -3347,7 +3567,7 @@ end-of-code
 
        next_frame = fp[-link-1];
 
-       if (next_frame == 0)
+       if (next_frame == ___END_OF_CONT_MARKER)
          ___RESULT = ___FAL;
        else
          {
@@ -3387,7 +3607,7 @@ end-of-code
            next_frame = ___CAST(___SCMOBJ,fp);
          }
 
-       if (next_frame == 0)
+       if (next_frame == ___END_OF_CONT_MARKER)
          ___RESULT = ___FAL;
        else
          {
@@ -3396,7 +3616,7 @@ end-of-code
            ___RESULT = cont;
          }
      }
-       
+
 end-of-code
 
    cont))
@@ -3404,130 +3624,6 @@ end-of-code
 (define-prim (##continuation-next cont)
   (##declare (not interrupts-enabled))
   (##continuation-next! (##continuation-copy cont)))
-
-;;;----------------------------------------------------------------------------
-
-;;; Structure support.
-
-;; For bootstraping purposes the type of type objects must be
-;; explicitly constructed.  It is as though the following form had
-;; been used:
-;;
-;;   (define-type type
-;;     id: ...special-type...
-;;     (id      unprintable: equality-test:)
-;;     (name    unprintable: equality-skip:)
-;;     (flags   unprintable: equality-skip:)
-;;     (super   unprintable: equality-skip:)
-;;     (fields  unprintable: equality-skip:)
-;;   )
-
-(define ##type-type
-  (let ((type
-         '#(#f
-            ##type-5
-            type
-            8
-            #f
-            #(id 1 #f name 5 #f flags 5 #f super 5 #f fields 5 #f))))
-    (##structure-type-set! type type) ; OK to mutate constant in Gambit
-    (##subtype-set! type (macro-subtype-structure))
-    type))
-
-(define-prim (##type-id type)
-  (##unchecked-structure-ref type 1 ##type-type ##type-id))
-
-(define-prim (##type-name type)
-  (##unchecked-structure-ref type 2 ##type-type ##type-name))
-
-(define-prim (##type-flags type)
-  (##unchecked-structure-ref type 3 ##type-type ##type-flags))
-
-(define-prim (##type-super type)
-  (##unchecked-structure-ref type 4 ##type-type ##type-super))
-
-(define-prim (##type-fields type)
-  (##unchecked-structure-ref type 5 ##type-type ##type-fields))
-
-(define-prim (##structure-direct-instance-of? obj type-id)
-  (and (##structure? obj)
-       (##eq? (##type-id (##structure-type obj))
-              type-id)))
-
-(define-prim (##structure-instance-of? obj type-id)
-  (and (##structure? obj)
-       (let loop ((c (##structure-type obj)))
-         (if (##eq? (##type-id c) type-id)
-           #t
-           (let ((super (##type-super c)))
-             (and super
-                  (loop super)))))))
-
-(define-prim (##type? obj)
-  (##structure-direct-instance-of? obj (##type-id ##type-type)))
-
-(define-prim (##structure-type obj)
-  (##vector-ref obj 0))
-
-(define-prim (##structure-type-set! obj type)
-  (##vector-set! obj 0 type))
-
-(define-prim (##structure type . fields)
-
-  (define (make-struct fields i)
-    (if (##pair? fields)
-      (let ((s (make-struct (##cdr fields) (##fixnum.+ i 1))))
-        (##unchecked-structure-set! s (##car fields) i type #f)
-        s)
-      (let ((s (##make-vector i type)))
-        (##subtype-set! s (macro-subtype-structure))
-        s)))
-
-  (make-struct fields 1))
-
-(define-prim (##structure-ref obj i type proc)
-  (if (##structure-instance-of? obj (##type-id type))
-    (##unchecked-structure-ref obj i type proc)
-    (##raise-type-exception
-     1
-     type
-     (if proc proc ##structure-ref)
-     (if proc (##list obj) (##list obj i type proc)))))
-
-(define-prim (##structure-set! obj val i type proc)
-  (if (##structure-instance-of? obj (##type-id type))
-    (begin
-      (##unchecked-structure-set! obj val i type proc)
-      (##void))
-    (##raise-type-exception
-     1
-     type
-     (if proc proc ##structure-set!)
-     (if proc (##list obj val) (##list obj val i type proc)))))
-
-(define-prim (##direct-structure-ref obj i type proc)
-  (if (##structure-direct-instance-of? obj (##type-id type))
-    (##unchecked-structure-ref obj i type proc)
-    (##raise-type-exception
-     1
-     type
-     (if proc proc ##direct-structure-ref)
-     (if proc (##list obj) (##list obj i type proc)))))
-
-(define-prim (##direct-structure-set! obj val i type proc)
-  (if (##structure-direct-instance-of? obj (##type-id type))
-    (begin
-      (##unchecked-structure-set! obj val i type proc)
-      (##void))
-    (##raise-type-exception
-     1
-     type
-     (if proc proc ##direct-structure-set!)
-     (if proc (##list obj val) (##list obj val i type proc)))))
-
-(define-prim (##unchecked-structure-ref obj i type proc))
-
-(define-prim (##unchecked-structure-set! obj val i type proc))
 
 ;;;----------------------------------------------------------------------------
 
@@ -3697,7 +3793,7 @@ end-of-code
 (define-prim (##foreign-address f)
   ((c-lambda (scheme-object)
              size_t
-    " 
+    "
     ___result = ___CAST(___SIZE_T,
                         ___CAST(void*,___FIELD(___arg1,___FOREIGN_PTR)));
     ")
@@ -3707,76 +3803,6 @@ end-of-code
   (macro-force-vars (f)
     (macro-check-foreign f 1 (foreign-address f)
       (##foreign-address f))))
-
-;;;----------------------------------------------------------------------------
-
-;;; Version information.
-
-(define-prim (##system-version)
-
-  (##define-macro (result)
-    (c#compiler-version))
-
-  (result))
-
-(define-prim (system-version)
-  (##system-version))
-
-(define-prim (##system-version-string)
-
-  (##define-macro (result)
-    (c#compiler-version-string))
-
-  (result))
-
-(define-prim (system-version-string)
-  (##system-version-string))
-
-(define ##os-system-type-saved
-  (let ()
-
-    (define (str-list->sym-list lst)
-      (if (##null? lst)
-          '()
-          (##cons (##make-interned-symbol (##car lst))
-                  (str-list->sym-list (##cdr lst)))))
-
-    (str-list->sym-list
-     ((c-lambda ()
-                nonnull-char-string-list
-       "___os_system_type")))))
-
-(define-prim (system-type)
-  ##os-system-type-saved)
-
-(define ##os-system-type-string-saved
-  ((c-lambda ()
-             nonnull-char-string
-    "___os_system_type_string")))
-
-(define-prim (system-type-string)
-  ##os-system-type-string-saved)
-
-(define ##os-configure-command-string-saved
-  ((c-lambda ()
-             nonnull-char-string
-    "___os_configure_command_string")))
-
-(define-prim (configure-command-string)
-  ##os-configure-command-string-saved)
-
-(define ##system-stamp-saved
-  ((c-lambda ()
-             unsigned-int64
-    "___result = ___U64_add_U64_U64
-                   (___U64_mul_UM32_UM32 (___STAMP_YMD, 1000000),
-                    ___U64_from_UM32 (___STAMP_HMS));")))
-
-(define-prim (##system-stamp)
-  ##system-stamp-saved)
-
-(define-prim (system-stamp)
-  (##system-stamp))
 
 ;;;----------------------------------------------------------------------------
 
@@ -3810,6 +3836,9 @@ end-of-code
 (define ##err-code-EINTR
   (##c-code "___RESULT = ___FIX(___ERRNO_ERR(EINTR));"))
 
+(define ##err-code-unimplemented
+  (##c-code "___RESULT = ___FIX(___UNIMPL_ERR);"))
+
 (define ##max-char
   (##c-code "___RESULT = ___FIX(___MAX_CHR);"))
 
@@ -3822,7 +3851,7 @@ end-of-code
 (define ##fixnum-width
   (##c-code "___RESULT = ___FIX(___FIX_WIDTH);"))
 
-(define ##fixnum-width-neg (##fixnum.- ##fixnum-width))
+(define ##fixnum-width-neg (##fx- ##fixnum-width))
 
 (define ##bignum.adigit-width
   (##c-code "___RESULT = ___FIX(___BIG_ABASE_WIDTH);"))
@@ -3832,19 +3861,6 @@ end-of-code
 
 (define ##bignum.fdigit-width
   (##c-code "___RESULT = ___FIX(___BIG_FBASE_WIDTH);"))
-
-;;;----------------------------------------------------------------------------
-
-(define-prim (##first-argument arg1 #!optional arg2 arg3 #!rest others)
-  arg1)
-
-(define-prim (##with-no-result-expected thunk)
-  (##declare (not interrupts-enabled))
-  (##first-argument (thunk))) ; force nontail-call to thunk
-
-(define-prim (##with-no-result-expected-toplevel thunk)
-  (##declare (not interrupts-enabled))
-  (##first-argument (thunk))) ; force nontail-call to thunk
 
 ;;;----------------------------------------------------------------------------
 
@@ -3858,12 +3874,16 @@ end-of-code
    ___F64 user, sys, real;
    ___SIZE_TS minflt, majflt;
    ___F64 n = ___bytes_allocated (___PSPNC);
-   ___SCMOBJ result = ___EXT(___alloc_scmobj) (___ps, ___sF64VECTOR, 20<<3);
+   ___SCMOBJ result;
+
+   ___FRAME_STORE_RA(___R0)
+   ___W_ALL
+   result = ___EXT(___alloc_scmobj) (___ps, ___sF64VECTOR, 20<<3);
+   ___R_ALL
+   ___SET_R0(___FRAME_FETCH_RA)
 
     if (!___FIXNUMP(result))
     {
-      ___W_ALL
-
       n = ___bytes_allocated (___PSPNC) - n;
 
       ___process_times (&user, &sys, &real);
@@ -3889,8 +3909,6 @@ end-of-code
       ___F64VECTORSET(result,___FIX(17),___vms->mem.last_gc_live_)
       ___F64VECTORSET(result,___FIX(18),___vms->mem.last_gc_movable_)
       ___F64VECTORSET(result,___FIX(19),___vms->mem.last_gc_nonmovable_)
-
-      ___R_ALL
 
       ___still_obj_refcount_dec (result);
    }
@@ -3921,7 +3939,7 @@ end-of-code
      ___F64VECTORSET(result,___FIX(1),sys)
      ___F64VECTORSET(result,___FIX(2),real)
      ___RESULT = result;
-  
+
 end-of-code
 
      v)))
@@ -3931,17 +3949,46 @@ end-of-code
   (##c-code #<<end-of-code
 
    ___time t;
-   ___F64 ft;
 
    ___time_get_current_time (&t);
-   ___time_to_seconds (t, &ft);
-   ___F64VECTORSET(___ARG1,___ARG2,ft)
+
+   ___F64VECTORSET(___ARG1,___ARG2,___time_to_seconds (t))
 
    ___RESULT = ___VOID;
 
 end-of-code
 
    floats
+   i))
+
+(define-prim (##get-monotonic-time! u64vect i)
+  (##declare (not interrupts-enabled))
+  (##c-code #<<end-of-code
+
+   ___STORE_U64(___BODY_AS(___ARG1,___tSUBTYPED),
+                ___INT(___ARG2),
+                ___time_get_monotonic_time ());
+
+   ___RESULT = ___VOID;
+
+end-of-code
+
+   u64vect
+   i))
+
+(define-prim (##get-monotonic-time-frequency! u64vect i)
+  (##declare (not interrupts-enabled))
+  (##c-code #<<end-of-code
+
+   ___STORE_U64(___BODY_AS(___ARG1,___tSUBTYPED),
+                ___INT(___ARG2),
+                ___time_get_monotonic_time_frequency ());
+
+   ___RESULT = ___VOID;
+
+end-of-code
+
+   u64vect
    i))
 
 (define-prim (##get-bytes-allocated! floats i)
@@ -3985,15 +4032,15 @@ end-of-code
             scheme-object
    "___os_path_homedir"))
 
-(define-prim ##os-path-gambcdir
+(define-prim ##os-path-gambitdir
   (c-lambda ()
             scheme-object
-   "___os_path_gambcdir"))
+   "___os_path_gambitdir"))
 
-(define-prim ##os-path-gambcdir-map-lookup
+(define-prim ##os-path-gambitdir-map-lookup
   (c-lambda (scheme-object)
             scheme-object
-   "___os_path_gambcdir_map_lookup"))
+   "___os_path_gambitdir_map_lookup"))
 
 (define-prim ##os-path-normalize-directory
   (c-lambda (scheme-object)
@@ -4038,8 +4085,7 @@ end-of-code
    "___os_environ"))
 
 (define-prim ##os-shell-command
-  (c-lambda (scheme-object
-             scheme-object)
+  (c-lambda (scheme-object)
             scheme-object
    "___os_shell_command"))
 
@@ -4134,8 +4180,20 @@ end-of-code
             scheme-object
    "___os_device_process_status"))
 
+(define-prim ##os-make-tls-context
+  (c-lambda (scheme-object
+             scheme-object
+             scheme-object
+             scheme-object
+             scheme-object
+             scheme-object
+             scheme-object)
+            scheme-object
+            "___os_make_tls_context"))
+
 (define-prim ##os-device-tcp-client-open
   (c-lambda (scheme-object
+             scheme-object
              scheme-object
              scheme-object)
             scheme-object
@@ -4149,6 +4207,7 @@ end-of-code
 
 (define-prim ##os-device-tcp-server-open
   (c-lambda (scheme-object
+             scheme-object
              scheme-object
              scheme-object
              scheme-object)
@@ -4251,6 +4310,13 @@ end-of-code
   (c-lambda (scheme-object)
             scheme-object
    "___os_port_encode_chars"))
+
+(define-prim ##os-file-times-set!
+  (c-lambda (scheme-object
+             scheme-object
+             scheme-object)
+            scheme-object
+   "___os_file_times_set"))
 
 (define-prim ##os-file-info
   (c-lambda (scheme-object
@@ -4380,6 +4446,8 @@ end-of-code
             scheme-object
    "___os_load_object_file"))
 
+))
+
 ;;;----------------------------------------------------------------------------
 
 ;;; Program startup and exit.
@@ -4394,6 +4462,10 @@ end-of-code
 
 (define-prim (##clear-exit-jobs!)
   (##clear-jobs! ##exit-jobs))
+
+(macro-case-target
+
+ ((C)
 
 (define-prim (##exit-with-err-code-no-cleanup err-code)
   (##c-code #<<end-of-code
@@ -4414,7 +4486,7 @@ end-of-code
   (##exit-with-err-code-no-cleanup err-code))
 
 (define-prim (##exit #!optional (status (macro-EXIT-CODE-OK)))
-  (##exit-with-err-code (##fixnum.+ status 1)))
+  (##exit-with-err-code (##fx+ status 1)))
 
 (define-prim (##exit-abnormally)
   (##exit (macro-EXIT-CODE-SOFTWARE)))
@@ -4427,25 +4499,287 @@ end-of-code
     (##declare (not interrupts-enabled))
     (##exit-abnormally)))
 
+))
+
+;;;----------------------------------------------------------------------------
+
+(define-prim (##first-argument arg1 #!optional arg2 arg3 #!rest others)
+  arg1)
+
+(define-prim (##with-no-result-expected thunk)
+  (##declare (not interrupts-enabled))
+  (##first-argument (thunk))) ;; force nontail-call to thunk
+
+(define-prim (##with-no-result-expected-toplevel thunk)
+  (##declare (not interrupts-enabled))
+  (##first-argument (thunk))) ;; force nontail-call to thunk
+
+;;;----------------------------------------------------------------------------
+
+;;; Version information.
+
+(define-prim (##system-version)
+
+  (##define-macro (result)
+    (c#compiler-version))
+
+  (result))
+
+(define-prim (system-version)
+  (##system-version))
+
+(define-prim (##system-version-string)
+
+  (##define-macro (result)
+    (c#compiler-version-string))
+
+  (result))
+
+(define-prim (system-version-string)
+  (##system-version-string))
+
+(macro-case-target
+
+ ((C)
+
+(define ##os-system-type-saved
+  (let ()
+
+    (define (str-list->sym-list lst)
+      (if (##null? lst)
+          '()
+          (##cons (##make-interned-symbol (##car lst))
+                  (str-list->sym-list (##cdr lst)))))
+
+    (str-list->sym-list
+     ((c-lambda ()
+                nonnull-char-string-list
+       "___os_system_type")))))
+
+(define-prim (system-type)
+  ##os-system-type-saved)
+
+(define ##os-system-type-string-saved
+  ((c-lambda ()
+             nonnull-char-string
+    "___os_system_type_string")))
+
+(define-prim (system-type-string)
+  ##os-system-type-string-saved)
+
+(define ##os-configure-command-string-saved
+  ((c-lambda ()
+             nonnull-char-string
+    "___os_configure_command_string")))
+
+(define-prim (configure-command-string)
+  ##os-configure-command-string-saved)
+
+(define ##system-stamp-saved
+  ((c-lambda ()
+             unsigned-int64
+    "___result = ___U64_add_U64_U64
+                   (___U64_mul_UM32_UM32 (___STAMP_YMD, 1000000),
+                    ___U64_from_UM32 (___STAMP_HMS));")))
+
+(define-prim (##system-stamp)
+  ##system-stamp-saved)
+
+(define-prim (system-stamp)
+  (##system-stamp))
+
+))
+
+;;;----------------------------------------------------------------------------
+
+;;; Structure support.
+
+;; For bootstraping purposes the type of type objects must be
+;; explicitly constructed.  It is as though the following form had
+;; been used:
+;;
+;;   (define-type type
+;;     id: ...special-type...
+;;     (id      unprintable: equality-test:)
+;;     (name    unprintable: equality-skip:)
+;;     (flags   unprintable: equality-skip:)
+;;     (super   unprintable: equality-skip:)
+;;     (fields  unprintable: equality-skip:)
+;;   )
+
+(##define-macro (macro-type-type-constant)
+  (let ((type-type
+         (##structure
+          #f ;; this structure's type descriptor is itself! (set later)
+          '##type-5
+          'type
+          '8
+          '#f
+          '#(id 1 #f name 5 #f flags 5 #f super 5 #f fields 5 #f))))
+    (##structure-type-set! type-type type-type) ;; self reference
+    `',type-type))
+
+(define ##type-type (macro-type-type-constant))
+
+(define-prim (##type-id type)
+  (##unchecked-structure-ref type 1 ##type-type ##type-id))
+
+(define-prim (##type-name type)
+  (##unchecked-structure-ref type 2 ##type-type ##type-name))
+
+(define-prim (##type-flags type)
+  (##unchecked-structure-ref type 3 ##type-type ##type-flags))
+
+(define-prim (##type-super type)
+  (##unchecked-structure-ref type 4 ##type-type ##type-super))
+
+(define-prim (##type-fields type)
+  (##unchecked-structure-ref type 5 ##type-type ##type-fields))
+
+(define-prim (##structure-direct-instance-of? obj type-id)
+  (and (##structure? obj)
+       (##eq? (##type-id (##structure-type obj))
+              type-id)))
+
+(define-prim (##structure-instance-of? obj type-id)
+  (and (##structure? obj)
+       (let loop ((c (##structure-type obj)))
+         (if (##eq? (##type-id c) type-id)
+           #t
+           (let ((super (##type-super c)))
+             (and super
+                  (loop super)))))))
+
+(define-prim (##type? obj)
+  (##structure-direct-instance-of? obj (##type-id ##type-type)))
+
+(define-prim (##structure-type obj)
+  (##vector-ref obj 0))
+
+(define-prim (##structure-type-set! obj type)
+  (##vector-set! obj 0 type))
+
+(define-prim (##make-structure type len)
+  (let ((s (##make-vector len)))
+    (##subtype-set! s (macro-subtype-structure))
+    (##vector-set! s 0 type)
+    s))
+
+(define-prim (##structure-length obj)
+  (##vector-length obj))
+
+(define-prim (##structure type . fields)
+
+  (define (make-struct fields i)
+    (if (##pair? fields)
+        (let ((s (make-struct (##cdr fields) (##fx+ i 1))))
+          (##unchecked-structure-set! s (##car fields) i type #f)
+          s)
+        (##make-structure type i)))
+
+  (make-struct fields 1))
+
+(define-prim (##structure-ref obj i type proc)
+  (if (##structure-instance-of? obj (##type-id type))
+    (##unchecked-structure-ref obj i type proc)
+    (##raise-type-exception
+     1
+     type
+     (if proc proc ##structure-ref)
+     (if proc (##list obj) (##list obj i type proc)))))
+
+(define-prim (##structure-set! obj val i type proc)
+  (if (##structure-instance-of? obj (##type-id type))
+    (begin
+      (##unchecked-structure-set! obj val i type proc)
+      (##void))
+    (##raise-type-exception
+     1
+     type
+     (if proc proc ##structure-set!)
+     (if proc (##list obj val) (##list obj val i type proc)))))
+
+(define-prim (##structure-cas! obj val oldval i type proc)
+  (if (##structure-instance-of? obj (##type-id type))
+    (begin
+      (##unchecked-structure-cas! obj val oldval i type proc)
+      (##void))
+    (##raise-type-exception
+     1
+     type
+     (if proc proc ##structure-cas!)
+     (if proc (##list obj val oldval) (##list obj val oldval i type proc)))))
+
+(define-prim (##direct-structure-ref obj i type proc)
+  (if (##structure-direct-instance-of? obj (##type-id type))
+    (##unchecked-structure-ref obj i type proc)
+    (##raise-type-exception
+     1
+     type
+     (if proc proc ##direct-structure-ref)
+     (if proc (##list obj) (##list obj i type proc)))))
+
+(define-prim (##direct-structure-set! obj val i type proc)
+  (if (##structure-direct-instance-of? obj (##type-id type))
+    (begin
+      (##unchecked-structure-set! obj val i type proc)
+      (##void))
+    (##raise-type-exception
+     1
+     type
+     (if proc proc ##direct-structure-set!)
+     (if proc (##list obj val) (##list obj val i type proc)))))
+
+(define-prim (##direct-structure-cas! obj val oldval i type proc)
+  (if (##structure-direct-instance-of? obj (##type-id type))
+    (begin
+      (##unchecked-structure-cas! obj val oldval i type proc)
+      (##void))
+    (##raise-type-exception
+     1
+     type
+     (if proc proc ##direct-structure-cas!)
+     (if proc (##list obj val oldval) (##list obj val oldval i type proc)))))
+
+(define-prim (##unchecked-structure-ref obj i type proc))
+
+(define-prim (##unchecked-structure-set! obj val i type proc))
+
+(define-prim (##unchecked-structure-cas! obj val oldval i type proc)
+  ;; TODO: remove after bootstrap
+  (##vector-cas! obj i val oldval))
+
 ;;;----------------------------------------------------------------------------
 
 ;; The kernel is responsible for executing each module of the program
 ;; in sequence.  The vector of module execution procedures is in the
 ;; program descriptor.
 
-(define ##program-descr
-  (##c-code "___RESULT = ___GSTATE->program_descr;"))
+(macro-case-target
 
-(define ##vm-main-module-id
-  (##c-code "___RESULT = ___VMSTATE_FROM_PSTATE(___ps)->main_module_id;"))
+ ((C)
 
-(define (##module-init module-descr)
-  (##c-code
-   "___RESULT = ___CAST(___module_struct*,___FIELD(___ARG1,___FOREIGN_PTR))->init_mod (___ps);"
-   (##vector-ref module-descr 4)))
+  (define ##program-descr
+    (##c-code "___RESULT = ___GSTATE->program_descr;"))
 
-(define-prim (##main)
-  (##exit-cleanup))
+  (define ##vm-main-module-id
+    (##c-code "___RESULT = ___VMSTATE_FROM_PSTATE(___ps)->main_module_id;"))
+
+  (define (##module-init module-descr)
+    (##c-code
+     "___RESULT = ___CAST(___module_struct*,___FIELD(___ARG1,___FOREIGN_PTR))->init_mod (___PSPNC);"
+     (##vector-ref module-descr 4)))
+
+  (define-prim (##main)
+    (##exit-cleanup)))
+
+ (else
+
+  (define (##module-init module-descr)
+    #f)
+
+  (define-prim (##main)
+    #f)))
 
 (define-prim (##main-set! thunk)
   (set! ##main thunk))
@@ -4543,12 +4877,17 @@ end-of-code
       (if (##pair? modules)
           (let* ((module (##car modules))
                  (module-descr (macro-module-descr module))
-                 (rest (##cdr modules)))
+                 (rest (##cdr modules))
+                 (last? (##not (##pair? rest))))
             ;; load module if the preload flag is set or we force the loading
             (if (or (##fx= (##fxand 1 (##vector-ref module-descr 2)) 1)
-                    (and force-load-last? (##not (##pair? rest))))
-                (proc module))
-            (loop rest)))))
+                    (and force-load-last? last?))
+                (if last?
+                    (proc module)
+                    (begin
+                      (proc module)
+                      (loop rest)))
+                (loop rest))))))
 
   (for-each-module init)
   (for-each-module run))
@@ -4556,9 +4895,7 @@ end-of-code
 (define-prim (##default-load-required-module module-ref)
 
   (define (err)
-    (##raise-os-exception
-     "nonexistent module"
-     ##err-code-ENOENT
+    (##raise-module-not-found-exception
      ##default-load-required-module
      module-ref))
 
@@ -4573,9 +4910,24 @@ end-of-code
 (define ##load-required-module #f)
 (set! ##load-required-module ##default-load-required-module)
 
-(define-prim (##register-module-descrs-and-load-last! module-descrs)
+(implement-library-type-module-not-found-exception)
+
+(define-prim (##raise-module-not-found-exception proc . args)
+  (##extract-procedure-and-arguments
+   proc
+   args
+   #f
+   #f
+   #f
+   (lambda (procedure arguments dummy1 dummy2 dummy3)
+     (macro-raise
+      (macro-make-module-not-found-exception
+       procedure
+       arguments)))))
+
+(define-prim (##register-module-descrs-and-load! module-descrs)
   (let ((modules (##register-module-descrs! module-descrs)))
-    (##load-required-module-structs modules #t)))
+    (##load-required-module-structs modules #f)))
 
 (define-prim (##load-vm)
   (let ((module-descrs (##vector-ref ##program-descr 0)))
@@ -4588,6 +4940,8 @@ end-of-code
       (##load-required-module ##vm-main-module-id)
       (##main))))
 
-(##load-vm)
+(macro-case-target
+ ((C)
+  (##load-vm)))
 
 ;;;============================================================================

@@ -1,6 +1,6 @@
 /* File: "setup.c" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved. */
 
 /*
  * This module contains the routines that setup the Scheme program for
@@ -8,14 +8,17 @@
  */
 
 #define ___INCLUDED_FROM_SETUP
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
 #include "os_base.h"
+#include "os_files.h"
 #include "os_dyn.h"
+#include "os_thread.h"
 #include "setup.h"
 #include "mem.h"
 #include "c_intf.h"
+#include "actlog.h"
 
 
 /*---------------------------------------------------------------------------*/
@@ -52,6 +55,7 @@ ___NEED_GLO(___G__23__23_dynamic_2d_env_2d_bind)
  *   ___INTR_USER        user has interrupted the program (e.g. ctrl-C)
  *   ___INTR_HEARTBEAT   heartbeat time interval has elapsed
  *   ___INTR_GC          a garbage collection has finished
+ *   ___INTR_SYNC_OP     a synchronous op. over all processors is requested
  */
 
 ___EXP_FUNC(void,___raise_interrupt_pstate)
@@ -88,8 +92,10 @@ ___EXP_FUNC(void,___raise_interrupt_vmstate)
 ___virtual_machine_state ___vms;
 int code;)
 {
-  /*TODO: extend to all processors in the VM*/
-  ___raise_interrupt_pstate (&___vms->pstate0, code);
+  int i;
+
+  for (i=___vms->nb_processors-1; i>=0; i--)
+    ___raise_interrupt_pstate (&___vms->pstate[i], code);
 }
 
 
@@ -98,32 +104,67 @@ ___EXP_FUNC(void,___raise_interrupt)
         (code)
 int code;)
 {
-  /*TODO: extend to all virtual machines*/
-  ___raise_interrupt_vmstate (&___GSTATE->vmstate0, code);
+  ___virtual_machine_state ___vms = &___GSTATE->vmstate0;
+
+#ifdef ___SINGLE_VM
+
+  ___raise_interrupt_vmstate (___vms, code);
+
+#else
+
+#if 0
+  /* TODO: investigate why this deadlocks the process... probably recursive locking of mutex */
+  ___MUTEX_LOCK(___GSTATE->vm_list_mut);
+#endif
+
+  do
+    {
+      ___vms = ___vms->prev;
+      ___raise_interrupt_vmstate (___vms, code);
+    }
+  while (___vms != &___GSTATE->vmstate0);
+
+#if 0
+  ___MUTEX_UNLOCK(___GSTATE->vm_list_mut);
+#endif
+
+#endif
 }
 
 
 ___EXP_FUNC(void,___begin_interrupt_service_pstate)
-   ___P((___PSDNC),
-        (___PSVNC)
-___PSDKR)
+   ___P((___processor_state ___ps),
+        (___ps)
+___processor_state ___ps;)
 {
-  ___PSGET
   ___STACK_TRIP_OFF();
 }
 
 
+/* TODO: remove this when ___INTR_SYNC_OP interrupt handled in Scheme code */
+void service_sync_op ___P((___PSDNC),());
+
 ___EXP_FUNC(___BOOL,___check_interrupt_pstate)
-   ___P((___PSD
+   ___P((___processor_state ___ps,
          int code),
-        (___PSV
+        (___ps,
          code)
-___PSDKR
+___processor_state ___ps;
 int code;)
 {
-  ___PSGET
   if ((___ps->intr_flag[code] & ~___ps->intr_mask) != ___FIX(0))
     {
+#ifndef ___SINGLE_THREADED_VMS
+
+      /* TODO: remove this when ___INTR_SYNC_OP interrupt handled in Scheme code */
+      if (code == ___INTR_SYNC_OP)
+        {
+          service_sync_op (___PSP);
+          return 0;
+        }
+
+#endif
+
       ___ps->intr_flag[code] = ___FIX(0);
       return 1;
     }
@@ -133,14 +174,13 @@ int code;)
 
 
 ___EXP_FUNC(void,___end_interrupt_service_pstate)
-   ___P((___PSD
+   ___P((___processor_state ___ps,
          int code),
-        (___PSV
+        (___ps,
          code)
-___PSDKR
+___processor_state ___ps;
 int code;)
 {
-  ___PSGET
   if (___ps->intr_enabled != ___FIX(0))
     {
 #ifdef CALL_HANDLER_AT_EVERY_POLL
@@ -161,30 +201,592 @@ int code;)
 
 
 ___EXP_FUNC(void,___disable_interrupts_pstate)
-   ___P((___PSDNC),
-        (___PSVNC)
-___PSDKR)
+   ___P((___processor_state ___ps),
+        (___ps)
+___processor_state ___ps;)
 {
-  ___PSGET
-
   ___ps->intr_enabled = ___FIX(0);
 
-  ___begin_interrupt_service_pstate (___PSPNC);
-  ___end_interrupt_service_pstate (___PSP 0);
+  ___begin_interrupt_service_pstate (___ps);
+  ___end_interrupt_service_pstate (___ps, 0);
 }
 
 
 ___EXP_FUNC(void,___enable_interrupts_pstate)
+   ___P((___processor_state ___ps),
+        (___ps)
+___processor_state ___ps;)
+{
+  ___ps->intr_enabled = ___FIX((1<<___NB_INTRS)-1);
+
+  ___begin_interrupt_service_pstate (___ps);
+  ___end_interrupt_service_pstate (___ps, 0);
+}
+
+
+___HIDDEN void setup_interrupts_pstate
+   ___P((___processor_state ___ps),
+        (___ps)
+___processor_state ___ps;)
+{
+  int i;
+
+  ___disable_interrupts_pstate (___ps); /* disable all interrupts */
+
+  ___ps->intr_mask = ___FIX(0); /* None of the interrupts are ignored */
+
+  for (i=0; i<___NB_INTRS; i++) /* None of the interrupts are requested */
+    ___ps->intr_flag[i] = ___FIX(0);
+
+  ___begin_interrupt_service_pstate (___ps);
+  ___end_interrupt_service_pstate (___ps, 0);
+}
+
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ * Synchronous operations.
+ */
+
+#define WASTE_TIME() \
+do { int count; for (count=10; count>0; count--) ; } while (0)
+
+#define COMBINING_OP(op) ((op)&3)
+#define COMBINING_AND 1
+#define COMBINING_ADD 2
+#define COMBINING_MAX 3
+#define OP_MAKE(priority,combining) (((priority)<<2)+(combining))
+
+#define SYNC_WAIT -1
+
+#define OP_SET_NB_PROCESSORS OP_MAKE( 0,0)
+#define OP_RESIZE_VM         OP_MAKE( 1,0)
+#define OP_ACTLOG_START      OP_MAKE(61,0)
+#define OP_ACTLOG_STOP       OP_MAKE(62,0)
+#define OP_NOOP              OP_MAKE(63,0)
+
+
+___HIDDEN int barrier_sync_op
+   ___P((___PSD
+         ___sync_op_struct *sop_ptr),
+        (___PSV
+         sop_ptr)
+___PSDKR
+___sync_op_struct *sop_ptr;)
+{
+#ifdef ___SINGLE_THREADED_VMS
+
+  return 0;
+
+#else
+
+  ___PSGET
+  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___ps);
+  int id = ___ps - ___vms->pstate; /* id of this processor */
+  int child_id1 = id*2+1;          /* id of child 1 */
+  int child_id2 = id*2+2;          /* id of child 2 */
+  int n = ___vms->nb_processors;   /* number of processors */
+  ___sync_op_struct sop = *sop_ptr;
+  int sid = id;
+
+  /*
+   * This function performs a barrier synchronization by imposing a
+   * tree structure on the set of processors in this Gambit VM.
+   */
+
+  /*
+   * Check operations from children processors and self to
+   * determine the highest priority operation.
+   */
+
+  if (child_id1 < n)
+    {
+      int sid1;
+      ___sync_op_struct sop1;
+
+      while ((sid1 = ___ps->sync_id1) == SYNC_WAIT)
+        WASTE_TIME();
+
+      sop1 = ___ps->sync_op1;
+
+      if (sop1.op < sop.op)
+        {
+          sop = sop1;
+          sid = sid1;
+        }
+      else if (sop1.op == sop.op && COMBINING_OP(sop1.op))
+        {
+          switch (COMBINING_OP(sop1.op))
+            {
+            case COMBINING_AND:
+              sop1.arg[0] &= sop.arg[0];
+              break;
+            case COMBINING_ADD:
+              sop1.arg[0] += sop.arg[0];
+              break;
+            case COMBINING_MAX:
+              if (sop1.arg[0] < sop.arg[0]) sop1.arg[0] = sop.arg[0];
+              break;
+            }
+
+          sop = sop1;
+          sid = sid1;
+        }
+
+      ___ps->sync_id1 = SYNC_WAIT;
+
+      if (child_id2 < n)
+        {
+          int sid2;
+          ___sync_op_struct sop2;
+
+          while ((sid2 = ___ps->sync_id2) == SYNC_WAIT)
+            WASTE_TIME();
+
+          sop2 = ___ps->sync_op2;
+
+          if (sop2.op < sop.op)
+            {
+              sop = sop2;
+              sid = sid2;
+            }
+          else if (sop2.op == sop.op && COMBINING_OP(sop2.op))
+            {
+              switch (COMBINING_OP(sop2.op))
+                {
+                case COMBINING_AND:
+                  sop2.arg[0] &= sop.arg[0];
+                  break;
+                case COMBINING_ADD:
+                  sop2.arg[0] += sop.arg[0];
+                  break;
+                case COMBINING_MAX:
+                  if (sop2.arg[0] < sop.arg[0]) sop2.arg[0] = sop.arg[0];
+                  break;
+                }
+
+              sop = sop2;
+              sid = sid2;
+            }
+
+          ___ps->sync_id2 = SYNC_WAIT;
+        }
+    }
+
+  /*
+   * Propagate highest priority operation to parent processor.
+   */
+
+  if (id == 0)
+    {
+      /*
+       * Special case operation that sets nb_processors because this
+       * information is used by the barrier_sync algorithm itself.
+       */
+      if (sop.op == OP_SET_NB_PROCESSORS)
+        ___vms->nb_processors = sop.arg[0];
+    }
+  else
+    {
+      ___processor_state parent = &___vms->pstate[(id-1)/2];
+
+      ___ps->sync_id0 = SYNC_WAIT;
+
+      if (id & 1)
+        {
+          parent->sync_op1 = sop;
+          parent->sync_id1 = sid;
+        }
+      else
+        {
+          parent->sync_op2 = sop;
+          parent->sync_id2 = sid;
+        }
+
+      /*
+       * Wait for parent to reply with winning operation.
+       */
+
+      while ((sid = ___ps->sync_id0) == SYNC_WAIT)
+        WASTE_TIME();
+
+      sop = ___ps->sync_op0;
+    }
+
+  /*
+   * Propagate winning operation to children processors.
+   */
+
+  if (child_id1 < n)
+    {
+      ___processor_state child1 = &___vms->pstate[child_id1];
+
+      child1->sync_op0 = sop;
+      child1->sync_id0 = sid;
+
+      if (child_id2 < n)
+        {
+          ___processor_state child2 = &___vms->pstate[child_id2];
+
+          child2->sync_op0 = sop;
+          child2->sync_id0 = sid;
+        }
+    }
+
+  /*
+   * Return winning operation and id of originating processor.
+   */
+
+  *sop_ptr = sop;
+
+  return sid;
+
+#endif
+}
+
+
+___SCMOBJ ___setup_pstate
+   ___P((___processor_state ___ps,
+         ___virtual_machine_state ___vms),
+        ());
+
+
+void ___cleanup_pstate
+   ___P((___processor_state ___ps),
+        ());
+
+
+___SCMOBJ ___run
+   ___P((___PSD
+         ___SCMOBJ thunk),
+        ());
+
+
+void execute_sync_op_loop
+   ___P((___PSD
+         ___sync_op_struct *sop_ptr,
+         ___BOOL first_iter),
+        ());
+
+
+___HIDDEN void start_processor_execution
+   ___P((___thread *self),
+        (self)
+___thread *self;)
+{
+  ___processor_state ___ps = ___CAST(___processor_state,self->data_ptr);
+  ___SCMOBJ thunk = self->data_scmobj;
+  ___sync_op_struct sop;
+
+  /*
+   * Setup current OS thread so that it can find the processor state
+   * it is running.
+   */
+
+  ___SET_PSTATE(___ps);
+
+  /*
+   * Participate in the synchronous operation that initiated the
+   * resizing of the VM.
+   */
+
+  sop.op = OP_NOOP;
+  execute_sync_op_loop (___PSP &sop, 0);
+
+  /*
+   * Start processor's execution by a call to thunk.  This call will
+   * return when the processor terminates (typically when the Gambit VM
+   * terminates).
+   */
+
+  ___run(___PSP thunk); /* ignore result */
+}
+
+
+___HIDDEN ___SCMOBJ resize_vm
+   ___P((___processor_state ___ps,
+         ___SCMOBJ thunk,
+         ___WORD target_nb_processors),
+        (___ps,
+         thunk,
+         target_nb_processors)
+___processor_state ___ps;
+___SCMOBJ thunk;
+___WORD target_nb_processors;)
+{
+  ___SCMOBJ err = ___FIX(___NO_ERR);
+
+#ifndef ___SINGLE_THREADED_VMS
+
+  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___ps);
+  int id = ___ps - ___vms->pstate; /* id of this processor */
+  ___sync_op_struct sop;
+
+  if (id != 0)
+    {
+      /*
+       * Wait for nb_processors to be set synchronously by processor 0.
+       */
+
+      sop.op = OP_NOOP;
+      barrier_sync_op (___PSP &sop);
+
+      /*
+       * Terminate current processor if it is no longer needed.
+       */
+
+      if (id >= target_nb_processors)
+        ___thread_exit (); /* this call does not return */
+    }
+  else
+    {
+      int initial = ___vms->nb_processors;
+      int i;
+
+      /* TODO: add 2 msections for each additional processor */
+
+      for (i=initial; i<target_nb_processors; i++)
+        {
+          ___processor_state p = &___vms->pstate[i];
+
+          if ((err = ___setup_pstate (&___vms->pstate[i], ___vms))
+              != ___FIX(___NO_ERR))
+            {
+              while (--i >= initial)
+                ___cleanup_pstate (&___vms->pstate[i]);
+
+              sop.op = OP_NOOP;
+              barrier_sync_op (___PSP &sop);
+
+              return err;
+            }
+        }
+
+      /*
+       * Set nb_processors synchronously.
+       */
+
+      sop.op = OP_SET_NB_PROCESSORS;
+      sop.arg[0] = target_nb_processors;
+      barrier_sync_op (___PSP &sop);
+
+      if (target_nb_processors < initial)
+        {
+          /*
+           * Join processors that are reclaimed when number of
+           * processors shrinks.
+           */
+
+          for (i=initial-1; i>=target_nb_processors; i--)
+            {
+              ___processor_state p = &___vms->pstate[i];
+              ___thread *t = &p->os_thread;
+
+              ___thread_join (t); /* ignore error */
+            }
+        }
+      else
+        {
+          /*
+           * Create new processors when number of processors grows.
+           */
+
+          for (i=initial; i<target_nb_processors; i++)
+            {
+              ___processor_state p = &___vms->pstate[i];
+              ___thread *t = &p->os_thread;
+
+              t->start_fn = start_processor_execution;
+              t->data_ptr = ___CAST(void*,p);
+              t->data_scmobj = thunk;
+
+              if ((err = ___thread_create (t)) != ___FIX(___NO_ERR))
+                {
+                  /* TODO: improve error handling */
+                  static char *msgs[] = { "Could not create OS thread", NULL };
+                  ___fatal_error (msgs);
+                }
+            }
+        }
+    }
+
+#endif
+
+  return err;
+}
+
+
+void execute_sync_op
+   ___P((___PSD
+         ___sync_op_struct *sop_ptr),
+        (___PSV
+         sop_ptr)
+___PSDKR
+___sync_op_struct *sop_ptr;)
+{
+  ___PSGET
+
+  switch (sop_ptr->op)
+    {
+    case OP_RESIZE_VM:
+      sop_ptr->arg[0] = resize_vm (___ps, sop_ptr->arg[0], sop_ptr->arg[1]);
+      break;
+
+    case OP_ACTLOG_START:
+      ___actlog_start_pstate (___ps);
+      break;
+
+    case OP_ACTLOG_STOP:
+      ___actlog_stop_pstate (___ps);
+      break;
+    }
+}
+
+
+void execute_sync_op_loop
+   ___P((___PSD
+         ___sync_op_struct *sop_ptr,
+         ___BOOL first_iter),
+        (___PSV
+         sop_ptr,
+         first_iter)
+___PSDKR
+___sync_op_struct *sop_ptr;
+___BOOL first_iter;)
+{
+  ___PSGET
+  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___ps);
+  int id = ___ps - ___vms->pstate; /* id of this processor */
+
+  for (;;)
+    {
+      ___sync_op_struct sop = *sop_ptr;
+      int winner_id = barrier_sync_op (___PSP &sop);
+
+      if (sop.op == OP_NOOP)
+        {
+          /*
+           * Stop looping when all operations performed, but
+           * must loop at least twice to reset ___INTR_SYNC_OP flag.
+           */
+
+          if (!first_iter)
+            return;
+        }
+      else
+        {
+          execute_sync_op (___PSP &sop);
+
+          if (sop.op == sop_ptr->op &&
+              (winner_id == id || COMBINING_OP(sop.op)))
+            {
+              *sop_ptr = sop; /* return result */
+              sop_ptr->op = OP_NOOP; /* mark operation as executed */
+            }
+        }
+
+      if (first_iter)
+        {
+          /*
+           * Reset ___INTR_SYNC_OP interrupt flag synchronously so that
+           * no interrupt is ignored (this would cause the barrier
+           * synchronization to get out of sync).
+           */
+
+          ___ps->intr_flag[___INTR_SYNC_OP] = ___FIX(0);
+          first_iter = 0;
+        }
+    }
+}
+
+
+void service_sync_op
    ___P((___PSDNC),
         (___PSVNC)
 ___PSDKR)
 {
   ___PSGET
+  ___sync_op_struct sop;
 
-  ___ps->intr_enabled = ___FIX((1<<___NB_INTRS)-1);
+  sop.op = OP_NOOP;
 
-  ___begin_interrupt_service_pstate (___PSPNC);
-  ___end_interrupt_service_pstate (___PSP 0);
+  execute_sync_op_loop (___PSP &sop, 1);
+}
+
+
+void on_all_processors
+   ___P((___PSD
+         ___sync_op_struct *sop_ptr),
+        (___PSV
+         sop_ptr)
+___PSDKR
+___sync_op_struct *sop_ptr;)
+{
+  ___PSGET
+  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___ps);
+
+  /* force processors to call service_sync_op */
+
+  ___raise_interrupt_vmstate (___vms, ___INTR_SYNC_OP);
+
+  execute_sync_op_loop (___PSP sop_ptr, 1);
+}
+
+
+___EXP_FUNC(___SCMOBJ,___resize_vm)
+   ___P((___PSD
+         ___SCMOBJ thunk,
+         int target_nb_processors),
+        (___PSV
+         thunk,
+         target_nb_processors)
+___PSDKR
+___SCMOBJ thunk;
+int target_nb_processors;)
+{
+  ___PSGET
+  ___sync_op_struct sop;
+
+  sop.op = OP_RESIZE_VM;
+  sop.arg[0] = thunk;
+  sop.arg[1] = target_nb_processors;
+
+  on_all_processors (___PSP &sop);
+
+  return ___FIX(___NO_ERR);
+}
+
+
+___EXP_FUNC(___SCMOBJ,___actlog_start)
+   ___P((___PSDNC),
+        (___PSVNC)
+___PSDKR)
+{
+  ___PSGET
+  ___sync_op_struct sop;
+
+  sop.op = OP_ACTLOG_START;
+
+  on_all_processors (___PSP &sop);
+
+  return ___FIX(___NO_ERR);
+}
+
+
+___EXP_FUNC(___SCMOBJ,___actlog_stop)
+   ___P((___PSDNC),
+        (___PSVNC)
+___PSDKR)
+{
+  ___PSGET
+  ___sync_op_struct sop;
+
+  sop.op = OP_ACTLOG_STOP;
+
+  on_all_processors (___PSP &sop);
+
+  return ___FIX(___NO_ERR);
 }
 
 
@@ -292,10 +894,13 @@ ___SCMOBJ (*proc) ();)
       while (p->mol != 0)
         {
           ___SCMOBJ e;
+          ___SCMOBJ save = ctx->flags;
 
           ctx->flags = p->flags;
 
           e = for_each_module (ctx, p->mol, proc);
+
+          ctx->flags = save;
 
           if (e != ___FIX(___NO_ERR))
             return e;
@@ -347,17 +952,19 @@ ___SCMOBJ *p;)
 
 
 ___HIDDEN ___SCMOBJ make_global
-   ___P((___UTF_8STRING str,
+   ___P((___processor_state ___ps,
+         ___UTF_8STRING str,
          int supply,
          ___glo_struct **glo),
-        (str,
+        (___ps,
+         str,
          supply,
          glo)
+___processor_state ___ps;
 ___UTF_8STRING str;
 int supply;
 ___glo_struct **glo;)
 {
-  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___PSTATE);/* TODO: remove and fix ___GLOCELL_IN_VM*/
   ___glo_struct *g;
   ___SCMOBJ sym = ___make_symkey_from_UTF_8_string (str, ___sSYMBOL);
 
@@ -371,8 +978,16 @@ ___glo_struct **glo;)
 
   g = ___GLOBALVARSTRUCT(sym);
 
-  if (supply && ___GLOCELL_IN_VM(___vms,g->val) == ___UNB1)
-    ___GLOCELL_IN_VM(___vms,g->val) = ___UNB2;
+  if (___ps != NULL)
+    {
+      /*
+       * If the variable is supplied by the module, mark it specially
+       * so that it won't be flagged as an undefined variable.
+       */
+
+      if (supply && ___GLOCELL(g->val) == ___UNB1)
+        ___GLOCELL(g->val) = ___UNB2;
+    }
 
   *glo = g;
 
@@ -470,13 +1085,16 @@ ___module_struct *module;)
        * Create global variables in reverse order so that global
        * variables bound to c-lambdas are created last.
        */
+
+      ___processor_state ___ps = ctx->ps;
+
       i = 0;
       while (glo_names[i] != 0)
         i++;
       while (i-- > 0)
         {
           ___glo_struct *glo = 0;
-          ___SCMOBJ e = make_global (glo_names[i], i<supcount, &glo);
+          ___SCMOBJ e = make_global (___ps, glo_names[i], i<supcount, &glo);
           if (e != ___FIX(___NO_ERR))
             return e;
           glotbl[i] = ___CAST(___FAKEWORD,glo);
@@ -672,11 +1290,6 @@ ___module_struct *module;)
 }
 
 
-___HIDDEN char module_prefix[] = ___MODULE_PREFIX;
-
-#define module_prefix_length (sizeof(module_prefix)-1)
-
-
 ___HIDDEN ___SCMOBJ setup_module_collect_undef_globals
    ___P((fem_context *ctx,
          ___module_struct *module),
@@ -685,9 +1298,8 @@ ___HIDDEN ___SCMOBJ setup_module_collect_undef_globals
 fem_context *ctx;
 ___module_struct *module;)
 {
-/* TODO: remove */
-  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(ctx->ps);/* TODO: remove and fix ___GLOCELL_IN_VM*/
-
+  ___processor_state ___ps = ctx->ps;
+  ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___ps);
   ___UTF_8STRING *glo_names = module->glo_names;
 
   if (glo_names != 0)
@@ -725,7 +1337,7 @@ ___module_struct *module;)
 
               if ((err = ___NONNULLUTF_8STRING_to_SCMOBJ
                            (NULL, /* allocate as permanent object */
-                            name+module_prefix_length,
+                            name,
                             &module_name,
                             -1))
                   != ___FIX(___NO_ERR))
@@ -767,29 +1379,8 @@ ___module_struct *module;)
       ___SCMOBJ err;
       ___SCMOBJ descr = module->moddescr;
 
-      /* TODO: obsolete code */
-      if (descr == ___FAL)
-        {
-          ___SCMOBJ mod_name;
-
-          descr = ___make_vector (NULL, 3, ___FAL);
-
-          if (___FIXNUMP(descr))
-            return descr;
-
-          if ((err = ___NONNULLUTF_8STRING_to_SCMOBJ
-                       (NULL, /* allocate as permanent object */
-                        module->name+1,
-                        &mod_name,
-                        -1))
-              != ___FIX(___NO_ERR))
-            return err;
-
-          ___FIELD(descr,0) = mod_name;
-          ___FIELD(descr,1) = *module->lp+___LS*___WS;
-        }
-
-      ___FIELD(descr,2) = ctx->flags;
+      if (ctx->flags != ___FAL) /* override compiler flags */
+        ___FIELD(descr,2) = ctx->flags;
 
       if ((err = ___NONNULLPOINTER_to_SCMOBJ
                    (NULL, /* allocate as permanent object */
@@ -842,14 +1433,13 @@ ___mod_or_lnk mol;)
 
 
 ___HIDDEN ___SCMOBJ setup_modules
-   ___P((___PSD
+   ___P((___processor_state ___ps,
          ___mod_or_lnk mol),
-        (___PSV
+        (___ps,
          mol)
-___PSDKR
+___processor_state ___ps;
 ___mod_or_lnk mol;)
 {
-  ___PSGET
   ___SCMOBJ result;
   ___SCMOBJ script_line;
   fem_context fem_ctx;
@@ -872,13 +1462,16 @@ ___mod_or_lnk mol;)
       != ___FIX(___NO_ERR))
     return result;
 
-  /* Collect undefined globals */
+  if (___ps != NULL)
+    {
+      /* Collect undefined globals */
 
-  if ((result = for_each_module (ctx,
-                                 mol,
-                                 setup_module_collect_undef_globals))
-      != ___FIX(___NO_ERR))
-    return result;
+      if ((result = for_each_module (ctx,
+                                     mol,
+                                     setup_module_collect_undef_globals))
+          != ___FIX(___NO_ERR))
+        return result;
+    }
 
   /* Create vector of module descriptors */
 
@@ -888,7 +1481,7 @@ ___mod_or_lnk mol;)
   ___FIELD(ctx->program_descr,0) = result;
 
   ctx->module_count = 0;
-  ctx->flags = ___FIX(0); /* preload flag */
+  ctx->flags = ___FAL; /* default to compiler flags */
 
   if ((result = for_each_module (ctx,
                                  mol,
@@ -932,7 +1525,7 @@ ___SCMOBJ modname;)
         result = ___FIX(___MODULE_ALREADY_LOADED_ERR);
       else
         {
-          result = setup_modules (___PSA(___PSTATE) mol);
+          result = setup_modules (___PSTATE, mol);
           mol->linkfile.version = -1; /* mark link file as 'setup' */
         }
     }
@@ -1287,6 +1880,15 @@ ___SCMOBJ str2;)
 #endif
 
 
+typedef union
+  {
+    ___U16 u16[4];
+    ___U32 u32[2];
+    ___U64 u64;
+    ___F64 f64;
+  } f64_parts;
+
+
 ___EXP_FUNC(double,___copysign)
    ___P((double x,
          double y),
@@ -1314,11 +1916,7 @@ double x;)
 
 #else
 
-  union
-    {
-      ___U16 u16[4];
-      ___F64 f64;
-    } y;
+  f64_parts y;
 
   y.f64 = x;
 
@@ -1340,12 +1938,7 @@ double x;)
 #else
 
   ___UM32 tmp;
-
-  union
-    {
-      ___U32 u32[2];
-      ___F64 f64;
-    } y;
+  f64_parts y;
 
   y.f64 = x;
 
@@ -1397,7 +1990,308 @@ double x;)
 }
 
 
-#ifndef ___GOOD_ATAN2
+#ifdef ___DEFINE_SCALBN
+
+___EXP_FUNC(double,___scalbn)
+   ___P((double x,
+         int n),
+        (x,
+         n)
+double x;
+int n;)
+{
+#ifdef ___HAVE_GOOD_SCALBN
+
+  return scalbn (x, n);
+
+#else
+
+  return ldexp (x, n);
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_ILOGB
+
+___EXP_FUNC(int,___ilogb)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_ILOGB
+
+  return ilogb (x);
+
+#else
+
+  if (___isfinite (x))
+    {
+      if (x == 0.0)
+        return INT_MIN;
+      else
+        {
+          int e;
+          frexp (x, &e);
+          return e-1;
+        }
+    }
+  else if (___isnan (x))
+    return INT_MIN; /* x == NaN */
+  else
+    return INT_MAX; /* x == +inf or x == -inf */
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_EXPM1
+
+___EXP_FUNC(double,___expm1)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_EXPM1
+
+  return expm1 (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return exp (x) - 1.0;
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return exp (x) - 1.0;
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_LOG1P
+
+___EXP_FUNC(double,___log1p)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_LOG1P
+
+  return log1p (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return log (x + 1.0);
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return log (x + 1.0);
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_SINH
+
+___EXP_FUNC(double,___sinh)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_SINH
+
+  return sinh (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return (exp (x) - exp (-x)) / 2.0;
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return (exp (x) - exp (-x)) / 2.0;
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_COSH
+
+___EXP_FUNC(double,___cosh)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_COSH
+
+  return cosh (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return (exp (x) + exp (-x)) / 2.0;
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return (exp (x) + exp (-x)) / 2.0;
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_TANH
+
+___EXP_FUNC(double,___tanh)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_TANH
+
+  return tanh (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  double t = exp (2.0*x);
+  return (t - 1.0) / (t + 1.0);
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  double t = exp (2.0*x);
+  return (t - 1.0) / (t + 1.0);
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_ASINH
+
+___EXP_FUNC(double,___asinh)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_ASINH
+
+  return asinh (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return log (x + sqrt (x*x + 1.0));
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return log (x + sqrt (x*x + 1.0));
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_ACOSH
+
+___EXP_FUNC(double,___acosh)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_ACOSH
+
+  return acosh (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return log (x + sqrt (x - 1.0) * sqrt (x + 1.0));
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return log (x + sqrt (x - 1.0) * sqrt (x + 1.0));
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_ATANH
+
+___EXP_FUNC(double,___atanh)
+   ___P((double x),
+        (x)
+double x;)
+{
+#ifdef ___HAVE_GOOD_ATANH
+
+  return atanh (x);
+
+#else
+
+#ifdef ___USE_NAIVE_MATH_ALGO
+
+  return (log (1.0 + x) - log (1.0 - x)) / 2.0;
+
+#else
+
+  /* TODO: replace with more accurate algorithm */
+  return (log (1.0 + x) - log (1.0 - x)) / 2.0;
+
+#endif
+
+#endif
+}
+
+#endif
+
+
+#ifdef ___DEFINE_ATAN2
 
 ___EXP_FUNC(double,___atan2)
    ___P((double y,
@@ -1407,6 +2301,12 @@ ___EXP_FUNC(double,___atan2)
 double y;
 double x;)
 {
+#ifdef ___HAVE_GOOD_ATAN2
+
+  return atan2 (y, x);
+
+#else
+
   if (___isnan (x))
     return x;
   else if (___isnan (y))
@@ -1432,12 +2332,14 @@ double x;)
     return atan2 (y, x);
   else
     return ___copysign (x/y, x*y); /* returns NAN with appropriate sign */
+
+#endif
 }
 
 #endif
 
 
-#ifndef ___GOOD_POW
+#ifdef ___DEFINE_POW
 
 ___EXP_FUNC(double,___pow)
    ___P((double x,
@@ -1447,6 +2349,12 @@ ___EXP_FUNC(double,___pow)
 double x;
 double y;)
 {
+#ifdef ___HAVE_GOOD_POW
+
+  return pow (x, y);
+
+#else
+
   if (y == 0.0)
     return 1.0;
   else if (___isnan (x))
@@ -1455,6 +2363,8 @@ double y;)
     return y;
   else
     return pow (x, y);
+
+#endif
 }
 
 #endif
@@ -1509,9 +2419,6 @@ ___mod_or_lnk mol;)
       ___FAKEWORD *p2 = mol->linkfile.sym_list;
       ___FAKEWORD *p3 = mol->linkfile.key_list;
 
-/* TODO: remove */
-      ___virtual_machine_state ___vms = ___VMSTATE_FROM_PSTATE(___PSTATE);/* TODO: remove and fix ___GLOCELL_IN_VM*/
-
       while (p1->mol != 0)
         {
           init_symkey_glo2 (p1->mol);
@@ -1532,12 +2439,9 @@ ___mod_or_lnk mol;)
           glo = ___CAST(___glo_struct*,sym_ptr[1+___SYMBOL_GLOBAL]);
 
 #ifndef ___SINGLE_VM
-          {
-            ___SCMOBJ tmp = glo->val;
-            glo->val = ___GSTATE->mem.nb_glo_vars;
-            ___GLOCELL_IN_VM(___vms,glo->val) = tmp;
-            ___GSTATE->mem.nb_glo_vars++;
-          }
+
+          glo->val = ___GSTATE->mem.nb_glo_vars++;
+
 #endif
 
           glo->next = 0;
@@ -1617,6 +2521,37 @@ ___processor_state ___ps;)
       CALL_STEP;
       CALL_STEP;
       CALL_STEP;
+    }
+}
+
+
+___EXP_FUNC(void,___throw_error)
+   ___P((___PSD
+         ___SCMOBJ err),
+        (___PSV
+         err)
+___PSDKR
+___SCMOBJ err;)
+{
+  ___PSGET
+
+  ___THROW (err);
+}
+
+
+___EXP_FUNC(void,___propagate_error)
+   ___P((___PSD
+         ___SCMOBJ err),
+        (___PSV
+         err)
+___PSDKR
+___SCMOBJ err;)
+{
+  ___PSGET
+
+  if (err != ___FIX(___NO_ERR))
+    {
+      ___throw_error (___PSP err);
     }
 }
 
@@ -1705,7 +2640,7 @@ ___SCMOBJ stack_marker;)
 
   if (___err != ___FIX(___UNWIND_C_STACK) ||
       stack_marker != ___ps->fp[___FRAME_SPACE(2)-2]) /*need more unwinding?*/
-    ___THROW(___err);
+    ___throw_error (___PSP ___err);
 
   ___ps->fp += ___FRAME_SPACE(2);
   ___PSR0 = ___ps->fp[-1];
@@ -1714,19 +2649,72 @@ ___SCMOBJ stack_marker;)
 }
 
 
-___EXP_FUNC(void,___propagate_error)
+___EXP_FUNC(___SCMOBJ,___run)
    ___P((___PSD
-         ___SCMOBJ err),
+         ___SCMOBJ thunk),
         (___PSV
-         err)
+         thunk)
 ___PSDKR
-___SCMOBJ err;)
+___SCMOBJ thunk;)
 {
   ___PSGET
+  ___SCMOBJ ___err;
+  ___SCMOBJ marker;
 
-  if (err != ___FIX(___NO_ERR))
+  ___ps->r[0] = ___GSTATE->handler_break;
+
+  ___BEGIN_TRY
+
+  if ((___err = ___make_sfun_stack_marker (___ps, &marker, thunk))
+      == ___FIX(___NO_ERR))
     {
-      ___THROW (err);
+      ___err = ___call (___PSP 0, ___FIELD(marker,0), marker);
+      ___kill_sfun_stack_marker (marker);
+    }
+
+  ___END_TRY
+
+  return ___err;
+}
+
+
+#ifdef ___DEBUG
+
+
+void ___print_source_location
+   ___P((___source_location *loc),
+        (loc)
+___source_location *loc;)
+{
+  ___printf ("%s:%d:", loc->file, loc->line);
+}
+
+
+#endif
+
+
+#ifdef ___DEBUG_CTRL_FLOW_HISTORY
+
+
+void ___print_ctrl_flow_history
+   ___P((___processor_state ___ps),
+        (___ps)
+___processor_state ___ps;)
+{
+  int i;
+
+  ___printf ("Most recent control-flow history:\n");
+
+  for (i=0; i<___CTRL_FLOW_HISTORY_LENGTH; i++)
+    {
+      ___source_location *loc =
+        &___ps->ctrl_flow_history[(___ps->ctrl_flow_history_index+i) %
+                                  ___CTRL_FLOW_HISTORY_LENGTH];
+      if (loc->line > 0)
+        {
+          ___print_source_location (loc);
+          ___printf ("\n");
+        }
     }
 }
 
@@ -1736,20 +2724,30 @@ ___SCMOBJ err;)
 ___EXP_FUNC(void,___register_host_entry)
    ___P((___PSD
          ___WORD start,
-         char *module_name),
+         char *module_name,
+         char *file,
+         int line),
         (___PSV
          start,
-         module_name)
+         module_name,
+         file,
+         line)
 ___PSDKR
 ___WORD start;
-char *module_name;)
+char *module_name;
+char *file;
+int line;)
 {
-#ifdef ___DEBUG
-
   ___PSGET
   ___SCMOBJ sym;
+  ___source_location loc;
 
-  ___printf ("*** Entering ");
+  loc.file = file;
+  loc.line = line;
+
+  ___print_source_location (&loc);
+
+  ___printf (" ");
 
   if ((sym = ___find_global_var_bound_to (___ps->pc)) != ___NUL ||
       (sym = ___find_global_var_bound_to (start)) != ___NUL)
@@ -1771,8 +2769,10 @@ char *module_name;)
                ___CAST(___label_struct*,___ps->pc) -
                ___CAST(___label_struct*,start));
 
-#endif
 }
+
+#endif
+
 
 #endif
 
@@ -1782,6 +2782,132 @@ char *module_name;)
 /*
  * Setup program and execute it.
  */
+
+
+___EXP_FUNC(void,___cleanup_pstate)
+   ___P((___processor_state ___ps),
+        (___ps)
+___processor_state ___ps;)
+{
+}
+
+
+___EXP_FUNC(___SCMOBJ,___setup_pstate)
+   ___P((___processor_state ___ps,
+         ___virtual_machine_state ___vms),
+        (___ps,
+         ___vms)
+___processor_state ___ps;
+___virtual_machine_state ___vms;)
+{
+  ___SCMOBJ err;
+  int i;
+
+  /*
+   * Setup processor's activity log.
+   */
+
+  if ((err = ___setup_actlog_pstate (___ps)) != ___FIX(___NO_ERR))
+    return err;
+
+  /*
+   * Setup processor's memory management.
+   */
+
+  if ((err = ___setup_mem_pstate (___ps, ___vms)) != ___FIX(___NO_ERR))
+    return err;
+
+  ___ACTLOG_PS(idle,black);
+  ___ACTLOG_PS(run,green);
+
+  /*
+   * Setup green thread structures.
+   */
+
+  ___ps->current_thread = ___FAL;
+  ___ps->run_queue = ___FAL;
+
+  /*
+   * Setup registers.
+   */
+
+  for (i=0; i<___NB_GVM_REGS; i++)
+    ___ps->r[i] = ___VOID;
+
+  /*
+   * Setup exception handling.
+   */
+
+#ifdef ___USE_SETJMP
+
+  ___ps->catcher = 0;
+
+#endif
+
+  /*
+   * Setup interrupt system of this processor.
+   */
+
+  setup_interrupts_pstate (___ps);
+
+  /*
+   * Setup synchronous operation system.
+   */
+
+#ifndef ___SINGLE_THREADED_VMS
+
+  ___ps->sync_id0 = SYNC_WAIT;
+  ___ps->sync_id1 = SYNC_WAIT;
+  ___ps->sync_id2 = SYNC_WAIT;
+
+#endif
+
+  return ___FIX(___NO_ERR);
+}
+
+
+___EXP_FUNC(void,___cleanup_vmstate)
+   ___P((___virtual_machine_state ___vms),
+        (___vms)
+___virtual_machine_state ___vms;)
+{
+  ___cleanup_mem_vmstate (___vms);
+  ___cleanup_actlog_vmstate (___vms);
+}
+
+
+___EXP_FUNC(___SCMOBJ,___setup_vmstate)
+   ___P((___virtual_machine_state ___vms),
+        (___vms)
+___virtual_machine_state ___vms;)
+{
+  ___SCMOBJ err;
+
+  /*
+   * Virtual machine starts off with a single processor.
+   */
+
+  ___vms->nb_processors = 1;
+
+  /*
+   * Setup virtual machine's activity log.
+   */
+
+  if ((err = ___setup_actlog_vmstate (___vms)) != ___FIX(___NO_ERR))
+    return err;
+
+  /*
+   * Setup virtual machine's memory management.
+   */
+
+  ___setup_mem_vmstate (___vms);
+
+  /*
+   * Setup the main processor of the virtual machine.
+   */
+
+  return ___setup_pstate (&___vms->pstate[0], ___vms);
+}
 
 
 ___EXP_FUNC(void,___cleanup) ___PVOID
@@ -1794,6 +2920,29 @@ ___EXP_FUNC(void,___cleanup) ___PVOID
     return;
 
   ___GSTATE->setup_state = 2;
+
+#ifdef ___SINGLE_VM
+
+  ___cleanup_vmstate (&___GSTATE->vmstate0);
+
+#else
+
+  ___MUTEX_LOCK(___GSTATE->vm_list_mut);
+
+  {
+    ___virtual_machine_state ___vms = &___GSTATE->vmstate0;
+
+    do
+      {
+        ___vms = ___vms->prev;
+        ___cleanup_vmstate (___vms);
+      }
+    while (___vms != &___GSTATE->vmstate0);
+  }
+
+  ___MUTEX_DESTROY(___GSTATE->vm_list_mut);
+
+#endif
 
   ___cleanup_mem ();
   ___cleanup_os ();
@@ -1828,22 +2977,14 @@ ___setup_params_struct *setup_params;)
   setup_params->file_settings     = 0;
   setup_params->terminal_settings = 0;
   setup_params->stdio_settings    = 0;
-  setup_params->gambcdir          = 0;
-  setup_params->gambcdir_map      = 0;
+  setup_params->gambitdir         = 0;
+  setup_params->gambitdir_map     = 0;
   setup_params->remote_dbg_addr   = 0;
   setup_params->rpc_server_addr   = 0;
   setup_params->linker            = 0;
   setup_params->reset_argv0[0]    = 0;
   setup_params->reset_argv[0]     = setup_params->reset_argv0;
   setup_params->reset_argv[1]     = 0;
-  setup_params->dummy8            = 0;
-  setup_params->dummy7            = 0;
-  setup_params->dummy6            = 0;
-  setup_params->dummy5            = 0;
-  setup_params->dummy4            = 0;
-  setup_params->dummy3            = 0;
-  setup_params->dummy2            = 0;
-  setup_params->dummy1            = 0;
 }
 
 
@@ -1907,12 +3048,12 @@ int level;)
 }
 
 
-___EXP_FUNC(void,___set_gambcdir)
-   ___P((___UCS_2STRING gambcdir),
-        (gambcdir)
-___UCS_2STRING gambcdir;)
+___EXP_FUNC(void,___set_gambitdir)
+   ___P((___UCS_2STRING gambitdir),
+        (gambitdir)
+___UCS_2STRING gambitdir;)
 {
-  ___GSTATE->setup_params.gambcdir = gambcdir;
+  ___GSTATE->setup_params.gambitdir = gambitdir;
 }
 
 
@@ -1948,6 +3089,8 @@ ___HIDDEN ___SCMOBJ setup_command_line_arguments ___PVOID
     argv = ___GSTATE->setup_params.reset_argv;
 
 #define ___COMMAND_LINE_CE_SELECT(ISO_8859_1,UTF_8,UCS_2,UCS_4,wchar,native) UCS_2
+
+  CANONICALIZE_PATH(___UCS_2STRING, argv[0]);
 
   return ___NONNULLSTRINGLIST_to_SCMOBJ
            (NULL, /* allocate as permanent object */
@@ -1999,6 +3142,28 @@ ___HIDDEN void setup_kernel_handlers ___PVOID
 }
 
 
+___HIDDEN ___SCMOBJ setup_os_and_mem ___PVOID
+{
+  ___SCMOBJ err;
+
+  /*
+   * Setup the operating system module.
+   */
+
+  if ((err = ___setup_os ()) == ___FIX(___NO_ERR))
+    {
+      /*
+       * Setup memory management.
+       */
+
+      if ((err = ___setup_mem ()) != ___FIX(___NO_ERR))
+        ___cleanup_os ();
+    }
+
+  return err;
+}
+
+
 ___HIDDEN void setup_dynamic_linking ___PVOID
 {
   /*
@@ -2006,33 +3171,54 @@ ___HIDDEN void setup_dynamic_linking ___PVOID
    * support the dynamic loading of files that import functions.
    */
 
-  ___GSTATE->dummy8 = 0;
-  ___GSTATE->dummy7 = 0;
-  ___GSTATE->dummy6 = 0;
-  ___GSTATE->dummy5 = 0;
-  ___GSTATE->dummy4 = 0;
-  ___GSTATE->dummy3 = 0;
-  ___GSTATE->dummy2 = 0;
-  ___GSTATE->dummy1 = 0;
-
 #ifndef ___CAN_IMPORT_CLIB_DYNAMICALLY
 
   ___GSTATE->fabs  = fabs;
   ___GSTATE->floor = floor;
   ___GSTATE->ceil  = ceil;
+#ifdef ___DEFINE_SCALBN
+  ___GSTATE->scalbn= ___scalbn;
+#endif
+#ifdef ___DEFINE_ILOGB
+  ___GSTATE->ilogb = ___ilogb;
+#endif
   ___GSTATE->exp   = exp;
+#ifdef ___DEFINE_EXPM1
+  ___GSTATE->expm1 = ___expm1;
+#endif
   ___GSTATE->log   = log;
+#ifdef ___DEFINE_LOG1P
+  ___GSTATE->log1p = ___log1p;
+#endif
   ___GSTATE->sin   = sin;
   ___GSTATE->cos   = cos;
   ___GSTATE->tan   = tan;
   ___GSTATE->asin  = asin;
   ___GSTATE->acos  = acos;
   ___GSTATE->atan  = atan;
-#ifdef ___GOOD_ATAN2
-  ___GSTATE->atan2 = atan2;
+#ifdef ___DEFINE_SINH
+  ___GSTATE->sinh  = ___sinh;
 #endif
-#ifdef ___GOOD_POW
-  ___GSTATE->pow = pow;
+#ifdef ___DEFINE_COSH
+  ___GSTATE->cosh  = ___cosh;
+#endif
+#ifdef ___DEFINE_TANH
+  ___GSTATE->tanh  = ___tanh;
+#endif
+#ifdef ___DEFINE_ASINH
+  ___GSTATE->asinh = ___asinh;
+#endif
+#ifdef ___DEFINE_ACOSH
+  ___GSTATE->acosh = ___acosh;
+#endif
+#ifdef ___DEFINE_ATANH
+  ___GSTATE->atanh = ___atanh;
+#endif
+#ifdef ___DEFINE_ATAN2
+  ___GSTATE->atan2 = ___atan2;
+#endif
+#ifdef ___DEFINE_POW
+  ___GSTATE->pow = ___pow;
 #endif
   ___GSTATE->sqrt  = sqrt;
 
@@ -2090,12 +3276,62 @@ ___HIDDEN void setup_dynamic_linking ___PVOID
   ___GSTATE->___round
     = ___round;
 
-#ifndef ___GOOD_ATAN2
+#ifdef ___DEFINE_SCALBN
+  ___GSTATE->___scalbn
+    = ___scalbn;
+#endif
+
+#ifdef ___DEFINE_ILOGB
+  ___GSTATE->___ilogb
+    = ___ilogb;
+#endif
+
+#ifdef ___DEFINE_EXPM1
+  ___GSTATE->___expm1
+    = ___expm1;
+#endif
+
+#ifdef ___DEFINE_LOG1P
+  ___GSTATE->___log1p
+    = ___log1p;
+#endif
+
+#ifdef ___DEFINE_SINH
+  ___GSTATE->___sinh
+    = ___sinh;
+#endif
+
+#ifdef ___DEFINE_COSH
+  ___GSTATE->___cosh
+    = ___cosh;
+#endif
+
+#ifdef ___DEFINE_TANH
+  ___GSTATE->___tanh
+    = ___tanh;
+#endif
+
+#ifdef ___DEFINE_ASINH
+  ___GSTATE->___asinh
+    = ___asinh;
+#endif
+
+#ifdef ___DEFINE_ACOSH
+  ___GSTATE->___acosh
+    = ___acosh;
+#endif
+
+#ifdef ___DEFINE_ATANH
+  ___GSTATE->___atanh
+    = ___atanh;
+#endif
+
+#ifdef ___DEFINE_ATAN2
   ___GSTATE->___atan2
     = ___atan2;
 #endif
 
-#ifndef ___GOOD_POW
+#ifdef ___DEFINE_POW
   ___GSTATE->___pow
     = ___pow;
 #endif
@@ -2604,6 +3840,24 @@ ___HIDDEN void setup_dynamic_linking ___PVOID
   ___GSTATE->___gc_hash_table_rehash
     = ___gc_hash_table_rehash;
 
+  ___GSTATE->___cleanup
+    = ___cleanup;
+
+  ___GSTATE->___cleanup_and_exit_process
+    = ___cleanup_and_exit_process;
+
+  ___GSTATE->___setup_vmstate
+    = ___setup_vmstate;
+
+  ___GSTATE->___cleanup_vmstate
+    = ___cleanup_vmstate;
+
+  ___GSTATE->___setup_pstate
+    = ___setup_pstate;
+
+  ___GSTATE->___cleanup_pstate
+    = ___cleanup_pstate;
+
   ___GSTATE->___get_min_heap
     = ___get_min_heap;
 
@@ -2634,21 +3888,33 @@ ___HIDDEN void setup_dynamic_linking ___PVOID
   ___GSTATE->___get_program_startup_info
     = ___get_program_startup_info;
 
-  ___GSTATE->___cleanup
-    = ___cleanup;
-
-  ___GSTATE->___cleanup_and_exit_process
-    = ___cleanup_and_exit_process;
-
   ___GSTATE->___call
     = ___call;
+
+  ___GSTATE->___throw_error
+    = ___throw_error;
 
   ___GSTATE->___propagate_error
     = ___propagate_error;
 
 #ifdef ___DEBUG_HOST_CHANGES
+
   ___GSTATE->___register_host_entry
     = ___register_host_entry;
+
+#endif
+
+#ifdef ___ACTIVITY_LOG
+
+  ___GSTATE->___actlog_add_pstate
+    = ___actlog_add_pstate;
+
+  ___GSTATE->___actlog_begin_pstate
+    = ___actlog_begin_pstate;
+
+  ___GSTATE->___actlog_end_pstate
+    = ___actlog_end_pstate;
+
 #endif
 
   ___GSTATE->___raise_interrupt_pstate
@@ -2687,10 +3953,16 @@ ___HIDDEN void setup_dynamic_linking ___PVOID
   ___GSTATE->___free_mem_code
     = ___free_mem_code;
 
-#ifdef ___USE_emulated_compare_and_swap_word
+#ifdef ___USE_emulated_sync
 
   ___GSTATE->___emulated_compare_and_swap_word
     = ___emulated_compare_and_swap_word;
+
+  ___GSTATE->___emulated_fetch_and_add_word
+    = ___emulated_fetch_and_add_word;
+
+  ___GSTATE->___emulated_fetch_and_clear_word
+    = ___emulated_fetch_and_clear_word;
 
 #endif
 
@@ -2714,121 +3986,16 @@ ___HIDDEN void setup_dynamic_linking ___PVOID
 }
 
 
-___HIDDEN void setup_pstate
-   ___P((___processor_state ___ps),
-        (___ps)
-___processor_state ___ps;)
-{
-  int i;
-
-  /*
-   * Setup multithreading structures.
-   */
-
-  ___ps->current_thread = ___FAL;
-  ___ps->run_queue = ___FAL;
-
-  /*
-   * Setup registers.
-   */
-
-  for (i=0; i<___NB_GVM_REGS; i++)
-    ___ps->r[i] = ___VOID;
-
-  /*
-   * Setup exception handling.
-   */
-
-#ifdef ___USE_SETJMP
-
-  ___ps->catcher = 0;
-
-#endif
-
-  /*
-   * Setup interrupt system of this processor.
-   */
-
-  ___disable_interrupts_pstate (___PSPNC); /* disable all interrupts */
-
-  ___ps->intr_mask = ___FIX(0); /* None of the interrupts are ignored */
-
-  for (i=0; i<___NB_INTRS; i++) /* None of the interrupts are requested */
-    ___ps->intr_flag[i] = ___FIX(0);
-
-  ___begin_interrupt_service_pstate (___PSPNC);
-  ___end_interrupt_service_pstate (___PSP 0);
-}
-
-
-/* TODO: really need to EXP_FUNC ___setup_vm and ___cleanup_vm? */
-
-___EXP_FUNC(void,___setup_pstate)
-   ___P((___processor_state ___ps),
-        (___ps)
-___processor_state ___ps;)
-{
-}
-
-
-___EXP_FUNC(void,___cleanup_pstate)
-   ___P((___processor_state ___ps),
-        (___ps)
-___processor_state ___ps;)
-{
-}
-
-
-___EXP_FUNC(void,___setup_vmstate)
-   ___P((___virtual_machine_state ___vms),
-        (___vms)
-___virtual_machine_state ___vms;)
-{
-}
-
-
-___EXP_FUNC(void,___cleanup_vmstate)
-   ___P((___virtual_machine_state ___vms),
-        (___vms)
-___virtual_machine_state ___vms;)
-{
-}
-
-
-___HIDDEN ___SCMOBJ setup_os_and_mem ___PVOID
-{
-  ___SCMOBJ err;
-
-  /*
-   * Setup the operating system module.
-   */
-
-  if ((err = ___setup_os ()) == ___FIX(___NO_ERR))
-    {
-      /*
-       * Setup memory management.
-       */
-
-      if ((err = ___setup_mem ()) != ___FIX(___NO_ERR))
-        ___cleanup_os ();
-    }
-
-  return err;
-}
-
-
 ___EXP_FUNC(___SCMOBJ,___setup)
    ___P((___setup_params_struct *setup_params),
         (setup_params)
 ___setup_params_struct *setup_params;)
 {
+  ___SCMOBJ err;
   ___virtual_machine_state ___vms = &___GSTATE->vmstate0;
-  ___processor_state ___ps = &___vms->pstate0;
-  ___SCMOBJ ___err;
+  ___processor_state ___ps = &___vms->pstate[0];
+  ___SCMOBJ module_descrs;
   ___mod_or_lnk mol;
-  ___SCMOBJ marker;
-
-  ___SET_PSTATE(___ps);
 
   /*
    * Check for valid setup_params structure.
@@ -2850,12 +4017,25 @@ ___setup_params_struct *setup_params;)
 
   ___GSTATE->setup_state = 2;
 
+   /*
+    * Setup virtual machine circular list.
+    */
+
+#ifndef ___SINGLE_VM
+
+  ___MUTEX_INIT(___GSTATE->vm_list_mut);
+
+  ___vms->prev = ___vms;
+  ___vms->next = ___vms;
+
+#endif
+
   /*
    * Setup the operating system and memory management modules.
    */
 
-  if ((___err = setup_os_and_mem ()) != ___FIX(___NO_ERR))
-    return ___err;
+  if ((err = setup_os_and_mem ()) != ___FIX(___NO_ERR))
+    return err;
 
   /*
    * Allow cleanup.
@@ -2883,78 +4063,90 @@ ___setup_params_struct *setup_params;)
   init_symkey_glo1 (mol);
   init_symkey_glo2 (mol);
 
-  /*
-   * Setup each module.
-   */
-
-  ___GSTATE->program_descr = setup_modules (___PSP mol);
-
-  if (___FIXNUMP(___GSTATE->program_descr))
+  do
     {
-      ___cleanup ();
-      return ___GSTATE->program_descr;
-    }
 
-  {
-    /*
-     * By convention, the main module is the last one in the module
-     * descriptors.
-     */
+      /*
+       * Setup each module.
+       */
 
-    ___SCMOBJ module_descrs = ___FIELD(___GSTATE->program_descr,0);
+      err = setup_modules (NULL, mol);
 
-    ___vms->main_module_id =
-      ___FIELD(___FIELD(module_descrs,
-                        ___INT(___VECTORLENGTH(module_descrs))-1),
-               0);
-  }
+      if (___FIXNUMP(err))
+        break;
+
+      ___GSTATE->program_descr = err;
+
+      /*
+       * Setup kernel handlers.
+       */
+
+      setup_kernel_handlers ();
+
+      /*
+       * Create list of command line arguments (for ##command-line).
+       */
+
+      if ((err = setup_command_line_arguments ())
+          != ___FIX(___NO_ERR))
+        break;
+
+      /*
+       * Setup the main virtual machine.
+       */
+
+      if ((err = ___setup_vmstate (___vms))
+          != ___FIX(___NO_ERR))
+        break;
+
+#ifndef ___SINGLE_THREADED_VMS
+
+      /*
+       * Associate the current OS thread with the processor state
+       * it is running.
+       */
+
+      if ((err = ___thread_init_from_self (&___ps->os_thread))
+          != ___FIX(___NO_ERR))
+        break;
+
+#endif
+
+      /*
+       * Setup current OS thread so that it can find the processor state
+       * it is running.
+       */
+
+      ___SET_PSTATE(___ps);
+
+      /*
+       * By convention, the main module is the last one in the module
+       * descriptors.
+       */
+
+      module_descrs = ___FIELD(___GSTATE->program_descr,0);
+
+      ___vms->main_module_id =
+        ___FIELD(___FIELD(module_descrs,
+                          ___INT(___VECTORLENGTH(module_descrs))-1),
+                 0);
+
+      /*
+       * Start virtual machine execution by loading _kernel module.
+       */
+
+      err = ___run(___PSP
+                   ___FIELD(___FIELD(___FIELD(___GSTATE->program_descr,0),0),1));
+    } while (0);
 
   /*
-   * Setup kernel handlers.
+   * Cleanup if there are any errors.
    */
 
-  setup_kernel_handlers ();
-
-  /*
-   * Create list of command line arguments (accessible through ##command-line).
-   */
-
-  if ((___err = setup_command_line_arguments ()) != ___FIX(___NO_ERR))
-    {
-      ___cleanup;
-      return ___err;
-    }
-
-  /*
-   * Setup processor state.
-   */
-
-  setup_pstate (___ps);
-
-  /*
-   * Start program execution by loading _kernel module.
-   */
-
-  ___ps->r[0] = ___GSTATE->handler_break;
-
-  ___BEGIN_TRY
-
-  if ((___err = ___make_sfun_stack_marker
-                  (___ps,
-                   &marker,
-                   ___FIELD(___FIELD(___FIELD(___GSTATE->program_descr,0),0),1)))
-      == ___FIX(___NO_ERR))
-    {
-      ___err = ___call (___PSP 0, ___FIELD(marker,0), marker);
-      ___kill_sfun_stack_marker (marker);
-    }
-
-  ___END_TRY
-
-  if (___err != ___FIX(___NO_ERR))
+  if (err != ___FIX(___NO_ERR))
     ___cleanup ();
 
-  return ___err;
+  return err;
 }
 
 

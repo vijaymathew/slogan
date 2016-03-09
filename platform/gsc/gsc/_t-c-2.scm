@@ -2,7 +2,7 @@
 
 ;;; File: "_t-c-2.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 (include "fixnum.scm")
 
@@ -1121,7 +1121,7 @@
                     (let ((loc (closure-parms-loc parm))
                           (opnds (closure-parms-opnds parm)))
                       (targ-emit
-                        (targ-loc loc (list "ALLOC_CLO" (length opnds))))))
+                        (targ-loc loc (list "ALLOC_CLO" (targ-c-unsigned-long (length opnds)))))))
                   parms))))
 
   (close (reverse parms) sn)
@@ -1280,7 +1280,7 @@
             (begin
               (set! cases-other (append cases-char cases-other))
               (set! cases-char '())))
-          
+
           (gen cases-other
                "BEGIN_SWITCH"
                "SWITCH_CASE_GOTO"
@@ -2659,7 +2659,7 @@
              (let* ((rev-elements (reverse (map targ-opnd opnds)))
                     (n (length rev-elements)))
                (targ-emit
-                 (list "BEGIN_ALLOC_LIST" n (car rev-elements)))
+                 (list "BEGIN_ALLOC_LIST" (targ-c-unsigned-long n) (car rev-elements)))
                (for-each-index (lambda (elem i)
                                  (targ-emit
                                    (list "ADD_LIST_ELEM" (+ i 1) elem)))
@@ -2692,6 +2692,46 @@
     #f
     #f
     (targ-apply-simp-generator #f #f "MAKEPROMISE")))
+
+(define (targ-apply-make-continuation)
+  (targ-apply-alloc
+    (lambda (n) targ-continuation-space)
+    #t
+    #f
+    #f
+    (targ-apply-simp-generator #f #f "MAKECONTINUATION")))
+
+(define (targ-apply-ratnum-make)
+  (targ-apply-alloc
+    (lambda (n) targ-ratnum-space)
+    #t
+    #f
+    #f
+    (targ-apply-simp-generator #f #f "RATNUMMAKE")))
+
+(define (targ-apply-cpxnum-make)
+  (targ-apply-alloc
+    (lambda (n) targ-cpxnum-space)
+    #t
+    #f
+    #f
+    (targ-apply-simp-generator #f #f "CPXNUMMAKE")))
+
+(define (targ-apply-make-symbol)
+  (targ-apply-alloc
+    (lambda (n) targ-symbol-space)
+    #t
+    #f
+    #f
+    (targ-apply-simp-generator #f #f "MAKESYMBOL")))
+
+(define (targ-apply-make-keyword)
+  (targ-apply-alloc
+    (lambda (n) targ-keyword-space)
+    #t
+    #f
+    #f
+    (targ-apply-simp-generator #f #f "MAKEKEYWORD")))
 
 (define (targ-apply-vector-s kind)
   (targ-apply-vector #t kind))
@@ -2804,7 +2844,7 @@
             (let* ((flo? (or (eq? kind 'f32vector) (eq? kind 'f64vector)))
                    (elements (map (if flo? targ-opnd-flo targ-opnd) opnds)))
               (targ-emit
-                (list begin-allocator-name n))
+                (list begin-allocator-name (targ-c-unsigned-long n)))
               (for-each-index (lambda (elem i)
                                 (targ-emit
                                   (list add-element i elem)))
@@ -3177,6 +3217,8 @@
 (targ-op "##not"              (targ-ifjump-simp-s #f "FALSEP"))
 (targ-op "##boolean?"         (targ-ifjump-simp-s #f "BOOLEANP"))
 (targ-op "##null?"            (targ-ifjump-simp-s #f "NULLP"))
+(targ-op "##false-or-null?"   (targ-ifjump-simp-s #f "FALSEORNULLP"))
+(targ-op "##false-or-void?"   (targ-ifjump-simp-s #f "FALSEORVOIDP"))
 (targ-op "##unbound?"         (targ-ifjump-simp-s #f "UNBOUNDP"))
 (targ-op "##eq?"              (targ-ifjump-simp-s #f "EQP"))
 (targ-op "##eof-object?"      (targ-ifjump-simp-s #f "EOFP"))
@@ -3240,101 +3282,6 @@
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-(targ-op "##fixnum.max"       (targ-apply-fold-u #f #f       "FIXPOS" "FIXMAX"))
-(targ-op "##fixnum.min"       (targ-apply-fold-u #f #f       "FIXPOS" "FIXMIN"))
-
-(targ-op "##fixnum.wrap+"     (targ-apply-fold-u #f "FIX_0"  "FIXPOS" "FIXADD"))
-(targ-op "##fixnum.+"         (targ-apply-fold-u #f "FIX_0"  "FIXPOS" "FIXADD"))
-(targ-op "##fixnum.+?"        (targ-apply-fold-u #f "FIX_0"  #f       "FIXADDP"))
-(targ-op "##fixnum.wrap*"     (targ-apply-fold-u #f "FIX_1"  "FIXPOS" "FIXMUL"))
-(targ-op "##fixnum.*"         (targ-apply-fold-u #f "FIX_1"  "FIXPOS" "FIXMUL"))
-(targ-op "##fixnum.*?"        (targ-apply-fold-u #f "FIX_1"  #f       "FIXMULP"))
-(targ-op "##fixnum.wrap-"     (targ-apply-fold-u #f #f       "FIXNEG" "FIXSUB"))
-(targ-op "##fixnum.-"         (targ-apply-fold-u #f #f       "FIXNEG" "FIXSUB"))
-(targ-op "##fixnum.-?"        (targ-apply-fold-u #f #f       "FIXNEGP""FIXSUBP"))
-(targ-op "##fixnum.wrapquotient"(targ-apply-fold-u #f #f       #f       "FIXQUO"))
-(targ-op "##fixnum.quotient"  (targ-apply-fold-u #f #f       #f       "FIXQUO"))
-(targ-op "##fixnum.remainder" (targ-apply-fold-u #f #f       #f       "FIXREM"))
-(targ-op "##fixnum.modulo"    (targ-apply-fold-u #f #f       #f       "FIXMOD"))
-(targ-op "##fixnum.bitwise-ior"(targ-apply-fold-u #f "FIX_0"  "FIXPOS" "FIXIOR"))
-(targ-op "##fixnum.bitwise-xor"(targ-apply-fold-u #f "FIX_0"  "FIXPOS" "FIXXOR"))
-(targ-op "##fixnum.bitwise-and"(targ-apply-fold-u #f "FIX_M1" "FIXPOS" "FIXAND"))
-(targ-op "##fixnum.bitwise-not"(targ-apply-simp-u #f #f #f "FIXNOT"))
-(targ-op "##fixnum.wraparithmetic-shift"     (targ-apply-simp-u #f #f #f "FIXASH"))
-(targ-op "##fixnum.arithmetic-shift"         (targ-apply-simp-u #f #f #f "FIXASH"))
-(targ-op "##fixnum.arithmetic-shift?"        (targ-apply-simp-u #f #f #f "FIXASHP"))
-(targ-op "##fixnum.wraparithmetic-shift-left"(targ-apply-simp-u #f #f #f "FIXASHL"))
-(targ-op "##fixnum.arithmetic-shift-left"    (targ-apply-simp-u #f #f #f "FIXASHL"))
-(targ-op "##fixnum.arithmetic-shift-left?"   (targ-apply-simp-u #f #f #f "FIXASHLP"))
-(targ-op "##fixnum.arithmetic-shift-right"   (targ-apply-simp-u #f #f #f "FIXASHR"))
-(targ-op "##fixnum.arithmetic-shift-right?"  (targ-apply-simp-u #f #f #f "FIXASHRP"))
-(targ-op "##fixnum.wraplogical-shift-right"  (targ-apply-simp-u #f #f #f "FIXLSHR"))
-(targ-op "##fixnum.wraplogical-shift-right?" (targ-apply-simp-u #f #f #f "FIXLSHRP"))
-(targ-op "##fixnum.wrapabs"    (targ-apply-simp-u #f #f #f "FIXABS"))
-(targ-op "##fixnum.abs"        (targ-apply-simp-u #f #f #f "FIXABS"))
-(targ-op "##fixnum.abs?"       (targ-apply-simp-u #f #f #f "FIXABSP"))
-
-(targ-op "##fixnum.zero?"     (targ-ifjump-simp-u #f "FIXZEROP"))
-(targ-op "##fixnum.positive?" (targ-ifjump-simp-u #f "FIXPOSITIVEP"))
-(targ-op "##fixnum.negative?" (targ-ifjump-simp-u #f "FIXNEGATIVEP"))
-(targ-op "##fixnum.odd?"      (targ-ifjump-simp-u #f "FIXODDP"))
-(targ-op "##fixnum.even?"     (targ-ifjump-simp-u #f "FIXEVENP"))
-(targ-op "##fixnum.="         (targ-ifjump-fold-u #f "FIXEQ"))
-(targ-op "##fixnum.<"         (targ-ifjump-fold-u #f "FIXLT"))
-(targ-op "##fixnum.>"         (targ-ifjump-fold-u #f "FIXGT"))
-(targ-op "##fixnum.<="        (targ-ifjump-fold-u #f "FIXLE"))
-(targ-op "##fixnum.>="        (targ-ifjump-fold-u #f "FIXGE"))
-
-(targ-op "##fixnum.->char"    (targ-apply-simp-u #f #f #f "FIXTOCHR"))
-(targ-op "##fixnum.<-char"    (targ-apply-simp-u #f #f #f "FIXFROMCHR"))
-
-;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-(targ-op "##flonum.->fixnum"  (targ-apply-simp-u #t #f #f "F64TOFIX"))
-(targ-op "##flonum.<-fixnum"  (targ-apply-simpflo-u #f "F64FROMFIX"))
-
-(targ-op "##flonum.max"       (targ-apply-fold-u #t #f      "F64POS" "F64MAX"))
-(targ-op "##flonum.min"       (targ-apply-fold-u #t #f      "F64POS" "F64MIN"))
-
-(targ-op "##flonum.+"         (targ-apply-fold-u #t "F64_0" "F64POS" "F64ADD"))
-(targ-op "##flonum.*"         (targ-apply-fold-u #t "F64_1" "F64POS" "F64MUL"))
-(targ-op "##flonum.-"         (targ-apply-fold-u #t #f      "F64NEG" "F64SUB"))
-(targ-op "##flonum./"         (targ-apply-fold-u #t #f      "F64INV" "F64DIV"))
-(targ-op "##flonum.abs"       (targ-apply-simpflo-u #t "F64ABS"))
-(targ-op "##flonum.floor"     (targ-apply-simpflo-u #t "F64FLOOR"))
-(targ-op "##flonum.ceiling"   (targ-apply-simpflo-u #t "F64CEILING"))
-(targ-op "##flonum.truncate"  (targ-apply-simpflo-u #t "F64TRUNCATE"))
-(targ-op "##flonum.round"     (targ-apply-simpflo-u #t "F64ROUND"))
-(targ-op "##flonum.exp"       (targ-apply-simpflo-u #t "F64EXP"))
-(targ-op "##flonum.log"       (targ-apply-simpflo-u #t "F64LOG"))
-(targ-op "##flonum.sin"       (targ-apply-simpflo-u #t "F64SIN"))
-(targ-op "##flonum.cos"       (targ-apply-simpflo-u #t "F64COS"))
-(targ-op "##flonum.tan"       (targ-apply-simpflo-u #t "F64TAN"))
-(targ-op "##flonum.asin"      (targ-apply-simpflo-u #t "F64ASIN"))
-(targ-op "##flonum.acos"      (targ-apply-simpflo-u #t "F64ACOS"))
-(targ-op "##flonum.atan"      (targ-apply-simpflo2-u #t "F64ATAN" "F64ATAN2"))
-(targ-op "##flonum.expt"      (targ-apply-simpflo-u #t "F64EXPT"))
-(targ-op "##flonum.sqrt"      (targ-apply-simpflo-u #t "F64SQRT"))
-(targ-op "##flonum.copysign"  (targ-apply-simpflo-u #t "F64COPYSIGN"))
-
-(targ-op "##flonum.integer?"  (targ-ifjump-simp-u #t "F64INTEGERP"))
-(targ-op "##flonum.zero?"     (targ-ifjump-simp-u #t "F64ZEROP"))
-(targ-op "##flonum.positive?" (targ-ifjump-simp-u #t "F64POSITIVEP"))
-(targ-op "##flonum.negative?" (targ-ifjump-simp-u #t "F64NEGATIVEP"))
-(targ-op "##flonum.odd?"      (targ-ifjump-simp-u #t "F64ODDP"))
-(targ-op "##flonum.even?"     (targ-ifjump-simp-u #t "F64EVENP"))
-(targ-op "##flonum.finite?"   (targ-ifjump-simp-u #t "F64FINITEP"))
-(targ-op "##flonum.infinite?" (targ-ifjump-simp-u #t "F64INFINITEP"))
-(targ-op "##flonum.nan?"      (targ-ifjump-simp-u #t "F64NANP"))
-(targ-op "##flonum.<-fixnum-exact?" (targ-ifjump-simp-u #f "F64FROMFIXEXACTP"))
-(targ-op "##flonum.="         (targ-ifjump-fold-u #t "F64EQ"))
-(targ-op "##flonum.<"         (targ-ifjump-fold-u #t "F64LT"))
-(targ-op "##flonum.>"         (targ-ifjump-fold-u #t "F64GT"))
-(targ-op "##flonum.<="        (targ-ifjump-fold-u #t "F64LE"))
-(targ-op "##flonum.>="        (targ-ifjump-fold-u #t "F64GE"))
-
-;; new fixnum primitives
-
 (targ-op "##fxmax"          (targ-apply-fold-u #f #f       "FIXPOS" "FIXMAX"))
 (targ-op "##fxmin"          (targ-apply-fold-u #f #f       "FIXPOS" "FIXMIN"))
 
@@ -3373,6 +3320,9 @@
 (targ-op "##fxwrapabs"      (targ-apply-simp-u #f #f #f "FIXABS"))
 (targ-op "##fxabs"          (targ-apply-simp-u #f #f #f "FIXABS"))
 (targ-op "##fxabs?"         (targ-apply-simp-u #f #f #f "FIXABSP"))
+(targ-op "##fxwrapsquare"   (targ-apply-simp-u #f #f #f "FIXSQUARE"))
+(targ-op "##fxsquare"       (targ-apply-simp-u #f #f #f "FIXSQUARE"))
+(targ-op "##fxsquare?"      (targ-apply-simp-u #f #f #f "FIXSQUAREP"))
 
 (targ-op "##fxzero?"     (targ-ifjump-simp-u #f "FIXZEROP"))
 (targ-op "##fxpositive?" (targ-ifjump-simp-u #f "FIXPOSITIVEP"))
@@ -3385,21 +3335,13 @@
 (targ-op "##fx<="        (targ-ifjump-fold-u #f "FIXLE"))
 (targ-op "##fx>="        (targ-ifjump-fold-u #f "FIXGE"))
 
-(targ-op "##fx->char"    (targ-apply-simp-u #f #f #f "FIXTOCHR"))
-(targ-op "##fx<-char"    (targ-apply-simp-u #f #f #f "FIXFROMCHR"))
-
-(targ-op "##fixnum->char"   (targ-apply-simp-u #f #f #f "FIXTOCHR"))
-(targ-op "##char->fixnum"   (targ-apply-simp-u #f #f #f "FIXFROMCHR"))
+(targ-op "##integer->char"  (targ-apply-simp-u #f #f #f "FIXTOCHR"))
+(targ-op "##char->integer"  (targ-apply-simp-u #f #f #f "FIXFROMCHR"))
 (targ-op "##flonum->fixnum" (targ-apply-simp-u #t #f #f "F64TOFIX"))
 (targ-op "##fixnum->flonum" (targ-apply-simpflo-u #f "F64FROMFIX"))
 (targ-op "##fixnum->flonum-exact?" (targ-ifjump-simp-u #f "F64FROMFIXEXACTP"))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-;; new flonum primitives
-
-(targ-op "##fl->fx"  (targ-apply-simp-u #t #f #f "F64TOFIX"))
-(targ-op "##fl<-fx"  (targ-apply-simpflo-u #f "F64FROMFIX"))
 
 (targ-op "##flmax"       (targ-apply-fold-u #t #f      "F64POS" "F64MAX"))
 (targ-op "##flmin"       (targ-apply-fold-u #t #f      "F64POS" "F64MIN"))
@@ -3413,16 +3355,46 @@
 (targ-op "##flceiling"   (targ-apply-simpflo-u #t "F64CEILING"))
 (targ-op "##fltruncate"  (targ-apply-simpflo-u #t "F64TRUNCATE"))
 (targ-op "##flround"     (targ-apply-simpflo-u #t "F64ROUND"))
+
+(targ-op "##flscalbn"
+         (targ-apply-alloc
+          (lambda (n) 0) ; targ-apply-alloc accounts for space for flonum result
+          #f ;; proc-safe?
+          #f ;; side-effects?
+          #t
+          (lambda (opnds sn)
+            (let ((opnd1 (car opnds))
+                  (opnd2 (cadr opnds)))
+              (list "F64SCALBN" (targ-opnd-flo opnd1) (targ-opnd opnd2))))))
+
+(targ-op "##flilogb"
+         (targ-setup-inlinable-proc
+          #f ;; proc-safe?
+          #f ;; side-effects?
+          #f
+          (lambda (opnds sn)
+            (let ((opnd1 (car opnds)))
+              (list "F64ILOGB" (targ-opnd-flo opnd1))))))
+
 (targ-op "##flexp"       (targ-apply-simpflo-u #t "F64EXP"))
+(targ-op "##flexpm1"     (targ-apply-simpflo-u #t "F64EXPM1"))
 (targ-op "##fllog"       (targ-apply-simpflo-u #t "F64LOG"))
+(targ-op "##fllog1p"     (targ-apply-simpflo-u #t "F64LOG1P"))
 (targ-op "##flsin"       (targ-apply-simpflo-u #t "F64SIN"))
 (targ-op "##flcos"       (targ-apply-simpflo-u #t "F64COS"))
 (targ-op "##fltan"       (targ-apply-simpflo-u #t "F64TAN"))
 (targ-op "##flasin"      (targ-apply-simpflo-u #t "F64ASIN"))
 (targ-op "##flacos"      (targ-apply-simpflo-u #t "F64ACOS"))
 (targ-op "##flatan"      (targ-apply-simpflo2-u #t "F64ATAN" "F64ATAN2"))
+(targ-op "##flsinh"      (targ-apply-simpflo-u #t "F64SINH"))
+(targ-op "##flcosh"      (targ-apply-simpflo-u #t "F64COSH"))
+(targ-op "##fltanh"      (targ-apply-simpflo-u #t "F64TANH"))
+(targ-op "##flasinh"     (targ-apply-simpflo-u #t "F64ASINH"))
+(targ-op "##flacosh"     (targ-apply-simpflo-u #t "F64ACOSH"))
+(targ-op "##flatanh"     (targ-apply-simpflo-u #t "F64ATANH"))
 (targ-op "##flexpt"      (targ-apply-simpflo-u #t "F64EXPT"))
 (targ-op "##flsqrt"      (targ-apply-simpflo-u #t "F64SQRT"))
+(targ-op "##flsquare"    (targ-apply-simpflo-u #t "F64SQUARE"))
 (targ-op "##flcopysign"  (targ-apply-simpflo-u #t "F64COPYSIGN"))
 
 (targ-op "##flinteger?"  (targ-ifjump-simp-u #t "F64INTEGERP"))
@@ -3434,12 +3406,12 @@
 (targ-op "##flfinite?"   (targ-ifjump-simp-u #t "F64FINITEP"))
 (targ-op "##flinfinite?" (targ-ifjump-simp-u #t "F64INFINITEP"))
 (targ-op "##flnan?"      (targ-ifjump-simp-u #t "F64NANP"))
-(targ-op "##fl<-fx-exact?" (targ-ifjump-simp-u #f "F64FROMFIXEXACTP"))
 (targ-op "##fl="         (targ-ifjump-fold-u #t "F64EQ"))
 (targ-op "##fl<"         (targ-ifjump-fold-u #t "F64LT"))
 (targ-op "##fl>"         (targ-ifjump-fold-u #t "F64GT"))
 (targ-op "##fl<="        (targ-ifjump-fold-u #t "F64LE"))
 (targ-op "##fl>="        (targ-ifjump-fold-u #t "F64GE"))
+(targ-op "##fleqv?"      (targ-ifjump-simp-u #t "F64EQV"))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -3509,8 +3481,11 @@
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-(targ-op "##make-will"        (targ-apply-make-will))
-(targ-op "##will-testator"    (targ-ifjump-apply-u "WILLTESTATOR"))
+(targ-op "##make-will"          (targ-apply-make-will))
+(targ-op "##will-testator"      (targ-ifjump-apply-u "WILLTESTATOR"))
+(targ-op "##will-testator-set!" (targ-apply-simp-u #f #t 1 "WILLTESTATORSET"))
+(targ-op "##will-action"        (targ-ifjump-apply-u "WILLACTION"))
+(targ-op "##will-action-set!"   (targ-apply-simp-u #f #t 1 "WILLACTIONSET"))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -3537,6 +3512,7 @@
 (targ-op "##vector-ref"       (targ-ifjump-apply-u "VECTORREF"))
 (targ-op "##vector-set!"      (targ-apply-simp-u #f #t 1 "VECTORSET"))
 (targ-op "##vector-shrink!"   (targ-apply-simp-u #f #t #f "VECTORSHRINK"))
+(targ-op "##vector-cas!"      (targ-apply-simp-u #f 'expr 1 "VECTORCAS"))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -3622,8 +3598,7 @@
 (targ-op "##bignum.adigit-<"         (targ-ifjump-simp-u #f "BIGALESSP"))
 (targ-op "##bignum.adigit-zero?"     (targ-ifjump-simp-u #f "BIGAZEROP"))
 (targ-op "##bignum.adigit-negative?" (targ-ifjump-simp-u #f "BIGANEGATIVEP"))
-(targ-op "##bignum.->fixnum"         (targ-apply-simp-u #f #f #f "BIGTOFIX"))
-(targ-op "##bignum.<-fixnum"         (targ-apply-simpbig-u "BIGFROMFIX"))
+(targ-op "##fixnum->bignum"          (targ-apply-simpbig-u "BIGFROMFIX"))
 (targ-op "##bignum.adigit-shrink!"   (targ-apply-simp-u #f #t #f "BIGASHRINK"))
 (targ-op "##bignum.adigit-copy!"     (targ-apply-simp-u #f #t #f "BIGACOPY"))
 (targ-op "##bignum.adigit-cat!"      (targ-apply-simp-u #f #t #f "BIGACAT"))
@@ -3635,6 +3610,36 @@
 (targ-op "##bignum.fdigit-length"    (targ-apply-simp-u #f #f #f "BIGFLENGTH"))
 (targ-op "##bignum.fdigit-ref"       (targ-apply-simp-u #f #f #f "BIGFREF"))
 (targ-op "##bignum.fdigit-set!"      (targ-apply-simp-u #f #t #f "BIGFSET"))
+
+;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+(targ-op "##ratnum-make"        (targ-apply-ratnum-make))
+(targ-op "##ratnum-numerator"   (targ-ifjump-apply-u "RATNUMNUMERATOR"))
+(targ-op "##ratnum-denominator" (targ-ifjump-apply-u "RATNUMDENOMINATOR"))
+
+;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+(targ-op "##cpxnum-make"        (targ-apply-cpxnum-make))
+(targ-op "##cpxnum-real"        (targ-ifjump-apply-u "CPXNUMREAL"))
+(targ-op "##cpxnum-imag"        (targ-ifjump-apply-u "CPXNUMIMAG"))
+
+;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+(targ-op "##make-uninterned-symbol" (targ-apply-make-symbol))
+(targ-op "##symbol-name"        (targ-ifjump-apply-u "SYMBOLNAME"))
+(targ-op "##symbol-name-set!"   (targ-apply-simp-u #f #t 1 "SYMBOLNAMESET"))
+(targ-op "##symbol-hash"        (targ-ifjump-apply-u "SYMBOLHASH"))
+(targ-op "##symbol-hash-set!"   (targ-apply-simp-u #f #t 1 "SYMBOLHASHSET"))
+(targ-op "##symbol-interned?"   (targ-ifjump-apply-u "SYMBOLINTERNEDP"))
+
+;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+(targ-op "##make-uninterned-keyword" (targ-apply-make-keyword))
+(targ-op "##keyword-name"       (targ-ifjump-apply-u "KEYWORDNAME"))
+(targ-op "##keyword-name-set!"  (targ-apply-simp-u #f #t 1 "KEYWORDNAMESET"))
+(targ-op "##keyword-hash"       (targ-ifjump-apply-u "KEYWORDHASH"))
+(targ-op "##keyword-hash-set!"  (targ-apply-simp-u #f #t 1 "KEYWORDHASHSET"))
+(targ-op "##keyword-interned?"  (targ-ifjump-apply-u "KEYWORDINTERNEDP"))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -3650,6 +3655,8 @@
          (targ-ifjump-apply-u "UNCHECKEDSTRUCTUREREF"))
 (targ-op "##unchecked-structure-set!"
          (targ-apply-simp-u #f #t 1 "UNCHECKEDSTRUCTURESET"))
+(targ-op "##unchecked-structure-cas!"
+         (targ-apply-simp-u #f 'expr 1 "UNCHECKEDSTRUCTURECAS"))
 
 (targ-op "##type-id"          (targ-apply-simp-u #f #f #f "TYPEID"))
 (targ-op "##type-name"        (targ-apply-simp-u #f #f #f "TYPENAME"))
@@ -3677,7 +3684,12 @@
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-(targ-op "##make-promise"     (targ-apply-make-promise))
+(targ-op "##make-promise"        (targ-apply-make-promise))
+(targ-op "##promise-thunk"       (targ-ifjump-apply-u "PROMISETHUNK"))
+(targ-op "##promise-thunk-set!"  (targ-apply-simp-u #f #t 1 "PROMISETHUNKSET"))
+(targ-op "##promise-result"      (targ-ifjump-apply-u "PROMISERESULT"))
+(targ-op "##promise-result-set!" (targ-apply-simp-u #f #t 1 "PROMISERESULTSET"))
+
 (targ-op "##force"            (targ-apply-force))
 (targ-op "##void"             (targ-apply-simp-s #f #f #f "VOID"))
 
@@ -3690,6 +3702,9 @@
 
 (targ-op "##current-thread"   (targ-apply-simp-s #f #f #f "CURRENTTHREAD"))
 (targ-op "##run-queue"        (targ-apply-simp-s #f #f #f "RUNQUEUE"))
+
+(targ-op "##btq-lock!"        (targ-apply-simp-u #f #t 0 "BTQLOCK"))
+(targ-op "##btq-unlock!"      (targ-apply-simp-u #f #t 0 "BTQUNLOCK"))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -3777,6 +3792,17 @@
            (targ-wr-reg 0)
            (targ-wr-reg (+ targ-nb-arg-regs 1))
            #t))))
+
+(targ-op "##make-continuation"
+         (targ-apply-make-continuation))
+;;(targ-op "##continuation-frame"
+;;         (targ-ifjump-apply-u "CONTINUATIONFRAME"))
+(targ-op "##continuation-frame-set!"
+         (targ-apply-simp-u #f #t 1 "CONTINUATIONFRAMESET"))
+(targ-op "##continuation-denv"
+         (targ-ifjump-apply-u "CONTINUATIONDENV"))
+(targ-op "##continuation-denv-set!"
+         (targ-apply-simp-u #f #t 1 "CONTINUATIONDENVSET"))
 
 (targ-jump-inline "##continuation-capture"
   (lambda (nb-args poll? safe?)

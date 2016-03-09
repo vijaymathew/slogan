@@ -1,6 +1,6 @@
 /* File: "os_tty.c" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved. */
 
 /*
  * This module implements the operating system specific routines
@@ -8,7 +8,7 @@
  */
 
 #define ___INCLUDED_FROM_OS_TTY
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
 #include "os_base.h"
@@ -240,6 +240,9 @@ ___device_tty *self;)
 
 #endif
 
+  if (d->fd < 0)
+    return ___FIX(___NO_ERR);
+
   if (tcgetattr (d->fd, &d->initial_termios) < 0 ||
       (d->initial_flags = fcntl (d->fd, F_GETFL, 0)) < 0)
     return err_code_from_errno ();
@@ -259,7 +262,8 @@ ___device_tty *self;)
 #ifdef USE_WIN32
 
   if (!GetConsoleMode (d->hin, &d->hin_initial_mode) ||
-      !GetConsoleMode (d->hout, &d->hout_initial_mode))
+      !GetConsoleMode (d->hout, &d->hout_initial_mode) ||
+      !GetConsoleScreenBufferInfo (d->hout, &d->hout_initial_info))
     return err_code_from_GetLastError ();
 
 #endif
@@ -301,6 +305,9 @@ ___BOOL current;)
 
 #ifdef USE_tcgetsetattr
 #ifdef USE_fcntl
+
+  if (d->fd < 0)
+    return ___FIX(___NO_ERR);
 
   {
     struct termios new_termios = d->initial_termios;
@@ -686,7 +693,12 @@ ___device_tty *self;)
 
       struct winsize size;
 
-      if (ioctl (d->fd, TIOCGWINSZ, &size) < 0)
+      if (d->fd < 0)
+        {
+          size.ws_row = 24;
+          size.ws_col = 80;
+        }
+      else if (ioctl (d->fd, TIOCGWINSZ, &size) < 0)
         return err_code_from_errno ();
 
       if (size.ws_col > 0)
@@ -811,20 +823,20 @@ ___device_tty *self;)
             if (errno == ENXIO)
               {
                 /*
-                 * There is no controlling terminal!  This is a fatal
-                 * error, because trying to display an error message
-                 * will just cause the open to be tried again to
-                 * report the problem, and this will lead to an
-                 * infinite loop.
+                 * There is no controlling terminal, so console output
+                 * has to be redirected.  This is done by calling
+                 * ___write_console_fallback which will send the output
+                 * to stderr, a log file, etc.
                  */
 
-                static char *msgs[] =
-                { "No controlling terminal (try using the -:d- runtime option)",
-                  NULL
-                };
+                static char msg[] =
+                  "*** No controlling terminal (try using the -:d- runtime option)\n";
 
-                ___fatal_error (msgs);
+                ___write_console_fallback (msg, sizeof(msg)-1);
+
+                fd = -1; /* redirect subsequent console output */
               }
+            else
 #endif
             return fnf_or_err_code_from_errno ();
           }
@@ -977,7 +989,9 @@ ___stream_index *len_done;)
   {
     int n;
 
-    if ((n = write (d->fd, buf, len)) < 0)
+    if (d->fd < 0)
+      n = ___write_console_fallback (buf, len);
+    else if ((n = write (d->fd, buf, len)) < 0)
       return err_code_from_errno ();
 
     *len_done = n;
@@ -1059,7 +1073,9 @@ ___stream_index *len_done;)
     ___printf ("read len=%d\n", len);
 #endif
 
-    if ((n = read (d->fd, buf, len)) < 0)
+    if (d->fd < 0)
+      n = 0;
+    else if ((n = read (d->fd, buf, len)) < 0)
       return err_code_from_errno ();
 
 #ifdef ___DEBUG
@@ -3196,14 +3212,14 @@ ___U8 *text_arg;)
                   rect.Bottom = info.dwSize.Y - 1;
                   rect.Left = 0;
                   rect.Right = info.dwSize.X - 1;
- 
+
                   dest.X = 0;
                   dest.Y = -1;
-  
+
                   fill.Attributes = info.wAttributes;
                   TTY_CHAR_SELECT(fill.Char.AsciiChar = ' ',
                                   fill.Char.UnicodeChar = ' ');
- 
+
                   if (!ScrollConsoleScreenBuffer (d->hout,
                                                   &rect,
                                                   &rect,
@@ -3284,18 +3300,31 @@ ___U8 *text_arg;)
           int style = GET_STYLE(arg);
           int fg = GET_FOREGROUND_COLOR(arg);
           int bg = GET_BACKGROUND_COLOR(arg);
+          WORD default_attr = d->hout_initial_info.wAttributes;
           WORD attr = 0;
 
           if (fg == DEFAULT_TEXT_COLOR)
-            fg = NORMAL_FOREGROUND;
+            {
+              fg = (default_attr & FOREGROUND_BLUE  ? 4 : 0) +
+                   (default_attr & FOREGROUND_GREEN ? 2 : 0) +
+                   (default_attr & FOREGROUND_RED   ? 1 : 0);
+              if ((default_attr & FOREGROUND_INTENSITY) == 0)
+                style ^= TEXT_STYLE_BOLD;
+            }
 
           if (bg == DEFAULT_TEXT_COLOR)
-            bg = NORMAL_BACKGROUND;
+            {
+              bg = (default_attr & BACKGROUND_BLUE  ? 4 : 0) +
+                   (default_attr & BACKGROUND_GREEN ? 2 : 0) +
+                   (default_attr & BACKGROUND_RED   ? 1 : 0);
+              if ((default_attr & BACKGROUND_INTENSITY) == 0)
+                style ^= TEXT_STYLE_UNDERLINE;
+            }
 
-          if (style & TEXT_STYLE_BOLD)
+          if ((style & TEXT_STYLE_BOLD) == 0)
             attr |= FOREGROUND_INTENSITY;
 
-          if (style & TEXT_STYLE_UNDERLINE)
+          if ((style & TEXT_STYLE_UNDERLINE) == 0)
             attr |= BACKGROUND_INTENSITY;
 
           if (style & TEXT_STYLE_REVERSE)
@@ -3345,7 +3374,7 @@ ___U8 *text_arg;)
                 if (!SetConsoleCursorPosition (d->hout, pos))
                   return err_code_from_GetLastError ();
               }
-            else 
+            else
               pos = info.dwCursorPosition;
 
             if (arg == 0)
@@ -3374,19 +3403,19 @@ ___U8 *text_arg;)
               }
 
             if (!FillConsoleOutputAttribute
-                       (d->hout,
-                        info.wAttributes,
-                        n,
-                        pos,
-                        &written) ||
-                    !FillConsoleOutputCharacter
-                       (d->hout,
-                        ' ',
-                        n,
-                        pos,
-                        &written))
-                  e = err_code_from_GetLastError ();
-              }
+                   (d->hout,
+                    info.wAttributes,
+                    n,
+                    pos,
+                    &written) ||
+                !FillConsoleOutputCharacter
+                   (d->hout,
+                    ' ',
+                    n,
+                    pos,
+                    &written))
+              e = err_code_from_GetLastError ();
+          }
 
         break;
       }
@@ -3480,7 +3509,7 @@ ___U8 *text_arg;)
           }
         break;
       }
-          
+
     case TERMINAL_ERASE_LINE:
       {
         switch (arg)
@@ -3859,7 +3888,7 @@ int len;)
                     int bg;
 
                     op = TERMINAL_SET_ATTRS;
-                    arg = d->terminal_attrs;
+                    arg = d->current.attrs;
                     style = GET_STYLE(arg);
                     fg = GET_FOREGROUND_COLOR(arg);
                     bg = GET_BACKGROUND_COLOR(arg);
@@ -4036,13 +4065,8 @@ ___device_tty *self;)
    */
 
   ___device_tty *d = self;
-  tty_text_attrs output_attrs = d->output_attrs;
-  int output_style = GET_STYLE(output_attrs);
-  int current_style = GET_STYLE(d->current.attrs);
 
-  return MAKE_TEXT_ATTRS(output_style & TEXT_STYLE_REVERSE,
-                         GET_FOREGROUND_COLOR(output_attrs),
-                         GET_BACKGROUND_COLOR(output_attrs));
+  return d->output_attrs;
 }
 
 
@@ -4291,7 +4315,7 @@ int screen_pos;)
         }
     }
 
-  /* 
+  /*
    * Move the cursor to the target row using cursor movement commands,
    * if the terminal supports this.
    */
@@ -4516,7 +4540,7 @@ int len;)
                   locked_copy[len] = 0;
 
                   GlobalUnlock (global_copy);
-  
+
                   EmptyClipboard ();
 
                   if (!SetClipboardData (CF_UNICODETEXT, global_copy))
@@ -4672,12 +4696,13 @@ ___stream_index *len_done;)
        * device will be read.  If a read error occurs (including
        * EAGAIN) an error code is returned, otherwise ___NO_ERR is
        * returned.  ___NO_ERR is returned if and only if at least one
-       * character was added to the character buffer.
+       * character was added to the character buffer, or no character
+       * was added because EOF was reached.
        */
 
       ___SCMOBJ e;
       ___stream_index len;
-      ___stream_index len_done;
+      ___stream_index done;
       ___U8 *byte_buf;
       int byte_buf_avail;
       int char_buf_avail;
@@ -4713,11 +4738,26 @@ ___stream_index *len_done;)
                      (d,
                       d->input_byte + d->input_byte_hi,
                       ___NBELEMS(d->input_byte) - d->input_byte_hi,
-                      &len_done))
+                      &done))
               != ___FIX(___NO_ERR))
             return e;
 
-          byte_buf_avail = (d->input_byte_hi += len_done) - d->input_byte_lo;
+          if (done == 0)
+            {
+              if (d->input_byte_hi > d->input_byte_lo)
+                {
+                  d->input_byte_lo = 0;
+                  d->input_byte_hi = 0;
+                  return ___FIX(___UNKNOWN_ERR);
+                }
+              else
+                {
+                  *len_done = 0;
+                  return ___FIX(___NO_ERR);
+                }
+            }
+
+          byte_buf_avail = (d->input_byte_hi += done) - d->input_byte_lo;
 
           /*
            * Extract as many characters as possible from byte buffer to
@@ -4817,35 +4857,46 @@ lineeditor_event *ev;)
 
   next_char:
 
-  if ((e = lineeditor_input_read (d, &c, 1, &len_done))
-       == ___FIX(___NO_ERR) &&
-      len_done == 1)
+  if ((e = lineeditor_input_read (d, &c, 1, &len_done)) == ___FIX(___NO_ERR))
     {
-      while (s < d->input_decoder.length)
+      if (len_done == 1)
         {
-          if (d->input_decoder.buffer[s].trigger == c)
+          while (s < d->input_decoder.length)
             {
-              int a = d->input_decoder.buffer[s].action;
-              if (a < LINEEDITOR_INPUT_DECODER_MAX_LENGTH)
+              if (d->input_decoder.buffer[s].trigger == c)
                 {
-                  s = a;
-                  first_char = 0;
-                  goto next_char;
+                  int a = d->input_decoder.buffer[s].action;
+                  if (a < LINEEDITOR_INPUT_DECODER_MAX_LENGTH)
+                    {
+                      s = a;
+                      first_char = 0;
+                      goto next_char;
+                    }
+                  d->input_decoder_state = 0;
+                  ev->event_kind = LINEEDITOR_INPUT_DECODER_STATE_MAX-a;
+                  return ___FIX(___NO_ERR);
                 }
-              d->input_decoder_state = 0;
-              ev->event_kind = LINEEDITOR_INPUT_DECODER_STATE_MAX-a;
+              else
+                s = d->input_decoder.buffer[s].next;
+            }
+          if (first_char)
+            {
+              ev->event_kind = LINEEDITOR_EV_KEY;
+              ev->event_char = c;
               return ___FIX(___NO_ERR);
             }
-          else
-            s = d->input_decoder.buffer[s].next;
+          s = 0; /* ignore the sequence including last character read */
         }
-      if (first_char)
+      else
         {
-          ev->event_kind = LINEEDITOR_EV_KEY;
-          ev->event_char = c;
+          /*
+           * EOF was reached.
+           */
+
+          d->input_decoder_state = 0;
+          ev->event_kind = LINEEDITOR_EV_EOF;
           return ___FIX(___NO_ERR);
         }
-      s = 0; /* ignore the sequence including last character read */
     }
 
   d->input_decoder_state = s;
@@ -5268,6 +5319,12 @@ ___device_tty *self;)
 {
   ___device_tty *d = self;
 
+  lineeditor_output_set_attrs
+    (d,
+     INITIAL_TEXT_ATTRS); /* ignore error */
+
+  lineeditor_output_drain (d); /* ignore error */
+
 #ifdef USE_CURSES
   {
     int i;
@@ -5294,12 +5351,6 @@ ___device_tty *self;)
 
   if (d->input_line.buffer != NULL)
     extensible_string_cleanup (&d->input_line);
-
-  lineeditor_output_set_attrs
-    (d,
-     INITIAL_TEXT_ATTRS); /* ignore error */
-
-  lineeditor_output_drain (d); /* ignore error */
 
   if (d->paste_text != NULL)
     ___free_mem (d->paste_text); /* discard paste text */
@@ -5368,9 +5419,9 @@ ___device_tty *self;)
  * it contains 65 characters).
  *
  *
- *         P   R   O   M   P   T   >       0   1  
+ *         P   R   O   M   P   T   >       0   1
  *
- *         2   3   4   5   6   7   8   9  10  11  
+ *         2   3   4   5   6   7   8   9  10  11
  *
  *        12  13  14  15  16  17  18  19  20  21
  *                                                 OFF SCREEN
@@ -6937,6 +6988,9 @@ lineeditor_event *ev;)
     case LINEEDITOR_EV_NONE:
       return ___FIX(___NO_ERR);
 
+    case LINEEDITOR_EV_EOF:
+      return lineeditor_line_done (d, 1);
+
     case LINEEDITOR_EV_KEY:
       if (ev->event_char < ___UNICODE_SPACE || /* discard control characters */
           ev->event_char == ___UNICODE_RUBOUT)
@@ -7408,7 +7462,15 @@ ___device_select_state *state;)
     {
 #ifdef USE_POSIX
 
-      ___device_select_add_fd (state, d->fd, for_writing);
+      if (d->fd < 0)
+        {
+          ___device_select_add_timeout
+            (state,
+             i,
+             ___time_mod.time_neg_infinity);
+        }
+      else
+        ___device_select_add_fd (state, d->fd, for_writing);
 
 #endif
 
@@ -7452,7 +7514,7 @@ ___device_select_state *state;)
     {
 #ifdef USE_POSIX
 
-      if (___FD_ISSET(d->fd, &state->writefds))
+      if (d->fd < 0 || ___FD_ISSET(d->fd, &state->writefds))
         state->devs[i] = NULL;
 
 #endif
@@ -7468,7 +7530,7 @@ ___device_select_state *state;)
     {
 #ifdef USE_POSIX
 
-      if (___FD_ISSET(d->fd, &state->readfds))
+      if (d->fd < 0 || ___FD_ISSET(d->fd, &state->readfds))
         state->devs[i] = NULL;
 
 #endif
@@ -7604,7 +7666,7 @@ ___stream_index *len_done;)
 
         byte_avail = ___NBELEMS(d->lineeditor_input_byte);
         byte_buf_end = d->lineeditor_input_byte + byte_avail;
-                                 
+
         while (chars_to_bytes (char_buf_end - char_avail,
                                &char_avail,
                                byte_buf_end - byte_avail,
@@ -7819,9 +7881,9 @@ ___device_stream *self;)
     case 0:
 #ifdef USE_WIN32
       char_encoding =
-        TTY_CHAR_SELECT(___CHAR_ENCODING_ISO_8859_1,___CHAR_ENCODING_UCS_2LE);
+        TTY_CHAR_SELECT(___CHAR_ENCODING_ASCII,___CHAR_ENCODING_UCS_2LE);
 #else
-      char_encoding = ___CHAR_ENCODING_ISO_8859_1;
+      char_encoding = ___CHAR_ENCODING_ASCII;
 #endif
       break;
     }
@@ -7955,7 +8017,7 @@ ___device_tty *self;)
           == d->base.base.direction)
         {
 #ifdef USE_POSIX
-          if (close_no_EINTR (d->fd) < 0)
+          if (d->fd >= 0 && close_no_EINTR (d->fd) < 0)
             return err_code_from_errno ();
 #endif
 
@@ -8373,7 +8435,7 @@ ___SCMOBJ duration;)
 
   if (duration_nsecs < 0)
     duration_nsecs = 0;
-  
+
   d->paren_balance_duration_nsecs = duration_nsecs;
 
   return ___VOID;

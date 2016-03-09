@@ -1,6 +1,6 @@
 /* File: "os_thread.h" */
 
-/* Copyright (c) 2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 2013-2016 by Marc Feeley, All Rights Reserved. */
 
 #ifndef ___OS_THREAD_H
 #define ___OS_THREAD_H
@@ -12,15 +12,15 @@
 
 #define DECLARE_HASH_MUTEX(name,size) ___MUTEX name[size]
 
-#define CAS_HASH_MUTEX_SIZE 67
+#define HASH_MUTEX_SIZE 67
 
 
 typedef struct ___thread_module_struct
   {
     int refcount;
 
-#ifdef ___USE_emulated_compare_and_swap_word
-    DECLARE_HASH_MUTEX(cas_hash_mutex,CAS_HASH_MUTEX_SIZE);
+#ifdef ___USE_emulated_sync
+    DECLARE_HASH_MUTEX(hash_mutex,HASH_MUTEX_SIZE);
 #endif
 
 #ifndef ___THREAD_LOCAL_STORAGE_CLASS
@@ -61,27 +61,6 @@ extern ___thread_module ___thread_mod;
 /*---------------------------------------------------------------------------*/
 
 
-typedef struct ___thread_struct
-  {
-    void (*start_fn) ___P((struct ___thread_struct *self),());
-
-    void *data;
-
-#ifdef ___USE_POSIX_THREAD_SYSTEM
-
-    pthread_t thread_id;
-
-#endif
-
-#ifdef ___USE_WIN32_THREAD_SYSTEM
-
-    HANDLE thread_handle;
-    DWORD thread_id;
-
-#endif
-  } ___thread;
-
-
 extern ___SCMOBJ ___thread_init_from_self
    ___P((___thread *thread),
         ());
@@ -93,6 +72,8 @@ extern ___SCMOBJ ___thread_create
 extern ___SCMOBJ ___thread_join
    ___P((___thread *thread),
         ());
+
+extern void ___thread_exit ___PVOID;
 
 
 extern ___SCMOBJ ___setup_thread_module ___PVOID;

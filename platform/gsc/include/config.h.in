@@ -1,7 +1,7 @@
 /* File: "config.h.in" */
 
 /*
- * Copyright (c) 1994-2012 by Marc Feeley, All Rights Reserved.
+ * Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
  */
 
 #ifndef CONFIG_H
@@ -16,11 +16,23 @@
 /* Define as 1 if you want to compile for debugging.  */
 #undef ___DEBUG
 
+/* Define as 1 if you want to compile for debugging the control flow history.  */
+#undef ___DEBUG_CTRL_FLOW_HISTORY
+
+/* Define as 1 if you want to compile for debugging the host changes.  */
+#undef ___DEBUG_HOST_CHANGES
+
+/* Define as 1 if you want to compile for debugging the garbage collector.  */
+#undef ___DEBUG_GARBAGE_COLLECT
+
 /* Define as 1 if you want to compile with profiling.  */
 #undef ___PROFILE
 
 /* Define as 1 if you want to compile each Scheme file into one C function.  */
 #undef ___SINGLE_HOST
+
+/* Define as 1 if you want trampoline jumps to be inlined.  */
+#undef ___INLINE_JUMPS
 
 /* Define as 1 if you want to compile as a shared library.  */
 #undef ___SHARED
@@ -40,6 +52,7 @@
 #undef HAVE_DL_H
 #undef HAVE_SYS_DXE_H
 #undef HAVE_MACH_O_DYLD_H
+#undef HAVE_MACH_MACH_TIME_H
 #undef HAVE_SYS_TYPES_H
 #undef HAVE_SYS_TIME_H
 #undef HAVE_SYS_TIMES_H
@@ -50,6 +63,7 @@
 #undef HAVE_SYS_STAT_H
 #undef HAVE_SYS_WAIT_H
 #undef HAVE_SYS_MMAN_H
+#undef HAVE_SYSLOG_H
 #undef HAVE_STAT_H
 #undef HAVE_SIGNAL_H
 #undef HAVE_NETDB_H
@@ -119,15 +133,16 @@
 #undef HAVE_MKDIR
 #undef HAVE_MKFIFO
 #undef HAVE_OPENDIR
-#undef HAVE_RENAME
 #undef HAVE_RMDIR
 #undef HAVE_SOCKET
+#undef HAVE_UTIMES
 #undef HAVE_STAT
 #undef HAVE_STAT64
 #undef HAVE_STRERROR
 #undef HAVE_SYMLINK
 #undef HAVE_SYSCONF
 #undef HAVE_SYSCTL
+#undef HAVE_SYSLOG
 #undef HAVE_UNLINK
 #undef HAVE_WAITPID
 #undef HAVE_MMAP
@@ -142,8 +157,10 @@
 #undef HAVE_SIGNAL
 
 #undef HAVE_CLOCK_GETTIME
+#undef HAVE_MACH_ABSOLUTE_TIME
 #undef HAVE_GETCLOCK
-#undef HAVE_GETSYSTEMTIME
+#undef HAVE_GETSYSTEMTIMEASFILETIME
+#undef HAVE_TIMEBEGINPERIOD
 #undef HAVE_GETTIMEOFDAY
 #undef HAVE_FTIME
 #undef HAVE_TIME
@@ -203,6 +220,8 @@
 
 #undef HAVE_ENVIRON
 #undef HAVE__NSGETENVIRON
+#undef HAVE_REMOVE
+#undef HAVE_RENAME
 
 /* Determine which types are available */
 
@@ -218,8 +237,22 @@
 #undef ___IMPORTED_ID_PREFIX
 #undef ___IMPORTED_ID_SUFFIX
 
+/* Define as 1 if you want to enable OpenSSL support */
+#undef USE_OPENSSL
+
 /* Define as 1 if you want to enable poll support */
 #undef USE_POLL_FOR_SELECT
+
+/* Define as 1 if you want to enable high-resolution timing */
+#undef USE_HIGH_RES_TIMING
+
+/* Define as 1 to select a filesystem path encoding */
+#undef ___PATH_ENCODING_UTF8
+#undef ___PATH_ENCODING_LATIN1
+#undef ___PATH_ENCODING_UCS2
+#undef ___PATH_ENCODING_UCS4
+#undef ___PATH_ENCODING_WCHAR
+#undef ___PATH_ENCODING_NATIVE
 
 /*---------------------------------------------------------------------------*/
 

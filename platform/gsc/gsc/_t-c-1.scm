@@ -2,7 +2,7 @@
 
 ;;; File: "_t-c-1.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 (include "fixnum.scm")
 
@@ -107,6 +107,11 @@
 (define targ-will-space        (targ-max-words (* 4 targ-min-word-size)))
 (define targ-flonum-space      (targ-max-words 16))
 (define targ-promise-space     (targ-max-words (* 3 targ-min-word-size)))
+(define targ-continuation-space(targ-max-words (* 3 targ-min-word-size)))
+(define targ-ratnum-space      (targ-max-words (* 3 targ-min-word-size)))
+(define targ-cpxnum-space      (targ-max-words (* 3 targ-min-word-size)))
+(define targ-symbol-space      (targ-max-words (* 5 targ-min-word-size)))
+(define targ-keyword-space     (targ-max-words (* 4 targ-min-word-size)))
 (define (targ-closure-space n) (targ-max-words (* (+ n 2) targ-min-word-size)))
 (define (targ-string-space n)  (targ-max-words (* (+ n 1) targ-min-word-size)))
 (define (targ-s8vector-space n)(targ-max-words (+ n targ-min-word-size)))
@@ -209,13 +214,30 @@
 ;; Initialization/finalization of back-end
 
 (define (targ-make-target)
-  (let ((targ (make-target 9 'c 1)))
+  (let ((targ
+         (make-target 11
+                      'C
+                      '((".c"    . C)
+                        (".C"    . C++)
+                        (".cc"   . C++)
+                        (".cp"   . C++)
+                        (".cpp"  . C++)
+                        (".CPP"  . C++)
+                        (".cxx"  . C++)
+                        (".c++"  . C++)
+                        (".m"    . Objective-C)
+                        (".M"    . Objective-C++)
+                        (".mm"   . Objective-C++))
+                      '()
+                      1)))
 
     (define (begin! info-port)
 
       (set! targ-info-port info-port)
 
       (target-dump-set!              targ targ-dump)
+      (target-link-info-set!         targ targ-link-info)
+      (target-link-set!              targ targ-link)
       (target-nb-regs-set!           targ targ-nb-gvm-regs)
       (target-prim-info-set!         targ targ-prim-info)
       (target-label-info-set!        targ targ-label-info)
@@ -228,7 +250,6 @@
       (target-switch-testable?-set!  targ targ-switch-testable?)
       (target-eq-testable?-set!      targ targ-eq-testable?)
       (target-object-type-set!       targ targ-object-type)
-      (target-file-extension-set!    targ (targ-preferred-c-file-extension))
 
       #f)
 
@@ -242,8 +263,8 @@
 
     targ))
 
-(define (targ-prim-proc-table x)        (vector-ref x 16))
-(define (targ-prim-proc-table-set! x y) (vector-set! x 16 y))
+(define (targ-prim-proc-table x)        (vector-ref x 19))
+(define (targ-prim-proc-table-set! x y) (vector-set! x 19 y))
 
 (define targ-target (targ-make-target))
 
@@ -344,7 +365,6 @@
 
     (targ-heap-dump
      output
-     (proc-obj-name (car procs))
      c-decls
      c-inits
      (map targ-use-obj c-objs)
@@ -614,7 +634,7 @@
                            obj
                            (if (eq? subtype 'bigfixnum)
                              (lambda (obj i)
-                               (list "BIGFIX" i (targ-c-s64 obj)))
+                               (list "BIGFIX" i (targ-c-long-long obj)))
                              (lambda (obj i)
                                (list "SUB" i))))))
                    (case subtype
@@ -677,7 +697,7 @@
 ;;      ((body)
 ;;       '("BODYOBJ"))
       ((fixnum)
-       (list "FIX" (targ-c-s32 obj)))
+       (list "FIX" (targ-c-long obj)))
       ((char)
        (list "CHR" (targ-c-char obj)))
       (else
@@ -793,71 +813,76 @@
 
 ;;;----------------------------------------------------------------------------
 
-(define (targ-linker extension? inputs output warnings?)
+(define (targ-link-info file)
+  (let ((in (open-input-file* file)))
+    (and in
+         (let* ((first-line
+                 (read-line* in))
+                (info
+                 (and (string=? targ-generated-c-file-first-line first-line)
+                      (read in))))
+           (close-input-port in)
+           (and (pair? info)
+                (pair? (cdr info))
+                (pair? (cadr info))
+                (equal? (car info) (compiler-version))
+                (equal? (car (cadr info)) (target-name targ-target))
+                info)))))
+
+(define (targ-link extension? inputs output warnings?)
   (with-exception-handling
     (lambda ()
       (let* ((root
                (path-strip-extension output))
              (name
-               (string-append module-prefix
-                              (path-strip-directory root)))
-             (input-files-and-flags
-               (map (lambda (x)
-                      (let ((name (if (pair? x) (car x) x))
-                            (flags (if (pair? x) (cdr x) '())))
-                        (cons (if (string=? (path-extension name) "")
-                                  (string-append
-                                   name
-                                   (targ-preferred-c-file-extension))
-                                  name)
-                              flags)))
-                    inputs))
-             (input-infos
-               (map targ-read-linker-info input-files-and-flags))
+               (path-strip-directory root))
+             (input-mods
+               (map targ-get-mod inputs))
              (input-mods-and-flags
-               (apply append (map targ-mod-mods-and-flags input-infos)))
+               (append-lists (map targ-mod-mods-and-flags input-mods)))
              (sym-rsrc
                (targ-union-list-of-rsrc
-                 (map targ-mod-sym-rsrc input-infos)))
+                 (map targ-mod-sym-rsrc input-mods)))
              (key-rsrc
                (targ-union-list-of-rsrc
-                 (map targ-mod-key-rsrc input-infos)))
+                 (map targ-mod-key-rsrc input-mods)))
              (glo-rsrc
                (targ-union-list-of-rsrc
-                 (map targ-mod-glo-rsrc input-infos)))
+                 (map targ-mod-glo-rsrc input-mods)))
              (script-line
-              (let loop ((lst input-infos)
+              (let loop ((lst input-mods)
                          (last-script-line #f))
                 (if (pair? lst)
                   (let* ((module-meta-info
                           (targ-mod-meta-info (car lst)))
                          (script-line
-                          (cond ((assq 'script-line module-meta-info) => cdr)
+                          (cond ((and (pair? module-meta-info)
+                                      (assq 'script-line module-meta-info)) => cdr)
                                 (else #f))))
                     (loop (cdr lst)
                           (or script-line
                               last-script-line)))
                   last-script-line))))
 
-        (targ-link
+        (targ-link-aux
           extension?
           output
           name
           input-mods-and-flags
           (if extension?
-            (list (list (targ-mod-name (car input-infos))))
+            (list (list (targ-mod-name (car input-mods))))
             '())
           (if extension?
-            (apply append (map targ-mod-mods-and-flags (cdr input-infos)))
+            (append-lists (map targ-mod-mods-and-flags (cdr input-mods)))
             input-mods-and-flags)
           (if extension?
-            (targ-mod-sym-rsrc (car input-infos))
+            (targ-mod-sym-rsrc (car input-mods))
             '())
           (if extension?
-            (targ-mod-key-rsrc (car input-infos))
+            (targ-mod-key-rsrc (car input-mods))
             '())
           (if extension?
-            (targ-mod-glo-rsrc (car input-infos))
+            (targ-mod-glo-rsrc (car input-mods))
             '())
           sym-rsrc
           key-rsrc
@@ -891,77 +916,49 @@
 (define targ-generated-c-file-first-line
   (string-append "#ifdef " c-id-prefix "LINKER_INFO"))
 
-(define (targ-read-line in)
-  (let loop ((lst '()))
-    (let ((c (read-char in)))
-      (if (or (eof-object? c)
-              (char=? c #\return)
-              (char=? c #\newline))
-          (list->str (reverse lst))
-          (loop (cons c lst))))))
-
-(define (targ-generated-c-file? file)
-  (let ((in (open-input-file* file)))
-    (and in
-         (let ((first-line (targ-read-line in)))
-           (close-input-port in)
-           (string=? targ-generated-c-file-first-line first-line)))))
-
-(define (targ-read-linker-info file-and-flags)
-  (let* ((file (car file-and-flags))
-         (flags (cdr file-and-flags))
-         (in (open-input-file* file)))
-
-    (define (err msg)
-      (if in (close-input-port in))
-      (compiler-error (string-append msg " " file)))
+(define (targ-get-mod file-and-flags-and-link-info)
+  (let ((file (car file-and-flags-and-link-info))
+        (flags (cadr file-and-flags-and-link-info))
+        (link-info (caddr file-and-flags-and-link-info)))
 
     (define (combine-flags flags1 flags2)
       (append flags1 flags2))
 
-    (if in
-      (let ((first-line (targ-read-line in)))
-        (if (string=? targ-generated-c-file-first-line first-line)
-          (let ((linker-info (read in)))
-            (if (and (pair? linker-info)
-                     (= (length linker-info) 9)
-                     (equal? (car linker-info) (compiler-version)))
-              (let* ((name (cadr linker-info))
-                     (mods (map (lambda (x)
-                                  (cons (car x) (combine-flags flags (cdr x))))
-                                (caddr linker-info)))
-                     (rest (cdddr linker-info))
-                     (syms (car rest))
-                     (keys (cadr rest))
-                     (glos-supplied-and-demanded (caddr rest))
-                     (glos-supplied-and-not-demanded (cadddr rest))
-                     (glos-not-supplied (car (cddddr rest)))
-                     (script-line (cadr (cddddr rest))))
-                (close-input-port in)
-                (targ-make-mod
-                  name
-                  mods
-                  (map (lambda (sym)
-                         (targ-make-rsrc sym '() '()))
-                       syms)
-                  (map (lambda (key)
-                         (targ-make-rsrc key '() '()))
-                       keys)
-                  (targ-union-rsrc
-                    (map (lambda (glo)
-                           (targ-make-rsrc glo (list file) (list file)))
-                         glos-supplied-and-demanded)
-                    (targ-union-rsrc
-                      (map (lambda (glo)
-                             (targ-make-rsrc glo '() (list file)))
-                           glos-supplied-and-not-demanded)
-                      (map (lambda (glo)
-                             (targ-make-rsrc glo (list file) '()))
-                           glos-not-supplied)))
-                  script-line))
-              (err "incorrectly formatted file")))
-          (err "linker info is missing from file")))
-      (err "can't open file"))))
+    (if link-info
+        (let* ((name (caddr link-info))
+               (mods (map (lambda (x)
+                            (cons (car x) (combine-flags flags (cdr x))))
+                          (cadddr link-info)))
+               (rest (cddddr link-info))
+               (syms (car rest))
+               (keys (cadr rest))
+               (glos-supplied-and-demanded (caddr rest))
+               (glos-supplied-and-not-demanded (cadddr rest))
+               (glos-not-supplied (car (cddddr rest)))
+               (script-line (cadr (cddddr rest))))
+          (targ-make-mod
+           name
+           mods
+           (map (lambda (sym)
+                  (targ-make-rsrc sym '() '()))
+                syms)
+           (map (lambda (key)
+                  (targ-make-rsrc key '() '()))
+                keys)
+           (targ-union-rsrc
+            (map (lambda (glo)
+                   (targ-make-rsrc glo (list file) (list file)))
+                 glos-supplied-and-demanded)
+            (targ-union-rsrc
+             (map (lambda (glo)
+                    (targ-make-rsrc glo '() (list file)))
+                  glos-supplied-and-not-demanded)
+             (map (lambda (glo)
+                    (targ-make-rsrc glo (list file) '()))
+                  glos-not-supplied)))
+           script-line))
+        (compiler-error
+         (string-append "incorrectly formatted file " file)))))
 
 ;;;----------------------------------------------------------------------------
 ;;
@@ -970,7 +967,7 @@
 ;; These routines write out the C code that represents the Scheme objects
 ;; contained in the compilation module.
 
-(define (targ-heap-dump filename name c-decls c-inits c-objs module-descr unique-name)
+(define (targ-heap-dump filename c-decls c-inits c-objs module-descr unique-name)
   (let* ((sym-list
           (targ-sort (table->list targ-sym-objs) symbol->string))
          (key-list
@@ -993,8 +990,10 @@
           (map targ-glo-rsrc glo-list))
          (ofd-count
           (targ-get-ofd-count prc-list))
+         (name
+          (symbol->string (vector-ref module-descr 0)))
          (module-meta-info
-          (vector-ref module-descr 2))
+          (vector-ref module-descr 3))
          (script-line
           (cond ((assq 'script-line module-meta-info) => cdr)
                 (else #f))))
@@ -1010,7 +1009,7 @@
 
     (targ-dump-module-info
      name
-     (string-append module-prefix unique-name)
+     unique-name
      #f
      #f
      script-line)
@@ -1023,7 +1022,7 @@
     (targ-define-count "SUBCOUNT" (length sub-list))
     (targ-define-count "LBLCOUNT" targ-lbl-alloc)
     (targ-define-count "OFDCOUNT" ofd-count)
-    (targ-define-count "MODDESCR" (targ-heap-ref-obj module-descr))
+    (targ-macro-definition '("MODDESCR") (targ-heap-ref-obj module-descr))
     (targ-display "#include \"gambit.h\"")
     (targ-line)
 
@@ -1034,7 +1033,7 @@
     (targ-dump-mod prm-list c-inits sym-list key-list)
     (targ-end-dump)))
 
-(define (targ-link
+(define (targ-link-aux
           extension?
           filename
           name
@@ -1094,17 +1093,17 @@
 (define (targ-dump-linkfile old-mods-and-flags new-mods-and-flags)
   (targ-dump-section "BEGIN_OLD_LNK" "END_OLD_LNK" #f old-mods-and-flags
     (lambda (i x)
-      (targ-code* (list "DEF_OLD_LNK" (targ-c-id-linker (car x))))))
+      (targ-code* (list "DEF_OLD_LNK" (targ-linker-id (car x))))))
   (targ-dump-section "BEGIN_NEW_LNK" "END_NEW_LNK" #f new-mods-and-flags
     (lambda (i x)
-      (targ-code* (list "DEF_NEW_LNK" (targ-c-id-linker (car x))))))
+      (targ-code* (list "DEF_NEW_LNK" (targ-linker-id (car x))))))
   (targ-dump-section "BEGIN_LNK" "END_LNK" #t (append old-mods-and-flags new-mods-and-flags)
     (lambda (i x)
       (targ-code* (list (if (cond ((assq 'preload (cdr x)) => cdr)
                                   (else #t))
                             "DEF_LNK"
                             "DEF_LNK_NOPRELOAD")
-                        (targ-c-id-linker (car x)))))))
+                        (targ-linker-id (car x)))))))
 
 (define (targ-start-dump
          filename
@@ -1130,7 +1129,7 @@
 
   (targ-display "; File: ")
   (targ-display-c-string (path-strip-directory filename))
-  (targ-display ", produced by Gambit-C ")
+  (targ-display ", produced by Gambit ")
   (targ-display (compiler-version-string))
   (targ-line)
 
@@ -1138,6 +1137,9 @@
   (targ-line)
 
   (targ-display (compiler-version))
+  (targ-line)
+
+  (write (list (target-name targ-target)) targ-port)
   (targ-line)
 
   (write name targ-port)
@@ -1198,7 +1200,7 @@
                          (targ-c-string name))
 
   (targ-macro-definition '("LINKER_ID")
-                         (targ-c-id-linker linker-id))
+                         (targ-linker-id linker-id))
 
   (if linkfile?
 
@@ -1208,7 +1210,8 @@
                              #f)
 
       (targ-macro-definition '("MH_PROC")
-                             (targ-c-id-host name)))
+                             (targ-c-id-host
+                              (string-append module-prefix name))))
 
   (targ-macro-definition '("SCRIPT_LINE")
                          (if script-line
@@ -1437,7 +1440,7 @@
 
 (define (targ-vector-like-object def-name id chunk-name elems convert cycle)
   (let ((len (length elems)))
-    (targ-code* (list def-name id len))
+    (targ-code* (list def-name id (targ-c-unsigned-long len)))
     (targ-vector-like-object-body chunk-name elems convert cycle)))
 
 (define (targ-vector-like-object-body chunk-name elems convert cycle)
@@ -2013,8 +2016,9 @@
   (if (pair? x)
     (let ((head (car x)) (tail (cdr x)))
       (case head
-        ((c-s32)       (targ-display-c-s32       tail))
-        ((c-s64)       (targ-display-c-s64       tail))
+        ((c-long)      (targ-display-c-long      tail))
+        ((c-long-long) (targ-display-c-long-long tail))
+        ((c-unsigned-long) (targ-display-c-unsigned-long tail))
         ((c-hex-u32)   (targ-display-c-hex-u32   tail))
         ((c-hex)       (targ-display-c-hex       tail))
         ((c-char)      (targ-display-c-char      tail))
@@ -2174,11 +2178,14 @@
 (define (targ-cell-set! x y)
   (set-cdr! x y))
 
-(define (targ-c-s32 n)
-  (cons 'c-s32 n))
+(define (targ-c-long n)
+  (cons 'c-long n))
 
-(define (targ-c-s64 n)
-  (cons 'c-s64 n))
+(define (targ-c-long-long n)
+  (cons 'c-long-long n))
+
+(define (targ-c-unsigned-long n)
+  (cons 'c-unsigned-long n))
 
 (define (targ-c-hex-u32 n)
   (cons 'c-hex-u32 n))
@@ -2191,6 +2198,9 @@
 
 (define (targ-c-string str)
   (cons 'c-string str))
+
+(define (targ-linker-id name)
+  (targ-c-id-linker (string-append module-prefix name)))
 
 (define (targ-c-id-linker name)
   (cons 'c-id-linker name))
@@ -2226,13 +2236,17 @@
   (targ-display c-id-prefix) ; c-id-prefix is defined in "_parms.scm"
   (targ-display-no-line-info str))
 
-(define (targ-display-c-s32 n)
+(define (targ-display-c-long n)
   (targ-display n)
   (targ-display-no-line-info "L"))
 
-(define (targ-display-c-s64 n)
+(define (targ-display-c-long-long n)
   (targ-display n)
   (targ-display-no-line-info "LL"))
+
+(define (targ-display-c-unsigned-long n)
+  (targ-display n)
+  (targ-display-no-line-info "UL"))
 
 (define (targ-display-c-hex-u32 n)
   (targ-display-c-hex (targ-u32-to-s32 n)))
@@ -2344,22 +2358,5 @@
 
 (define (targ-name->c-id s)
   (scheme-id->c-id s))
-
-(define targ-c-file-extensions #f)
-(set! targ-c-file-extensions
-  '((".c"    . C)
-    (".C"    . C++)
-    (".cc"   . C++)
-    (".cp"   . C++)
-    (".cpp"  . C++)
-    (".CPP"  . C++)
-    (".cxx"  . C++)
-    (".c++"  . C++)
-    (".m"    . Objective-C)
-    (".M"    . Objective-C++)
-    (".mm"   . Objective-C++)))
-
-(define (targ-preferred-c-file-extension)
-  (caar targ-c-file-extensions))
 
 ;;;----------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 ;;; File: "_parms.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 (include "fixnum.scm")
 
@@ -30,6 +30,7 @@
 (define **let-sym              (string->canonical-symbol "##let"))
 (define **let*-sym             (string->canonical-symbol "##let*"))
 (define **letrec-sym           (string->canonical-symbol "##letrec"))
+(define **letrec*-sym          (string->canonical-symbol "##letrec*"))
 (define **do-sym               (string->canonical-symbol "##do"))
 (define **delay-sym            (string->canonical-symbol "##delay"))
 (define **future-sym           (string->canonical-symbol "##future"))
@@ -57,6 +58,7 @@
 (define lambda-sym             (string->canonical-symbol "lambda"))
 (define let-sym                (string->canonical-symbol "let"))
 (define letrec-sym             (string->canonical-symbol "letrec"))
+(define letrec*-sym            (string->canonical-symbol "letrec*"))
 (define future-sym             (string->canonical-symbol "future"))
 
 (define =>-sym                 (string->canonical-symbol "=>"))
@@ -121,6 +123,8 @@
 (define generative-lambda-sym  (string->canonical-symbol "generative-lambda"))
 
 (define optimize-dead-local-variables-sym (string->canonical-symbol "optimize-dead-local-variables"))
+
+(define optimize-dead-definitions-sym (string->canonical-symbol "optimize-dead-definitions"))
 
 (define generic-sym            (string->canonical-symbol "generic"))
 (define fixnum-sym             (string->canonical-symbol "fixnum"))
@@ -548,7 +552,7 @@
 
 ;; Gambit system version numbers.
 
-(define (compiler-version) 407001) ;; 100000*major + 1000*minor + revision
+(define (compiler-version) 408004) ;; 100000*major + 1000*minor + revision
 
 (define compiler-version-string-prefix "v")
 (define compiler-version-string-suffix "")

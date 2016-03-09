@@ -47,6 +47,17 @@
                      (scm-newline out-port)
                      (loop (scm-cdr exprs)))))))))
 
+(define (exe-build-command script-name cc-options ld-options output out-file-name)
+  (string-append *gsc-compiler*
+                 (if cc-options (string-append " -cc-options " cc-options) "")
+                 " -o " (if output output (path-strip-extension script-name))
+                 " -exe -l " (string-append *prelude-root* "/_slogan.c -ld-options ")
+                 (if ld-options
+                     (string-append "\"" *default-ld-options* " " ld-options "\"")
+                     (string-append "\"" *default-ld-options* "\""))
+                 " "
+                 out-file-name))
+
 (define (compile script-name #!key assemble exe
 		 ld_options cc_options output
                  (exception_handler display-exception))
@@ -62,20 +73,10 @@
               assemble exe))
 	 (if (or assemble exe)
 	     (let ((build-cmd 
-                    (if exe 
-                        (string-append *gsc-compiler* " -cc-options " 
-                                       (if cc_options
-                                           (string-append "\"" *default-cc-options* " " cc_options "\"")
-                                           (string-append "\"" *default-cc-options* "\""))
-                                       " -o " (if output output (path-strip-extension script-name))
-                                       " -ld-options "
-                                       (if ld_options
-                                           (string-append "\"" *default-ld-options* " " ld_options "\"")
-                                           (string-append "\"" *default-ld-options* "\""))
-                                       " -exe "
-                                       (string-append *prelude-root* "/*.scm ")
-                                       out-file-name)
+                    (if exe
+                        (exe-build-command script-name cc_options ld_options output out-file-name)
                         (string-append *gsc-compiler* " " out-file-name))))
+               (display build-cmd) (newline)
 	       (if (zero? (shell-command build-cmd))
 		   (begin (delete-file out-file-name)
 			  #t)

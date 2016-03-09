@@ -2,9 +2,15 @@
 
 ;;; File: "_gambit#.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
+
+;; Define macro-define-syntax.
+
+(##include "~~lib/_define-syntax.scm")
+
+;;;----------------------------------------------------------------------------
 
 ;; General object representation.
 
@@ -62,232 +68,65 @@
 (##define-macro (macro-subtype-flonum)       30)
 (##define-macro (macro-subtype-bignum)       31)
 
-(##define-macro (macro-subtype-ovector? x) `(##fixnum.< ,x 8))
-(##define-macro (macro-subtype-bvector? x) `(##fixnum.< 16 ,x))
+(##define-macro (macro-subtype-ovector? x) `(##fx< ,x 8))
+(##define-macro (macro-subtype-bvector? x) `(##fx< 16 ,x))
 
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ;; Special objects.
 
-(##define-macro (macro-absent-obj)  `',(##type-cast -6 2))
-(##define-macro (macro-unused-obj)  `',(##type-cast -14 2))
-(##define-macro (macro-deleted-obj) `',(##type-cast -15 2))
+(##define-macro (macro-absent-obj)   `',c#absent-object) ;;(##type-cast -6 2))
+(##define-macro (macro-unbound1-obj) `',(##type-cast -7 2))
+(##define-macro (macro-unbound2-obj) `',(##type-cast -8 2))
+(##define-macro (macro-unused-obj)   `',(##type-cast -14 2))
+(##define-macro (macro-deleted-obj)  `',(##type-cast -15 2))
+
+;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+(##define-macro (macro-end-of-cont-marker) `(##void))
 
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ;; System procedure classes.
 
-(##define-macro (define-prim form . exprs)
+(macro-define-syntax define-prim
+  (lambda (stx)
+    (syntax-case stx ()
 
-  (define inlinable-procs '(
+      ((_ (id . params) body ...)
+       (let* ((name
+               (syntax->datum #'id))
+              (pi
+               (c#target.prim-info name))
+              (inlinable?
+               (and pi
+                    (c#proc-obj-inline pi)
+                    (let loop ((lst (syntax->datum #'params)))
+                      (if (pair? lst)
+                          (if (memq (car lst) '(#!optional #!key #!rest))
+                              #f
+                              (loop (cdr lst)))
+                          (null? lst))))))
+         (cond (inlinable?
+                #'(define-prim id
+                    (lambda params
+                      (id . params))))
+               ((not (null? (syntax->datum #'(body ...))))
+                #'(define-prim id
+                    (lambda params
+                      (##declare (inline))
+                      body ...)))
+               (else
+                (error "define-prim can't inline" name)))))
 
-##type ##type-cast ##subtype ##subtype-set!
-##not ##boolean? ##null? ##unbound? ##eq? ##eof-object?
-##fixnum? ##flonum? ##special? ##pair? ##pair-mutable? ##subtyped? ##subtyped-mutable?
-##subtyped.vector? ##subtyped.symbol? ##subtyped.flonum? ##subtyped.bignum?
-##procedure? ##promise? ##vector? ##symbol? ##keyword? ##ratnum? ##cpxnum?
-##string? ##structure? ##values? ##bignum?
-##char? ;;;  ##closure? ##subprocedure?
-
-##number? ##complex?
-
-;;; ##fixnum.max ##fixnum.min
-;;; ##fixnum.wrap+ ##fixnum.+
-##fixnum.+?
-;;; ##fixnum.wrap* ##fixnum.*
-##fixnum.*?
-;;; ##fixnum.wrap- ##fixnum.- ##fixnum.-?
-##fixnum.wrapquotient ##fixnum.quotient
-##fixnum.remainder ##fixnum.modulo
-;;; ##fixnum.bitwise-ior ##fixnum.bitwise-xor
-;;; ##fixnum.bitwise-and ##fixnum.bitwise-not
-##fixnum.wraparithmetic-shift ##fixnum.arithmetic-shift
-##fixnum.arithmetic-shift?
-##fixnum.wraparithmetic-shift-left ##fixnum.arithmetic-shift-left
-##fixnum.arithmetic-shift-left?
-##fixnum.arithmetic-shift-right
-##fixnum.arithmetic-shift-right?
-##fixnum.wraplogical-shift-right
-##fixnum.wraplogical-shift-right?
-##fixnum.wrapabs ##fixnum.abs ##fixnum.abs?
-##fixnum.zero? ##fixnum.positive? ##fixnum.negative?
-##fixnum.odd? ##fixnum.even?
-;;; ##fixnum.= ##fixnum.< ##fixnum.> ##fixnum.<= ##fixnum.>=
-##fixnum.->char ##fixnum.<-char
-
-##flonum.->fixnum ##flonum.<-fixnum
-;;; ##flonum.max ##flonum.min
-;;; ##flonum.+ ##flonum.- ##flonum.*  ##flonum./
-##flonum.abs
-##flonum.floor ##flonum.ceiling ##flonum.truncate ##flonum.round
-##flonum.exp ##flonum.log
-##flonum.sin ##flonum.cos ##flonum.tan
-##flonum.asin ##flonum.acos
-;;; ##flonum.atan
-##flonum.expt ##flonum.sqrt
-##flonum.copysign
-##flonum.integer? ##flonum.zero? ##flonum.positive? ##flonum.negative?
-##flonum.odd? ##flonum.even?
-##flonum.finite? ##flonum.infinite? ##flonum.nan?
-##flonum.<-fixnum-exact?
-;;; ##flonum.= ##flonum.< ##flonum.> ##flonum.<= ##flonum.>=
-
-##fx->char ##fx<-char
-##fl->fx ##fl<-fx
-##fl<-fx-exact?
-
-
-;;; ##fxmax ##fxmin
-;;; ##fxwrap+ ##fx+
-##fx+?
-;;; ##fxwrap* ##fx*
-##fx*?
-;;; ##fxwrap- ##fx- ##fx-?
-##fxwrapquotient ##fxquotient
-##fxremainder ##fxmodulo
-;;; ##fxnot ##fxand
-;;; ##fxior ##fxxor
-##fxif ##fxbit-count ##fxlength ##fxfirst-bit-set ##fxbit-set?
-##fxwraparithmetic-shift ##fxarithmetic-shift
-##fxarithmetic-shift?
-##fxwraparithmetic-shift-left ##fxarithmetic-shift-left
-##fxarithmetic-shift-left?
-##fxarithmetic-shift-right
-##fxarithmetic-shift-right?
-##fxwraplogical-shift-right
-##fxwraplogical-shift-right?
-##fxwrapabs ##fxabs ##fxabs?
-##fxzero? ##fxpositive? ##fxnegative?
-##fxodd? ##fxeven?
-;;; ##fx= ##fx< ##fx> ##fx<= ##fx>=
-##fixnum->char ##char->fixnum
-
-##flonum->fixnum ##fixnum->flonum ##fixnum->flonum-exact?
-;;; ##flmax ##flmin
-;;; ##fl+ ##fl- ##fl*  ##fl/
-##flabs
-##flfloor ##flceiling ##fltruncate ##flround
-##flexp ##fllog
-##flsin ##flcos ##fltan
-##flasin ##flacos
-;;; ##flatan
-##flexpt ##flsqrt
-##flcopysign
-##flinteger? ##flzero? ##flpositive? ##flnegative?
-##flodd? ##fleven?
-##flfinite? ##flinfinite? ##flnan?
-;;; ##fl= ##fl< ##fl> ##fl<= ##fl>=
-
-
-
-##char=? ##char<? ##char>? ##char<=? ##char>=?
-##char-alphabetic? ##char-numeric? ##char-whitespace?
-##char-upper-case? ##char-lower-case? ##char-upcase ##char-downcase
-##cons ##set-car! ##set-cdr! ##car ##cdr
-##caar ##cadr ##cdar ##cddr
-##caaar ##caadr ##cadar ##caddr ##cdaar ##cdadr ##cddar ##cdddr
-##caaaar ##caaadr ##caadar ##caaddr ##cadaar ##cadadr ##caddar ##cadddr
-##cdaaar ##cdaadr ##cdadar ##cdaddr ##cddaar ##cddadr ##cdddar ##cddddr
-;;; ##list
-##box? ##box ##unbox ##set-box!
-;;; ##vector
-##vector-length ##vector-ref ##vector-set! ##vector-shrink!
-;;; ##string
-##string-length ##string-ref ##string-set! ##string-shrink!
-##s8vector? ;;; ##s8vector
-##s8vector-length ##s8vector-ref ##s8vector-set! ##s8vector-shrink!
-##u8vector? ;;; ##u8vector
-##u8vector-length ##u8vector-ref ##u8vector-set! ##u8vector-shrink!
-##s16vector? ;;; ##s16vector
-##s16vector-length ##s16vector-ref ##s16vector-set! ##s16vector-shrink!
-##u16vector? ;;; ##u16vector
-##u16vector-length ##u16vector-ref ##u16vector-set! ##u16vector-shrink!
-##s32vector? ;;; ##s32vector
-##s32vector-length ##s32vector-ref ##s32vector-set! ##s32vector-shrink!
-##u32vector? ;;; ##u32vector
-##u32vector-length ##u32vector-ref ##u32vector-set! ##u32vector-shrink!
-##s64vector? ;;; ##s64vector
-##s64vector-length ##s64vector-ref ##s64vector-set! ##s64vector-shrink!
-##u64vector? ;;; ##u64vector
-##u64vector-length ##u64vector-ref ##u64vector-set! ##u64vector-shrink!
-##f32vector? ;;; ##f32vector
-##f32vector-length ##f32vector-ref ##f32vector-set! ##f32vector-shrink!
-##f64vector? ;;; ##f64vector
-##f64vector-length ##f64vector-ref ##f64vector-set! ##f64vector-shrink!
-;;; ##symbol->string ##keyword->string
-##closure-length ##closure-code ##closure-ref ##closure-set!
-;;; ##subprocedure-id ##subprocedure-parent
-;;; ##subprocedure-parent-info ##subprocedure-parent-name
-##make-promise ##force ##void
-
-##unchecked-structure-ref ##unchecked-structure-set!
-
-##will? ##make-will ##will-testator
-##mem-allocated? ##gc-hash-table?
-##gc-hash-table-ref ##gc-hash-table-set! ##gc-hash-table-rehash!
-
-##global-var-ref ##global-var-primitive-ref
-##global-var-set! ##global-var-primitive-set!
-
-##bignum.negative?
-##bignum.adigit-length
-##bignum.adigit-inc!
-##bignum.adigit-dec!
-##bignum.adigit-add!
-##bignum.adigit-sub!
-##bignum.mdigit-length
-##bignum.mdigit-ref
-##bignum.mdigit-set!
-##bignum.mdigit-mul!
-##bignum.mdigit-div!
-##bignum.mdigit-quotient
-##bignum.mdigit-remainder
-##bignum.mdigit-test?
-
-##bignum.adigit-ones?
-##bignum.adigit-zero?
-##bignum.adigit-negative?
-##bignum.adigit-=
-##bignum.adigit-<
-##bignum.->fixnum
-##bignum.<-fixnum
-##bignum.adigit-shrink!
-##bignum.adigit-copy!
-##bignum.adigit-cat!
-##bignum.adigit-bitwise-and!
-##bignum.adigit-bitwise-ior!
-##bignum.adigit-bitwise-xor!
-##bignum.adigit-bitwise-not!
-
-##bignum.fdigit-length
-##bignum.fdigit-ref
-##bignum.fdigit-set!
-
-))
-
-  (let ((name
-         (if (symbol? form)
-           form
-           (car form))))
-    (let ((val
-           (if (symbol? form)
-             (if (and (pair? exprs) (null? (cdr exprs)))
-               (car exprs)
-               (error "Incorrect define-prim"))
-             (if (memq name inlinable-procs)
-               `(lambda ,(cdr form)
-                  ,form)
-               (if (null? exprs)
-                 (error "define-prim can't inline" name)
-                 `(lambda ,(cdr form)
-                    ,@exprs))))))
-      `(define ,name
-         (let ()
-           (##declare
-            (not inline)
-            (standard-bindings)
-            (extended-bindings))
-           ,val)))))
+      ((_ id val)
+       #'(define id
+           (let ()
+             (##declare
+               (not inline)
+               (standard-bindings)
+               (extended-bindings))
+             val))))))
 
 ;;;----------------------------------------------------------------------------
 
@@ -384,8 +223,8 @@
 ;; slot 5 = value of entry #0
 
 (##define-macro (macro-gc-hash-table-nb-entries ht)
-  `(##fixnum.arithmetic-shift-right
-    (##fixnum.- (##vector-length ,ht) (macro-gc-hash-table-key0))
+  `(##fxarithmetic-shift-right
+    (##fx- (##vector-length ,ht) (macro-gc-hash-table-key0))
     1))
 
 (##define-macro (macro-gc-hash-table-minimal-nb-entries) 5)
@@ -409,8 +248,8 @@
 (##define-macro (macro-make-gc-hash-table flags count min-count free length)
   `(let ((ht
           (##make-vector
-           (##fixnum.+ (##fixnum.arithmetic-shift-left ,length 1)
-                       (macro-gc-hash-table-key0))
+           (##fx+ (##fxarithmetic-shift-left ,length 1)
+                  (macro-gc-hash-table-key0))
            (macro-unused-obj))))
      (macro-gc-hash-table-flags-set! ht ,flags)
      (macro-gc-hash-table-count-set! ht ,count)
@@ -439,14 +278,14 @@
 (##define-macro (macro-gc-hash-table-flag-need-rehash)    32)
 
 (##define-macro (macro-gc-hash-table-key-ref ht i*2)
-  `(##vector-ref ,ht (##fixnum.+ ,i*2 (macro-gc-hash-table-key0))))
+  `(##vector-ref ,ht (##fx+ ,i*2 (macro-gc-hash-table-key0))))
 (##define-macro (macro-gc-hash-table-key-set! ht i*2 x)
-  `(##vector-set! ,ht (##fixnum.+ ,i*2 (macro-gc-hash-table-key0)) ,x))
+  `(##vector-set! ,ht (##fx+ ,i*2 (macro-gc-hash-table-key0)) ,x))
 
 (##define-macro (macro-gc-hash-table-val-ref ht i*2)
-  `(##vector-ref ,ht (##fixnum.+ ,i*2 (macro-gc-hash-table-val0))))
+  `(##vector-ref ,ht (##fx+ ,i*2 (macro-gc-hash-table-val0))))
 (##define-macro (macro-gc-hash-table-val-set! ht i*2 x)
-  `(##vector-set! ,ht (##fixnum.+ ,i*2 (macro-gc-hash-table-val0)) ,x))
+  `(##vector-set! ,ht (##fx+ ,i*2 (macro-gc-hash-table-val0)) ,x))
 
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -457,14 +296,19 @@
 ;; slot 1 = dynamic-environment
 
 (##define-macro (macro-make-continuation frame denv)
-  `(##subtype-set!
-    (##vector ,frame ,denv)
-    (macro-subtype-continuation)))
+  `(##make-continuation ,frame ,denv))
 
-(##define-macro (macro-continuation-frame c)        `(macro-slot 0 ,c))
-(##define-macro (macro-continuation-frame-set! c x) `(macro-slot 0 ,c ,x))
-(##define-macro (macro-continuation-denv c)         `(macro-slot 1 ,c))
-(##define-macro (macro-continuation-denv-set! c x)  `(macro-slot 1 ,c ,x))
+(##define-macro (macro-continuation-frame c)
+  `(##continuation-frame ,c))
+
+(##define-macro (macro-continuation-frame-set! c x)
+  `(##continuation-frame-set! ,c ,x))
+
+(##define-macro (macro-continuation-denv c)
+  `(##continuation-denv ,c))
+
+(##define-macro (macro-continuation-denv-set! c x)
+  `(##continuation-denv-set! ,c ,x))
 
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -496,41 +340,87 @@
 
 ;;;----------------------------------------------------------------------------
 
-(##define-macro (macro-if-forces forces noforces)
-  (if ((if (and (pair? ##compilation-options)
-                (pair? (car ##compilation-options)))
-           assq
-           memq)
-       'force
-       ##compilation-options)
-      forces
-      noforces))
+(macro-define-syntax macro-case-target
+  (lambda (stx)
+    (syntax-case stx (else)
+      ((_ . clauses)
+       (let ((target (if (and (pair? ##compilation-options)
+                              (pair? (car ##compilation-options)))
+                         (let ((t (assq 'target ##compilation-options)))
+                           (if t (cadr t) 'c))
+                         'c)))
+         (let loop ((clauses (syntax->list #'clauses)))
+           (if (pair? clauses)
+               (syntax-case (car clauses) (else)
+                 ((else . body)
+                  #'(begin . body))
+                 ((cases . body)
+                  (if (memq target (syntax->datum #'cases))
+                      #'(begin . body)
+                      (loop (cdr clauses)))))
+               #'(begin))))))))
 
-(##define-macro (macro-force-vars vars expr)
-  (if ((if (and (pair? ##compilation-options)
-                (pair? (car ##compilation-options)))
-           assq
-           memq)
-       'force
-       ##compilation-options)
-      `(let ,(map (lambda (x) `(,x (##force ,x))) vars) ,expr)
-      expr))
+(macro-define-syntax macro-if-forces
+  (lambda (stx)
+    (syntax-case stx ()
+      ((_ forces noforces)
+       (if ((if (and (pair? ##compilation-options)
+                     (pair? (car ##compilation-options)))
+                assq
+                memq)
+            'force
+            ##compilation-options)
 
-(##define-macro (macro-if-checks checks nochecks)
-  (if ((if (and (pair? ##compilation-options)
-                (pair? (car ##compilation-options)))
-           assq
-           memq)
-       'check
-       ##compilation-options)
-      checks
-      nochecks))
+           #'forces
 
-(##define-macro (macro-no-force vars expr)
-  expr)
+           #'noforces)))))
 
-(##define-macro (macro-no-check var arg-num form expr)
-  expr)
+(macro-define-syntax macro-force-vars
+  (lambda (stx)
+    (syntax-case stx ()
+      ((_ vars expr)
+       (if ((if (and (pair? ##compilation-options)
+                     (pair? (car ##compilation-options)))
+                assq
+                memq)
+            'force
+            ##compilation-options)
+
+           (syntax-case (datum->syntax
+                         #'vars
+                         (map (lambda (x) `(,x (##force ,x)))
+                              (syntax->list #'vars)))
+               ()
+             (bindings #'(let bindings expr)))
+
+           #'expr)))))
+
+(macro-define-syntax macro-if-checks
+  (lambda (stx)
+    (syntax-case stx ()
+      ((_ checks nochecks)
+       (if ((if (and (pair? ##compilation-options)
+                     (pair? (car ##compilation-options)))
+                assq
+                memq)
+            'check
+            ##compilation-options)
+
+           #'checks
+
+           #'nochecks)))))
+
+(macro-define-syntax macro-no-force
+  (lambda (stx)
+    (syntax-case stx ()
+      ((_ vars expr)
+       #'expr))))
+
+(macro-define-syntax macro-no-check
+  (lambda (stx)
+    (syntax-case stx ()
+      ((_ var arg-num form expr)
+       #'expr))))
 
 (##define-macro
   (define-prim-fold bool? form zero one two forcing pre-check . post-checks)
@@ -593,7 +483,7 @@
                           (if (eq? (car check) '##pair?)
                             (let ((x (list '##car name-result)))
                               (list (if arg-num
-                                        (list '##fixnum.+ arg-num x)
+                                        (list '##fx+ arg-num x)
                                         x)))
                             '())
                           (list ''()
@@ -673,7 +563,7 @@
                             '(next)
                             (add-pre-check
                              'next
-                             '(##fixnum.+ arg-num 3)
+                             '(##fx+ arg-num 3)
                              (if bool?
                                (list 'loop
                                      (list 'and
@@ -682,12 +572,12 @@
                                      name-param2
                                      'next
                                      '(##cdr lst)
-                                     '(##fixnum.+ arg-num 1))
+                                     '(##fx+ arg-num 1))
                                (list 'loop
                                      result
                                      'next
                                      '(##cdr lst)
-                                     '(##fixnum.+ arg-num 1)))))))))))
+                                     '(##fx+ arg-num 1)))))))))))
 
     (define (body)
       (cons 'cond
@@ -718,10 +608,8 @@
                                       (exactly-1-arg)))))))
 
     (list 'define-prim
-          name-fn
-          (list 'lambda
-                (parameter-list)
-                (body)))))
+          (cons name-fn (parameter-list))
+          (body))))
 
 (##define-macro
   (define-prim-nary form zero one two forcing pre-check . post-checks)
@@ -983,7 +871,7 @@
            ,@(if id
                `(id: ,id)
                `())
-           ,@(if (##fixnum.= (##fixnum.bitwise-and flags 1) 0)
+           ,@(if (##fx= (##fxand flags 1) 0)
                `()
                `(opaque:))
            ,@(if extender
@@ -1015,13 +903,13 @@
                           ,@(if (##symbol? setter)
                               `(,setter)
                               `())
-                          ,@(if (##fixnum.= (##fixnum.bitwise-and options 1) 0)
+                          ,@(if (##fx= (##fxand options 1) 0)
                               `()
                               `(unprintable:))
-                          ,@(if (##fixnum.= (##fixnum.bitwise-and options 2) 0)
+                          ,@(if (##fx= (##fxand options 2) 0)
                               `()
                               `(read-only:))
-                          ,@(if (##fixnum.= (##fixnum.bitwise-and options 4) 0)
+                          ,@(if (##fx= (##fxand options 4) 0)
                               `()
                               `(equality-skip:))
                           ,@(let loop ((lst1 attributes)

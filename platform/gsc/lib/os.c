@@ -1,6 +1,6 @@
 /* File: "os.c" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved. */
 
 /*
  * This module implements the operating system specific routines
@@ -30,9 +30,10 @@
  */
 
 #define ___INCLUDED_FROM_OS
-#define ___VERSION 407001
+#define ___VERSION 408004
 #include "gambit.h"
 
+#include "os_thread.h"
 #include "os_base.h"
 #include "os_time.h"
 #include "os_shell.h"
@@ -619,7 +620,6 @@ int arg_num;)
       if (___FIXNUMP(result))
         return ___FIX(___CTOS_HEAP_OVERFLOW_ERR+arg_num);
 
-
       ___U8VECTORSET(result,___FIX(0),___FIX((a>>24) & 0xff))
       ___U8VECTORSET(result,___FIX(1),___FIX((a>>16) & 0xff))
       ___U8VECTORSET(result,___FIX(2),___FIX((a>>8)  & 0xff))
@@ -809,8 +809,6 @@ int arg_num;)
   else
     result = ___FAL;
 
-  ___release_scmobj (result);
-
   return result;
 }
 
@@ -865,8 +863,6 @@ int arg_num;)
 #endif
   else
     result = ___FAL;
-
-  ___release_scmobj (result);
 
   return result;
 }
@@ -1658,6 +1654,117 @@ ___SCMOBJ network;)
 
 /*   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   */
 
+/* Change file times. */
+
+___SCMOBJ ___os_file_times_set
+   ___P((___SCMOBJ path,
+         ___SCMOBJ access_time,
+         ___SCMOBJ modification_time),
+        (path,
+         access_time,
+         modification_time)
+___SCMOBJ path;
+___SCMOBJ access_time;
+___SCMOBJ modification_time;)
+{
+  ___SCMOBJ e;
+  void *cpath;
+  ___time atime;
+  ___time mtime;
+
+  ___time_from_seconds (&atime, ___F64UNBOX(access_time));
+  ___time_from_seconds (&mtime, ___F64UNBOX(modification_time));
+
+#ifndef USE_utimes
+#ifndef USE_SetFileTime
+
+  e = ___FIX(___UNIMPL_ERR);
+
+#endif
+#endif
+
+#ifdef USE_utimes
+
+  if ((e = ___SCMOBJ_to_NONNULLSTRING
+             (___PSA(___PSTATE)
+              path,
+              &cpath,
+              1,
+              ___CE(___TIMES_PATH_CE_SELECT),
+              0))
+      == ___FIX(___NO_ERR))
+    {
+      struct timeval tv[2];
+
+      ___absolute_time_to_timeval (atime, &tv[0]);
+      ___absolute_time_to_timeval (mtime, &tv[1]);
+
+      if (utimes (___CAST(___STRING_TYPE(___TIMES_PATH_CE_SELECT),cpath), tv)
+          < 0)
+        {
+          e = fnf_or_err_code_from_errno ();
+          ___release_string (cpath);
+          return e;
+        }
+
+      ___release_string (cpath);
+    }
+
+#endif
+
+#ifdef USE_SetFileTime
+
+  if ((e = ___SCMOBJ_to_NONNULLSTRING
+             (___PSA(___PSTATE)
+              path,
+              &cpath,
+              1,
+              ___CE(___TIMES_PATH_CE_SELECT),
+              0))
+      == ___FIX(___NO_ERR))
+    {
+      HANDLE h;
+      FILETIME ft[2];
+
+      ___time_to_FILETIME (atime, &ft[0]);
+      ___time_to_FILETIME (mtime, &ft[1]);
+
+      h = CreateFile (___CAST(___STRING_TYPE(___TIMES_PATH_CE_SELECT),cpath),
+                      FILE_WRITE_ATTRIBUTES,
+                      0,
+                      NULL,
+                      OPEN_EXISTING,
+                      0,
+                      NULL);
+
+      if (h == INVALID_HANDLE_VALUE)
+        {
+          e = fnf_or_err_code_from_GetLastError ();
+          ___release_string (cpath);
+          return e;
+        }
+
+      if (!SetFileTime (h, NULL, &ft[0], &ft[1]))
+        {
+          e = err_code_from_GetLastError ();
+          CloseHandle (h); /* ignore error */
+          ___release_string (cpath);
+          return e;
+        }
+
+      CloseHandle (h); /* ignore error */
+      ___release_string (cpath);
+
+    }
+
+#endif
+
+  return e;
+}
+
+
+/*   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   */
+
 /* Access to file information. */
 
 ___SCMOBJ ___os_file_info
@@ -1675,8 +1782,6 @@ ___SCMOBJ chase;)
 
 #ifndef USE_stat
 #ifndef USE_GetFileAttributesEx
-
-#define ___INFO_PATH_CE_SELECT(latin1,utf8,ucs2,ucs4,wchar,native) native
 
   if ((e = ___SCMOBJ_to_NONNULLSTRING
              (___PSA(___PSTATE)
@@ -1741,8 +1846,6 @@ ___SCMOBJ chase;)
 #endif
 
 #ifdef USE_stat
-
-#define ___INFO_PATH_CE_SELECT(latin1,utf8,ucs2,ucs4,wchar,native) native
 
   if ((e = ___SCMOBJ_to_NONNULLSTRING
              (___PSA(___PSTATE)
@@ -1917,12 +2020,6 @@ ___SCMOBJ chase;)
 
 #ifdef USE_GetFileAttributesEx
 
-#ifdef _UNICODE
-#define ___INFO_PATH_CE_SELECT(latin1,utf8,ucs2,ucs4,wchar,native) ucs2
-#else
-#define ___INFO_PATH_CE_SELECT(latin1,utf8,ucs2,ucs4,wchar,native) native
-#endif
-
   if ((e = ___SCMOBJ_to_NONNULLSTRING
              (___PSA(___PSTATE)
               path,
@@ -1933,6 +2030,9 @@ ___SCMOBJ chase;)
       == ___FIX(___NO_ERR))
     {
       WIN32_FILE_ATTRIBUTE_DATA fad;
+      ___time atime;
+      ___time wtime;
+      ___time ctime;
 
       if (!GetFileAttributesEx
              (___CAST(___STRING_TYPE(___INFO_PATH_CE_SELECT),cpath),
@@ -1982,9 +2082,11 @@ ___SCMOBJ chase;)
       ___FIELD(result,8) = x;
       ___release_scmobj (x);
 
+      ___time_from_FILETIME (&atime, fad.ftLastAccessTime);
+
       if ((e = ___F64_to_SCMOBJ
                  (___PSTATE,
-                  ___CAST(___F64,FILETIME_TO_TIME(fad.ftLastAccessTime)),
+                  ___time_to_seconds (atime),
                   &x,
                   ___RETURN_POS))
           != ___FIX(___NO_ERR))
@@ -1996,9 +2098,11 @@ ___SCMOBJ chase;)
       ___FIELD(result,9) = x;
       ___release_scmobj (x);
 
+      ___time_from_FILETIME (&wtime, fad.ftLastWriteTime);
+
       if ((e = ___F64_to_SCMOBJ
                  (___PSTATE,
-                  ___CAST(___F64,FILETIME_TO_TIME(fad.ftLastWriteTime)),
+                  ___time_to_seconds (wtime),
                   &x,
                   ___RETURN_POS))
           != ___FIX(___NO_ERR))
@@ -2013,9 +2117,11 @@ ___SCMOBJ chase;)
 
       ___FIELD(result,12) = ___FIX(fad.dwFileAttributes);
 
+      ___time_from_FILETIME (&ctime, fad.ftCreationTime);
+
       if ((e = ___F64_to_SCMOBJ
                  (___PSTATE,
-                  ___CAST(___F64,FILETIME_TO_TIME(fad.ftCreationTime)),
+                  ___time_to_seconds (ctime),
                   &x,
                   ___RETURN_POS))
           != ___FIX(___NO_ERR))
@@ -2464,6 +2570,47 @@ ___HIDDEN void terminate_intr ___PVOID
 }
 
 
+#ifdef USE_POSIX
+
+#ifdef ___DEBUG_CTRL_FLOW_HISTORY
+
+___HIDDEN void log_ctrl_flow_history ___PVOID
+{
+  ___print_ctrl_flow_history (___PSTATE);
+}
+
+___HIDDEN void crash_signal_handler
+   ___P((int sig),
+        (sig)
+int sig;)
+{
+  static char *msgs[] = { "Process crashed with ", "unknown signal", NULL };
+
+  log_ctrl_flow_history ();
+
+  switch (sig)
+    {
+    case SIGTERM:
+      msgs[1] = "SIGTERM";
+      break;
+
+    case SIGBUS:
+      msgs[1] = "SIGBUS";
+      break;
+
+    case SIGSEGV:
+      msgs[1] = "SIGSEGV";
+      break;
+    }
+
+  ___fatal_error (msgs);
+}
+
+#endif
+
+#endif
+
+
 ___SCMOBJ ___setup_os ___PVOID
 {
   ___SCMOBJ e;
@@ -2477,37 +2624,38 @@ ___SCMOBJ ___setup_os ___PVOID
    * "___cleanup" does not access dangling pointers.
    */
 
-  if ((e = ___setup_base_module ()) == ___FIX(___NO_ERR))
-    {
-      if ((e = ___setup_time_module (heartbeat_intr)) == ___FIX(___NO_ERR))
-        {
-          if ((e = ___setup_shell_module ()) == ___FIX(___NO_ERR))
-            {
-              if ((e = ___setup_files_module ()) == ___FIX(___NO_ERR))
-                {
-                  if ((e = ___setup_dyn_module ()) == ___FIX(___NO_ERR))
-                    {
-                      if ((e = ___setup_tty_module (user_intr, terminate_intr)) == ___FIX(___NO_ERR))
-                        {
-                          if ((e = ___setup_io_module ()) == ___FIX(___NO_ERR))
-                            {
+  if ((e = ___setup_base_module ()) == ___FIX(___NO_ERR)) {
+    if ((e = ___setup_thread_module ()) == ___FIX(___NO_ERR)) {
+      if ((e = ___setup_time_module (heartbeat_intr)) == ___FIX(___NO_ERR)) {
+        if ((e = ___setup_shell_module ()) == ___FIX(___NO_ERR)) {
+          if ((e = ___setup_files_module ()) == ___FIX(___NO_ERR)) {
+            if ((e = ___setup_dyn_module ()) == ___FIX(___NO_ERR)) {
+              if ((e = ___setup_tty_module (user_intr, terminate_intr)) == ___FIX(___NO_ERR)) {
+                if ((e = ___setup_io_module ()) == ___FIX(___NO_ERR)) {
 #ifdef USE_POSIX
-                              ___set_signal_handler (SIGPIPE, SIG_IGN); /***** belongs elsewhere */
+                  ___set_signal_handler (SIGPIPE, SIG_IGN); /***** belongs elsewhere */
+#ifdef ___DEBUG_CTRL_FLOW_HISTORY
+                  ___set_signal_handler (SIGTERM, crash_signal_handler);
+                  ___set_signal_handler (SIGBUS,  crash_signal_handler);
+                  ___set_signal_handler (SIGSEGV, crash_signal_handler);
 #endif
-                              return ___FIX(___NO_ERR);
-                            }
-                          ___cleanup_tty_module ();
-                        }
-                      ___cleanup_dyn_module ();
-                    }
-                  ___cleanup_files_module ();
+#endif
+                  return ___FIX(___NO_ERR);
                 }
-              ___cleanup_shell_module ();
+                ___cleanup_tty_module ();
+              }
+              ___cleanup_dyn_module ();
             }
-          ___cleanup_time_module ();
+            ___cleanup_files_module ();
+          }
+          ___cleanup_shell_module ();
         }
-      ___cleanup_base_module ();
+        ___cleanup_time_module ();
+      }
+      ___cleanup_thread_module ();
     }
+    ___cleanup_base_module ();
+  }
 
   return e;
 }
@@ -2521,6 +2669,7 @@ void ___cleanup_os ___PVOID
   ___cleanup_files_module ();
   ___cleanup_shell_module ();
   ___cleanup_time_module ();
+  ___cleanup_thread_module ();
   ___cleanup_base_module ();
 }
 

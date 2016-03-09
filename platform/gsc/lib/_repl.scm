@@ -2,11 +2,7 @@
 
 ;;; File: "_repl.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
-
-;;;============================================================================
-
-(##include "header.scm")
+;;; Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -67,15 +63,15 @@
   (mk-degen (up over)
     (let loop1 ((c (macro-code-cte $code)) (up up))
       (cond ((##cte-frame? c)
-             (if (##fixnum.= up 0)
+             (if (##fx= up 0)
                  (let loop2 ((vars (##cte-frame-vars c)) (i over))
-                   (if (##fixnum.< i 2)
+                   (if (##fx< i 2)
                        (let ((var (##car vars)))
                          (if (##var-i? var)
                              (##var-i-name var)
                              (##var-c-name var)))
-                       (loop2 (##cdr vars) (##fixnum.- i 1))))
-                 (loop1 (##cte-parent-cte c) (##fixnum.- up 1))))
+                       (loop2 (##cdr vars) (##fx- i 1))))
+                 (loop1 (##cte-parent-cte c) (##fx- up 1))))
             (else
              (loop1 (##cte-parent-cte c) up))))))
 
@@ -89,37 +85,42 @@
 
 (define-prim ##degen-loc-set
   (mk-degen ()
-    (##list 'set! (degen ##degen-up-over (^ 1) (^ 2))
-                  (##decomp (^ 0)))))
+    (##list 'set!
+            (degen ##degen-up-over (^ 1) (^ 2))
+            (##decomp (^ 0)))))
 
 (define-prim ##degen-glo-set
   (mk-degen ()
-    (##list 'set! (##global-var->identifier (^ 1))
-                  (##decomp (^ 0)))))
+    (##list 'set!
+            (##global-var->identifier (^ 1))
+            (##decomp (^ 0)))))
 
 (define-prim ##degen-glo-def
   (mk-degen ()
-    (##list 'define (##global-var->identifier (^ 1))
-                    (##decomp (^ 0)))))
+    (##list 'define
+            (##global-var->identifier (^ 1))
+            (##decomp (^ 0)))))
 
 (define-prim ##degen-if2
   (mk-degen ()
-    (##list 'if (##decomp (^ 0))
-                (##decomp (^ 1)))))
+    (##list 'if
+            (##decomp (^ 0))
+            (##decomp (^ 1)))))
 
 (define-prim ##degen-if3
   (mk-degen ()
-    (##list 'if (##decomp (^ 0))
-                (##decomp (^ 1))
-                (##decomp (^ 2)))))
+    (##list 'if
+            (##decomp (^ 0))
+            (##decomp (^ 1))
+            (##decomp (^ 2)))))
 
 (define-prim ##degen-seq
   (mk-degen ()
     (let ((val1 (##decomp (^ 0)))
           (val2 (##decomp (^ 1))))
       (if (##begin? val2)
-        (##cons 'begin (##cons val1 (##cdr val2)))
-        (##list 'begin val1 val2)))))
+          (##cons 'begin (##cons val1 (##cdr val2)))
+          (##list 'begin val1 val2)))))
 
 (define-prim ##degen-quasi-list->vector
   (mk-degen ()
@@ -171,12 +172,12 @@
 
 (define-prim (##degen-quasi-extract expr tag)
   (and ;; #f ;; uncomment to disable optimization
-       (##pair? expr)
-       (##eq? (##car expr) tag)
-       (let ((x (##cdr expr)))
-         (and (##pair? x)
-              (##null? (##cdr x))
-              (##list (##car x))))))
+   (##pair? expr)
+   (##eq? (##car expr) tag)
+   (let ((x (##cdr expr)))
+     (and (##pair? x)
+          (##null? (##cdr x))
+          (##list (##car x))))))
 
 (define-prim ##degen-cond-if
   (mk-degen ()
@@ -184,10 +185,10 @@
           (val2 (##decomp (^ 1)))
           (val3 (##decomp (^ 2))))
       (##build-cond
-        (if (##begin? val2)
-          (##cons val1 (##cdr val2))
-          (##list val1 val2))
-        val3))))
+       (if (##begin? val2)
+           (##cons val1 (##cdr val2))
+           (##list val1 val2))
+       val3))))
 
 (define-prim ##degen-cond-or
   (mk-degen ()
@@ -217,16 +218,16 @@
     (let ((val1 (##decomp (^ 0)))
           (val2 (##decomp (^ 1))))
       (if (##or? val2)
-        (##cons 'or (##cons val1 (##cdr val2)))
-        (##list 'or val1 val2)))))
+          (##cons 'or (##cons val1 (##cdr val2)))
+          (##list 'or val1 val2)))))
 
 (define-prim ##degen-and
   (mk-degen ()
     (let ((val1 (##decomp (^ 0)))
           (val2 (##decomp (^ 1))))
       (if (##and? val2)
-        (##cons 'and (##cons val1 (##cdr val2)))
-        (##list 'and val1 val2)))))
+          (##cons 'and (##cons val1 (##cdr val2)))
+          (##list 'and val1 val2)))))
 
 (define-prim ##degen-case
   (mk-degen ()
@@ -239,92 +240,99 @@
     (let ((val1 (##decomp (^ 0)))
           (val2 (##decomp (^ 1))))
       (##cons (if (##begin? val1)
-                (##cons (^ 2) (##cdr val1))
-                (##list (^ 2) val1))
+                  (##cons (^ 2) (##cdr val1))
+                  (##list (^ 2) val1))
               val2))))
 
 (define-prim ##degen-case-else
   (mk-degen ()
     (let ((val (##decomp (^ 0))))
       (if (##void-constant? val)
-        '()
-        (##list (if (##begin? val)
-                  (##cons 'else (##cdr val))
-                  (##list 'else val)))))))
+          '()
+          (##list (if (##begin? val)
+                      (##cons 'else (##cdr val))
+                      (##list 'else val)))))))
 
 (define-prim ##degen-let
   (mk-degen ()
     (let ((n (macro-code-length $code)))
-      (let loop ((i (##fixnum.- n 2)) (vals '()))
-        (if (##fixnum.< 0 i)
-          (loop (##fixnum.- i 1)
-                (##cons (##decomp (macro-code-ref $code i)) vals))
-          (let ((body
-                 (##decomp (^ 0)))
-                (bindings
-                 (##make-bindings (macro-code-ref $code (##fixnum.- n 1))
-                                  vals)))
-            (if (##begin? body)
-              (##cons 'let (##cons bindings (##cdr body)))
-              (##list 'let bindings body))))))))
+      (let loop ((i (##fx- n 2)) (vals '()))
+        (if (##fx< 0 i)
+            (loop (##fx- i 1)
+                  (##cons (##decomp (macro-code-ref $code i)) vals))
+            (let ((body
+                   (##decomp (^ 0)))
+                  (bindings
+                   (##make-bindings (macro-code-ref $code (##fx- n 1))
+                                    vals)))
+              (if (##begin? body)
+                  (##cons 'let (##cons bindings (##cdr body)))
+                  (##list 'let bindings body))))))))
 
 (define-prim (##make-bindings l1 l2)
   (if (##pair? l1)
-    (##cons (##list (##car l1) (##car l2))
-            (##make-bindings (##cdr l1) (##cdr l2)))
-    '()))
+      (##cons (##list (##car l1) (##car l2))
+              (##make-bindings (##cdr l1) (##cdr l2)))
+      '()))
 
 (define-prim ##degen-letrec
   (mk-degen ()
-    (let ((n (macro-code-length $code)))
-      (let loop ((i (##fixnum.- n 2)) (vals '()))
-        (if (##fixnum.< 0 i)
-          (loop (##fixnum.- i 1)
+    (##degen-letrec-aux $code 'letrec)))
+
+(define-prim ##degen-letrec*
+  (mk-degen ()
+    (##degen-letrec-aux $code 'letrec*)))
+
+(define-prim (##degen-letrec-aux $code sym)
+  (let ((n (macro-code-length $code)))
+    (let loop ((i (##fx- n 2)) (vals '()))
+      (if (##fx< 0 i)
+          (loop (##fx- i 1)
                 (##cons (##decomp (macro-code-ref $code i)) vals))
           (let ((body
                  (##decomp (^ 0)))
                 (bindings
-                 (##make-bindings (macro-code-ref $code (##fixnum.- n 1))
+                 (##make-bindings (macro-code-ref $code (##fx- n 1))
                                   vals)))
             (if (##begin? body)
-              (##cons 'letrec (##cons bindings (##cdr body)))
-              (##list 'letrec bindings body))))))))
+                (##cons sym (##cons bindings (##cdr body)))
+                (##list sym bindings body)))))))
 
 (define-prim ##degen-prc-req
   (mk-degen ()
     (let* ((n (macro-code-length $code))
            (body (##decomp (^ 0)))
-           (params (macro-code-ref $code (##fixnum.- n 1))))
+           (params (macro-code-ref $code (##fx- n 1))))
       (if (##begin? body)
-        (##cons 'lambda (##cons params (##cdr body)))
-        (##list 'lambda params body)))))
+          (##cons 'lambda (##cons params (##cdr body)))
+          (##list 'lambda params body)))))
 
 (define-prim ##degen-prc-rest
   (mk-degen ()
     (let ((body (##decomp (^ 0)))
           (params (##make-params (^ 3) #t #f '())))
       (if (##begin? body)
-        (##cons 'lambda (##cons params (##cdr body)))
-        (##list 'lambda params body)))))
+          (##cons 'lambda (##cons params (##cdr body)))
+          (##list 'lambda params body)))))
 
 (define-prim ##degen-prc
   (mk-degen ()
     (let ((n (macro-code-length $code)))
-      (let loop ((i (##fixnum.- n 8)) (inits '()))
-        (if (##not (##fixnum.< i 1))
-          (loop (##fixnum.- i 1)
-                (##cons (##decomp (macro-code-ref $code i)) inits))
-          (let ((body
-                 (##decomp (^ 0)))
-                (params
-                 (##make-params
-                   (macro-code-ref $code (##fixnum.- n 1))
-                   (macro-code-ref $code (##fixnum.- n 4))
-                   (macro-code-ref $code (##fixnum.- n 3))
-                   inits)))
-            (if (##begin? body)
-              (##cons 'lambda (##cons params (##cdr body)))
-              (##list 'lambda params body))))))))
+      (let loop ((i (##fx- n 8)) (inits '()))
+        (if (##not (##fx< i 1))
+            (loop (##fx- i 1)
+                  (##cons (##decomp (macro-code-ref $code i)) inits))
+            (let ((body
+                   (##decomp (^ 0)))
+                  (params
+                   (##make-params
+                    (macro-code-ref $code (##fx- n 1))
+                    (macro-code-ref $code (##fx- n 4))
+                    (macro-code-ref $code (##fx- n 3))
+                    inits)))
+              (if (##begin? body)
+                  (##cons 'lambda (##cons params (##cdr body)))
+                  (##list 'lambda params body))))))))
 
 (define-prim (##make-params parms rest? keys inits)
   (let* ((nb-parms
@@ -332,67 +340,67 @@
          (nb-inits
           (##length inits))
          (nb-reqs
-          (##fixnum.- nb-parms (##fixnum.+ nb-inits (if rest? 1 0))))
+          (##fx- nb-parms (##fx+ nb-inits (if rest? 1 0))))
          (nb-opts
-          (##fixnum.- nb-inits (if keys (##vector-length keys) 0))))
+          (##fx- nb-inits (if keys (##vector-length keys) 0))))
 
     (define (build-reqs)
       (let loop ((parms parms)
                  (i nb-reqs))
-        (if (##fixnum.= i 0)
-          (build-opts parms)
-          (let ((parm (##car parms)))
-            (##cons parm
-                    (loop (##cdr parms)
-                          (##fixnum.- i 1)))))))
+        (if (##fx= i 0)
+            (build-opts parms)
+            (let ((parm (##car parms)))
+              (##cons parm
+                      (loop (##cdr parms)
+                            (##fx- i 1)))))))
 
     (define (build-opts parms)
-      (if (##fixnum.= nb-opts 0)
-        (build-rest-and-keys parms inits)
-        (##cons #!optional
-                (let loop ((parms parms)
-                           (i nb-opts)
-                           (inits inits))
-                  (if (##fixnum.= i 0)
-                    (build-rest-and-keys parms inits)
-                    (let ((parm (##car parms))
-                          (init (##car inits)))
-                      (##cons (if (##eq? init #f) parm (##list parm init))
-                              (loop (##cdr parms)
-                                    (##fixnum.- i 1)
-                                    (##cdr inits)))))))))
+      (if (##fx= nb-opts 0)
+          (build-rest-and-keys parms inits)
+          (##cons #!optional
+                  (let loop ((parms parms)
+                             (i nb-opts)
+                             (inits inits))
+                    (if (##fx= i 0)
+                        (build-rest-and-keys parms inits)
+                        (let ((parm (##car parms))
+                              (init (##car inits)))
+                          (##cons (if (##eq? init #f) parm (##list parm init))
+                                  (loop (##cdr parms)
+                                        (##fx- i 1)
+                                        (##cdr inits)))))))))
 
     (define (build-rest-and-keys parms inits)
       (if (##eq? rest? 'dsssl)
-        (##cons #!rest
-                (##cons (##car parms)
-                        (build-keys (##cdr parms) inits)))
-        (build-keys parms inits)))
+          (##cons #!rest
+                  (##cons (##car parms)
+                          (build-keys (##cdr parms) inits)))
+          (build-keys parms inits)))
 
     (define (build-keys parms inits)
       (if (##not keys)
-        (build-rest-at-end parms)
-        (##cons #!key
-                (let loop ((parms parms)
-                           (i (##vector-length keys))
-                           (inits inits))
-                  (if (##fixnum.= i 0)
-                    (build-rest-at-end parms)
-                    (let ((parm (##car parms))
-                          (init (##car inits)))
-                      (##cons (if (##eq? init #f) parm (##list parm init))
-                              (loop (##cdr parms)
-                                    (##fixnum.- i 1)
-                                    (##cdr inits)))))))))
+          (build-rest-at-end parms)
+          (##cons #!key
+                  (let loop ((parms parms)
+                             (i (##vector-length keys))
+                             (inits inits))
+                    (if (##fx= i 0)
+                        (build-rest-at-end parms)
+                        (let ((parm (##car parms))
+                              (init (##car inits)))
+                          (##cons (if (##eq? init #f) parm (##list parm init))
+                                  (loop (##cdr parms)
+                                        (##fx- i 1)
+                                        (##cdr inits)))))))))
 
     (define use-dotted-rest-parameter-when-possible? #t)
 
     (define (build-rest-at-end parms)
       (if (##eq? rest? #t)
-        (if use-dotted-rest-parameter-when-possible?
-          (##car parms)
-          (##cons #!rest (##cons (##car parms) '())))
-        '()))
+          (if use-dotted-rest-parameter-when-possible?
+              (##car parms)
+              (##cons #!rest (##cons (##car parms) '())))
+          '()))
 
     (build-reqs)))
 
@@ -429,11 +437,11 @@
 (define-prim ##degen-app
   (mk-degen ()
     (let ((n (macro-code-length $code)))
-      (let loop ((i (##fixnum.- n 1)) (vals '()))
-        (if (##not (##fixnum.< i 0))
-          (loop (##fixnum.- i 1)
-                (##cons (##decomp (macro-code-ref $code i)) vals))
-          vals)))))
+      (let loop ((i (##fx- n 1)) (vals '()))
+        (if (##not (##fx< i 0))
+            (loop (##fx- i 1)
+                  (##cons (##decomp (macro-code-ref $code i)) vals))
+            vals)))))
 
 (define-prim ##degen-delay
   (mk-degen ()
@@ -449,74 +457,75 @@
 
 (define-prim (##setup-decomp-dispatch-table)
   (set! ##decomp-dispatch-table
-    (##list
-      (##cons ##cprc-top         ##degen-top)
+        (##list
+         (##cons ##cprc-top         ##degen-top)
 
-      (##cons ##cprc-cst         ##degen-cst)
+         (##cons ##cprc-cst         ##degen-cst)
 
-      (##cons ##cprc-loc-ref-0-1 (mk-degen () (degen ##degen-loc-ref-x-y 0 1)))
-      (##cons ##cprc-loc-ref-0-2 (mk-degen () (degen ##degen-loc-ref-x-y 0 2)))
-      (##cons ##cprc-loc-ref-0-3 (mk-degen () (degen ##degen-loc-ref-x-y 0 3)))
-      (##cons ##cprc-loc-ref-1-1 (mk-degen () (degen ##degen-loc-ref-x-y 1 1)))
-      (##cons ##cprc-loc-ref-1-2 (mk-degen () (degen ##degen-loc-ref-x-y 1 2)))
-      (##cons ##cprc-loc-ref-1-3 (mk-degen () (degen ##degen-loc-ref-x-y 1 3)))
-      (##cons ##cprc-loc-ref-2-1 (mk-degen () (degen ##degen-loc-ref-x-y 2 1)))
-      (##cons ##cprc-loc-ref-2-2 (mk-degen () (degen ##degen-loc-ref-x-y 2 2)))
-      (##cons ##cprc-loc-ref-2-3 (mk-degen () (degen ##degen-loc-ref-x-y 2 3)))
-      (##cons ##cprc-loc-ref     ##degen-loc-ref)
-      (##cons ##cprc-loc-ref-box ##degen-loc-ref)
-      (##cons ##cprc-glo-ref     ##degen-glo-ref)
+         (##cons ##cprc-loc-ref-0-1 (mk-degen () (degen ##degen-loc-ref-x-y 0 1)))
+         (##cons ##cprc-loc-ref-0-2 (mk-degen () (degen ##degen-loc-ref-x-y 0 2)))
+         (##cons ##cprc-loc-ref-0-3 (mk-degen () (degen ##degen-loc-ref-x-y 0 3)))
+         (##cons ##cprc-loc-ref-1-1 (mk-degen () (degen ##degen-loc-ref-x-y 1 1)))
+         (##cons ##cprc-loc-ref-1-2 (mk-degen () (degen ##degen-loc-ref-x-y 1 2)))
+         (##cons ##cprc-loc-ref-1-3 (mk-degen () (degen ##degen-loc-ref-x-y 1 3)))
+         (##cons ##cprc-loc-ref-2-1 (mk-degen () (degen ##degen-loc-ref-x-y 2 1)))
+         (##cons ##cprc-loc-ref-2-2 (mk-degen () (degen ##degen-loc-ref-x-y 2 2)))
+         (##cons ##cprc-loc-ref-2-3 (mk-degen () (degen ##degen-loc-ref-x-y 2 3)))
+         (##cons ##cprc-loc-ref     ##degen-loc-ref)
+         (##cons ##cprc-loc-ref-box ##degen-loc-ref)
+         (##cons ##cprc-glo-ref     ##degen-glo-ref)
 
-      (##cons ##cprc-loc-set     ##degen-loc-set)
-      (##cons ##cprc-loc-set-box ##degen-loc-set)
-      (##cons ##cprc-glo-set     ##degen-glo-set)
-      (##cons ##cprc-glo-def     ##degen-glo-def)
+         (##cons ##cprc-loc-set     ##degen-loc-set)
+         (##cons ##cprc-loc-set-box ##degen-loc-set)
+         (##cons ##cprc-glo-set     ##degen-glo-set)
+         (##cons ##cprc-glo-def     ##degen-glo-def)
 
-      (##cons ##cprc-if2         ##degen-if2)
-      (##cons ##cprc-if3         ##degen-if3)
-      (##cons ##cprc-seq         ##degen-seq)
-      (##cons ##cprc-quasi-list->vector ##degen-quasi-list->vector)
-      (##cons ##cprc-quasi-append ##degen-quasi-append)
-      (##cons ##cprc-quasi-cons  ##degen-quasi-cons)
-      (##cons ##cprc-cond-if     ##degen-cond-if)
-      (##cons ##cprc-cond-or     ##degen-cond-or)
-      (##cons ##cprc-cond-send-red ##degen-cond-send)
-      (##cons ##cprc-cond-send-sub ##degen-cond-send)
+         (##cons ##cprc-if2         ##degen-if2)
+         (##cons ##cprc-if3         ##degen-if3)
+         (##cons ##cprc-seq         ##degen-seq)
+         (##cons ##cprc-quasi-list->vector ##degen-quasi-list->vector)
+         (##cons ##cprc-quasi-append ##degen-quasi-append)
+         (##cons ##cprc-quasi-cons  ##degen-quasi-cons)
+         (##cons ##cprc-cond-if     ##degen-cond-if)
+         (##cons ##cprc-cond-or     ##degen-cond-or)
+         (##cons ##cprc-cond-send-red ##degen-cond-send)
+         (##cons ##cprc-cond-send-sub ##degen-cond-send)
 
-      (##cons ##cprc-or          ##degen-or)
-      (##cons ##cprc-and         ##degen-and)
+         (##cons ##cprc-or          ##degen-or)
+         (##cons ##cprc-and         ##degen-and)
 
-      (##cons ##cprc-case        ##degen-case)
-      (##cons ##cprc-case-clause ##degen-case-clause)
-      (##cons ##cprc-case-else   ##degen-case-else)
+         (##cons ##cprc-case        ##degen-case)
+         (##cons ##cprc-case-clause ##degen-case-clause)
+         (##cons ##cprc-case-else   ##degen-case-else)
 
-      (##cons ##cprc-let         ##degen-let)
-      (##cons ##cprc-letrec      ##degen-letrec)
+         (##cons ##cprc-let         ##degen-let)
+         (##cons ##cprc-letrec      ##degen-letrec)
+         (##cons ##cprc-letrec*     ##degen-letrec*)
 
-      (##cons ##cprc-prc-req0    ##degen-prc-req)
-      (##cons ##cprc-prc-req1    ##degen-prc-req)
-      (##cons ##cprc-prc-req2    ##degen-prc-req)
-      (##cons ##cprc-prc-req3    ##degen-prc-req)
-      (##cons ##cprc-prc-req     ##degen-prc-req)
-      (##cons ##cprc-prc-rest    ##degen-prc-rest)
-      (##cons ##cprc-prc         ##degen-prc)
+         (##cons ##cprc-prc-req0    ##degen-prc-req)
+         (##cons ##cprc-prc-req1    ##degen-prc-req)
+         (##cons ##cprc-prc-req2    ##degen-prc-req)
+         (##cons ##cprc-prc-req3    ##degen-prc-req)
+         (##cons ##cprc-prc-req     ##degen-prc-req)
+         (##cons ##cprc-prc-rest    ##degen-prc-rest)
+         (##cons ##cprc-prc         ##degen-prc)
 
-      (##cons ##cprc-app0-red    ##degen-app0)
-      (##cons ##cprc-app1-red    ##degen-app1)
-      (##cons ##cprc-app2-red    ##degen-app2)
-      (##cons ##cprc-app3-red    ##degen-app3)
-      (##cons ##cprc-app4-red    ##degen-app4)
-      (##cons ##cprc-app-red     ##degen-app)
-      (##cons ##cprc-app0-sub    ##degen-app0)
-      (##cons ##cprc-app1-sub    ##degen-app1)
-      (##cons ##cprc-app2-sub    ##degen-app2)
-      (##cons ##cprc-app3-sub    ##degen-app3)
-      (##cons ##cprc-app4-sub    ##degen-app4)
-      (##cons ##cprc-app-sub     ##degen-app)
+         (##cons ##cprc-app0-red    ##degen-app0)
+         (##cons ##cprc-app1-red    ##degen-app1)
+         (##cons ##cprc-app2-red    ##degen-app2)
+         (##cons ##cprc-app3-red    ##degen-app3)
+         (##cons ##cprc-app4-red    ##degen-app4)
+         (##cons ##cprc-app-red     ##degen-app)
+         (##cons ##cprc-app0-sub    ##degen-app0)
+         (##cons ##cprc-app1-sub    ##degen-app1)
+         (##cons ##cprc-app2-sub    ##degen-app2)
+         (##cons ##cprc-app3-sub    ##degen-app3)
+         (##cons ##cprc-app4-sub    ##degen-app4)
+         (##cons ##cprc-app-sub     ##degen-app)
 
-      (##cons ##cprc-delay       ##degen-delay)
-      (##cons ##cprc-future      ##degen-future)
-)))
+         (##cons ##cprc-delay       ##degen-delay)
+         (##cons ##cprc-future      ##degen-future)
+         )))
 
 (##setup-decomp-dispatch-table)
 
@@ -544,8 +553,8 @@
   (let ((cprc (macro-code-cprc $code)))
     (let ((x (##assq cprc ##decomp-dispatch-table)))
       (if x
-        (degen (##cdr x))
-        '?))))
+          (degen (##cdr x))
+          '?))))
 
 (define-prim (##decompile proc)
 
@@ -576,11 +585,11 @@
     (define (vector->expression v)
       (let* ((len (##vector-length v))
              (x (##make-vector len 0)))
-        (let loop ((i (##fixnum.- len 1)))
-          (if (##not (##fixnum.< i 0))
-            (begin
-              (##vector-set! x i (source->expression (##vector-ref v i)))
-              (loop (##fixnum.- i 1)))))
+        (let loop ((i (##fx- len 1)))
+          (if (##not (##fx< i 0))
+              (begin
+                (##vector-set! x i (source->expression (##vector-ref v i)))
+                (loop (##fx- i 1)))))
         x))
 
     (let ((code (compiler-source-code src)))
@@ -593,8 +602,8 @@
            (let* (($code (##interp-procedure-code p))
                   (cprc (macro-code-cprc $code)))
              (if (##eq? cprc ##interp-procedure-wrapper)
-               (loop (^ 1))
-               (##decomp $code))))
+                 (loop (^ 1))
+                 (##decomp $code))))
           ((##closure? p)
            (decomp (##closure-code p)))
           (else
@@ -619,8 +628,8 @@
            (let* (($code (##interp-procedure-code p))
                   (cprc (macro-code-cprc $code)))
              (if (##eq? cprc ##interp-procedure-wrapper)
-               (loop (^ 1))
-               (##code-locat $code))))
+                 (loop (^ 1))
+                 (##code-locat $code))))
           ((##closure? p)
            (locat (##closure-code p)))
           (else
@@ -629,15 +638,15 @@
 (define-prim (##code-locat $code)
   (let ((locat-or-position (macro-code-locat $code)))
     (if (or (##locat? locat-or-position) (##not locat-or-position))
-      locat-or-position
-      (let loop ((parent (macro-code-link $code)))
-        (if parent
-          (let ((locat-or-position-parent (macro-code-locat parent)))
-            (if (##locat? locat-or-position-parent)
-              (##make-locat (##locat-container locat-or-position-parent)
-                            locat-or-position)
-              (loop (macro-code-link parent))))
-          #f)))))
+        locat-or-position
+        (let loop ((parent (macro-code-link $code)))
+          (if parent
+              (let ((locat-or-position-parent (macro-code-locat parent)))
+                (if (##locat? locat-or-position-parent)
+                    (##make-locat (##locat-container locat-or-position-parent)
+                                  locat-or-position)
+                    (loop (macro-code-link parent))))
+              #f)))))
 
 (define-prim (##subprocedure-source-info proc)
   (let ((info (##subprocedure-info proc)))
@@ -649,15 +658,15 @@
   (let* ((id (##subprocedure-id proc))
          (parent-info (##subprocedure-parent-info proc)))
     (if parent-info
-      (let ((v (##vector-ref parent-info 0)))
-        (let loop ((i (##fixnum.- (##vector-length v) 1)))
-          (if (##fixnum.< i 0)
-            #f
-            (let ((x (##vector-ref v i)))
-              (if (##fixnum.= id (##vector-ref x 0))
-                x
-                (loop (##fixnum.- i 1)))))))
-      #f)))
+        (let ((v (##vector-ref parent-info 0)))
+          (let loop ((i (##fx- (##vector-length v) 1)))
+            (if (##fx< i 0)
+                #f
+                (let ((x (##vector-ref v i)))
+                  (if (##fx= id (##vector-ref x 0))
+                      x
+                      (loop (##fx- i 1)))))))
+        #f)))
 
 ;;;============================================================================
 
@@ -699,7 +708,7 @@
                                          val-or-box))))
                        var
                        (loop2 (##cdr vars)
-                              (##fixnum.+ i 1))))
+                              (##fx+ i 1))))
                  (loop1 (##cte-parent-cte c)
                         (macro-rte-up r)))))
           (else
@@ -712,9 +721,9 @@
 
 (define-prim (##hidden-local-var? var)
   (and ;; (##var-i? var) test is redundant
-       (or (##eq? var (macro-self-var))
-           (##eq? var (macro-selector-var))
-           (##eq? var (macro-do-loop-var)))))
+   (or (##eq? var (macro-self-var))
+       (##eq? var (macro-selector-var))
+       (##eq? var (macro-do-loop-var)))))
 
 (define-prim (##hidden-parameter? param)
   (or (##eq? param ##trace-depth)
@@ -766,25 +775,25 @@
 
 (define-prim (##hidden-continuation? cont)
   (if ##show-all-continuations?
-    #f
-    (let ((parent (##continuation-parent cont)))
-      (or (##eq? parent ##interp-procedure-wrapper);;;;;;;;;;;;;;;;;;
-          (##eq? parent ##dynamic-wind)
-          (##eq? parent ##dynamic-env-bind)
-          (##eq? parent ##kernel-handlers)
-          (##eq? parent ##load-vm)
-          (##eq? parent ##repl-debug)
-          (##eq? parent ##repl-debug-main)
-          (##eq? parent ##repl-within)
-          (##eq? parent ##eval-within)
-          (##eq? parent ##with-no-result-expected)
-          (##eq? parent ##with-no-result-expected-toplevel)
-          (##eq? parent ##check-heap)
-          (##eq? parent ##nontail-call-for-leap)
-          (##eq? parent ##nontail-call-for-step)
-          (##eq? parent ##trace-generate)
-          (##eq? parent ##thread-interrupt!)
-          (##eq? parent ##thread-call)))))
+      #f
+      (let ((parent (##continuation-parent cont)))
+        (or (##eq? parent ##interp-procedure-wrapper);;;;;;;;;;;;;;;;;;
+            (##eq? parent ##dynamic-wind)
+            (##eq? parent ##dynamic-env-bind)
+            (##eq? parent ##kernel-handlers)
+            (##eq? parent ##load-vm)
+            (##eq? parent ##repl-debug)
+            (##eq? parent ##repl-debug-main)
+            (##eq? parent ##repl-within)
+            (##eq? parent ##eval-within)
+            (##eq? parent ##with-no-result-expected)
+            (##eq? parent ##with-no-result-expected-toplevel)
+            (##eq? parent ##check-heap)
+            (##eq? parent ##nontail-call-for-leap)
+            (##eq? parent ##nontail-call-for-step)
+            (##eq? parent ##trace-generate)
+            (##eq? parent ##thread-interrupt!)
+            (##eq? parent ##thread-call)))))
 
 (define-prim (##interp-subproblem-continuation? cont)
   (let ((parent (##continuation-parent cont)))
@@ -808,16 +817,16 @@
 (define-prim (##continuation-creator cont) ;; returns #f if creator is REPL
   (and cont
        (if (##interp-continuation? cont)
-         (let (($code (##interp-continuation-code cont))
-               (rte (##interp-continuation-rte cont)))
-           (##extract-container $code rte))
-         (##continuation-parent cont))))
+           (let (($code (##interp-continuation-code cont))
+                 (rte (##interp-continuation-rte cont)))
+             (##extract-container $code rte))
+           (##continuation-parent cont))))
 
 (define-prim (##continuation-locat cont) ;; returns #f if location unknown
   (and cont
        (if (##interp-continuation? cont)
-         (##code-locat (##interp-continuation-code cont))
-         (##procedure-locat (##continuation-ret cont)))))
+           (##code-locat (##interp-continuation-code cont))
+           (##procedure-locat (##continuation-ret cont)))))
 
 (define-prim (##interp-continuation-code cont)
   (##local->value (##continuation-locals cont '$code)))
@@ -861,7 +870,7 @@
         (loop (##continuation-next cont)
               (if (or all-frames?
                       (##interesting-continuation? cont))
-                  (##fixnum.+ n 1)
+                  (##fx+ n 1)
                   n))
         n)))
 
@@ -878,14 +887,14 @@
     (if (and parent-info info)
         (let ((var-descrs (##vector-ref parent-info 1)))
           (let loop1 ((j 2) (result '()))
-            (if (##fixnum.< j (##vector-length info))
+            (if (##fx< j (##vector-length info))
                 (let* ((descr
                         (##vector-ref info j))
                        (slot-index
-                        (##fixnum.quotient descr 32768))
+                        (##fxquotient descr 32768))
                        (var-descr-index
-                        (##fixnum.quotient
-                         (##fixnum.modulo descr 32768)
+                        (##fxquotient
+                         (##fxmodulo descr 32768)
                          2))
                        (var-descr
                         (##vector-ref var-descrs var-descr-index))
@@ -896,8 +905,8 @@
 
                   (define (get-var1)
                     (##cons (##var-c var-descr
-                                     (##fixnum.=
-                                      (##fixnum.modulo descr 2)
+                                     (##fx=
+                                      (##fxmodulo descr 2)
                                       1))
                             val-or-box1))
 
@@ -908,18 +917,18 @@
                             (let* ((descr
                                     (##car lst))
                                    (slot-index
-                                    (##fixnum.quotient descr 32768))
+                                    (##fxquotient descr 32768))
                                    (var-descr-index
-                                    (##fixnum.quotient
-                                     (##fixnum.modulo descr 32768)
+                                    (##fxquotient
+                                     (##fxmodulo descr 32768)
                                      2))
                                    (var-descr
                                     (##vector-ref var-descrs var-descr-index)))
 
                               (define (get-var2)
                                 (##cons (##var-c var-descr
-                                                 (##fixnum.=
-                                                  (##fixnum.modulo descr 2)
+                                                 (##fx=
+                                                  (##fxmodulo descr 2)
                                                   1))
                                         (##closure-ref val-or-box1
                                                        slot-index)))
@@ -937,21 +946,21 @@
                                          (get-var2)
                                          (loop2 (##cdr lst)
                                                 result)))))
-                            (loop1 (##fixnum.+ j 1)
+                            (loop1 (##fx+ j 1)
                                    result)))
 
                       (cond ((##eq? cont (macro-absent-obj))
-                             (loop1 (##fixnum.+ j 1)
+                             (loop1 (##fx+ j 1)
                                     (##cons var-descr
                                             result)))
                             ((##eq? var (macro-absent-obj))
-                             (loop1 (##fixnum.+ j 1)
+                             (loop1 (##fx+ j 1)
                                     (##cons (get-var1)
                                             result)))
                             (else
                              (if (##eq? var var-descr)
                                  (get-var1)
-                                 (loop1 (##fixnum.+ j 1)
+                                 (loop1 (##fx+ j 1)
                                         result))))))
                 result)))
         #f)))
@@ -1019,23 +1028,23 @@
               max-tail
               depth)
   (let loop ((i 0)
-             (j (##fixnum.- (##continuation-count-frames cont all-frames?) 1))
+             (j (##fx- (##continuation-count-frames cont all-frames?) 1))
              (cont (##continuation-first-frame cont all-frames?)))
     (and cont
          (begin
-           (cond ((or (##fixnum.< i max-head) (##fixnum.< j max-tail)
-                      (and (##fixnum.= i max-head) (##fixnum.= j max-tail)))
+           (cond ((or (##fx< i max-head) (##fx< j max-tail)
+                      (and (##fx= i max-head) (##fx= j max-tail)))
                   (##display-continuation-frame
                    cont
                    port
                    display-env?
                    #f
-                   (##fixnum.+ depth i)))
-                 ((##fixnum.= i max-head)
+                   (##fx+ depth i)))
+                 ((##fx= i max-head)
                   (##write-string "..." port)
                   (##newline port)))
-           (loop (##fixnum.+ i 1)
-                 (##fixnum.- j 1)
+           (loop (##fx+ i 1)
+                 (##fx- j 1)
                  (##continuation-next-frame cont all-frames?))))))
 
 (define-prim (display-continuation-backtrace
@@ -1098,8 +1107,8 @@
 
   (define (tab col)
     (let* ((current (##output-port-column port))
-           (n (##fixnum.- col current)))
-      (##display-spaces (##fixnum.max n 1) port)))
+           (n (##fx- col current)))
+      (##display-spaces (##fxmax n 1) port)))
 
   (and cont
        (let ((port-width (##output-port-width port)))
@@ -1110,24 +1119,24 @@
          (define call-width    27)
 
          (let* ((extra
-                 (##fixnum.max
+                 (##fxmax
                   0
-                  (##fixnum.quotient
-                   (##fixnum.- port-width
-                               (##fixnum.+
-                                depth-width
-                                creator-width
-                                locat-width
-                                call-width))
+                  (##fxquotient
+                   (##fx- port-width
+                          (##fx+
+                           depth-width
+                           creator-width
+                           locat-width
+                           call-width))
                    3)))
                 (col3
-                 (##fixnum.+ depth-width
-                             creator-width
-                             extra))
+                 (##fx+ depth-width
+                        creator-width
+                        extra))
                 (col4
-                 (##fixnum.+ col3
-                             locat-width
-                             extra))
+                 (##fx+ col3
+                        locat-width
+                        extra))
                 (locat-display?
                  ##frame-locat-display?)
                 (call-display?
@@ -1162,41 +1171,52 @@
                        (##write-string
                         (##object->string
                          call
-                         (##fixnum.- port-width
-                                     (##output-port-column port)))
+                         (##fx- port-width
+                                (##output-port-column port)))
                         port)))))
            (##newline port)
            (##display-continuation-env
             cont
             port
-            (##fixnum.+ 4 depth-width)
+            (##fx+ 4 depth-width)
             display-env?)))))
 
 (define-prim (##display-spaces n port)
-  (if (##fixnum.< 0 n)
-    (let ((m (if (##fixnum.< 40 n) 40 n)))
-      (##write-substring "                                        " 0 m port)
-      (##display-spaces (##fixnum.- n m) port)
-      n)))
+  (if (##fx< 0 n)
+      (let ((m (if (##fx< 40 n) 40 n)))
+        (##write-substring "                                        " 0 m port)
+        (##display-spaces (##fx- n m) port)
+        n)))
 
 (define-prim (##display-locat locat pinpoint? port)
   (if locat ;; locat is #f if location unknown
-    (let* ((container (##locat-container locat))
-           (path (##container->path container)))
-      (if path
-        (##write (##path-normalize path
-                                   ##repl-location-relative
-                                   ##repl-location-origin
-                                   #f)
-                 port)
-        (##write-string (##container->id container) port))
-      (let* ((filepos (##position->filepos (##locat-position locat)))
-             (line (##fixnum.+ (##filepos-line filepos) 1))
-             (col (##fixnum.+ (##filepos-col filepos) 1)))
-        (##write-string "@" port)
-        (##write line port)
-        (##write-string (if pinpoint? "." ":") port)
-        (##write col port)))))
+      (let* ((container (##locat-container locat))
+             (path (##container->path container)))
+        (if path
+            (##write (##repl-path-normalize path) port)
+            (##write-string (##container->id container) port))
+        (let* ((filepos (##position->filepos (##locat-position locat)))
+               (line (##fx+ (##filepos-line filepos) 1))
+               (col (##fx+ (##filepos-col filepos) 1)))
+          (##write-string "@" port)
+          (##write line port)
+          (##write-string (if pinpoint? "." ":") port)
+          (##write col port)))))
+
+(define ##repl-path-normalize-hook #f)
+(set! ##repl-path-normalize-hook #f)
+
+(define-prim (##repl-path-normalize path)
+  (let ((rpn-hook ##repl-path-normalize-hook))
+    (if (##procedure? rpn-hook)
+        (rpn-hook path)
+        (##default-repl-path-normalize path))))
+
+(define-prim (##default-repl-path-normalize path)
+  (##path-normalize path
+                    ##repl-location-relative
+                    ##repl-location-origin
+                    #f))
 
 (define ##repl-location-relative #f)
 (set! ##repl-location-relative 'shortest)
@@ -1208,27 +1228,27 @@
 
 (define-prim (##inverse-eval-in-env obj cte)
   (if (##procedure? obj)
-    (let ((id (##object->global-var->identifier obj)))
+      (let ((id (##object->global-var->identifier obj)))
 
-      (define (default)
-        (let ((x (##decompile obj)))
-          (if (##procedure? x)
-            (##inverse-eval x)
-            x)))
+        (define (default)
+          (let ((x (##decompile obj)))
+            (if (##procedure? x)
+                (##inverse-eval x)
+                x)))
 
-      (if id
-        (let ((ind (##cte-lookup cte id)))
-          (if (##eq? (##vector-ref ind 0) 'not-found)
-            id
+        (if id
+            (let ((ind (##cte-lookup cte id)))
+              (if (##eq? (##vector-ref ind 0) 'not-found)
+                  id
+                  (default)))
             (default)))
-        (default)))
 
-    (##inverse-eval obj)))
+      (##inverse-eval obj)))
 
 (define-prim (##inverse-eval obj)
   (if (##self-eval? obj)
-    obj
-    (##list 'quote obj)))
+      obj
+      (##list 'quote obj)))
 
 (define (##display-var-val var val-or-box cte indent port)
   (cond ((##var-i? var)
@@ -1262,8 +1282,8 @@
     (if (##cte-top? cte)
         (##inverse-eval-in-env val cte)
         (##inverse-eval-in-env val (##cte-parent-cte cte)))
-    (##fixnum.- (##output-port-width port)
-                (##output-port-column port)))
+    (##fx- (##output-port-width port)
+           (##output-port-column port)))
    port)
   (##newline port))
 
@@ -1428,17 +1448,17 @@
   (and cont
        (let ((creator (##continuation-creator cont)))
          (if creator
-           (let ((decomp-creator (##decompile creator)))
-             (##write creator port)
-             (if (##eq? creator decomp-creator)
-               (##newline port)
-               (begin
-                 (##write-string " =" port)
-                 (##newline port)
-                 (##pretty-print decomp-creator port))))
-           (begin
-             (##write-string "(interaction)" port)
-             (##newline port))))))
+             (let ((decomp-creator (##decompile creator)))
+               (##write creator port)
+               (if (##eq? creator decomp-creator)
+                   (##newline port)
+                   (begin
+                     (##write-string " =" port)
+                     (##newline port)
+                     (##pretty-print decomp-creator port))))
+             (begin
+               (##write-string "(interaction)" port)
+               (##newline port))))))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1456,14 +1476,14 @@
 
   (define (tab col)
     (let* ((current (##output-port-column port))
-           (n (##fixnum.- col current)))
-      (##display-spaces (##fixnum.max n 1) port)))
+           (n (##fx- col current)))
+      (##display-spaces (##fxmax n 1) port)))
 
   (define (write-timeout to)
     (##write-string " " port)
-    (let ((expiry (##flonum.- (macro-time-point to) time-point)))
-      (##write (##flonum./ (##flonum.round (##flonum.* 10.0 expiry)) 10.0)
-               port))
+    (let* ((expiry (##fl- (macro-time-point to) time-point))
+           (e (##fl/ (##flround (##fl* 10.0 expiry)) 10.0)))
+      (##write (if (##integer? e) (##inexact->exact e) e) port))
     (##write-string "s" port))
 
   (let ((port-width (##output-port-width port)))
@@ -1471,13 +1491,13 @@
     (define thread-width 14)
 
     (let ((extra
-           (##fixnum.max
+           (##fxmax
             0
-            (##fixnum.quotient
-             (##fixnum.- port-width thread-width)
+            (##fxquotient
+             (##fx- port-width thread-width)
              5))))
       (##write thread port)
-      (tab (##fixnum.+ thread-width extra))
+      (tab (##fx+ thread-width extra))
       (let ((ts (##thread-state thread)))
         (cond ((macro-thread-state-uninitialized? ts)
                (##write-string "UNINITIALIZED" port))
@@ -1508,13 +1528,13 @@
   (let* ((threads (##tgroup->thread-vector tgroup))
          (now (##current-time-point)))
     (let loop ((i 0))
-      (if (##fixnum.< i (##vector-length threads))
+      (if (##fx< i (##vector-length threads))
           (let ((thread (##vector-ref threads i)))
             (##display-thread-state-relative thread port now)
-            (loop (##fixnum.+ i 1)))
+            (loop (##fx+ i 1)))
           i))))
 
-(define-prim (##top tgroup port)
+(define-prim (##top timeout tgroup port)
 
   (define interval 1.0)
 
@@ -1523,28 +1543,31 @@
     (##write n port)
     (##write-string "A\033[J" port))
 
-  (let ((start-time-point (##current-time-point)))
+  (let* ((start-time-point (##current-time-point))
+         (end-time-point (macro-time-point (##timeout->time timeout))))
     (let loop ((last start-time-point))
       (##write-string "*** THREAD LIST:\n" port)
-      (let* ((n (##fixnum.+ 1 (##display-thread-group-state tgroup port)))
-             (next (##flonum.+ last interval))
-             (now (##current-time-point))
-             (diff (##flonum.- next now)))
-        (if (##flonum.negative? diff)
+      (let* ((n (##fx+ 1 (##display-thread-group-state tgroup port)))
+             (next (##fl+ last interval))
+             (now (##current-time-point)))
+        (if (##fl< now end-time-point)
             (begin
+              (##thread-sleep! (##fl- next now))
               (up n)
-              (loop now))
-            (begin
-              (##thread-sleep! diff)
-              (up n)
-              (loop next)))))))
+              (loop next))
+            (##void))))))
 
 (define-prim (top
               #!optional
+              (absrel-timeout (macro-absent-obj))
               (tgroup (macro-absent-obj))
               (port (macro-absent-obj)))
-  (macro-force-vars (port)
-    (let ((tg
+  (macro-force-vars (absrel-timeout tgroup port)
+    (let ((to
+           (if (##eq? absrel-timeout (macro-absent-obj))
+               10 ;; default is to return after 10 seconds
+               absrel-timeout))
+          (tg
            (if (##eq? tgroup (macro-absent-obj))
                (macro-thread-tgroup (macro-current-thread))
                tgroup))
@@ -1552,9 +1575,16 @@
            (if (##eq? port (macro-absent-obj))
                (##repl-output-port)
                port)))
-      (macro-check-tgroup tg 1 (top tgroup port)
-        (macro-check-character-output-port p 2 (top tgroup port)
-          (##top tg p))))))
+      (if (##not (macro-absrel-time-or-false? to))
+          (##fail-check-absrel-time-or-false
+           1
+           top
+           absrel-timeout
+           tgroup
+           port)
+          (macro-check-tgroup tg 2 (top absrel-timeout tgroup port)
+            (macro-check-character-output-port p 3 (top absrel-timeout tgroup port)
+              (##top to tg p)))))))
 
 ;;;----------------------------------------------------------------------------
 
@@ -1562,11 +1592,11 @@
 
 (define-prim (##interp-procedure-entry-hook proc)
   (let (($code (##interp-procedure-code proc)))
-    (macro-code-ref $code (##fixnum.- (macro-code-length $code) 2))))
+    (macro-code-ref $code (##fx- (macro-code-length $code) 2))))
 
 (define-prim (##interp-procedure-entry-hook-set! proc hook)
   (let (($code (##interp-procedure-code proc)))
-    (macro-code-set! $code (##fixnum.- (macro-code-length $code) 2) hook)))
+    (macro-code-set! $code (##fx- (macro-code-length $code) 2) hook)))
 
 (define-prim (##interp-procedure-default-entry-hook proc)
   (let ((hook (##interp-procedure-entry-hook proc)))
@@ -1574,32 +1604,32 @@
              (##closure? hook)
              (##eq? (##subprocedure-parent (##closure-code hook))
                     ##make-default-entry-hook))
-      hook
-      #f)))
+        hook
+        #f)))
 
 (define-prim (##make-default-entry-hook)
   (let ((settings (##vector #f #f)))
     (lambda (proc args execute)
       (if (##vector-ref settings 0)
-        (##step-on)) ;; turn on single-stepping
+          (##step-on)) ;; turn on single-stepping
       (if (##vector-ref settings 1)
-        (##trace-generate
-         (##make-call-form proc
-                           (##argument-list-remove-absent! args '())
-                           ##max-fixnum)
-         execute
-         #f)
-        (execute)))))
+          (##trace-generate
+           (##make-call-form proc
+                             (##argument-list-remove-absent! args '())
+                             ##max-fixnum)
+           execute
+           #f)
+          (execute)))))
 
 (define-prim (##make-call-form proc args max-args)
 
   (define (inverse-eval-args i lst)
     (if (##pair? lst)
-      (if (##fixnum.< max-args i)
-        '(...)
-        (##cons (##inverse-eval (##car lst))
-                (inverse-eval-args (##fixnum.+ i 1) (##cdr lst))))
-      '()))
+        (if (##fx< max-args i)
+            '(...)
+            (##cons (##inverse-eval (##car lst))
+                    (inverse-eval-args (##fx+ i 1) (##cdr lst))))
+        '()))
 
   (##cons (##procedure-friendly-name proc)
           (inverse-eval-args 1 args)))
@@ -1612,27 +1642,27 @@
 
   (define (bars width output-port)
     (let loop ((i 0))
-      (if (##fixnum.< i width)
-        (begin
-          (##write-string
-            (if (##fixnum.= (##fixnum.remainder i 2) 0) "|" " ")
-            output-port)
-          (loop (##fixnum.+ i 1))))))
+      (if (##fx< i width)
+          (begin
+            (##write-string
+             (if (##fx= (##fxremainder i 2) 0) "|" " ")
+             output-port)
+            (loop (##fx+ i 1))))))
 
   (define (bars-width depth)
-    (let ((d (if (##fixnum.< max-depth depth) max-depth depth)))
-      (if (##fixnum.< 0 d) (##fixnum.- (##fixnum.* d 2) 1) 0)))
+    (let ((d (if (##fx< max-depth depth) max-depth depth)))
+      (if (##fx< 0 d) (##fx- (##fx* d 2) 1) 0)))
 
   (define (indent depth output-port)
     (let ((w (bars-width depth)))
-      (if (##fixnum.< max-depth depth)
-        (let ((depth-str (##number->string depth 10)))
-          (bars (##fixnum.- w (##fixnum.+ (##string-length depth-str) 2))
-                output-port)
-          (##write-string "[" output-port)
-          (##write-string depth-str output-port)
-          (##write-string "]" output-port))
-        (bars w output-port))
+      (if (##fx< max-depth depth)
+          (let ((depth-str (##number->string depth 10)))
+            (bars (##fx- w (##fx+ (##string-length depth-str) 2))
+                  output-port)
+            (##write-string "[" output-port)
+            (##write-string depth-str output-port)
+            (##write-string "]" output-port))
+          (bars w output-port))
       w))
 
   (define (output-to-repl proc)
@@ -1655,8 +1685,8 @@
              (##trace-depth))
             (depth
              (if increase-depth?
-               (##fixnum.+ current-depth 1)
-               current-depth)))
+                 (##fx+ current-depth 1)
+                 current-depth)))
 
        (define (nest wrapper)
          (let ((result
@@ -1668,12 +1698,12 @@
            (output-to-repl
             (lambda (first output-port)
               (let ((width
-                     (##fixnum.+ (indent depth output-port) 1)))
+                     (##fx+ (indent depth output-port) 1)))
                 (##write-string " " output-port)
                 (##write-string
                  (##object->string
                   result
-                  (##fixnum.- (##output-port-width output-port) width))
+                  (##fx- (##output-port-width output-port) width))
                  output-port)
                 (##newline output-port)
                 #t)))
@@ -1683,29 +1713,29 @@
        (output-to-repl
         (lambda (first output-port)
           (let ((width
-                 (##fixnum.+ (indent depth output-port) 3)))
+                 (##fx+ (indent depth output-port) 3)))
             (##write-string " > " output-port)
             (##write-string
              (##object->string
               form
-              (##fixnum.- (##output-port-width output-port) width))
+              (##fx- (##output-port-width output-port) width))
              output-port)
             (##newline output-port)
             #t)))
 
        (if leap?
-         (cond ((##eq? ##nontail-call-for-leap parent)
-                (execute))
-               ((##eq? ##nontail-call-for-step parent)
-                (##nontail-call-for-leap execute))
-               (else
-                (nest ##nontail-call-for-leap)))
-         (cond ((##eq? ##nontail-call-for-leap parent)
-                (execute))
-               ((##eq? ##nontail-call-for-step parent)
-                (execute))
-               (else
-                (nest ##nontail-call-for-step))))))))
+           (cond ((##eq? ##nontail-call-for-leap parent)
+                  (execute))
+                 ((##eq? ##nontail-call-for-step parent)
+                  (##nontail-call-for-leap execute))
+                 (else
+                  (nest ##nontail-call-for-leap)))
+           (cond ((##eq? ##nontail-call-for-leap parent)
+                  (execute))
+                 ((##eq? ##nontail-call-for-step parent)
+                  (execute))
+                 (else
+                  (nest ##nontail-call-for-step))))))))
 
 (define-prim (##nontail-call-for-leap execute)
   (let ((result (execute)))
@@ -1723,32 +1753,32 @@
     (let ((settings (##closure-ref hook 1)))
       (##vector-set! settings 1 #t)
       (if (##not (##memq proc ##trace-list))
-        (set! ##trace-list (##cons proc ##trace-list)))))
+          (set! ##trace-list (##cons proc ##trace-list)))))
 
   (let ((hook (##interp-procedure-default-entry-hook proc)))
     (if hook
-      (setup hook)
-      (let ((new-hook (##make-default-entry-hook)))
-        (##interp-procedure-entry-hook-set! proc new-hook)
-        (setup new-hook)))))
+        (setup hook)
+        (let ((new-hook (##make-default-entry-hook)))
+          (##interp-procedure-entry-hook-set! proc new-hook)
+          (setup new-hook)))))
 
 (define-prim (##untrace proc)
   (let ((hook (##interp-procedure-default-entry-hook proc)))
     (if hook
-      (let ((settings (##closure-ref hook 1)))
-        (##vector-set! settings 1 #f)
-        (if (##not (##vector-ref settings 0))
-          (##interp-procedure-entry-hook-set! proc #f))))
+        (let ((settings (##closure-ref hook 1)))
+          (##vector-set! settings 1 #f)
+          (if (##not (##vector-ref settings 0))
+              (##interp-procedure-entry-hook-set! proc #f))))
     (set! ##trace-list (##remove proc ##trace-list))))
 
 (define-prim (trace . args)
   (if (##pair? args)
-    (##for-each-interp-procedure
-     trace
-     args
-     ##trace
-     args)
-    ##trace-list))
+      (##for-each-interp-procedure
+       trace
+       args
+       ##trace
+       args)
+      ##trace-list))
 
 (define-prim (untrace . args)
   (##for-each-interp-procedure
@@ -1765,32 +1795,32 @@
     (let ((settings (##closure-ref hook 1)))
       (##vector-set! settings 0 #t)
       (if (##not (##memq proc ##break-list))
-        (set! ##break-list (##cons proc ##break-list)))))
+          (set! ##break-list (##cons proc ##break-list)))))
 
   (let ((hook (##interp-procedure-default-entry-hook proc)))
     (if hook
-      (setup hook)
-      (let ((new-hook (##make-default-entry-hook)))
-        (##interp-procedure-entry-hook-set! proc new-hook)
-        (setup new-hook)))))
+        (setup hook)
+        (let ((new-hook (##make-default-entry-hook)))
+          (##interp-procedure-entry-hook-set! proc new-hook)
+          (setup new-hook)))))
 
 (define-prim (##unbreak proc)
   (let ((hook (##interp-procedure-default-entry-hook proc)))
     (if hook
-      (let ((settings (##closure-ref hook 1)))
-        (##vector-set! settings 0 #f)
-        (if (##not (##vector-ref settings 1))
-          (##interp-procedure-entry-hook-set! proc #f))))
+        (let ((settings (##closure-ref hook 1)))
+          (##vector-set! settings 0 #f)
+          (if (##not (##vector-ref settings 1))
+              (##interp-procedure-entry-hook-set! proc #f))))
     (set! ##break-list (##remove proc ##break-list))))
 
 (define-prim (break . args)
   (if (##pair? args)
-    (##for-each-interp-procedure
-     break
-     args
-     ##break
-     args)
-    ##break-list))
+      (##for-each-interp-procedure
+       break
+       args
+       ##break
+       args)
+      ##break-list))
 
 (define-prim (unbreak . args)
   (##for-each-interp-procedure
@@ -1804,10 +1834,10 @@
   (let* ((stepper (##current-stepper))
          (handlers (##vector-ref stepper 0)))
     (let loop ((i (##vector-length handlers)))
-      (if (##not (##fixnum.< i 1))
-        (let ((i-1 (##fixnum.- i 1)))
-          (##vector-set! stepper i (##vector-ref handlers i-1))
-          (loop i-1))))
+      (if (##not (##fx< i 1))
+          (let ((i-1 (##fx- i 1)))
+            (##vector-set! stepper i (##vector-ref handlers i-1))
+            (loop i-1))))
     (##void)))
 
 (define-prim (##step-off)
@@ -1815,10 +1845,10 @@
   (let* ((stepper (##current-stepper))
          (handlers (##vector-ref stepper 0)))
     (let loop ((i (##vector-length handlers)))
-      (if (##not (##fixnum.< i 1))
-        (let ((i-1 (##fixnum.- i 1)))
-          (##vector-set! stepper i #f)
-          (loop i-1))))
+      (if (##not (##fx< i 1))
+          (let ((i-1 (##fx- i 1)))
+            (##vector-set! stepper i #f)
+            (loop i-1))))
     (##void)))
 
 (define-prim (step)
@@ -1829,13 +1859,13 @@
   (let* ((stepper (##current-stepper))
          (handlers (##vector-ref stepper 0)))
     (let loop ((i (##vector-length handlers)))
-      (if (##not (##fixnum.< i 1))
-        (let ((i-1 (##fixnum.- i 1)))
-          (##vector-set! handlers i-1
-            (if (##fixnum.< i-1 n)
-              (##vector-ref ##step-handlers i-1)
-              #f))
-          (loop i-1))))
+      (if (##not (##fx< i 1))
+          (let ((i-1 (##fx- i 1)))
+            (##vector-set! handlers i-1
+                           (if (##fx< i-1 n)
+                               (##vector-ref ##step-handlers i-1)
+                               #f))
+            (loop i-1))))
     (##void)))
 
 (define-prim (step-level-set! n)
@@ -1909,36 +1939,36 @@
 (define-prim (##for-each-interp-procedure prim args fn procs)
   (let loop ((lst1 procs) (lst2 '()) (arg-num 1))
     (if (##pair? lst1)
-      (let ((proc (##car lst1)))
-        (if (##procedure? proc)
-          (if (##interp-procedure? proc)
-            (loop (##cdr lst1)
-                  (##cons proc lst2)
-                  (##fixnum.+ arg-num 1))
-            (let ((id (##object->global-var->identifier proc)))
-              (if id ;; procedure is bound to a global variable
-                (begin
-                  (##repl
-                   (lambda (first output-port)
-                     (##write-string
-                      "*** WARNING -- Rebinding global variable \""
-                      output-port)
-                     (##write id output-port)
-                     (##write-string
-                      "\" to an interpreted procedure\n"
-                      output-port)
-                     #t))
-                  (let ((new-proc
-                         (##make-interp-procedure proc)))
-                    (##global-var-set! (##make-global-var id) new-proc)
-                    (loop (##cdr lst1)
-                          (##cons new-proc lst2)
-                          (##fixnum.+ arg-num 1))))
-                (##fail-check-interpreted-procedure arg-num '() prim args))))
-          (##fail-check-interpreted-procedure arg-num '() prim args)))
-      (begin
-        (##for-each fn (##reverse lst2))
-        (##void)))))
+        (let ((proc (##car lst1)))
+          (if (##procedure? proc)
+              (if (##interp-procedure? proc)
+                  (loop (##cdr lst1)
+                        (##cons proc lst2)
+                        (##fx+ arg-num 1))
+                  (let ((id (##object->global-var->identifier proc)))
+                    (if id ;; procedure is bound to a global variable
+                        (begin
+                          (##repl
+                           (lambda (first output-port)
+                             (##write-string
+                              "*** WARNING -- Rebinding global variable \""
+                              output-port)
+                             (##write id output-port)
+                             (##write-string
+                              "\" to an interpreted procedure\n"
+                              output-port)
+                             #t))
+                          (let ((new-proc
+                                 (##make-interp-procedure proc)))
+                            (##global-var-set! (##make-global-var id) new-proc)
+                            (loop (##cdr lst1)
+                                  (##cons new-proc lst2)
+                                  (##fx+ arg-num 1))))
+                        (##fail-check-interpreted-procedure arg-num '() prim args))))
+              (##fail-check-interpreted-procedure arg-num '() prim args)))
+        (begin
+          (##for-each fn (##reverse lst2))
+          (##void)))))
 
 (define-fail-check-type interpreted-procedure 'interpreted-procedure)
 
@@ -1955,11 +1985,11 @@
 
                (let ((entry-hook (^ 0)))
                  (if entry-hook
-                   (entry-hook
-                    proc
-                    args
-                    (lambda () (execute)))
-                   (execute))))))
+                     (entry-hook
+                      proc
+                      args
+                      (lambda () (execute)))
+                     (execute))))))
      proc)))
 
 (define-prim (##make-interp-procedure proc)
@@ -1980,11 +2010,11 @@
 (define-prim (##remove elem lst)
   (let loop ((lst1 lst) (lst2 '()))
     (if (##pair? lst1)
-      (let ((x (##car lst1)))
-        (if (##eq? x elem)
-          (##append (##reverse lst2) (##cdr lst1))
-          (loop (##cdr lst1) (##cons x lst2))))
-      lst)))
+        (let ((x (##car lst1)))
+          (if (##eq? x elem)
+              (##append (##reverse lst2) (##cdr lst1))
+              (loop (##cdr lst1) (##cons x lst2))))
+        lst)))
 
 ;;;============================================================================
 
@@ -1999,7 +2029,7 @@
         (macro-thread-repl-channel thread))))
 
 (define (##default-thread-make-repl-channel thread)
-    ##stdio/console-repl-channel)
+  ##stdio/console-repl-channel)
 
 (define ##thread-make-repl-channel #f)
 (set! ##thread-make-repl-channel ##default-thread-make-repl-channel)
@@ -2008,12 +2038,12 @@
   (let* ((settings
           (##set-debug-settings! 0 0))
          (x
-          (##fixnum.arithmetic-shift-right
-           (##fixnum.bitwise-and
+          (##fxarithmetic-shift-right
+           (##fxand
             settings
             (macro-debug-settings-repl-mask))
            (macro-debug-settings-repl-shift))))
-    (cond ((##fixnum.= x (macro-debug-settings-repl-stdio))
+    (cond ((##fx= x (macro-debug-settings-repl-stdio))
            (##make-repl-channel-ports ##stdin-port ##stdout-port))
           (else
            (##make-repl-channel-ports ##console-port ##console-port)))))
@@ -2039,15 +2069,15 @@
          (channel (##thread-repl-channel-get! ct)))
     (macro-mutex-lock! (macro-repl-channel-owner-mutex channel) #f ct)
     (if (##not (##eq? (macro-repl-channel-last-owner channel) ct))
-      (begin
-        (macro-repl-channel-last-owner-set! channel ct)
-        (##repl-channel-display-monoline-message
-         (lambda (output-port)
-           (##write-string "------------- REPL is now in " output-port)
-           (##write ct output-port)
-           (##write-string " -------------" output-port)))
-        #t)
-      #f)))
+        (begin
+          (macro-repl-channel-last-owner-set! channel ct)
+          (##repl-channel-display-monoline-message
+           (lambda (output-port)
+             (##write-string "------------- REPL is now in " output-port)
+             (##write ct output-port)
+             (##write-string " -------------" output-port)))
+          #t)
+        #f)))
 
 (define-prim (##repl-channel-release-ownership!)
   (let ((channel (##thread-repl-channel-get! (macro-current-thread))))
@@ -2103,22 +2133,22 @@
   (##vector (macro-repl-result-history-default-max-length)))
 
 (##define-macro (macro-repl-result-history-length result-history)
-  `(##fixnum.- (##vector-length ,result-history) 1))
+  `(##fx- (##vector-length ,result-history) 1))
 
 (##define-macro (macro-repl-result-history-max-length result-history)
   `(##vector-ref ,result-history 0))
 
 (##define-macro (macro-repl-result-history-ref result-history i)
-  `(##vector-ref ,result-history (##fixnum.+ ,i 1)))
+  `(##vector-ref ,result-history (##fx+ ,i 1)))
 
 (define-prim (##repl-channel-result-history-add channel result)
   (let loop ()
     (let* ((result-history (macro-repl-channel-result-history channel))
            (len (macro-repl-result-history-length result-history))
            (max-len (macro-repl-result-history-max-length result-history))
-           (new-len (##fixnum.min (##fixnum.+ len 1) max-len)))
-      (if (##fixnum.< 0 new-len)
-          (let ((v (##make-vector (##fixnum.+ new-len 1) max-len)))
+           (new-len (##fxmin (##fx+ len 1) max-len)))
+      (if (##fx< 0 new-len)
+          (let ((v (##make-vector (##fx+ new-len 1) max-len)))
             (##subvector-move! result-history 1 new-len v 2)
             (##vector-set! v 1 result)
             (let ()
@@ -2135,9 +2165,9 @@
   (let loop ()
     (let* ((result-history (macro-repl-channel-result-history channel))
            (len (macro-repl-result-history-length result-history))
-           (new-len (##fixnum.min len max-len))
-           (v (##make-vector (##fixnum.+ new-len 1) max-len)))
-      (##subvector-move! result-history 1 (##fixnum.+ new-len 1) v 1)
+           (new-len (##fxmin len max-len))
+           (v (##make-vector (##fx+ new-len 1) max-len)))
+      (##subvector-move! result-history 1 (##fx+ new-len 1) v 1)
       (let ()
         (##declare (not interrupts-enabled))
         (if (##not (##eq? (macro-repl-channel-result-history channel)
@@ -2151,12 +2181,12 @@
   (let* ((channel (##thread-repl-channel-get! (macro-current-thread)))
          (result-history (macro-repl-channel-result-history channel)))
     (macro-check-fixnum-range
-     index
-     1
-     0
-     (macro-repl-result-history-length result-history)
-     (repl-result-history-ref index)
-     (macro-repl-result-history-ref result-history index))))
+      index
+      1
+      0
+      (macro-repl-result-history-length result-history)
+      (repl-result-history-ref index)
+      (macro-repl-result-history-ref result-history index))))
 
 (define-prim (repl-result-history-ref index)
   (##repl-result-history-ref index))
@@ -2165,12 +2195,12 @@
   (let* ((channel (##thread-repl-channel-get! (macro-current-thread)))
          (result-history (macro-repl-channel-result-history channel)))
     (macro-check-fixnum-range-incl
-     max-len
-     1
-     0
-     (macro-repl-result-history-max-max-length)
-     (repl-result-history-max-length-set! max-len)
-     (##repl-channel-result-history-max-length-set! channel max-len))))
+      max-len
+      1
+      0
+      (macro-repl-result-history-max-max-length)
+      (repl-result-history-max-length-set! max-len)
+      (##repl-channel-result-history-max-length-set! channel max-len))))
 
 (define-prim (repl-result-history-max-length-set! max-len)
   (##repl-result-history-max-length-set! max-len))
@@ -2210,7 +2240,7 @@
              (if (##tty? input-port)
                  (let ((path-or-settings
                         (##list path:
-                                (in-homedir ".gambc_history")
+                                (in-homedir ".gambit_history")
                                 char-encoding:
                                 'UTF-8)))
 
@@ -2251,9 +2281,9 @@
   (define prompt "> ")
 
   (let ((output-port (macro-repl-channel-output-port channel)))
-    (if (##fixnum.< 0 level)
+    (if (##fx< 0 level)
         (##write level output-port))
-    (if (##fixnum.< 0 depth)
+    (if (##fx< 0 depth)
         (begin
           (##write-string "\\" output-port)
           (##write depth output-port)))
@@ -2324,24 +2354,24 @@
 
 (define ##repl #f)
 (set! ##repl
-  (lambda (#!optional (write-reason #f) (reason #f) (toplevel? #f))
+      (lambda (#!optional (write-reason #f) (reason #f) (toplevel? #f))
 
-    (define (repl)
-      (##continuation-capture
-       (lambda (cont)
-         (##repl-within cont write-reason reason))))
+        (define (repl)
+          (##continuation-capture
+           (lambda (cont)
+             (##repl-within cont write-reason reason))))
 
-    (if toplevel?
-        (##with-no-result-expected-toplevel (lambda () (repl)))
-        (repl))))
+        (if toplevel?
+            (##with-no-result-expected-toplevel (lambda () (repl)))
+            (repl))))
 
 (define-prim (##repl-debug #!optional (write-reason #f) (toplevel? #f))
   (let* ((old-setting
           (##set-debug-settings!
-           (##fixnum.+ (macro-debug-settings-error-mask)
-                       (macro-debug-settings-user-intr-mask))
-           (##fixnum.+ (macro-debug-settings-error-repl)
-                       (macro-debug-settings-user-intr-repl))))
+           (##fx+ (macro-debug-settings-error-mask)
+                  (macro-debug-settings-user-intr-mask))
+           (##fx+ (macro-debug-settings-error-repl)
+                  (macro-debug-settings-user-intr-repl))))
          (results
           (##repl write-reason #f toplevel?)))
     (##set-debug-settings!
@@ -2387,13 +2417,13 @@
           (make-text-attr style-normal default-color default-color))))
 
      (if (##tty? output-port)
-       (##tty-text-attributes-set! output-port (attrs input) (attrs banner)))
+         (##tty-text-attributes-set! output-port (attrs input) (attrs banner)))
 
      (##write-string "Gambit " output-port)
      (##write-string (##system-version-string) output-port)
 
      (if (##tty? output-port)
-       (##tty-text-attributes-set! output-port (attrs input) (attrs output)))
+         (##tty-text-attributes-set! output-port (attrs input) (attrs output)))
 
      (##newline output-port)
      (##newline output-port)
@@ -2412,7 +2442,7 @@
           (##thread-repl-context-get!))
          (repl-context
           (macro-make-repl-context
-           (##fixnum.+ (macro-repl-context-level prev-repl-context) 1)
+           (##fx+ (macro-repl-context-level prev-repl-context) 1)
            0
            cont
            cont
@@ -2433,9 +2463,9 @@
                      ;; write-reason returns #f if REPL is to be started
                      (write-reason first output-port)))))))
 
-      (##repl-channel-release-ownership!)
+        (##repl-channel-release-ownership!)
 
-      (##repl-context-restart-pinpointing-continuation repl-context #f))))
+        (##repl-context-restart-pinpointing-continuation repl-context #f))))
 
 (define-prim (##repl-context-restart-pinpointing-continuation
               repl-context
@@ -2474,10 +2504,10 @@
          ##void ;; ignore user interrupts
          (lambda ()
            (macro-dynamic-bind repl-context
-             repl-context
-             (lambda ()
-               (thunk)
-               (##repl-context-prompt repl-context))))))))))
+                               repl-context
+                               (lambda ()
+                                 (thunk)
+                                 (##repl-context-prompt repl-context))))))))))
 
 (define-prim (##default-repl-context-prompt repl-context)
 
@@ -2509,7 +2539,7 @@
 (define-prim (##default-repl-context-command repl-context src)
   (cond ((##eof-object? src)
          (##repl-channel-newline)
-         (if (##fixnum.< 0 (macro-repl-context-level repl-context))
+         (if (##fx< 0 (macro-repl-context-level repl-context))
              (##repl-cmd-d repl-context))
          (if (##repl-channel-really-exit?)
              (##repl-cmd-q repl-context))
@@ -2528,7 +2558,7 @@
                   (handler
                    (handler repl-context))
                   ((and (##fixnum? cmd)
-                        (##not (##fixnum.< cmd 0)))
+                        (##not (##fx< cmd 0)))
                    (##repl-context-goto-depth repl-context cmd))
                   ((and (##pair? cmd)
                         (##pair? (##cdr cmd))
@@ -2545,33 +2575,33 @@
                   ((##symbol? cmd)
                    (let* ((s (##symbol->string cmd))
                           (len (##string-length s))
-                          (c (and (##fixnum.< 0 len)
-                                  (##string-ref s (##fixnum.- len 1)))))
+                          (c (and (##fx< 0 len)
+                                  (##string-ref s (##fx- len 1)))))
 
                      (define (move-frame n)
                        (##repl-context-goto-depth
                         repl-context
-                        (##fixnum.+
+                        (##fx+
                          (macro-repl-context-depth repl-context)
                          (if (##char=? c #\+)
                              n
-                             (##fixnum.- 0 n)))))
+                             (##fx- 0 n)))))
 
                      (if (or (##char=? c #\+)
                              (##char=? c #\-))
-                         (cond ((##fixnum.= len 1)
+                         (cond ((##fx= len 1)
                                 (move-frame 1))
-                               ((and (##fixnum.= len 2)
+                               ((and (##fx= len 2)
                                      (##char=? c (##string-ref s 0)))
                                 (move-frame ##backtrace-default-max-head))
                                (else
                                 (let ((n (##string->number
                                           (##substring s
                                                        0
-                                                       (##fixnum.- len 1))
+                                                       (##fx- len 1))
                                           10)))
                                   (if (and (##fixnum? n)
-                                           (##not (##fixnum.< n 0)))
+                                           (##not (##fx< n 0)))
                                       (move-frame n)
                                       (##repl-cmd-unknown src repl-context)))))
                          (##repl-cmd-unknown src repl-context))))
@@ -2590,12 +2620,12 @@
 (define-prim (##repl-context-get-context repl-context n)
   (let loop ((context repl-context))
     (let ((depth (macro-repl-context-depth context)))
-      (cond ((##fixnum.< n depth)
+      (cond ((##fx< n depth)
              (let ((prev-depth (macro-repl-context-prev-depth context)))
                (if prev-depth
                    (loop prev-depth)
                    context)))
-            ((##fixnum.< depth n)
+            ((##fx< depth n)
              (let* ((cont
                      (##repl-first-interesting
                       (macro-repl-context-cont context)))
@@ -2604,7 +2634,7 @@
                (if next
                    (loop (macro-make-repl-context
                           (macro-repl-context-level context)
-                          (##fixnum.+ depth 1)
+                          (##fx+ depth 1)
                           next
                           (macro-repl-context-initial-cont context)
                           (macro-repl-context-reason context)
@@ -2695,13 +2725,13 @@
   (##repl-context-prompt repl-context))
 
 (define-prim (##repl-cmd-d repl-context)
-  (if (##fixnum.< 0 (macro-repl-context-level repl-context))
+  (if (##fx< 0 (macro-repl-context-level repl-context))
       (##repl-context-restart (macro-repl-context-prev-level repl-context))
       (##repl-context-prompt repl-context)))
 
 (define-prim (##repl-cmd-t repl-context)
   (let loop ((context repl-context))
-    (if (##fixnum.< 0 (macro-repl-context-level context))
+    (if (##fx< 0 (macro-repl-context-level context))
         (loop (macro-repl-context-prev-level context))
         (##repl-context-restart context))))
 
@@ -2796,24 +2826,24 @@
 
 (define ##repl-commands-no-args #f)
 (set! ##repl-commands-no-args
-  (##list (##cons '?   ##repl-cmd-?)
-          (##cons 'h   ##repl-cmd-h)
-          (##cons 'd   ##repl-cmd-d)
-          (##cons 't   ##repl-cmd-t)
-          (##cons 'q   ##repl-cmd-q)
-          (##cons 'qt  ##repl-cmd-qt)
-          (##cons 'st  ##repl-cmd-st)
-          (##cons 'b   ##repl-cmd-b)
-          (##cons 'be  ##repl-cmd-be)
-          (##cons 'bed ##repl-cmd-bed)
-          (##cons 'i   ##repl-cmd-i)
-          (##cons 'y   ##repl-cmd-y)
-          (##cons 'e   ##repl-cmd-e)
-          (##cons 'ed  ##repl-cmd-ed)
-          (##cons 'c   ##repl-cmd-c)
-          (##cons 's   ##repl-cmd-s)
-          (##cons 'l   ##repl-cmd-l)
-          ))
+      (##list (##cons '?   ##repl-cmd-?)
+              (##cons 'h   ##repl-cmd-h)
+              (##cons 'd   ##repl-cmd-d)
+              (##cons 't   ##repl-cmd-t)
+              (##cons 'q   ##repl-cmd-q)
+              (##cons 'qt  ##repl-cmd-qt)
+              (##cons 'st  ##repl-cmd-st)
+              (##cons 'b   ##repl-cmd-b)
+              (##cons 'be  ##repl-cmd-be)
+              (##cons 'bed ##repl-cmd-bed)
+              (##cons 'i   ##repl-cmd-i)
+              (##cons 'y   ##repl-cmd-y)
+              (##cons 'e   ##repl-cmd-e)
+              (##cons 'ed  ##repl-cmd-ed)
+              (##cons 'c   ##repl-cmd-c)
+              (##cons 's   ##repl-cmd-s)
+              (##cons 'l   ##repl-cmd-l)
+              ))
 
 (define-prim (##repl-cmd-h-with-1-arg arg repl-context)
   (##help (##source-code arg))
@@ -2914,7 +2944,7 @@
                (##repl-context-prompt repl-context))))
 
        (cond ((and (##fixnum? val)
-                   (##not (##fixnum.< val 0)))
+                   (##not (##fx< val 0)))
               (let* ((rc
                       (##repl-context-get-context
                        repl-context
@@ -2985,18 +3015,18 @@
 
 (define ##repl-commands-with-1-arg #f)
 (set! ##repl-commands-with-1-arg
-  (##list (##cons 'h   ##repl-cmd-h-with-1-arg)
-          (##cons 'c   ##repl-cmd-c-with-1-arg)
-          (##cons 's   ##repl-cmd-s-with-1-arg)
-          (##cons 'l   ##repl-cmd-l-with-1-arg)
-          (##cons 'b   ##repl-cmd-b-with-1-arg)
-          (##cons 'be  ##repl-cmd-be-with-1-arg)
-          (##cons 'bed ##repl-cmd-bed-with-1-arg)
-          (##cons 'e   ##repl-cmd-e-with-1-arg)
-          (##cons 'ed  ##repl-cmd-ed-with-1-arg)
-          (##cons 'v   ##repl-cmd-v-with-1-arg)
-          (##cons 'st  ##repl-cmd-st-with-1-arg)
-          ))
+      (##list (##cons 'h   ##repl-cmd-h-with-1-arg)
+              (##cons 'c   ##repl-cmd-c-with-1-arg)
+              (##cons 's   ##repl-cmd-s-with-1-arg)
+              (##cons 'l   ##repl-cmd-l-with-1-arg)
+              (##cons 'b   ##repl-cmd-b-with-1-arg)
+              (##cons 'be  ##repl-cmd-be-with-1-arg)
+              (##cons 'bed ##repl-cmd-bed-with-1-arg)
+              (##cons 'e   ##repl-cmd-e-with-1-arg)
+              (##cons 'ed  ##repl-cmd-ed-with-1-arg)
+              (##cons 'v   ##repl-cmd-v-with-1-arg)
+              (##cons 'st  ##repl-cmd-st-with-1-arg)
+              ))
 
 (define-prim (##repl-within-proc proc cont)
   (cond ((##interp-procedure? proc)
@@ -3029,11 +3059,11 @@
      cont
      (lambda ()
        (macro-dynamic-bind repl-context
-        repl-context
-        (lambda ()
-          (receiver
-           (let ((rte rte))
-             (macro-code-run c))))))))
+                           repl-context
+                           (lambda ()
+                             (receiver
+                              (let ((rte rte))
+                                (macro-code-run c))))))))
 
   (let ((src2 (##sourcify src (##make-source #f #f))))
     (cond ((##interp-continuation? cont)
@@ -3056,34 +3086,34 @@
   (##declare (not interrupts-enabled))
   (let ((settings (##set-debug-settings! 0 0)))
     (if (and (##not (##eq? (macro-current-thread) (macro-primordial-thread)))
-             (##fixnum.= (macro-debug-settings-uncaught-primordial)
-                         (macro-debug-settings-uncaught settings)))
-      (other-handler exc)
-      (##repl
-       (lambda (first output-port)
-         (let ((quit? (##fixnum.= (macro-debug-settings-error settings)
-                                  (macro-debug-settings-error-quit))))
-           (if (and quit?
-                    (##fixnum.= (macro-debug-settings-level settings) 0))
-             (##exit-with-exception exc)
-             (begin
-               (##display-exception-in-context exc first output-port)
-               (if quit?
+             (##fx= (macro-debug-settings-uncaught-primordial)
+                    (macro-debug-settings-uncaught settings)))
+        (other-handler exc)
+        (##repl
+         (lambda (first output-port)
+           (let ((quit? (##fx= (macro-debug-settings-error settings)
+                               (macro-debug-settings-error-quit))))
+             (if (and quit?
+                      (##fx= (macro-debug-settings-level settings) 0))
                  (##exit-with-exception exc)
-                 #f)))))
-       exc))))
+                 (begin
+                   (##display-exception-in-context exc first output-port)
+                   (if quit?
+                       (##exit-with-exception exc)
+                       #f)))))
+         exc))))
 
 (define-prim (##default-user-interrupt-handler)
   (let* ((settings (##set-debug-settings! 0 0))
          (settings-user-intr (macro-debug-settings-user-intr settings))
-         (defer? (##fixnum.= settings-user-intr
-                             (macro-debug-settings-user-intr-defer))))
+         (defer? (##fx= settings-user-intr
+                        (macro-debug-settings-user-intr-defer))))
     (if defer?
         (set! ##deferred-user-interrupt? #t)
-        (let ((quit? (##fixnum.= settings-user-intr
-                                 (macro-debug-settings-user-intr-quit))))
+        (let ((quit? (##fx= settings-user-intr
+                            (macro-debug-settings-user-intr-quit))))
           (if (and quit?
-                   (##fixnum.= (macro-debug-settings-level settings) 0))
+                   (##fx= (macro-debug-settings-level settings) 0))
               (##exit-abnormally)
               (##handle-interrupt quit?))))))
 
@@ -3104,9 +3134,9 @@
 
 (set! ##primordial-exception-handler-hook ##repl-exception-handler-hook)
 
-(if (##fixnum.= (macro-debug-settings-error (##set-debug-settings! 0 0))
-                (macro-debug-settings-error-single-step))
-  (##step-on))
+(if (##fx= (macro-debug-settings-error (##set-debug-settings! 0 0))
+           (macro-debug-settings-error-single-step))
+    (##step-on))
 
 (##current-user-interrupt-handler ##default-user-interrupt-handler)
 
@@ -3153,14 +3183,14 @@
   (##write-string "*** " port)
   (##write-string kind port)
   (if (or proc locat)
-    (##write-string " IN " port))
+      (##write-string " IN " port))
   (if proc
-    (##write (##procedure-friendly-name proc) port))
+      (##write (##procedure-friendly-name proc) port))
   (if locat
-    (begin
-      (if proc
-        (##write-string ", " port))
-      (##display-locat locat #t port))))
+      (begin
+        (if proc
+            (##write-string ", " port))
+        (##display-locat locat #t port))))
 
 (define-prim (##display-exception-in-context exc cont port)
   (##display-situation
@@ -3204,50 +3234,50 @@
             (##output-port-width port))
            (str
             (##object->string call width)))
-      (if (##fixnum.< (##string-length str) width)
-        (begin
-          (##write-string str port)
-          (##newline port))
-        (let loop ((i 0) (lst call))
-          (##write-string (if (##fixnum.= i 0) "(" " ") port)
-          (let* ((last?
-                  (##null? (##cdr lst)))
-                 (w
-                  (##fixnum.- width 2))
-                 (s
-                  (##object->string (##car lst) w)))
-            (##write-string s port)
-            (if last?
-              (begin
-                (if (##fixnum.= (##string-length s) w) (##newline port))
-                (##write-string ")" port)
-                (##newline port))
-              (begin
-                (##newline port)
-                (loop (##fixnum.+ i 1) (##cdr lst)))))))))
+      (if (##fx< (##string-length str) width)
+          (begin
+            (##write-string str port)
+            (##newline port))
+          (let loop ((i 0) (lst call))
+            (##write-string (if (##fx= i 0) "(" " ") port)
+            (let* ((last?
+                    (##null? (##cdr lst)))
+                   (w
+                    (##fx- width 2))
+                   (s
+                    (##object->string (##car lst) w)))
+              (##write-string s port)
+              (if last?
+                  (begin
+                    (if (##fx= (##string-length s) w) (##newline port))
+                    (##write-string ")" port)
+                    (##newline port))
+                  (begin
+                    (##newline port)
+                    (loop (##fx+ i 1) (##cdr lst)))))))))
 
   (define-prim (write-items items)
     (let loop ((lst items))
       (if (##pair? lst)
-        (begin
-          (##write-string " " port)
-          (##write (##car lst) port)
-          (loop (##cdr lst))))))
+          (begin
+            (##write-string " " port)
+            (##write (##car lst) port)
+            (loop (##cdr lst))))))
 
   (define-prim (display-arg-num arg-num)
-    (if (##fixnum.< 0 arg-num)
-      (begin
-        (##write-string "(Argument " port)
-        (##write arg-num port)
-        (##write-string ") " port))))
+    (if (##fx< 0 arg-num)
+        (begin
+          (##write-string "(Argument " port)
+          (##write arg-num port)
+          (##write-string ") " port))))
 
   (define-prim (display-exception exc)
 
     (define (err-code->string code)
       (let ((x (##os-err-code->string code)))
         (if (##string? x)
-          x
-          "Error code could not be converted to a string")))
+            x
+            "Error code could not be converted to a string")))
 
     (cond ((macro-abandoned-mutex-exception? exc)
            (##write-string "MUTEX was abandoned" port)
@@ -3304,13 +3334,13 @@
                   (params
                    (##map (lambda (p)
                             (let ((s (##object->truncated-string p width)))
-                              (if (##fixnum.= (##string-length s) width)
-                                (begin
-                                  (set! sep "\n")
-                                  (##string->limited-string
-                                   s
-                                   (##fixnum.- width 1)))
-                                s)))
+                              (if (##fx= (##string-length s) width)
+                                  (begin
+                                    (set! sep "\n")
+                                    (##string->limited-string
+                                     s
+                                     (##fx- width 1)))
+                                  s)))
                           (macro-error-exception-parameters exc))))
              (##for-each
               (lambda (param)
@@ -3361,7 +3391,7 @@
            (let* ((source (macro-expression-parsing-exception-source exc))
                   (locat (##source-locat source)))
              (if (##not locat)
-               (##pretty-print (##desourcify source) port))))
+                 (##pretty-print (##desourcify source) port))))
 
           ((macro-heap-overflow-exception? exc)
            (##write-string "Heap overflow" port)
@@ -3435,6 +3465,11 @@
            (##newline port)
            (display-call))
 
+          ((macro-module-not-found-exception? exc)
+           (##write-string "Module not found" port)
+           (##newline port)
+           (display-call))
+
           ((macro-range-exception? exc)
            (display-arg-num (macro-range-exception-arg-num exc))
            (##write-string "Out of range" port)
@@ -3480,13 +3515,13 @@
            (let ((type-id
                   (macro-type-exception-type-id exc)))
              (if (##type? type-id)
-               (begin
-                 (##write-string "Instance of " port)
-                 (##write type-id port))
-               (let ((x
-                      (##assq (macro-type-exception-type-id exc)
-                              ##type-exception-names)))
-                 (##write-string (if x (##cdr x) "Unknown type") port))))
+                 (begin
+                   (##write-string "Instance of " port)
+                   (##write type-id port))
+                 (let ((x
+                        (##assq (macro-type-exception-type-id exc)
+                                ##type-exception-names)))
+                   (##write-string (if x (##cdr x) "Unknown type") port))))
            (##write-string " expected" port)
            (##newline port)
            (display-call))
@@ -3619,6 +3654,11 @@
           (macro-no-such-file-or-directory-exception-procedure exc)
           (macro-no-such-file-or-directory-exception-arguments exc)))
 
+        ((macro-module-not-found-exception? exc)
+         (##cons
+          (macro-module-not-found-exception-procedure exc)
+          (macro-module-not-found-exception-arguments exc)))
+
         ((macro-range-exception? exc)
          (##cons
           (macro-range-exception-procedure exc)
@@ -3692,149 +3732,148 @@
 
 (define ##type-exception-names #f)
 (set! ##type-exception-names
-  '(
-    ;; from "_kernel.scm":
-    (foreign                      . "FOREIGN object")
+      '(
+        ;; from "_kernel.scm":
+        (foreign                      . "FOREIGN object")
 
-    ;; from "_system.scm":
-    (hash-algorithm               . "HASH ALGORITHM")
+        ;; from "_thread.scm":
+        (continuation                 . "CONTINUATION")
+        (time                         . "TIME object")
+        (absrel-time                  . "REAL or TIME object")
+        (absrel-time-or-false         . "#f or REAL or TIME object")
+        (thread                       . "THREAD")
+        (mutex                        . "MUTEX")
+        (convar                       . "CONDITION VARIABLE")
+        (tgroup                       . "THREAD GROUP")
+        (deadlock-exception           . "DEADLOCK-EXCEPTION object")
+        (join-timeout-exception       . "JOIN-TIMEOUT-EXCEPTION object")
+        (mailbox-receive-timeout-exception . "MAILBOX-RECEIVE-TIMEOUT-EXCEPTION object")
+        (abandoned-mutex-exception    . "ABANDONED-MUTEX-EXCEPTION object")
+        (initialized-thread-exception . "INITIALIZED-THREAD-EXCEPTION object")
+        (uninitialized-thread-exception . "UNINITIALIZED-THREAD-EXCEPTION object")
+        (started-thread-exception     . "STARTED-THREAD-EXCEPTION object")
+        (terminated-thread-exception  . "TERMINATED-THREAD-EXCEPTION object")
+        (uncaught-exception           . "UNCAUGHT-EXCEPTION object")
+        (scheduler-exception          . "SCHEDULER-EXCEPTION object")
+        (noncontinuable-exception     . "NONCONTINUABLE-EXCEPTION object")
+        (low-level-exception          . "LOW-LEVEL-EXCEPTION object")
 
-    ;; from "_thread.scm":
-    (continuation                 . "CONTINUATION")
-    (time                         . "TIME object")
-    (absrel-time                  . "REAL or TIME object")
-    (absrel-time-or-false         . "#f or REAL or TIME object")
-    (thread                       . "THREAD")
-    (mutex                        . "MUTEX")
-    (convar                       . "CONDITION VARIABLE")
-    (tgroup                       . "THREAD GROUP")
-    (deadlock-exception           . "DEADLOCK-EXCEPTION object")
-    (join-timeout-exception       . "JOIN-TIMEOUT-EXCEPTION object")
-    (mailbox-receive-timeout-exception . "MAILBOX-RECEIVE-TIMEOUT-EXCEPTION object")
-    (abandoned-mutex-exception    . "ABANDONED-MUTEX-EXCEPTION object")
-    (initialized-thread-exception . "INITIALIZED-THREAD-EXCEPTION object")
-    (uninitialized-thread-exception . "UNINITIALIZED-THREAD-EXCEPTION object")
-    (started-thread-exception     . "STARTED-THREAD-EXCEPTION object")
-    (terminated-thread-exception  . "TERMINATED-THREAD-EXCEPTION object")
-    (uncaught-exception           . "UNCAUGHT-EXCEPTION object")
-    (scheduler-exception          . "SCHEDULER-EXCEPTION object")
-    (noncontinuable-exception     . "NONCONTINUABLE-EXCEPTION object")
-    (low-level-exception          . "LOW-LEVEL-EXCEPTION object")
+        ;; from "_std.scm":
+        (mutable                      . "MUTABLE object")
+        (pair                         . "PAIR")
+        (pair-list                    . "PAIR LIST")
+        (char                         . "CHARACTER")
+        (char-list                    . "CHARACTER LIST")
+        (string                       . "STRING")
+        (string-list                  . "STRING LIST")
+        (list                         . "LIST")
+        (symbol                       . "SYMBOL")
+        (keyword                      . "KEYWORD")
+        (vector                       . "VECTOR")
+        (vector-list                  . "VECTOR LIST")
+        (s8vector                     . "S8VECTOR")
+        (s8vector-list                . "S8VECTOR LIST")
+        (u8vector                     . "U8VECTOR")
+        (u8vector-list                . "U8VECTOR LIST")
+        (s16vector                    . "S16VECTOR")
+        (s16vector-list               . "S16VECTOR LIST")
+        (u16vector                    . "U16VECTOR")
+        (u16vector-list               . "U16VECTOR LIST")
+        (s32vector                    . "S32VECTOR")
+        (s32vector-list               . "S32VECTOR LIST")
+        (u32vector                    . "U32VECTOR")
+        (u32vector-list               . "U32VECTOR LIST")
+        (s64vector                    . "S64VECTOR")
+        (s64vector-list               . "S64VECTOR LIST")
+        (u64vector                    . "U64VECTOR")
+        (u64vector-list               . "U64VECTOR LIST")
+        (f32vector                    . "F32VECTOR")
+        (f32vector-list               . "F32VECTOR LIST")
+        (f64vector                    . "F64VECTOR")
+        (f64vector-list               . "F64VECTOR LIST")
+        (procedure                    . "PROCEDURE")
 
-    ;; from "_std.scm":
-    (mutable                      . "MUTABLE object")
-    (pair                         . "PAIR")
-    (pair-list                    . "PAIR LIST")
-    (char                         . "CHARACTER")
-    (char-list                    . "CHARACTER LIST")
-    (string                       . "STRING")
-    (string-list                  . "STRING LIST")
-    (list                         . "LIST")
-    (symbol                       . "SYMBOL")
-    (keyword                      . "KEYWORD")
-    (vector                       . "VECTOR")
-    (vector-list                  . "VECTOR LIST")
-    (s8vector                     . "S8VECTOR")
-    (s8vector-list                . "S8VECTOR LIST")
-    (u8vector                     . "U8VECTOR")
-    (u8vector-list                . "U8VECTOR LIST")
-    (s16vector                    . "S16VECTOR")
-    (s16vector-list               . "S16VECTOR LIST")
-    (u16vector                    . "U16VECTOR")
-    (u16vector-list               . "U16VECTOR LIST")
-    (s32vector                    . "S32VECTOR")
-    (s32vector-list               . "S32VECTOR LIST")
-    (u32vector                    . "U32VECTOR")
-    (u32vector-list               . "U32VECTOR LIST")
-    (s64vector                    . "S64VECTOR")
-    (s64vector-list               . "S64VECTOR LIST")
-    (u64vector                    . "U64VECTOR")
-    (u64vector-list               . "U64VECTOR LIST")
-    (f32vector                    . "F32VECTOR")
-    (f32vector-list               . "F32VECTOR LIST")
-    (f64vector                    . "F64VECTOR")
-    (f64vector-list               . "F64VECTOR LIST")
-    (procedure                    . "PROCEDURE")
+        ;; from "_num.scm":
+        (exact-signed-int8            . "Signed 8 bit exact INTEGER")
+        (exact-signed-int8-list       . "Signed 8 bit exact INTEGER LIST")
+        (exact-unsigned-int8          . "Unsigned 8 bit exact INTEGER")
+        (exact-unsigned-int8-list     . "Unsigned 8 bit exact INTEGER LIST")
+        (exact-signed-int16           . "Signed 16 bit exact INTEGER")
+        (exact-signed-int16-list      . "Signed 16 bit exact INTEGER LIST")
+        (exact-unsigned-int16         . "Unsigned 16 bit exact INTEGER")
+        (exact-unsigned-int16-list    . "Unsigned 16 bit exact INTEGER LIST")
+        (exact-signed-int32           . "Signed 32 bit exact INTEGER")
+        (exact-signed-int32-list      . "Signed 32 bit exact INTEGER LIST")
+        (exact-unsigned-int32         . "Unsigned 32 bit exact INTEGER")
+        (exact-unsigned-int32-list    . "Unsigned 32 bit exact INTEGER LIST")
+        (exact-signed-int64           . "Signed 64 bit exact INTEGER")
+        (exact-signed-int64-list      . "Signed 64 bit exact INTEGER LIST")
+        (exact-unsigned-int64         . "Unsigned 64 bit exact INTEGER")
+        (exact-unsigned-int64-list    . "Unsigned 64 bit exact INTEGER LIST")
+        (inexact-real                 . "Inexact REAL")
+        (inexact-real-list            . "Inexact REAL LIST")
+        (number                       . "NUMBER")
+        (real                         . "REAL")
+        (finite-real                  . "Finite REAL")
+        (rational                     . "RATIONAL")
+        (integer                      . "INTEGER")
+        (exact-integer                . "Exact INTEGER")
+        (fixnum                       . "FIXNUM")
+        (flonum                       . "FLONUM")
+        (random-source-state          . "RANDOM-SOURCE state")
 
-    ;; from "_num.scm":
-    (exact-signed-int8            . "Signed 8 bit exact INTEGER")
-    (exact-signed-int8-list       . "Signed 8 bit exact INTEGER LIST")
-    (exact-unsigned-int8          . "Unsigned 8 bit exact INTEGER")
-    (exact-unsigned-int8-list     . "Unsigned 8 bit exact INTEGER LIST")
-    (exact-signed-int16           . "Signed 16 bit exact INTEGER")
-    (exact-signed-int16-list      . "Signed 16 bit exact INTEGER LIST")
-    (exact-unsigned-int16         . "Unsigned 16 bit exact INTEGER")
-    (exact-unsigned-int16-list    . "Unsigned 16 bit exact INTEGER LIST")
-    (exact-signed-int32           . "Signed 32 bit exact INTEGER")
-    (exact-signed-int32-list      . "Signed 32 bit exact INTEGER LIST")
-    (exact-unsigned-int32         . "Unsigned 32 bit exact INTEGER")
-    (exact-unsigned-int32-list    . "Unsigned 32 bit exact INTEGER LIST")
-    (exact-signed-int64           . "Signed 64 bit exact INTEGER")
-    (exact-signed-int64-list      . "Signed 64 bit exact INTEGER LIST")
-    (exact-unsigned-int64         . "Unsigned 64 bit exact INTEGER")
-    (exact-unsigned-int64-list    . "Unsigned 64 bit exact INTEGER LIST")
-    (inexact-real                 . "Inexact REAL")
-    (inexact-real-list            . "Inexact REAL LIST")
-    (number                       . "NUMBER")
-    (real                         . "REAL")
-    (finite-real                  . "Finite REAL")
-    (rational                     . "RATIONAL")
-    (integer                      . "INTEGER")
-    (exact-integer                . "Exact INTEGER")
-    (fixnum                       . "FIXNUM")
-    (flonum                       . "FLONUM")
-    (random-source-state          . "RANDOM-SOURCE state")
+        ;; from "_nonstd.scm":
+        (string-or-nonnegative-fixnum . "STRING or nonnegative fixnum")
+        (will                         . "WILL")
+        (box                          . "BOX")
+        (unterminated-process-exception . "UNTERMINATED-PROCESS-EXCEPTION object")
 
-    ;; from "_nonstd.scm":
-    (string-or-nonnegative-fixnum . "STRING or nonnegative fixnum")
-    (will                         . "WILL")
-    (box                          . "BOX")
-    (unterminated-process-exception . "UNTERMINATED-PROCESS-EXCEPTION object")
+        ;; from "_io.scm":
+        (string-or-ip-address         . "STRING or IP address")
+        (settings                     . "Port settings")
+        (vector-or-settings           . "VECTOR or port settings")
+        (string-or-settings           . "STRING or port settings")
+        (u8vector-or-settings         . "U8VECTOR or port settings")
+        (exact-integer-or-string-or-settings . "Exact INTEGER or STRING or port settings")
+        (tls-version                  . "TLS VERSION")
+        (tls-options                  . "TLS OPTIONS")
+        (port                         . "PORT")
+        (input-port                   . "INPUT PORT")
+        (output-port                  . "OUTPUT PORT")
+        (character-input-port         . "Character INPUT PORT")
+        (character-output-port        . "Character OUTPUT PORT")
+        (byte-input-port              . "Byte INPUT PORT")
+        (byte-output-port             . "Byte OUTPUT PORT")
+        (device-input-port            . "Device INPUT PORT")
+        (device-output-port           . "Device OUTPUT PORT")
+        (vector-input-port            . "Vector INPUT PORT")
+        (vector-output-port           . "Vector OUTPUT PORT")
+        (string-input-port            . "String INPUT PORT")
+        (string-output-port           . "String OUTPUT PORT")
+        (u8vector-input-port          . "U8vector INPUT PORT")
+        (u8vector-output-port         . "U8vector OUTPUT PORT")
+        (file-port                    . "File PORT")
+        (tty-port                     . "Tty PORT")
+        (tcp-client-port              . "Tcp client PORT")
+        (tcp-server-port              . "Tcp server PORT")
+        (pipe-port                    . "Pipe PORT")
+        (serial-port                  . "Serial PORT")
+        (directory-port               . "Directory PORT")
+        (event-queue-port             . "Event-queue PORT")
+        (timer-port                   . "Timer PORT")
+        (readtable                    . "READTABLE")
+        (hostent                      . "HOSTENT")
+        (datum-parsing-exception      . "DATUM PARSING EXCEPTION object")
+        (network-family               . "NETWORK FAMILY")
+        (network-socket-type          . "NETWORK SOCKET-TYPE")
+        (network-protocol             . "NETWORK PROTOCOL")
 
-    ;; from "_io.scm":
-    (string-or-ip-address         . "STRING or IP address")
-    (settings                     . "Port settings")
-    (vector-or-settings           . "VECTOR or port settings")
-    (string-or-settings           . "STRING or port settings")
-    (u8vector-or-settings         . "U8VECTOR or port settings")
-    (exact-integer-or-string-or-settings . "Exact INTEGER or STRING or port settings")
-    (port                         . "PORT")
-    (input-port                   . "INPUT PORT")
-    (output-port                  . "OUTPUT PORT")
-    (character-input-port         . "Character INPUT PORT")
-    (character-output-port        . "Character OUTPUT PORT")
-    (byte-input-port              . "Byte INPUT PORT")
-    (byte-output-port             . "Byte OUTPUT PORT")
-    (device-input-port            . "Device INPUT PORT")
-    (device-output-port           . "Device OUTPUT PORT")
-    (vector-input-port            . "Vector INPUT PORT")
-    (vector-output-port           . "Vector OUTPUT PORT")
-    (string-input-port            . "String INPUT PORT")
-    (string-output-port           . "String OUTPUT PORT")
-    (u8vector-input-port          . "U8vector INPUT PORT")
-    (u8vector-output-port         . "U8vector OUTPUT PORT")
-    (file-port                    . "File PORT")
-    (tty-port                     . "Tty PORT")
-    (tcp-client-port              . "Tcp client PORT")
-    (tcp-server-port              . "Tcp server PORT")
-    (pipe-port                    . "Pipe PORT")
-    (serial-port                  . "Serial PORT")
-    (directory-port               . "Directory PORT")
-    (event-queue-port             . "Event-queue PORT")
-    (timer-port                   . "Timer PORT")
-    (readtable                    . "READTABLE")
-    (hostent                      . "HOSTENT")
-    (datum-parsing-exception      . "DATUM PARSING EXCEPTION object")
-    (network-family               . "NETWORK FAMILY")
-    (network-socket-type          . "NETWORK SOCKET-TYPE")
-    (network-protocol             . "NETWORK PROTOCOL")
+        ;; from "_eval.scm":
+        (expression-parsing-exception . "EXPRESSION PARSING EXCEPTION object")
 
-    ;; from "_eval.scm":
-    (expression-parsing-exception . "EXPRESSION PARSING EXCEPTION object")
-
-    ;; from "_repl.scm":
-    (interpreted-procedure        . "Interpreted PROCEDURE")
-   ))
+        ;; from "_repl.scm":
+        (interpreted-procedure        . "Interpreted PROCEDURE")
+        ))
 
 ;;;;;;;    (psettings                    . "Invalid port settings")
 ;;;;;;;    (open-file                    . "Can't open file")
@@ -3842,101 +3881,101 @@
 
 (define ##datum-parsing-exception-names #f)
 (set! ##datum-parsing-exception-names
-  '(
-    (datum-or-eof-expected          . "Datum or EOF expected")
-    (datum-expected                 . "Datum expected")
-    (improperly-placed-dot          . "Improperly placed dot")
-    (incomplete-form-eof-reached    . "Incomplete form, EOF reached")
-    (incomplete-form                . "Incomplete form")
-    (character-out-of-range         . "Character out of range")
-    (invalid-character-name         . "Invalid '#\\' name:")
-    (illegal-character              . "Illegal character:")
-    (s8-expected                    . "Signed 8 bit exact integer expected")
-    (u8-expected                    . "Unsigned 8 bit exact integer expected")
-    (s16-expected                   . "Signed 16 bit exact integer expected")
-    (u16-expected                   . "Unsigned 16 bit exact integer expected")
-    (s32-expected                   . "Signed 32 bit exact integer expected")
-    (u32-expected                   . "Unsigned 32 bit exact integer expected")
-    (s64-expected                   . "Signed 64 bit exact integer expected")
-    (u64-expected                   . "Unsigned 64 bit exact integer expected")
-    (inexact-real-expected          . "Inexact real expected")
-    (invalid-hex-escape             . "Invalid hexadecimal escape")
-    (invalid-escaped-character      . "Invalid escaped character:")
-    (open-paren-expected            . "'(' expected")
-    (invalid-token                  . "Invalid token")
-    (invalid-sharp-bang-name        . "Invalid '#!' name:")
-    (duplicate-label-definition     . "Duplicate definition for label:")
-    (missing-label-definition       . "Missing definition for label:")
-    (illegal-label-definition       . "Illegal definition of label:")
-    (invalid-infix-syntax-character . "Invalid infix syntax character")
-    (invalid-infix-syntax-number    . "Invalid infix syntax number")
-    (invalid-infix-syntax           . "Invalid infix syntax")
-   ))
+      '(
+        (datum-or-eof-expected          . "Datum or EOF expected")
+        (datum-expected                 . "Datum expected")
+        (improperly-placed-dot          . "Improperly placed dot")
+        (incomplete-form-eof-reached    . "Incomplete form, EOF reached")
+        (incomplete-form                . "Incomplete form")
+        (character-out-of-range         . "Character out of range")
+        (invalid-character-name         . "Invalid '#\\' name:")
+        (illegal-character              . "Illegal character:")
+        (s8-expected                    . "Signed 8 bit exact integer expected")
+        (u8-expected                    . "Unsigned 8 bit exact integer expected")
+        (s16-expected                   . "Signed 16 bit exact integer expected")
+        (u16-expected                   . "Unsigned 16 bit exact integer expected")
+        (s32-expected                   . "Signed 32 bit exact integer expected")
+        (u32-expected                   . "Unsigned 32 bit exact integer expected")
+        (s64-expected                   . "Signed 64 bit exact integer expected")
+        (u64-expected                   . "Unsigned 64 bit exact integer expected")
+        (inexact-real-expected          . "Inexact real expected")
+        (invalid-hex-escape             . "Invalid hexadecimal escape")
+        (invalid-escaped-character      . "Invalid escaped character:")
+        (open-paren-expected            . "'(' expected")
+        (invalid-token                  . "Invalid token")
+        (invalid-sharp-bang-name        . "Invalid '#!' name:")
+        (duplicate-label-definition     . "Duplicate definition for label:")
+        (missing-label-definition       . "Missing definition for label:")
+        (illegal-label-definition       . "Illegal definition of label:")
+        (invalid-infix-syntax-character . "Invalid infix syntax character")
+        (invalid-infix-syntax-number    . "Invalid infix syntax number")
+        (invalid-infix-syntax           . "Invalid infix syntax")
+        ))
 
 (define ##expression-parsing-exception-names #f)
 (set! ##expression-parsing-exception-names
-  '(
-    (id-expected                      . "Identifier expected")
-    (invalid-module-name              . "Invalid module name")
-    (ill-formed-namespace             . "Ill-formed namespace")
-    (ill-formed-namespace-prefix      . "Ill-formed namespace prefix")
-    (namespace-prefix-must-be-string  . "Namespace prefix must be a string")
-    (macro-used-as-variable           . "Macro name can't be used as a variable:")
-    (variable-is-immutable            . "Variable is immutable:")
-    (ill-formed-macro-transformer     . "Macro transformer must be a lambda expression")
-    (reserved-used-as-variable        . "Reserved identifier can't be used as a variable:")
-    (ill-formed-special-form          . "Ill-formed special form:")
-    (cannot-open-file                 . "Can't open file")
-    (filename-expected                . "Filename expected")
-    (ill-placed-define                . "Ill-placed 'define'")
-    (ill-placed-include               . "Ill-placed 'include'")
-    (ill-placed-define-macro          . "Ill-placed 'define-macro'")
-    (ill-placed-define-syntax         . "Ill-placed 'define-syntax'")
-    (ill-placed-declare               . "Ill-placed 'declare'")
-    (ill-placed-namespace             . "Ill-placed 'namespace'")
-;;    (ill-placed-library               . "Ill-placed 'library'")
-;;    (ill-placed-export                . "Ill-placed 'export'")
-;;    (ill-placed-import                . "Ill-placed 'import'")
-    (unknown-location                 . "Unknown location")
-    (ill-formed-expression            . "Ill-formed expression")
-    (unsupported-special-form         . "Interpreter does not support")
-    (parameter-must-be-id             . "Parameter must be an identifier")
-    (parameter-must-be-id-or-default  . "Parameter must be an identifier or default binding")
-    (duplicate-parameter              . "Duplicate parameter in parameter list")
-    (duplicate-rest-parameter         . "Duplicate rest parameter in parameter list")
-    (parameter-expected-after-rest    . "#!rest must be followed by a parameter")
-    (rest-parm-must-be-last           . "Rest parameter must be last")
-    (ill-formed-default               . "Ill-formed default binding")
-    (ill-placed-optional              . "Ill-placed #!optional")
-    (ill-placed-key                   . "Ill-placed #!key")
-    (key-expected-after-rest          . "#!key expected after rest parameter")
-    (ill-placed-default               . "Ill-placed default binding")
-    (duplicate-variable-definition    . "Duplicate definition of a variable")
-    (empty-body                       . "Body must contain at least one expression")
-    (else-clause-not-last             . "Else clause must be last")
-    (ill-formed-selector-list         . "Ill-formed selector list")
-    (duplicate-variable-binding       . "Duplicate variable in bindings")
-    (ill-formed-binding-list          . "Ill-formed binding list")
-    (ill-formed-call                  . "Ill-formed procedure call")
-    (ill-formed-cond-expand           . "Ill-formed 'cond-expand'")
-    (unfulfilled-cond-expand          . "Unfulfilled 'cond-expand'")
-   ))
+      '(
+        (id-expected                      . "Identifier expected")
+        (invalid-module-name              . "Invalid module name")
+        (ill-formed-namespace             . "Ill-formed namespace")
+        (ill-formed-namespace-prefix      . "Ill-formed namespace prefix")
+        (namespace-prefix-must-be-string  . "Namespace prefix must be a string")
+        (macro-used-as-variable           . "Macro name can't be used as a variable:")
+        (variable-is-immutable            . "Variable is immutable:")
+        (ill-formed-macro-transformer     . "Macro transformer must be a lambda expression")
+        (reserved-used-as-variable        . "Reserved identifier can't be used as a variable:")
+        (ill-formed-special-form          . "Ill-formed special form:")
+        (cannot-open-file                 . "Can't open file")
+        (filename-expected                . "Filename expected")
+        (ill-placed-define                . "Ill-placed 'define'")
+        (ill-placed-include               . "Ill-placed 'include'")
+        (ill-placed-define-macro          . "Ill-placed 'define-macro'")
+        (ill-placed-define-syntax         . "Ill-placed 'define-syntax'")
+        (ill-placed-declare               . "Ill-placed 'declare'")
+        (ill-placed-namespace             . "Ill-placed 'namespace'")
+        ;;    (ill-placed-library               . "Ill-placed 'library'")
+        ;;    (ill-placed-export                . "Ill-placed 'export'")
+        ;;    (ill-placed-import                . "Ill-placed 'import'")
+        (unknown-location                 . "Unknown location")
+        (ill-formed-expression            . "Ill-formed expression")
+        (unsupported-special-form         . "Interpreter does not support")
+        (parameter-must-be-id             . "Parameter must be an identifier")
+        (parameter-must-be-id-or-default  . "Parameter must be an identifier or default binding")
+        (duplicate-parameter              . "Duplicate parameter in parameter list")
+        (duplicate-rest-parameter         . "Duplicate rest parameter in parameter list")
+        (parameter-expected-after-rest    . "#!rest must be followed by a parameter")
+        (rest-parm-must-be-last           . "Rest parameter must be last")
+        (ill-formed-default               . "Ill-formed default binding")
+        (ill-placed-optional              . "Ill-placed #!optional")
+        (ill-placed-key                   . "Ill-placed #!key")
+        (key-expected-after-rest          . "#!key expected after rest parameter")
+        (ill-placed-default               . "Ill-placed default binding")
+        (duplicate-variable-definition    . "Duplicate definition of a variable")
+        (empty-body                       . "Body must contain at least one expression")
+        (else-clause-not-last             . "Else clause must be last")
+        (ill-formed-selector-list         . "Ill-formed selector list")
+        (duplicate-variable-binding       . "Duplicate variable in bindings")
+        (ill-formed-binding-list          . "Ill-formed binding list")
+        (ill-formed-call                  . "Ill-formed procedure call")
+        (ill-formed-cond-expand           . "Ill-formed 'cond-expand'")
+        (unfulfilled-cond-expand          . "Unfulfilled 'cond-expand'")
+        ))
 
 ;;;----------------------------------------------------------------------------
 
-(define-prim (##gambc-doc . args)
+(define-prim (##gambdoc . args)
 
-  (define (gambc-doc args)
+  (define (gambdoc args)
 
     (define (gen-args args i)
       (if (##null? args)
           '()
           (##cons (arg (##string-append "ARG" (##number->string i 10))
                        (##car args))
-                  (gen-args (##cdr args) (##fixnum.+ i 1)))))
+                  (gen-args (##cdr args) (##fx+ i 1)))))
 
     (define (arg name val)
-      (##string-append "GAMBC_DOC_" name "=" val))
+      (##string-append "GAMBDOC_" name "=" val))
 
     (define (install-dir path)
       (parameterize
@@ -3944,9 +3983,9 @@
          (##path-expand path)))
        (##current-directory)))
 
-    (let* ((gambcdir-bin
+    (let* ((gambitdir-bin
             (install-dir "~~bin"))
-           (gambcdir-doc
+           (gambitdir-doc
             (install-dir "~~doc")))
       (##open-process-generic
        (macro-direction-inout)
@@ -3957,8 +3996,8 @@
            status))
        open-process
        (##list path:
-               (##string-append gambcdir-bin
-                                "gambc-doc"
+               (##string-append gambitdir-bin
+                                "gambdoc"
                                 ##os-bat-extension-string-saved)
                arguments:
                '()
@@ -3966,19 +4005,19 @@
                (##append
                 (let ((env (##os-environ)))
                   (if (##fixnum? env) '() env))
-                (##cons (arg "GAMBCDIR_BIN"
+                (##cons (arg "GAMBITDIR_BIN"
                              (##path-strip-trailing-directory-separator
-                              gambcdir-bin))
-                        (##cons (arg "GAMBCDIR_DOC"
+                              gambitdir-bin))
+                        (##cons (arg "GAMBITDIR_DOC"
                                      (##path-strip-trailing-directory-separator
-                                      gambcdir-doc))
+                                      gambitdir-doc))
                                 (gen-args args 1))))
                stdin-redirection: #f
                stdout-redirection: #f
                stderr-redirection: #f))))
 
-  (let ((exit-status (gambc-doc args)))
-    (if (##fixnum.= exit-status 0)
+  (let ((exit-status (gambdoc args)))
+    (if (##fx= exit-status 0)
         (##void)
         (##raise-error-exception
          "failed to display the document"
@@ -3998,17 +4037,17 @@
                   (##string->list str))))
 
 (define-prim (##show-help prefix subject)
-  (##gambc-doc "help"
-               subject
-               (##help-browser)
-               (##escape-link (##string-append prefix subject))))
+  (##gambdoc "help"
+             subject
+             (##help-browser)
+             (##escape-link (##string-append prefix subject))))
 
 (define ##help-browser
   (##make-parameter
    ""
    (lambda (val)
-    (macro-check-string val 1 (##help-browser val)
-      val))))
+     (macro-check-string val 1 (##help-browser val)
+       val))))
 
 (define help-browser
   ##help-browser)
@@ -4066,19 +4105,19 @@
           (##- (##f64vector-ref at-end 5)
                (##f64vector-ref at-start 5)))
          (nb-gcs
-          (##flonum.->exact-int
+          (##flonum->exact-int
            (##- (##f64vector-ref at-end 6)
                 (##f64vector-ref at-start 6))))
          (minflt
-          (##flonum.->exact-int
+          (##flonum->exact-int
            (##- (##f64vector-ref at-end 10)
                 (##f64vector-ref at-start 10))))
          (majflt
-          (##flonum.->exact-int
+          (##flonum->exact-int
            (##- (##f64vector-ref at-end 11)
                 (##f64vector-ref at-start 11))))
          (bytes-allocated
-          (##flonum.->exact-int
+          (##flonum->exact-int
            (##- (##- (##f64vector-ref at-end 7)
                      (##f64vector-ref at-start 7))
                 (##+ (if (##interp-procedure? thunk)
@@ -4105,8 +4144,8 @@
   (macro-force-vars (port)
     (let ((p
            (if (##eq? port (macro-absent-obj))
-             (##repl-output-port)
-             port)))
+               (##repl-output-port)
+               port)))
       (macro-check-output-port p 3 (##time thunk expr p)
         (let* ((stats (##exec-stats thunk))
                (result (##cdar stats))

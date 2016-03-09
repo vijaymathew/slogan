@@ -1,18 +1,18 @@
 /* File: "gambit.h" */
 
 /*
- * Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+ * Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
  */
 
 #ifndef ___GAMBIT_H
 #define ___GAMBIT_H
 
 #ifndef ___VERSION
-#define ___VERSION 407001
+#define ___VERSION 408004
 #endif
 
-#if ___VERSION != 407001
-#include "gambit-not407001.h"
+#if ___VERSION != 408004
+#include "gambit-not408004.h"
 #else
 
 #ifdef HAVE_CONFIG_H
@@ -49,82 +49,86 @@
  * determine byte order endianness.
  */
 
-#ifndef ___CPU_x86
+#ifndef ___CPU_x86_32
 
 #ifdef I386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef _I386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef i386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef _i386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i386__
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i486
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i486__
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i586
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i586__
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i686
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __i686__
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef __ix86
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef M_I386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef _M_I386
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef M_I86
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef _M_I86
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef _M_IX86
-#define ___CPU_x86
+#define ___CPU_x86_32
 #else
 #ifdef _X86_
+#define ___CPU_x86_32
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+#ifdef ___CPU_x86_32
 #define ___CPU_x86
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
 #endif
 
 #endif
@@ -139,56 +143,64 @@
 #endif
 #endif
 
+#ifdef ___CPU_x86_64
+#define ___CPU_x86
 #endif
 
-#ifndef ___CPU_ppc
+#endif
+
+#ifndef ___CPU_ppc_32
 
 #ifdef PPC
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef ppc
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef __ppc
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef __ppc__
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef _ARCH_PPC
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef __POWERPC__
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef powerpc
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef _POWER
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef _ARCH_PWR
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef _ARCH_PWR2
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef _M_PPC
-#define ___CPU_ppc
+#define ___CPU_ppc_32
 #else
 #ifdef _M_MPPC
+#define ___CPU_ppc_32
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+#ifdef ___CPU_ppc_32
 #define ___CPU_ppc
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
 #endif
 
 #endif
@@ -197,6 +209,10 @@
 
 #ifdef __ppc_64__
 #define ___CPU_ppc_64
+#endif
+
+#ifdef ___CPU_ppc_64
+#define ___CPU_ppc
 #endif
 
 #endif
@@ -327,6 +343,7 @@
 #else
 #ifdef __arm__
 #define ___CPU_arm
+#else
 #endif
 #endif
 #endif
@@ -349,6 +366,14 @@
 
 #endif
 
+#ifdef __aarch64__
+#define ___CPU_aarch64
+#else
+#ifdef __arm64__
+#define ___CPU_aarch64
+#endif
+#endif
+
 /*
  * Determine the byte order endianness based on the processor type.
  * We assume that all processors are big-endian, except the x86, x86_64,
@@ -363,23 +388,7 @@
 #define ___LITTLE_ENDIAN
 #endif
 
-#ifdef ___CPU_x86_64
-#define ___LITTLE_ENDIAN
-#endif
-
 #ifdef ___CPU_ppc
-#ifdef _LITTLE_ENDIAN
-#define ___LITTLE_ENDIAN
-#endif
-#ifdef __LITTLE_ENDIAN__
-#define ___LITTLE_ENDIAN
-#endif
-#ifdef __LITTLE_ENDIAN_DATA__
-#define ___LITTLE_ENDIAN
-#endif
-#endif
-
-#ifdef ___CPU_ppc_64
 #ifdef _LITTLE_ENDIAN
 #define ___LITTLE_ENDIAN
 #endif
@@ -421,6 +430,11 @@
 #endif
 
 #ifdef EMSCRIPTEN
+#define ___LITTLE_ENDIAN
+#endif
+
+/* AArch64 can be little or big endian*/
+#ifdef __AARCH64EL__
 #define ___LITTLE_ENDIAN
 #endif
 
@@ -1262,6 +1276,17 @@
 #endif
 
 /*
+ * Determine the maximum number of OS threads (processors) that can be
+ * running in a given VM instance.
+ */
+
+#ifdef ___SINGLE_THREADED_VMS
+#define ___MAX_PROCESSORS 1
+#else
+#define ___MAX_PROCESSORS @CONF_MAX_PROCESSORS@
+#endif
+
+/*
  * Determine which thread system is being used.  This needs to be
  * known by this header file to allow the definition of macros which
  * expand to calls to thread system specific functions, thus avoiding
@@ -1295,6 +1320,17 @@
 #ifndef ___NO_THREAD_LOCAL_STORAGE_CLASS
 #ifndef ___THREAD_LOCAL_STORAGE_CLASS
 #define @CONF_THREAD_LOCAL_STORAGE_CLASS@
+#endif
+#endif
+
+
+/*
+ * Determine if an activity log should be kept or not.
+ */
+
+#ifndef ___NO_ACTIVITY_LOG
+#ifndef ___ACTIVITY_LOG
+#define @CONF_ACTIVITY_LOG@
 #endif
 #endif
 
@@ -1381,6 +1417,93 @@
 #endif
 
 #endif
+
+#endif
+
+
+/*---------------------------------------------------------------------------*/
+
+/* C math library properties. */
+
+#ifndef ___DONT_HAVE_MATH_H
+#include <math.h>
+#endif
+
+/*
+ * We assume that no C compiler has good implementations of atan2 and
+ * pow.  So we need to define them in the Gambit runtime system.
+ */
+
+#define ___DEFINE_ATAN2
+#define ___DEFINE_POW
+
+#ifdef ___OS_WIN32
+
+/*
+ * Older versions of the Microsoft Visual C compilers did not
+ * implement some important math functions.  So we need to define them
+ * in the Gambit runtime system.  We do this even if using another
+ * C compiler, such as gcc, in order to allow dynamically compiled
+ * Scheme files to be compiled with a C compiler different from the
+ * C compiler used for compiling the Gambit runtime system.  If this
+ * wasn't done, the offsets of the fields in ___global_state_struct
+ * would be different, causing calls to the wrong conversion functions.
+ */
+
+#define ___DEFINE_SCALBN
+#define ___DEFINE_ILOGB
+#define ___DEFINE_EXPM1
+#define ___DEFINE_LOG1P
+#define ___DEFINE_ASINH
+#define ___DEFINE_ACOSH
+#define ___DEFINE_ATANH
+
+#endif
+
+#ifdef _MSC_VER
+
+#if _MSC_VER >= 1800
+
+/*
+ * Starting with version 18 (released in 2013), the following
+ * functions are supported by the C math library.
+ */
+
+#define ___HAVE_GOOD_SCALBN
+#define ___HAVE_GOOD_ILOGB
+#define ___HAVE_GOOD_EXPM1
+#define ___HAVE_GOOD_LOG1P
+#define ___HAVE_GOOD_ASINH
+#define ___HAVE_GOOD_ACOSH
+#define ___HAVE_GOOD_ATANH
+
+#endif
+
+/*
+ * The following functions seem to be implemented in old versions.
+ */
+
+#define ___HAVE_GOOD_SINH
+#define ___HAVE_GOOD_COSH
+#define ___HAVE_GOOD_TANH
+
+#else
+
+/*
+ * On other C compilers, we assume that the following math functions
+ * are implemented.
+ */
+
+#define ___HAVE_GOOD_SCALBN
+#define ___HAVE_GOOD_ILOGB
+#define ___HAVE_GOOD_EXPM1
+#define ___HAVE_GOOD_LOG1P
+#define ___HAVE_GOOD_ASINH
+#define ___HAVE_GOOD_ACOSH
+#define ___HAVE_GOOD_ATANH
+#define ___HAVE_GOOD_SINH
+#define ___HAVE_GOOD_COSH
+#define ___HAVE_GOOD_TANH
 
 #endif
 
@@ -1704,6 +1827,7 @@ ___CAST_U64((val)<<(((i)&7)<<3))
  * GENERAL DEFINITIONS
  *
  * ___WORD           an integer type able to contain a pointer with no loss
+ * ___UWORD          unsigned ___WORD
  * ___WORD_WIDTH     is equal to the number of bits in the type ___WORD
  * ___LOG_WORD_WIDTH is equal to the base 2 logarithm of ___WORD_WIDTH
  * ___WS             is equal to sizeof (___WORD)
@@ -1716,6 +1840,7 @@ ___CAST_U64((val)<<(((i)&7)<<3))
 #define ___SSIZE_T ___S32
 #define ___PTRDIFF_T ___S32
 #define ___WORD ___S32
+#define ___UWORD ___U32
 #define ___WORD_WIDTH 32
 #define ___LOG_WORD_WIDTH 5
 #define ___WS 4
@@ -1726,6 +1851,7 @@ ___CAST_U64((val)<<(((i)&7)<<3))
 #define ___SSIZE_T ___S64
 #define ___PTRDIFF_T ___S64
 #define ___WORD ___S64
+#define ___UWORD ___U64
 #define ___WORD_WIDTH 64
 #define ___LOG_WORD_WIDTH 6
 #define ___WS 8
@@ -1967,36 +2093,38 @@ ___CAST_U64((val)<<(((i)&7)<<3))
 
 #define ___LF (___HTB+___SB)
 
-#define ___TMASK ((1<<___TB)-1)
-#define ___HTMASK ((1<<___HTB)-1)
-#define ___SMASK (((1<<___SB)-1)<<___HTB)
-#define ___LMASK (~___CAST(unsigned ___WORD,0)<<___LF)
-#define ___LSMASK (~___CAST(unsigned ___WORD,0)<<___HTB)
+#define ___MASK(type,bits)((___CAST(type,1)<<bits)-1)
+#define ___TMASK ___MASK(___WORD,___TB)
+#define ___HTMASK ___MASK(___WORD,___HTB)
+#define ___SMASK (___MASK(___WORD,___SB)<<___HTB)
+#define ___LMASK (~___MASK(___UWORD,___LF))
+#define ___LSMASK (~___MASK(___UWORD,___HTB))
 
 /*
  * Value constructors for object references inside executable code.
  */
 
-#define ___FAL ((___CAST(___WORD,-1)<<___TB)+___tSPECIAL)
-#define ___TRU ((___CAST(___WORD,-2)<<___TB)+___tSPECIAL)
-#define ___NUL ((___CAST(___WORD,-3)<<___TB)+___tSPECIAL)
-#define ___EOF ((___CAST(___WORD,-4)<<___TB)+___tSPECIAL)
-#define ___VOID ((___CAST(___WORD,-5)<<___TB)+___tSPECIAL)
-#define ___ABSENT ((___CAST(___WORD,-6)<<___TB)+___tSPECIAL)
-#define ___UNB1 ((___CAST(___WORD,-7)<<___TB)+___tSPECIAL)
-#define ___UNB2 ((___CAST(___WORD,-8)<<___TB)+___tSPECIAL)
-#define ___OPTIONAL ((___CAST(___WORD,-9)<<___TB)+___tSPECIAL)
-#define ___KEYOBJ ((___CAST(___WORD,-10)<<___TB)+___tSPECIAL)
-#define ___REST ((___CAST(___WORD,-11)<<___TB)+___tSPECIAL)
-#define ___UNUSED ((___CAST(___WORD,-14)<<___TB)+___tSPECIAL)
-#define ___DELETED ((___CAST(___WORD,-15)<<___TB)+___tSPECIAL)
-#define ___FIX(x)(___CAST(___WORD,x)<<___TB)
+#define ___FAL      ___SPECIAL(-1)
+#define ___TRU      ___SPECIAL(-2)
+#define ___NUL      ___SPECIAL(-3)
+#define ___EOF      ___SPECIAL(-4)
+#define ___VOID     ___SPECIAL(-5)
+#define ___ABSENT   ___SPECIAL(-6)
+#define ___UNB1     ___SPECIAL(-7)
+#define ___UNB2     ___SPECIAL(-8)
+#define ___OPTIONAL ___SPECIAL(-9)
+#define ___KEYOBJ   ___SPECIAL(-10)
+#define ___REST     ___SPECIAL(-11)
+#define ___UNUSED   ___SPECIAL(-14)
+#define ___DELETED  ___SPECIAL(-15)
+#define ___SPECIAL(x)(___FIX(x)+___tSPECIAL)
+#define ___FIX(x)___CAST(___WORD,___CAST(___UWORD,x)<<___TB)
 #if ___SCMOBJ_WIDTH == 32
 #define ___BIGFIX(i,x)___SUB(i)
 #else
 #define ___BIGFIX(i,x)___FIX(x)
 #endif
-#define ___CHR(x)((___CAST(___WORD,___CS_SELECT(___CAST_U8(x),___CAST_U16(x),___CAST_U32(x)))<<___TB)+___tSPECIAL)
+#define ___CHR(x)___SPECIAL(___CS_SELECT(___CAST_U8(x),___CAST_U16(x),___CAST_U32(x)))
 
 #define ___SYM(i,id)___CAST_FAKEWORD_TO_WORD(___symtbl[i])
 #define ___KEY(i,id)___CAST_FAKEWORD_TO_WORD(___keytbl[i])
@@ -2008,19 +2136,19 @@ ___CAST_U64((val)<<(((i)&7)<<3))
  * memory allocated objects.
  */
 
-#define ___REF_FAL ___FAL
-#define ___REF_TRU ___TRU
-#define ___REF_NUL ___NUL
-#define ___REF_EOF ___EOF
-#define ___REF_VOID ___VOID
-#define ___REF_ABSENT ___ABSENT
-#define ___REF_UNB1 ___UNB1
-#define ___REF_UNB2 ___UNB2
+#define ___REF_FAL      ___FAL
+#define ___REF_TRU      ___TRU
+#define ___REF_NUL      ___NUL
+#define ___REF_EOF      ___EOF
+#define ___REF_VOID     ___VOID
+#define ___REF_ABSENT   ___ABSENT
+#define ___REF_UNB1     ___UNB1
+#define ___REF_UNB2     ___UNB2
 #define ___REF_OPTIONAL ___OPTIONAL
-#define ___REF_KEYOBJ ___KEYOBJ
-#define ___REF_REST ___REST
-#define ___REF_UNUSED ___UNUSED
-#define ___REF_DELETED ___DELETED
+#define ___REF_KEYOBJ   ___KEYOBJ
+#define ___REF_REST     ___REST
+#define ___REF_UNUSED   ___UNUSED
+#define ___REF_DELETED  ___DELETED
 #define ___REF_FIX(x)___FIX(x)
 #if ___SCMOBJ_WIDTH == 32
 #define ___REF_BIGFIX(i,x)___REF_SUB(i)
@@ -2029,15 +2157,15 @@ ___CAST_U64((val)<<(((i)&7)<<3))
 #endif
 #define ___REF_CHR(x)___CHR(x)
 
-#define ___REF_SYM(i,id)((___CAST(___WORD,-1-i)<<___TB)+___tMEM2)
-#define ___REF_KEY(i,id)((___CAST(___WORD,-1-i)<<___TB)+___tMEM1)
-#define ___REF_CNS(i)((___CAST(___WORD,i)<<___TB)+___tMEM2)
-#define ___REF_SUB(i)((___CAST(___WORD,i)<<___TB)+___tMEM1)
+#define ___REF_SYM(i,id)(___FIX(-1-i)+___tMEM2)
+#define ___REF_KEY(i,id)(___FIX(-1-i)+___tMEM1)
+#define ___REF_CNS(i)(___FIX(i)+___tMEM2)
+#define ___REF_SUB(i)(___FIX(i)+___tMEM1)
 
 #ifdef ___SUBCOUNT
-#define ___REF_PRC(i)((___CAST(___WORD,___SUBCOUNT+i)<<___TB)+___tMEM1)
+#define ___REF_PRC(i)(___FIX(___SUBCOUNT+i)+___tMEM1)
 #else
-#define ___REF_PRC(i)((___CAST(___WORD,i)<<___TB)+___tMEM1)
+#define ___REF_PRC(i)(___FIX(i)+___tMEM1)
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -2058,6 +2186,14 @@ ___CAST_U64((val)<<(((i)&7)<<3))
 #define ___MAX_FIX ((___CAST(___WORD,1)<<(___FIX_WIDTH-1))-1)
 
 #define ___MAX_FIX32 ((___CAST(___WORD,1)<<(32-___TB-1))-1)
+
+#if ___TB == 2
+#if ___SCMOBJ_WIDTH == 32
+#define ___SQRT_MAX_FIX 23170
+#else
+#define ___SQRT_MAX_FIX 1518500249L
+#endif
+#endif
 
 /*
  * Module prefix and C id prefix must match the definitions
@@ -2088,7 +2224,7 @@ ___hp = ___CAST(___WORD*, (___CAST(___WORD,___hp) + (((n)<<___LWS) + 7)) & ~7)
 /* Type tests */
 
 #define ___TAG(ptr,tag)(___CAST(___WORD,ptr)+(tag))
-#define ___UNTAG(obj)___CAST(___WORD*,(obj)&-(1<<___TB))
+#define ___UNTAG(obj)___CAST(___WORD*,(obj)&~___TMASK)
 #define ___UNTAG_AS(obj,tag)___CAST(___WORD*,(obj)-(tag))
 
 #define ___TYP(x)((x)&___TMASK)
@@ -2117,9 +2253,9 @@ ___hp = ___CAST(___WORD*, (___CAST(___WORD,___hp) + (((n)<<___LWS) + 7)) & ~7)
 
 #define ___MAKE_HD(bytes,subtype,tag)(((bytes)<<___LF)+((subtype)<<___HTB)+(tag))
 #define ___HD_TYP(head)((head)&___HTMASK)
-#define ___HD_BYTES(head)(___CAST(unsigned ___WORD,head)>>___LF)
-#define ___HD_WORDS(head)(((___CAST(unsigned ___WORD,head)+((___WS-1)<<___LF)))>>(___LF+___LWS))
-#define ___HD_FIELDS(head)(___CAST(unsigned ___WORD,head)>>(___LF+___LWS))
+#define ___HD_BYTES(head)(___CAST(___UWORD,head)>>___LF)
+#define ___HD_WORDS(head)(((___CAST(___UWORD,head)+((___WS-1)<<___LF)))>>(___LF+___LWS))
+#define ___HD_FIELDS(head)(___CAST(___UWORD,head)>>(___LF+___LWS))
 #define ___HD_SUBTYPE(head)((head)>>___HTB&((1<<___SB)-1))
 
 #define ___FIELD(obj,i)(*(___BODY_AS(obj,___tSUBTYPED)+i))
@@ -2653,8 +2789,10 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 /* IFJUMP-able operations */
 
 #define ___FALSEP(x)((x)==___FAL)
-#define ___BOOLEANP(x)(((x)==___FAL)||((x)==___TRU))
+#define ___BOOLEANP(x)(((x)&(___TRU-___tSPECIAL+___TMASK))==___TRU)
 #define ___NULLP(x)((x)==___NUL)
+#define ___FALSEORNULLP(x)(((x)&(___NUL-___tSPECIAL+___TMASK))==___NUL)
+#define ___FALSEORVOIDP(x)(((x)&(___VOID-___tSPECIAL+___TMASK))==___VOID)
 #define ___UNBOUNDP(x)(((___temp=(x))==___UNB1)||(___temp==___UNB2))
 #define ___EQP(x,y)((x)==(y))
 #define ___EOFP(x)((x)==___EOF)
@@ -2725,6 +2863,8 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 #define ___FIX_1 ___FIX(1)
 #define ___FIXMUL(x,y)((___WORD)((x)*___INT(y)))
 #define ___FIXMULP(x,y)(___EXPECT_FALSE(___FIXQUO((___temp=___FIXMUL(x,y)),y)!=(x))?___FAL:___temp)
+#define ___FIXSQUARE(x)___FIXMUL(x,x)
+#define ___FIXSQUAREP(x)(___EXPECT_FALSE(___CAST(___UWORD,___FIXADD(x,___FIX(___SQRT_MAX_FIX)))>(___CAST(___UWORD,___FIX(___SQRT_MAX_FIX))<<1))?___FAL:___FIXSQUARE(x))
 #define ___FIXNEG(x)((___WORD)(-(x)))
 #define ___FIXNEGP(x)(___EXPECT_FALSE((x)==___FIX(___MIN_FIX))?___FAL:___FIXNEG(x))
 #define ___FIXSUB(x,y)((___WORD)((x)-(y)))
@@ -2811,12 +2951,12 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 
 #define ___FIXASH(x,y)((y)<0?___FIXASHR(x,(y)>=___FIX(-___FIX_WIDTH)?-(y):___FIX(___FIX_WIDTH)):___FIXASHL(x,(y)<=___FIX(___FIX_WIDTH)?(y):___FIX(___FIX_WIDTH)))
 #define ___FIXASHP(x,y)((y)<0?___FIXASHR(x,(y)>=___FIX(-___FIX_WIDTH)?-(y):___FIX(___FIX_WIDTH)):___FIXASHLP2(x,(y)<=___FIX(___FIX_WIDTH)?(y):___FIX(___FIX_WIDTH)))
-#define ___FIXASHL(x,y)((x)<<___INT(y))
+#define ___FIXASHL(x,y)___CAST(___WORD,___CAST(___UWORD,x)<<___INT(y))
 #define ___FIXASHLP(x,y)((y)>=___FIX(0)?___FIXASHLP2(x,(y)<=___FIX(___FIX_WIDTH)?(y):___FIX(___FIX_WIDTH)):___FAL)
 #define ___FIXASHLP2(x,y)((x)==((___temp=___FIXASHL(x,y))>>___INT(y))?___temp:___FAL)
 #define ___FIXASHR(x,y)(((x)>>___INT(y))&~___TMASK)
 #define ___FIXASHRP(x,y)((y)>=___FIX(0)?___FIXASHR(x,(y)<=___FIX(___FIX_WIDTH)?(y):___FIX(___FIX_WIDTH)):___FAL)
-#define ___FIXLSHR(x,y)((___WORD)(((unsigned ___WORD)(x)>>___INT(y))&~___TMASK))
+#define ___FIXLSHR(x,y)((___WORD)(((___UWORD)(x)>>___INT(y))&~___TMASK))
 #define ___FIXLSHRP(x,y)((y)>=___FIX(0)?___FIXLSHR(x,(y)<=___FIX(___FIX_WIDTH)?(y):___FIX(___FIX_WIDTH)):___FAL)
 #define ___FIXTOCHR(x)(((x)&~___TMASK)+___tSPECIAL)
 #define ___FIXFROMCHR(x)((x)&~___TMASK)
@@ -2836,7 +2976,7 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 
 /* APPLY-able operations */
 
-#define ___F64TOFIX(x)___FIX(x)
+#define ___F64TOFIX(x)___FIX(___CAST(___WORD,x))
 #define ___F64FROMFIX(x)___INT(x)
 #define ___F64_0 0.0
 #define ___F64POS(x)x
@@ -2845,6 +2985,7 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 #define ___F64ADD(x,y)((x)+(y))
 #define ___F64_1 1.0
 #define ___F64MUL(x,y)((x)*(y))
+#define ___F64SQUARE(x)((x)*(x))
 #define ___F64NEG(x)(-(x))
 #define ___F64SUB(x,y)((x)-(y))
 #define ___F64INV(x)(1.0/(x))
@@ -2854,20 +2995,70 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 #define ___F64CEILING(x)___CLIBEXT(ceil)(x)
 #define ___F64TRUNCATE(x)___EXT(___trunc)(x)
 #define ___F64ROUND(x)___EXT(___round)(x)
+#ifdef ___HAVE_GOOD_SCALBN
+#define ___F64SCALBN(x,n)___CLIBEXT(scalbn)(x,___INT(n))
+#else
+#define ___F64SCALBN(x,n)___EXT(___scalbn)(x,___INT(n))
+#endif
+#ifdef ___HAVE_GOOD_ILOGB
+#define ___F64ILOGB(x)___FIX(___CLIBEXT(ilogb)(x))
+#else
+#define ___F64ILOGB(x)___FIX(___EXT(___ilogb)(x))
+#endif
 #define ___F64EXP(x)___CLIBEXT(exp)(x)
+#ifdef ___HAVE_GOOD_EXPM1
+#define ___F64EXPM1(x)___CLIBEXT(expm1)(x)
+#else
+#define ___F64EXPM1(x)___EXT(___expm1)(x)
+#endif
 #define ___F64LOG(x)___CLIBEXT(log)(x)
+#ifdef ___HAVE_GOOD_LOG1P
+#define ___F64LOG1P(x)___CLIBEXT(log1p)(x)
+#else
+#define ___F64LOG1P(x)___EXT(___log1p)(x)
+#endif
 #define ___F64SIN(x)___CLIBEXT(sin)(x)
 #define ___F64COS(x)___CLIBEXT(cos)(x)
 #define ___F64TAN(x)___CLIBEXT(tan)(x)
 #define ___F64ASIN(x)___CLIBEXT(asin)(x)
 #define ___F64ACOS(x)___CLIBEXT(acos)(x)
 #define ___F64ATAN(x)___CLIBEXT(atan)(x)
-#ifdef ___GOOD_ATAN2
+#ifdef ___HAVE_GOOD_SINH
+#define ___F64SINH(x)___CLIBEXT(sinh)(x)
+#else
+#define ___F64SINH(x)___EXT(___sinh)(x)
+#endif
+#ifdef ___HAVE_GOOD_COSH
+#define ___F64COSH(x)___CLIBEXT(cosh)(x)
+#else
+#define ___F64COSH(x)___EXT(___cosh)(x)
+#endif
+#ifdef ___HAVE_GOOD_TANH
+#define ___F64TANH(x)___CLIBEXT(tanh)(x)
+#else
+#define ___F64TANH(x)___EXT(___tanh)(x)
+#endif
+#ifdef ___HAVE_GOOD_ASINH
+#define ___F64ASINH(x)___CLIBEXT(asinh)(x)
+#else
+#define ___F64ASINH(x)___EXT(___asinh)(x)
+#endif
+#ifdef ___HAVE_GOOD_ACOSH
+#define ___F64ACOSH(x)___CLIBEXT(acosh)(x)
+#else
+#define ___F64ACOSH(x)___EXT(___acosh)(x)
+#endif
+#ifdef ___HAVE_GOOD_ATANH
+#define ___F64ATANH(x)___CLIBEXT(atanh)(x)
+#else
+#define ___F64ATANH(x)___EXT(___atanh)(x)
+#endif
+#ifdef ___HAVE_GOOD_ATAN2
 #define ___F64ATAN2(y,x)___CLIBEXT(atan2)(y,x)
 #else
 #define ___F64ATAN2(y,x)___EXT(___atan2)(y,x)
 #endif
-#ifdef ___GOOD_POW
+#ifdef ___HAVE_GOOD_POW
 #define ___F64EXPT(x,y)___CLIBEXT(pow)(x,y)
 #else
 #define ___F64EXPT(x,y)___EXT(___pow)(x,y)
@@ -2881,8 +3072,8 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 #define ___F64ZEROP(x)((x)==0.0)
 #define ___F64POSITIVEP(x)((x)>0.0)
 #define ___F64NEGATIVEP(x)((x)<0.0)
-#define ___F64ODDP(x)(___F64INTEGERP(x) && (x)!=2.0*___CLIBEXT(floor)((x)*0.5))
-#define ___F64EVENP(x)(___F64INTEGERP(x) && (x)==2.0*___CLIBEXT(floor)((x)*0.5))
+#define ___F64ODDP(x)(___F64INTEGERP(x) && (x)!=2.0*___F64FLOOR((x)*0.5))
+#define ___F64EVENP(x)(___F64INTEGERP(x) && (x)==2.0*___F64FLOOR((x)*0.5))
 #define ___F64FINITEP(x)___EXT(___isfinite)(x)
 #define ___F64INFINITEP(x)((x)!=0.0 && (x)==2.0*(x))
 #ifdef ___USE_ISNAN
@@ -2900,6 +3091,11 @@ ___FIX((((___BIGMDOUBLEDIGIT)___BIGMFETCH(___BODY_AS(u,___tSUBTYPED),___INT(___B
 #define ___F64GT(x,y)((x)>(y))
 #define ___F64LE(x,y)((x)<=(y))
 #define ___F64GE(x,y)((x)>=(y))
+#ifdef ___BUILTIN_64BIT_INT_TYPE
+#define ___F64EQV(x,y)(___ps->f64_temp1=(x),___ps->f64_temp2=(y),*___CAST(___U64*,&___ps->f64_temp1)==*___CAST(___U64*,&___ps->f64_temp2))
+#else
+#define ___F64EQV(x,y)(___ps->f64_temp1=(x),___ps->f64_temp2=(y),___U64_hi32((*___CAST(___U64*,&___ps->f64_temp1)))==___U64_hi32((*___CAST(___U64*,&___ps->f64_temp2)))&&___U64_lo32((*___CAST(___U64*,&___ps->f64_temp1)))==___U64_lo32((*___CAST(___U64*,&___ps->f64_temp2))))
+#endif
 
 /* IFJUMP-able operations */
 
@@ -2972,10 +3168,11 @@ ___hp[-1]=x,___TAG((___hp-2),___tSUBTYPED))
 #define ___UNBOX(x)___BODY_AS(x,___tSUBTYPED)[0]
 #define ___SETBOX(x,y)___BODY_AS(x,___tSUBTYPED)[0]=y;
 
-#define ___VECTORLENGTH(x)___FIX(___HD_FIELDS(___HEADER(x)))
-#define ___VECTORREF(x,y)*(___WORD*)(((___WORD)___BODY_AS(x,___tSUBTYPED))+((y)<<(___LWS-___TB)))
-#define ___VECTORSET(x,y,z)*(___WORD*)(((___WORD)___BODY_AS(x,___tSUBTYPED))+((y)<<(___LWS-___TB)))=z;
-#define ___VECTORSHRINK(x,y)___temp=x;___HEADER(___temp)=(___HEADER(___temp)&~___LMASK)+((y)<<(___LF-___TB+___LWS));
+#define ___VECTORLENGTH(v)___FIX(___HD_FIELDS(___HEADER(v)))
+#define ___VECTORREF(v,i)*(___WORD*)(((___WORD)___BODY_AS(v,___tSUBTYPED))+((i)<<(___LWS-___TB)))
+#define ___VECTORSET(v,i,val)*(___WORD*)(((___WORD)___BODY_AS(v,___tSUBTYPED))+((i)<<(___LWS-___TB)))=val;
+#define ___VECTORSHRINK(v,i)___temp=v;___HEADER(___temp)=(___HEADER(___temp)&~___LMASK)+((i)<<(___LF-___TB+___LWS));
+#define ___VECTORCAS(v,i,val,oldval)___COMPARE_AND_SWAP_WORD((___WORD*)(((___WORD)___BODY_AS(v,___tSUBTYPED))+((i)<<(___LWS-___TB))),oldval,val)
 
 #define ___STRINGLENGTH(x)___FIX((___HD_BYTES(___HEADER(x))>>___LCS))
 #define ___STRINGREF(x,y)___CHR(___CS_SELECT( \
@@ -3066,10 +3263,11 @@ ___STORE_U64(___BODY_AS(x,___tSUBTYPED),(y)>>___TB,___U64UNBOX(z));
 #define ___TYPEFIELDS(x)___VECTORREF(x,___FIX(5))
 
 #define ___STRUCTURETYPE(x)___VECTORREF(x,___FIX(0))
-#define ___STRUCTURETYPESET(x,y)___VECTORSET(x,___FIX(0),y)
+#define ___STRUCTURETYPESET(x,type)___VECTORSET(x,___FIX(0),type)
 #define ___STRUCTUREDIOP(x,typeid)(___TESTSUBTYPE(x,___sSTRUCTURE)&&___TYPEID(___STRUCTURETYPE(___temp))==(typeid))
-#define ___UNCHECKEDSTRUCTUREREF(x,y,type,proc)___VECTORREF(x,y)
-#define ___UNCHECKEDSTRUCTURESET(x,y,z,type,proc)___VECTORSET(x,z,y)
+#define ___UNCHECKEDSTRUCTUREREF(x,i,type,proc)___VECTORREF(x,i)
+#define ___UNCHECKEDSTRUCTURESET(x,val,i,type,proc)___VECTORSET(x,i,val)
+#define ___UNCHECKEDSTRUCTURECAS(x,val,oldval,i,type,proc)___VECTORCAS(x,i,val,oldval)
 
 #define ___CLOSURELENGTH(x)___FIX(___HD_FIELDS(___HEADER(x)))
 #define ___CLOSURECODE(x)___CLO(x,0)
@@ -3082,20 +3280,79 @@ ___STORE_U64(___BODY_AS(x,___tSUBTYPED),(y)>>___TB,___U64UNBOX(z));
 #define ___GLOBALVARSET(gv,x)___GLOCELL(___GLOBALVARSTRUCT(gv)->val) = x;
 #define ___GLOBALVARPRIMSET(gv,x)___PRMCELL(___GLOBALVARSTRUCT(gv)->prm) = x;
 
+#define ___RATNUMMAKE(num,den) \
+(___ALLOC(___RATNUM_SIZE+1), \
+___hp[-3]=___MAKE_HD_WORDS(___RATNUM_SIZE,___sRATNUM), \
+___hp[-2]=num,___hp[-1]=den,___TAG((___hp-___RATNUM_SIZE-1),___tSUBTYPED))
+
+#define ___RATNUMNUMERATOR(obj)___FIELD(obj,0)
+#define ___RATNUMDENOMINATOR(obj)___FIELD(obj,1)
+
+#define ___CPXNUMMAKE(real,imag) \
+(___ALLOC(___CPXNUM_SIZE+1), \
+___hp[-3]=___MAKE_HD_WORDS(___CPXNUM_SIZE,___sCPXNUM), \
+___hp[-2]=real,___hp[-1]=imag,___TAG((___hp-___CPXNUM_SIZE-1),___tSUBTYPED))
+
+#define ___CPXNUMREAL(obj)___FIELD(obj,0)
+#define ___CPXNUMIMAG(obj)___FIELD(obj,1)
+
 #define ___MAKEPROMISE(x) \
 (___ALLOC(___PROMISE_SIZE+1), \
 ___hp[-3]=___MAKE_HD_WORDS(___PROMISE_SIZE,___sPROMISE), \
 ___hp[-2]=x, ___hp[-1]=___TAG((___hp-___PROMISE_SIZE-1),___tSUBTYPED))
 
+#define ___PROMISETHUNK(obj)___FIELD(obj,___PROMISE_THUNK)
+#define ___PROMISETHUNKSET(obj,val)___FIELD(obj,___PROMISE_THUNK) = val;
+#define ___PROMISERESULT(obj)___FIELD(obj,___PROMISE_RESULT)
+#define ___PROMISERESULTSET(obj,val)___FIELD(obj,___PROMISE_RESULT) = val;
+
+#define ___MAKECONTINUATION(frame,denv) \
+(___ALLOC(___CONTINUATION_SIZE+1), \
+___hp[-3]=___MAKE_HD_WORDS(___CONTINUATION_SIZE,___sCONTINUATION), \
+___hp[-2]=frame,___hp[-1]=denv,___TAG((___hp-___CONTINUATION_SIZE-1),___tSUBTYPED))
+
+#define ___CONTINUATIONFRAME(obj)___FIELD(obj,___CONTINUATION_FRAME)
+#define ___CONTINUATIONFRAMESET(obj,val)___FIELD(obj,___CONTINUATION_FRAME) = val;
+#define ___CONTINUATIONDENV(obj)___FIELD(obj,___CONTINUATION_DENV)
+#define ___CONTINUATIONDENVSET(obj,val)___FIELD(obj,___CONTINUATION_DENV) = val;
+
+#define ___END_OF_CONT_MARKER ___VOID
+
+#define ___MAKESYMBOL(name,hash) \
+(___ALLOC(___SYMBOL_SIZE+1), \
+___hp[-5]=___MAKE_HD_WORDS(___SYMBOL_SIZE,___sSYMBOL), \
+___hp[-4]=name,___hp[-3]=hash,___hp[-2]=___FAL,___hp[-1]=0,___TAG((___hp-___SYMBOL_SIZE-1),___tSUBTYPED))
+
+#define ___SYMBOLNAME(obj)___FIELD(obj,___SYMKEY_NAME)
+#define ___SYMBOLNAMESET(obj,val)___FIELD(obj,___SYMKEY_NAME) = val;
+#define ___SYMBOLHASH(obj)___FIELD(obj,___SYMKEY_HASH)
+#define ___SYMBOLHASHSET(obj,val)___FIELD(obj,___SYMKEY_HASH) = val;
+#define ___SYMBOLINTERNEDP(obj)___FIELD(obj,___SYMKEY_NEXT)
+
+#define ___MAKEKEYWORD(name,hash) \
+(___ALLOC(___KEYWORD_SIZE+1), \
+___hp[-4]=___MAKE_HD_WORDS(___KEYWORD_SIZE,___sKEYWORD), \
+___hp[-3]=name,___hp[-2]=hash,___hp[-1]=___FAL,___TAG((___hp-___KEYWORD_SIZE-1),___tSUBTYPED))
+
+#define ___KEYWORDNAME(obj)___FIELD(obj,___SYMKEY_NAME)
+#define ___KEYWORDNAMESET(obj,val)___FIELD(obj,___SYMKEY_NAME) = val;
+#define ___KEYWORDHASH(obj)___FIELD(obj,___SYMKEY_HASH)
+#define ___KEYWORDHASHSET(obj,val)___FIELD(obj,___SYMKEY_HASH) = val;
+#define ___KEYWORDINTERNEDP(obj)___FIELD(obj,___SYMKEY_NEXT)
+
 #define ___MAKEWILL(testator,action) \
 (___hp[0]=___MAKE_HD_WORDS(___WILL_SIZE,___sWEAK), \
-___hp[1]=___ps->nonexecutable_wills, \
+___hp[1]=___ps->mem.nonexecutable_wills_, \
 ___hp[2]=testator, \
 ___hp[3]=action, \
-___ps->nonexecutable_wills=___TAG(___hp,0), \
+___ps->mem.nonexecutable_wills_=___TAG(___hp,0), \
 ___ALLOC(___WILL_SIZE+1), \
 ___TAG((___hp-___WILL_SIZE-1),___tSUBTYPED))
-#define ___WILLTESTATOR(x)___BODY_AS(x,___tSUBTYPED)[1]
+
+#define ___WILLTESTATOR(obj)___FIELD(obj,___WILL_TESTATOR)
+#define ___WILLTESTATORSET(obj,val)___FIELD(obj,___WILL_TESTATOR) = val;
+#define ___WILLACTION(obj)___FIELD(obj,___WILL_ACTION)
+#define ___WILLACTIONSET(obj,val)___FIELD(obj,___WILL_ACTION) = val;
 
 #define ___EXECUTABLE_WILL        1
 #define ___UNMARKED_TESTATOR_WILL 2
@@ -3124,6 +3381,25 @@ ___TAG((___hp-___WILL_SIZE-1),___tSUBTYPED))
 
 #define ___CURRENTTHREAD ___ps->current_thread
 #define ___RUNQUEUE ___ps->run_queue
+
+#ifdef ___SINGLE_THREADED_VMS
+
+#define ___BTQLOCK(btq)
+#define ___BTQUNLOCK(btq)
+
+#else
+
+#define ___BTQLOCK(btq) \
+{ \
+  ___WORD ___ticket = ___FETCH_AND_ADD_WORD((___WORD volatile *)&___FIELD(btq,___BTQ_LOCK1),___FIX(1)); \
+  while (*(___WORD volatile *)&___FIELD(btq,___BTQ_LOCK2) != ___ticket) \
+    ___CPU_RELAX(); \
+}
+
+#define ___BTQUNLOCK(btq) \
+___FETCH_AND_ADD_WORD((___WORD volatile *)&___FIELD(btq,___BTQ_LOCK2),___FIX(1));
+
+#endif
 
 #define ___THREAD_SAVE \
 if (___R0 == ___GSTATE->handler_break) \
@@ -3190,7 +3466,7 @@ ___FIELD(___FIELD(thread,___THREAD_CONT),___CONTINUATION_FRAME) = frame;
 { ___SCMOBJ cont = ___FIELD(thread,___THREAD_CONT); \
   ___fp = ___ps->stack_break; \
   ___SET_STK(-___BREAK_FRAME_NEXT,___FIELD(cont,___CONTINUATION_FRAME)) \
-  ___FIELD(cont,___CONTINUATION_FRAME) = ___FIX(0); \
+  ___FIELD(cont,___CONTINUATION_FRAME) = ___END_OF_CONT_MARKER; \
   ___INTERRUPT_MASK_SET(___FIELD(___FIELD(thread,___THREAD_DENV),___DENV_INTERRUPT_MASK)); \
   ___ps->current_thread = thread; \
   ___SET_R0(___GSTATE->handler_break) \
@@ -3245,18 +3521,39 @@ ___FIELD(___FIELD(thread,___THREAD_CONT),___CONTINUATION_FRAME) = frame;
 #define ___SYMKEY_HASH  1
 #define ___SYMKEY_NEXT  2
 #define ___SYMBOL_GLOBAL 3
+
 #define ___PROMISE_THUNK  0
 #define ___PROMISE_RESULT 1
+
 #define ___CONTINUATION_FRAME 0
 #define ___CONTINUATION_DENV  1
-#define ___THREAD_CONT        19
-#define ___THREAD_DENV        20
-#define ___THREAD_DENV_CACHE1 21
-#define ___THREAD_DENV_CACHE2 22
-#define ___THREAD_DENV_CACHE3 23
+
+#define ___WILL_TESTATOR 1
+#define ___WILL_ACTION   2
+
+#define ___BTQ_LOCK1    1
+#define ___BTQ_DEQ_NEXT 2
+#define ___BTQ_DEQ_PREV 3
+#define ___BTQ_COLOR    4
+#define ___BTQ_PARENT   5
+#define ___BTQ_LEFT     6
+#define ___BTQ_RIGHT    7
+#define ___BTQ_LEFTMOST 7
+#define ___BTQ_OWNER    8
+#define ___BTQ_LOCK2    9
+
+#define ___CONDVAR_NAME 10
+
+#define ___THREAD_CONT        21
+#define ___THREAD_DENV        22
+#define ___THREAD_DENV_CACHE1 23
+#define ___THREAD_DENV_CACHE2 24
+#define ___THREAD_DENV_CACHE3 25
+
 #define ___ENV_NAME_VAL 0
 #define ___ENV_LEFT     1
 #define ___ENV_RIGHT    2
+
 #define ___DENV_LOCAL              0
 #define ___DENV_DYNWIND            1
 #define ___DENV_INTERRUPT_MASK     2
@@ -3502,11 +3799,37 @@ ___D_ALL
 #define ___END_COD \
 ___ps->pc=___pc; ___W_ALL return ___pc; }
 
-#ifdef ___DEBUG_HOST_CHANGES
-#define ___REGISTER_HOST_ENTRY \
-___EXT(___register_host_entry) (___PSP ___start, ___MODULE_NAME);
+#ifdef ___DEBUG_CTRL_FLOW_HISTORY
+
+#define ___CTRL_FLOW_HISTORY_LENGTH 1024
+
+#define ___AM_HERE \
+do { ___processor_state ___ps = ___PSTATE; ___AM_HERE_PS } while (0)
+
+#define ___AM_HERE_PS \
+{ int ___i = ___ps->ctrl_flow_history_index; \
+  ___source_location *___ptr = ___ps->ctrl_flow_history+___i; \
+  ___ptr->file = __FILE__; \
+  ___ptr->line = __LINE__; \
+  ___ps->ctrl_flow_history_index = (___i+1) % ___CTRL_FLOW_HISTORY_LENGTH; \
+}
+
 #else
+
+#define ___AM_HERE
+#define ___AM_HERE_PS
+
+#endif
+
+#ifdef ___DEBUG_HOST_CHANGES
+
+#define ___REGISTER_HOST_ENTRY                                          \
+___EXT(___register_host_entry) (___PSP ___start, ___MODULE_NAME, __FILE__, __LINE__);
+
+#else
+
 #define ___REGISTER_HOST_ENTRY
+
 #endif
 
 #define ___USES_INDIRECT_GOTO 1
@@ -3529,7 +3852,7 @@ goto *___LABEL_HOST_LABEL(___pc);
 
 #define ___DEF_SW(n)
 
-#ifdef ___USE_INLINE_JUMPS
+#ifdef ___INLINE_JUMPS
 
 #define ___END_SW \
 ___jumpext:
@@ -4670,7 +4993,7 @@ switch (na) \
 #define ___MLBL(n)___lp+((n)*___LS*___WS)
 #define ___LBL(n)___start+((___PH_LBL0-___HOST_LBL0+n)*___LS*___WS)
 #define ___DEF_SLBL(n,lbl)___DEF_SW(n)___DEF_GLBL(lbl)
-#define ___DEF_GLBL(lbl)lbl:
+#define ___DEF_GLBL(lbl)lbl:___AM_HERE_PS
 #define ___GOTO(lbl)goto lbl;
 #define ___IF_GOTO(test,lbl)if (test) ___GOTO(lbl)
 #define ___JUMPINT(nargs,prc,lbl)___SM(___GOTO(lbl),{nargs ___JUMP(prc)})
@@ -4901,13 +5224,14 @@ ___hp[0]=___MAKE_HD_BYTES(n<<3,___sF64VECTOR);
 #define ___END_ALLOC_VALUES(n)___ALLOC(n+1);
 #define ___GET_VALUES(n)___TAG((___hp-n-1),___tSUBTYPED)
 
-#define ___NB_INTRS 4
+#define ___NB_INTRS 5
 #define ___INTR_USER      0
 #define ___INTR_HEARTBEAT 1
 #define ___INTR_GC        2
 #define ___INTR_TERMINATE 3
+#define ___INTR_SYNC_OP   4
 
-#define ___INTERRUPT_FLAGS() (___ps->intr_flag[0]|___ps->intr_flag[1]|___ps->intr_flag[2]|___ps->intr_flag[3])
+#define ___INTERRUPT_FLAGS() (___ps->intr_flag[0]|___ps->intr_flag[1]|___ps->intr_flag[2]|___ps->intr_flag[3]|___ps->intr_flag[4])
 
 #define ___INTERRUPT_REQ(x, mask) (((x) & ___ps->intr_enabled & ~mask) != ___FIX(0))
 
@@ -4927,42 +5251,50 @@ if (___INTERRUPT_REQ(___INTERRUPT_FLAGS(), (___ps->intr_mask = mask))) \
 #endif
 
 #ifdef ___DEBUG_STACK_LIMIT
-#define ___POLL(n) \
+
+#define ___POLL(n)                    \
 if (___EXPECT_FALSE(___POLL_TRIGGER)) \
 {___ps->temp1=___LBL(n); \
-___ps->poll_file=__FILE__; \
-___ps->poll_line=__LINE__; \
+___ps->poll_location.file=__FILE__; \
+___ps->poll_location.line=__LINE__; \
 ___JUMPEXTPRM(___NOTHING,___GSTATE->handler_stack_limit) \
 }
+
 #else
-#define ___POLL(n) \
+
+#define ___POLL(n)                    \
 if (___EXPECT_FALSE(___POLL_TRIGGER)) \
 {___ps->temp1=___LBL(n); \
 ___JUMPEXTPRM(___NOTHING,___GSTATE->handler_stack_limit) \
 }
+
 #endif
 
 #define ___TASK_PUSH(i)
 #define ___TASK_POP(n)
 
 #ifdef ___DEBUG_HEAP_LIMIT
-#define ___CHECK_HEAP(n,m) \
+
+#define ___CHECK_HEAP(n,m)                    \
 if (___EXPECT_FALSE(___hp>___ps->heap_limit)) \
 {___ps->temp1=___LBL(n); \
-___ps->check_heap_file=__FILE__; \
-___ps->check_heap_line=__LINE__; \
+___ps->check_heap_location.file=__FILE__; \
+___ps->check_heap_location.line=__LINE__; \
 ___JUMPEXTPRM(___NOTHING,___GSTATE->handler_heap_limit) \
 }
+
 #else
-#define ___CHECK_HEAP(n,m) \
+
+#define ___CHECK_HEAP(n,m)                    \
 if (___EXPECT_FALSE(___hp>___ps->heap_limit)) \
 {___ps->temp1=___LBL(n); \
 ___JUMPEXTPRM(___NOTHING,___GSTATE->handler_heap_limit) \
 }
+
 #endif
 
 #define ___FORCE1(n,src) \
-if (___TYP((___temp=(src)))==___tSUBTYPED&&___SUBTYPE(___temp)==___sPROMISE<<___TB){___ps->temp1=___LBL(n);___ps->temp2=___temp;___JUMPEXTPRM(___NOTHING,___GSTATE->handler_force);
+if (___TYP((___temp=(src)))==___tSUBTYPED&&___SUBTYPE(___temp)==___FIX(___sPROMISE)){___ps->temp1=___LBL(n);___ps->temp2=___temp;___JUMPEXTPRM(___NOTHING,___GSTATE->handler_force);
 #define ___FORCE2 ___temp=___ps->temp2;}
 #define ___FORCE3 ___temp
 
@@ -5016,7 +5348,7 @@ if (___TYP((___temp=(src)))==___tSUBTYPED&&___SUBTYPE(___temp)==___sPROMISE<<___
 /* Use direct access to the only pstate (this is probably fast) */
 
 #define ___FAST_GET_PSTATE
-#define ___GET_PSTATE() (&___GSTATE->vmstate0.pstate0)
+#define ___GET_PSTATE() ___GSTATE->vmstate0.pstate
 #define ___SET_PSTATE(ps)
 
 #else
@@ -5288,9 +5620,9 @@ ___LOCAL ___WORD id[]={___MAKE_HD((n<<3),___sF64VECTOR,___PERM)
 
 #ifdef ___BIG_ENDIAN
 
-#define ___P4U8(a,b,c,d)((((((___WORD)___CAST_U8(a)<<8)+(___WORD)___CAST_U8(b))<<8)+(___WORD)___CAST_U8(c))<<8)+(___WORD)___CAST_U8(d)
+#define ___P4U8(a,b,c,d)((((((___UWORD)___CAST_U8(a)<<8)+(___UWORD)___CAST_U8(b))<<8)+(___UWORD)___CAST_U8(c))<<8)+(___WORD)___CAST_U8(d)
 
-#define ___P2U16(a,b)((___WORD)___CAST_U16(a)<<16)+(___WORD)___CAST_U16(b)
+#define ___P2U16(a,b)((___UWORD)___CAST_U16(a)<<16)+(___WORD)___CAST_U16(b)
 
 #define ___P1U32(a)a
 
@@ -5298,9 +5630,9 @@ ___LOCAL ___WORD id[]={___MAKE_HD((n<<3),___sF64VECTOR,___PERM)
 
 #else
 
-#define ___P4U8(d,c,b,a)((((((___WORD)___CAST_U8(a)<<8)+(___WORD)___CAST_U8(b))<<8)+(___WORD)___CAST_U8(c))<<8)+(___WORD)___CAST_U8(d)
+#define ___P4U8(d,c,b,a)((((((___UWORD)___CAST_U8(a)<<8)+(___UWORD)___CAST_U8(b))<<8)+(___UWORD)___CAST_U8(c))<<8)+(___WORD)___CAST_U8(d)
 
-#define ___P2U16(b,a)((___WORD)___CAST_U16(a)<<16)+(___WORD)___CAST_U16(b)
+#define ___P2U16(b,a)((___UWORD)___CAST_U16(a)<<16)+(___WORD)___CAST_U16(b)
 
 #define ___P1U32(a)a
 
@@ -5352,23 +5684,23 @@ ___LOCAL ___WORD id[]={___MAKE_HD((n<<3),___sF64VECTOR,___PERM)
 
 #ifdef ___BIG_ENDIAN
 
-#define ___P8U8(a,b,c,d,e,f,g,h)((((((((((((((___WORD)___CAST_U8(a)<<8)+(___WORD)___CAST_U8(b))<<8)+(___WORD)___CAST_U8(c))<<8)+(___WORD)___CAST_U8(d))<<8)+(___WORD)___CAST_U8(e))<<8)+(___WORD)___CAST_U8(f))<<8)+(___WORD)___CAST_U8(g))<<8)+(___WORD)___CAST_U8(h)
+#define ___P8U8(a,b,c,d,e,f,g,h)((((((((((((((___UWORD)___CAST_U8(a)<<8)+(___UWORD)___CAST_U8(b))<<8)+(___UWORD)___CAST_U8(c))<<8)+(___UWORD)___CAST_U8(d))<<8)+(___UWORD)___CAST_U8(e))<<8)+(___UWORD)___CAST_U8(f))<<8)+(___UWORD)___CAST_U8(g))<<8)+(___WORD)___CAST_U8(h)
 
-#define ___P4U16(a,b,c,d)((((((___WORD)___CAST_U16(a)<<16)+(___WORD)___CAST_U16(b))<<16)+(___WORD)___CAST_U16(c))<<16)+(___WORD)___CAST_U16(d)
+#define ___P4U16(a,b,c,d)((((((___UWORD)___CAST_U16(a)<<16)+(___UWORD)___CAST_U16(b))<<16)+(___UWORD)___CAST_U16(c))<<16)+(___WORD)___CAST_U16(d)
 
-#define ___P2U32(a,b)((___WORD)___CAST_U32(a)<<32)+(___WORD)___CAST_U32(b)
+#define ___P2U32(a,b)((___UWORD)___CAST_U32(a)<<32)+(___WORD)___CAST_U32(b)
 
 #else
 
-#define ___P8U8(h,g,f,e,d,c,b,a)((((((((((((((___WORD)___CAST_U8(a)<<8)+(___WORD)___CAST_U8(b))<<8)+(___WORD)___CAST_U8(c))<<8)+(___WORD)___CAST_U8(d))<<8)+(___WORD)___CAST_U8(e))<<8)+(___WORD)___CAST_U8(f))<<8)+(___WORD)___CAST_U8(g))<<8)+(___WORD)___CAST_U8(h)
+#define ___P8U8(h,g,f,e,d,c,b,a)((((((((((((((___UWORD)___CAST_U8(a)<<8)+(___UWORD)___CAST_U8(b))<<8)+(___UWORD)___CAST_U8(c))<<8)+(___UWORD)___CAST_U8(d))<<8)+(___UWORD)___CAST_U8(e))<<8)+(___UWORD)___CAST_U8(f))<<8)+(___UWORD)___CAST_U8(g))<<8)+(___WORD)___CAST_U8(h)
 
-#define ___P4U16(d,c,b,a)((((((___WORD)___CAST_U16(a)<<16)+(___WORD)___CAST_U16(b))<<16)+(___WORD)___CAST_U16(c))<<16)+(___WORD)___CAST_U16(d)
+#define ___P4U16(d,c,b,a)((((((___UWORD)___CAST_U16(a)<<16)+(___UWORD)___CAST_U16(b))<<16)+(___UWORD)___CAST_U16(c))<<16)+(___WORD)___CAST_U16(d)
 
-#define ___P2U32(b,a)((___WORD)___CAST_U32(a)<<32)+(___WORD)___CAST_U32(b)
+#define ___P2U32(b,a)((___UWORD)___CAST_U32(a)<<32)+(___WORD)___CAST_U32(b)
 
 #endif
 
-#define ___P1U64(hi,lo)((___WORD)(hi)<<32)+___CAST_U32(lo)
+#define ___P1U64(hi,lo)((___UWORD)(hi)<<32)+(___WORD)___CAST_U32(lo)
 
 #define ___S8VEC0 ___PADDING};
 #define ___S8VEC1(a),___P8U8(a,0,0,0,0,0,0,0) ___PADDING};
@@ -5544,7 +5876,7 @@ ___LOCAL ___WORD ___ofdtbl[]={
 #if ___SCMOBJ_WIDTH == 32
 #define ___GCMAP2(a,b),a,b
 #else
-#define ___GCMAP2(a,b),((___WORD)b<<32)+___CAST_U32(a)
+#define ___GCMAP2(a,b),(___CAST(___UWORD,b)<<32)+___CAST(___WORD,___CAST_U32(a))
 #endif
 
 #define ___U64VEC0 ___PADDING_64};
@@ -5717,8 +6049,7 @@ ___PSDKR) { ___PSGET
   ___init_mod, \
   ___SCRIPT_LINE, \
   0,\
-  0,0,0,0,0,0,0,0 \
-,___MODDESCR /* TODO: move with above */ \
+  ___MODDESCR \
 }; \
 ___BEGIN_C_LINKAGE \
 ___EXP_FUNC(___mod_or_lnk,___LINKER_ID) \
@@ -5835,7 +6166,6 @@ ___LOCAL ___linkfile_struct ___linkfile_descr = { \
   sym_list, \
   key_list, \
   ___linkertbl, \
-  0,0,0,0,0,0,0,0 \
 }; \
 ___BEGIN_C_LINKAGE \
 ___EXP_FUNC(___mod_or_lnk,___LINKER_ID) \
@@ -5895,19 +6225,20 @@ ___P((___global_state ___gs),()); ___END_C_LINKAGE
 #define ___ERR_CODE_FACILITY_ERRNO    320
 #define ___ERR_CODE_FACILITY_H_ERRNO  319
 #define ___ERR_CODE_FACILITY_GAI_CODE 318
+#define ___ERR_CODE_FACILITY_TLS      317
 
 #define ___ERR_CODE_BUILD(facility,code) \
-((___CAST(___ERR_CODE,-1)<<29)+(___CAST(___ERR_CODE,facility)<<16)+(code))
+(~___MASK(___ERR_CODE,29)+(___CAST(___ERR_CODE,facility)<<16)+(code))
 
-#define ___ERR_CODE_FACILITY(err)(((err)>>16)&~(~___CAST(___ERR_CODE,0)<<9))
+#define ___ERR_CODE_FACILITY(err)(((err)>>16)&___MASK(___ERR_CODE,9))
 
 #define ___HRESULT_ERR(hresult) \
-(((hresult)&~(~___CAST(___ERR_CODE,0)<<25)) | \
-(((hresult)&~___CAST(___ERR_CODE,0)<<27)>>2))
+(((hresult)&___MASK(___ERR_CODE,25)) | \
+(((hresult)&~___MASK(___ERR_CODE,27))>>2))
 
 #define ___HRESULT_FROM_ERR_CODE(err) \
-(((err)&~(~___CAST(___ERR_CODE,0)<<25)) | \
-(((err)&~___CAST(___ERR_CODE,0)<<25)<<2))
+(((err)&___MASK(___ERR_CODE,25)) | \
+(((err)&~___MASK(unsigned ___ERR_CODE,25))<<2))
 
 #define ___WIN32_ERR(win32err) \
 ___HRESULT_ERR(HRESULT_FROM_WIN32(win32err))
@@ -6086,6 +6417,36 @@ HRESULT_CODE(___HRESULT_FROM_ERR_CODE(err))
 
 #define ___RETURN_POS 127
 
+
+#define ___TLS_ERR(tls_err) \
+((tls_err)==SSL_ERROR_NONE?___NO_ERR:___ERR_CODE_BUILD(___ERR_CODE_FACILITY_TLS,tls_err))
+
+#define ___TLS_ERR_FROM_ERR_CODE(err) \
+((err)==___NO_ERR?0:((err)-___ERR_CODE_BUILD(___ERR_CODE_FACILITY_TLS,0)))
+
+#define ___TLS_ERR_BASE ___ERR_CODE_BUILD(___ERR_CODE_FACILITY_TLS,0)
+
+/* Custom high-level TLS error codes are encoded above 65000 */
+#define ___TLS_LIBRARY_VERSION_ERR              (___TLS_ERR_BASE+65000)
+#define ___TLS_LIBRARY_INIT_ERR                 (___TLS_ERR_BASE+65001)
+#define ___TLS_WRONG_TLS_VERSION_ERR            (___TLS_ERR_BASE+65002)
+#define ___TLS_ALERT_ERR                        (___TLS_ERR_BASE+65003)
+#define ___TLS_NOT_ENOUGH_ENTROPY_ERR           (___TLS_ERR_BASE+65004)
+#define ___TLS_SERVER_CONTEXT_EXPECTED_ERR      (___TLS_ERR_BASE+65005)
+#define ___TLS_UNSUPPORTED_EMPTY_FRAGS_ERR      (___TLS_ERR_BASE+65006)
+#define ___TLS_UNSUPPORTED_DH_ERR               (___TLS_ERR_BASE+65007)
+#define ___TLS_UNSUPPORTED_ELLIPTIC_CURVES_ERR  (___TLS_ERR_BASE+65008)
+#define ___TLS_DH_PARAMS_ERR                    (___TLS_ERR_BASE+65009)
+#define ___TLS_READ_DH_PARAMS_ERR               (___TLS_ERR_BASE+65010)
+#define ___TLS_ELLIPTIC_CURVE_ERR               (___TLS_ERR_BASE+65011)
+#define ___TLS_UNKNOWN_ELLIPTIC_CURVE_ERR       (___TLS_ERR_BASE+65012)
+#define ___TLS_READ_CA_FILE_ERR                 (___TLS_ERR_BASE+65013)
+#define ___TLS_CERTIFICATE_FILE_ERR             (___TLS_ERR_BASE+65014)
+#define ___TLS_PRIVATE_KEY_FILE_ERR             (___TLS_ERR_BASE+65015)
+#define ___TLS_PRIVATE_KEY_CERT_MISMATCH_ERR    (___TLS_ERR_BASE+65016)
+
+
+
 /*---------------------------------------------------------------------------*/
 
 #define ___USE_RC_ALLOCATION_FOR_FOREIGN
@@ -6124,7 +6485,7 @@ do { \
 
 #define ___C_ASSIGN_NEW(var,type) \
 do { \
-     var = ___CAST(type*,___EXT(___alloc_rc) (___PSP sizeof (type)); \
+     var = ___CAST(type*,___EXT(___alloc_rc) (___PSP sizeof (type))); \
    } while (0)
 #define ___C_ASSIGN_NEW_WITH_INIT(var,type,init) \
 do { \
@@ -6169,7 +6530,7 @@ do { \
 
 #define ___C_ASSIGN_NEW(var,type) \
 do { \
-     var = ___CAST(type*,___EXT(___alloc_mem) (sizeof (type)); \
+     var = ___CAST(type*,___EXT(___alloc_mem) (sizeof (type))); \
    } while (0)
 #define ___C_ASSIGN_NEW_WITH_INIT(var,type,init) \
 do { \
@@ -6567,6 +6928,7 @@ void *___x;) \
 #define ___CFUN_CAST_AND_DEREF(type,arg)(*___CAST(type,arg))
 #define ___CFUN_CAST(type,arg)___CAST(type,arg)
 
+/* TODO: remove these obsolete definitions after bootstrap */
 #define ___CFUN_CALL_VOID(call)call;
 #define ___CFUN_CALL(r,call)r = call;
 #define ___CFUN_CALL_STRUCT(n,r,call)___ASSIGN_NEW_WITH_INIT(r,struct n,call);
@@ -6576,6 +6938,15 @@ void *___x;) \
 #define ___CFUN_CALL_NONNULLPOINTER(r,call)r = call;
 #define ___CFUN_CALL_FUNCTION(r,call)r = call;
 #define ___CFUN_CALL_NONNULLFUNCTION(r,call)r = call;
+
+#define ___CFUN_ASSIGN(r,val)r = val;
+#define ___CFUN_ASSIGN_STRUCT(n,r,val)___ASSIGN_NEW_WITH_INIT(r,struct n,val);
+#define ___CFUN_ASSIGN_UNION(n,r,val)___ASSIGN_NEW_WITH_INIT(r,union n,val);
+#define ___CFUN_ASSIGN_TYPE(n,r,val)___ASSIGN_NEW_WITH_INIT(r,n,val);
+#define ___CFUN_ASSIGN_POINTER(r,val)r = val;
+#define ___CFUN_ASSIGN_NONNULLPOINTER(r,val)r = val;
+#define ___CFUN_ASSIGN_FUNCTION(r,val)r = val;
+#define ___CFUN_ASSIGN_NONNULLFUNCTION(r,val)r = val;
 
 #define ___BEGIN_CFUN_BODY
 #define ___END_CFUN_BODY ___AT_END
@@ -6894,9 +7265,11 @@ int _fltused; /* needed if floating-point used. */
 
 #endif
 
-#ifndef ___DONT_HAVE_MATH_H
-#include <math.h>
-#endif
+typedef struct ___source_location
+  {
+    int line;
+    char *file;
+  } ___source_location;
 
 #ifdef ___USE_SETJMP
 
@@ -7069,6 +7442,7 @@ typedef struct ___glo_struct
 #define ___MUTEX_DESTROY(mut) (pthread_mutex_destroy (&mut) == 0)
 #define ___MUTEX_LOCK(mut) (pthread_mutex_lock (&mut) == 0)
 #define ___MUTEX_UNLOCK(mut) (pthread_mutex_unlock (&mut) == 0)
+#define ___THREAD_ID (pthread_self())
 
 #endif
 
@@ -7081,57 +7455,252 @@ typedef struct ___glo_struct
 #define ___MUTEX_DESTROY(mut) CloseHandle (mut)
 #define ___MUTEX_LOCK(mut) (WaitForSingleObject (mut, INFINITE) != WAIT_FAILED)
 #define ___MUTEX_UNLOCK(mut) ReleaseMutex (mut)
+#define ___THREAD_ID (GetCurrentThreadId())
 
 #endif
 
 
-#if 0
-/*TODO: enable*/
+#ifndef ___USE_POSIX_THREAD_SYSTEM
+#ifndef ___USE_WIN32_THREAD_SYSTEM
+
+#define ___MUTEX int
+
+#define ___MUTEX_INIT(mut) 1
+#define ___MUTEX_DESTROY(mut)
+#define ___MUTEX_LOCK(mut) 1
+#define ___MUTEX_UNLOCK(mut)
+#define ___THREAD_ID 0
+
+#endif
+#endif
+
+
 #if ___WS == 4
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
-#define ___USE_sync_val_compare_and_swap
+#define ___USE_sync_builtins
 #endif
 #else
 #if ___WS == 8
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
-#define ___USE_sync_val_compare_and_swap
-#endif
+#define ___USE_sync_builtins
 #endif
 #endif
 #endif
 
 
-#ifndef ___USE_sync_val_compare_and_swap
+#ifndef ___USE_sync_builtins
 #ifdef ___USE_WIN32_THREAD_SYSTEM
-#define ___USE_InterlockedCompareExchangePointer
+#define ___USE_WIN32_sync
 #else
 #ifdef ___USE_POSIX_THREAD_SYSTEM
-#define ___USE_emulated_compare_and_swap_word
+#define ___USE_emulated_sync
+#else
+#define ___USE_sequential_sync
 #endif
 #endif
 #endif
 
 
-#ifdef ___USE_sync_val_compare_and_swap
+#ifdef ___USE_sync_builtins
 
-#define ___COMPARE_AND_SWAP_WORD(p,newv,oldv) \
-__sync_val_compare_and_swap(p,newv,oldv)
+#define ___COMPARE_AND_SWAP_WORD(p,oldval,newval) \
+__sync_val_compare_and_swap(p,oldval,newval)
 
-#endif
+#define ___FETCH_AND_ADD_WORD(p,val) \
+__sync_fetch_and_add(p,val)
 
-
-#ifdef ___USE_InterlockedCompareExchangePointer
-
-#define ___COMPARE_AND_SWAP_WORD(p,newv,oldv) \
-___CAST(___WORD,InterlockedCompareExchangePointer(___CAST(void**,p),___CAST(void*,oldv),___CAST(void*,newv)))
+#define ___FETCH_AND_CLEAR_WORD(p) \
+__sync_fetch_and_and(p,0)
 
 #endif
 
 
-#ifdef ___USE_emulated_compare_and_swap_word
+#ifdef ___USE_WIN32_sync
 
-#define ___COMPARE_AND_SWAP_WORD(p,newv,oldv) \
-___EXT(___emulated_compare_and_swap_word)(p,newv,oldv)
+#define ___COMPARE_AND_SWAP_WORD(p,oldval,newval) \
+___CAST(___WORD,InterlockedCompareExchangePointer(___CAST(void**,p),___CAST(void*,oldval),___CAST(void*,newval)))
+
+#if ___WS == 4
+#define ___FETCH_AND_ADD_WORD(p,val) \
+(InterlockedAdd(___CAST(LONG volatile *,p),val)-(val))
+#define ___FETCH_AND_CLEAR_WORD(p) \
+InterlockedAnd(___CAST(LONG volatile *,p),0)
+#else
+#define ___FETCH_AND_ADD_WORD(p,val) \
+(InterlockedAdd64(___CAST(LONGLONG volatile *,p),val)-(val))
+#define ___FETCH_AND_CLEAR_WORD(p) \
+InterlockedAnd64(___CAST(LONGLONG volatile *,p),0)
+#endif
+
+#endif
+
+
+#ifdef ___USE_emulated_sync
+
+#define ___COMPARE_AND_SWAP_WORD(p,oldval,newval) \
+___EXT(___emulated_compare_and_swap_word)(p,oldval,newval)
+
+#define ___FETCH_AND_ADD_WORD(p,val) \
+___EXT(___emulated_fetch_and_add_word)(p,val)
+
+#define ___FETCH_AND_CLEAR_WORD(p) \
+___EXT(___emulated_fetch_and_clear_word)(p)
+
+#endif
+
+
+#ifdef ___USE_sequential_sync
+
+#define ___COMPARE_AND_SWAP_WORD(p,oldval,newval) \
+((___ps->temp1 = *(p)) == (oldval) && (*(p) = (newval)), ___ps->temp1)
+
+#define ___FETCH_AND_ADD_WORD(p,val) \
+(___ps->temp1 = *(p), *(p) += (val), ___ps->temp1)
+
+#define ___FETCH_AND_CLEAR_WORD(p) \
+(___ps->temp1 = *(p), *(p) = 0, ___ps->temp1)
+
+#endif
+
+#ifdef ___CPU_x86
+#ifdef __GNUC__
+#define ___CPU_RELAX() __asm__ __volatile__ ("rep nop")
+#endif
+#endif
+
+#ifndef ___CPU_RELAX
+#define ___CPU_RELAX()
+#endif
+
+typedef struct ___thread_struct
+  {
+    void (*start_fn) ___P((struct ___thread_struct *self),());
+
+    void *data_ptr;
+    ___SCMOBJ data_scmobj;
+
+#ifdef ___USE_POSIX_THREAD_SYSTEM
+
+    pthread_t thread_id;
+
+#endif
+
+#ifdef ___USE_WIN32_THREAD_SYSTEM
+
+    HANDLE thread_handle;
+    DWORD thread_id;
+
+#endif
+  } ___thread;
+
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ * Activity log structures.
+ */
+
+#ifdef ___ACTIVITY_LOG
+
+typedef struct ___actlog_activity
+  {
+    ___U8 group;  /* group this activity belongs to */
+    ___U32 color; /* RGB color of this activity when shown visually */
+    char *name;   /* name of this activity */
+  } ___actlog_activity;
+
+typedef struct ___actlog_transition
+  {
+    ___U16 type;  /* activity type */
+    ___U64 stamp; /* time stamp when activity started */
+  } ___actlog_transition;
+
+typedef struct ___vmstate_actlog
+  {
+    ___MUTEX mut;
+    ___actlog_activity *activities;
+    int nb_activities;
+  } ___vmstate_actlog;
+
+typedef struct ___pstate_actlog
+  {
+    ___actlog_transition *transitions; /* array of transitions */
+    ___actlog_transition *last;        /* pointer to last transition */
+    ___U16 *stack;
+    int sp;
+  } ___pstate_actlog;
+
+#define ___ACTLOG_COLOR_black     0x000000
+#define ___ACTLOG_COLOR_white     0xFFFFFF
+#define ___ACTLOG_COLOR_red       0xFF0000
+#define ___ACTLOG_COLOR_green     0x00FF00
+#define ___ACTLOG_COLOR_blue      0x0000FF
+#define ___ACTLOG_COLOR_yellow    0xFFFF00
+#define ___ACTLOG_COLOR_magenta   0xFF00FF
+#define ___ACTLOG_COLOR_pink      0xFF8080
+#define ___ACTLOG_COLOR_gray      0x808080
+#define ___ACTLOG_COLOR_brown     0x800000
+#define ___ACTLOG_COLOR_orange    0xFF8000
+#define ___ACTLOG_COLOR_purple    0x803E75
+#define ___ACTLOG_COLOR_lightblue 0xA6BDD7
+#define ___ACTLOG_COLOR_violet    0x53377A
+
+#define ___ACTLOG_COLOR__         0x1000000
+
+#define ___ACTLOG_COLOR_rgb(r,g,b) (((___U32)(r)<<16)+((g)<<8)+(b))
+
+#define ___ACTLOG_COLOR(color)___ACTLOG_COLOR_##color
+
+#define ___ACTIVITY_START_STOP 0xffff
+
+#define ___ACTLOG(name,color) \
+do { \
+  ___processor_state ___ps = ___PSTATE; \
+  ___ACTLOG_PS(name,color); \
+} while (0)
+
+#define ___ACTLOG_PS(name,color) \
+do { \
+  static ___U16 ___actlog_activity_##name = ___ACTIVITY_START_STOP; \
+  ___EXT(___actlog_add_pstate)(___ps,&___actlog_activity_##name,#name,___ACTLOG_COLOR(color)); \
+} while (0)
+
+#define ___ACTLOG_BEGIN(name,color) \
+do { \
+  ___processor_state ___ps = ___PSTATE; \
+  ___ACTLOG_BEGIN_PS(name,color); \
+} while (0)
+
+#define ___ACTLOG_BEGIN_PS(name,color) \
+do { \
+  static ___U16 ___actlog_activity_##name = ___ACTIVITY_START_STOP; \
+  ___EXT(___actlog_begin_pstate)(___ps,&___actlog_activity_##name,#name,___ACTLOG_COLOR(color)); \
+} while (0)
+
+#define ___ACTLOG_END() \
+do { \
+  ___processor_state ___ps = ___PSTATE; \
+  ___ACTLOG_END_PS(); \
+} while (0)
+
+#define ___ACTLOG_END_PS() \
+do { \
+  ___EXT(___actlog_end_pstate)(___ps); \
+} while (0)
+
+#else
+
+#define ___ACTLOG(name,color)
+
+#define ___ACTLOG_PS(name,color)
+
+#define ___ACTLOG_BEGIN(name,color)
+
+#define ___ACTLOG_BEGIN_PS(name,color)
+
+#define ___ACTLOG_END()
+
+#define ___ACTLOG_END_PS()
 
 #endif
 
@@ -7214,6 +7783,9 @@ ___WORD *alloc_heap_ptr_;
 /* allocation limit for movable objects in heap_msection */
 ___WORD *alloc_heap_limit_;
 
+/* list of nonexecutable wills */
+___WORD nonexecutable_wills_;
+
 #ifdef ___CALL_GC_FREQUENTLY
 int gc_calls_to_punt_;
 #endif
@@ -7277,6 +7849,9 @@ ___BOOL traverse_weak_refs_;
 /* GC hash tables reached by GC */
 ___WORD reached_gc_hash_tables_;
 
+/* list of executable wills */
+___WORD executable_wills_;
+
 /* Head of list of reference counted blocks of memory */
 ___rc_header rc_head_;
 
@@ -7331,11 +7906,19 @@ typedef struct ___processor_state_struct *___processor_state;
 typedef struct ___virtual_machine_state_struct *___virtual_machine_state;
 typedef struct ___global_state_struct *___global_state;
 
+/* For implementation of on_all_processors */
+
+typedef struct ___sync_op_struct
+  {
+    unsigned char volatile op; /* operation requested */
+    ___WORD volatile arg[2];   /* arguments of the operation */
+  } ___sync_op_struct;
+
 /* Processor structure */
 
 typedef struct ___processor_state_struct
   {
-    ___WORD *stack_trip;
+    ___WORD volatile *stack_trip;
     ___WORD *stack_limit;
     ___WORD *fp;
     ___WORD *stack_start;
@@ -7354,57 +7937,61 @@ typedef struct ___processor_state_struct
     ___WORD temp3;
     ___WORD temp4;
 
+    ___F64 f64_temp1;
+    ___F64 f64_temp2;
+
     int na;
 
     ___WORD intr_enabled; /* global interrupt enable */
     ___WORD intr_mask; /* 1 bit means interrupt disabled */
-    ___WORD intr_flag[___NB_INTRS];
+    ___WORD volatile intr_flag[___NB_INTRS];
 
-    ___WORD executable_wills;
-    ___WORD nonexecutable_wills;
+#ifdef ___ACTIVITY_LOG
+    ___pstate_actlog actlog; /* activity log state */
+#endif
 
     ___pstate_mem mem; /* memory management state */
 
-    void (*dummy8) ___PVOID;
-    void (*dummy7) ___PVOID;
-    void (*dummy6) ___PVOID;
-    void (*dummy5) ___PVOID;
-    void (*dummy4) ___PVOID;
-    void (*dummy3) ___PVOID;
-    void (*dummy2) ___PVOID;
-    void (*dummy1) ___PVOID;
+#ifdef ___DEBUG_CTRL_FLOW_HISTORY
+    unsigned int ctrl_flow_history_index;
+    ___source_location ctrl_flow_history[___CTRL_FLOW_HISTORY_LENGTH];
+#endif
 
-#ifndef ___SINGLE_THREADED_VMS
+#ifdef ___DEBUG_STACK_LIMIT
+    ___source_location poll_location;
+    ___source_location stack_limit_location;
+#endif
 
-    /* TODO: replace circular list by array */
-    struct ___processor_state_struct *prev; /* circular list links */
-    struct ___processor_state_struct *next;
+#ifdef ___DEBUG_HEAP_LIMIT
+    ___source_location check_heap_location;
+    ___source_location heap_limit_location;
+#endif
 
-    struct ___virtual_machine_state_struct *vmstate; /* this processor's VM */
-
+#ifdef ___HEARTBEAT_USING_POLL_COUNTDOWN
+    int heartbeat_interval;
+    int heartbeat_countdown;
 #endif
 
 #ifdef ___USE_SETJMP
     ___jmpbuf_struct *catcher;
 #endif
 
-#ifdef ___DEBUG_STACK_LIMIT
-    int poll_line;
-    char *poll_file;
-    int stack_limit_line;
-    char *stack_limit_file;
-#endif
+#ifndef ___SINGLE_THREADED_VMS
 
-#ifdef ___DEBUG_HEAP_LIMIT
-    int check_heap_line;
-    char *check_heap_file;
-    int heap_limit_line;
-    char *heap_limit_file;
-#endif
+    /* this processor's VM */
+    ___virtual_machine_state vmstate;
 
-#ifdef ___HEARTBEAT_USING_POLL_COUNTDOWN
-    int heartbeat_interval;
-    int heartbeat_countdown;
+    /* this processor's OS thread */
+    ___thread os_thread;
+
+    /* for implementation of on_all_processors */
+    int volatile sync_id0;
+    ___sync_op_struct sync_op0;
+    int volatile sync_id1;
+    ___sync_op_struct sync_op1;
+    int volatile sync_id2;
+    ___sync_op_struct sync_op2;
+
 #endif
   } ___processor_state_struct;
 
@@ -7455,18 +8042,7 @@ typedef struct ___module_struct
     ___WORD (*init_mod) ___P((___PSDNC),());
     ___UTF_8STRING script_line;
     struct ___module_struct *next;
-
-    void (*dummy8) ___PVOID;
-    void (*dummy7) ___PVOID;
-    void (*dummy6) ___PVOID;
-    void (*dummy5) ___PVOID;
-    void (*dummy4) ___PVOID;
-    void (*dummy3) ___PVOID;
-    void (*dummy2) ___PVOID;
-    void (*dummy1) ___PVOID;
-
     ___SCMOBJ moddescr; /* module descriptor */
-
   } ___module_struct;
 
 /* Linkfile structure */
@@ -7485,15 +8061,6 @@ typedef struct ___linkfile_struct
     ___FAKEWORD *sym_list;
     ___FAKEWORD *key_list;
     ___linkinfo *linkertbl;
-
-    void (*dummy8) ___PVOID;
-    void (*dummy7) ___PVOID;
-    void (*dummy6) ___PVOID;
-    void (*dummy5) ___PVOID;
-    void (*dummy4) ___PVOID;
-    void (*dummy3) ___PVOID;
-    void (*dummy2) ___PVOID;
-    void (*dummy1) ___PVOID;
   } ___linkfile_struct;
 
 /* Module or linkfile structure */
@@ -7525,25 +8092,22 @@ typedef struct ___program_startup_info_struct
 
 typedef struct ___virtual_machine_state_struct
   {
-    ___processor_state_struct pstate0; /* first processor of this VM */
+    ___processor_state_struct pstate[___MAX_PROCESSORS]; /* VM's processors */
+
+    int volatile nb_processors; /* number of processors in this VM */
+
+#ifdef ___ACTIVITY_LOG
+    ___vmstate_actlog actlog; /* activity log state */
+#endif
 
     ___vmstate_mem mem; /* memory management state */
 
     ___SCMOBJ main_module_id; /* symbol identifying the VM's main module */
 
-    void (*dummy8) ___PVOID;
-    void (*dummy7) ___PVOID;
-    void (*dummy6) ___PVOID;
-    void (*dummy5) ___PVOID;
-    void (*dummy4) ___PVOID;
-    void (*dummy3) ___PVOID;
-    void (*dummy2) ___PVOID;
-    void (*dummy1) ___PVOID;
-
 #ifndef ___SINGLE_VM
 
-    struct ___virtual_machine_state_struct *prev; /* circular list links */
-    struct ___virtual_machine_state_struct *next;
+    ___virtual_machine_state volatile prev; /* circular list links */
+    ___virtual_machine_state volatile next;
 
     ___SCMOBJ *glos; /* Scheme global variables */
 
@@ -7568,23 +8132,14 @@ typedef struct ___setup_params_struct
     int file_settings;
     int terminal_settings;
     int stdio_settings;
-    ___UCS_2STRING gambcdir;
-    ___UCS_2STRING *gambcdir_map;
+    ___UCS_2STRING gambitdir;
+    ___UCS_2STRING *gambitdir_map;
     ___UCS_2STRING remote_dbg_addr;
     ___UCS_2STRING rpc_server_addr;
     ___mod_or_lnk (*linker) ___P((___global_state),());
 
     ___UCS_2 reset_argv0[1]; /* defaults for argv */
     ___UCS_2STRING reset_argv[2];
-
-    void (*dummy8) ___PVOID;
-    void (*dummy7) ___PVOID;
-    void (*dummy6) ___PVOID;
-    void (*dummy5) ___PVOID;
-    void (*dummy4) ___PVOID;
-    void (*dummy3) ___PVOID;
-    void (*dummy2) ___PVOID;
-    void (*dummy1) ___PVOID;
   } ___setup_params_struct;
 
 #define ___DEBUG_SETTINGS_LEVEL_MASK          15
@@ -7658,9 +8213,13 @@ typedef struct ___global_state_struct
   {
     ___virtual_machine_state_struct vmstate0; /* first VM */
 
+#ifndef ___SINGLE_VM
+    ___MUTEX vm_list_mut; /* mutex for accessing VM list */
+#endif
+
     int setup_state; /* 0=pre-setup, 1=post-setup, 2=post-cleanup */
 
-    struct ___setup_params_struct setup_params; /* params received by ___setup */
+    ___setup_params_struct setup_params; /* params received by ___setup */
 
     ___WORD handler_sfun_conv_error;
     ___WORD handler_cfun_conv_error;
@@ -7685,15 +8244,6 @@ typedef struct ___global_state_struct
 
     ___gstate_mem mem; /* memory management state */
 
-    void (*dummy8) ___PVOID;
-    void (*dummy7) ___PVOID;
-    void (*dummy6) ___PVOID;
-    void (*dummy5) ___PVOID;
-    void (*dummy4) ___PVOID;
-    void (*dummy3) ___PVOID;
-    void (*dummy2) ___PVOID;
-    void (*dummy1) ___PVOID;
-
 #ifndef ___CAN_IMPORT_CLIB_DYNAMICALLY
     double (*fabs)
        ___P((double x),
@@ -7704,10 +8254,23 @@ typedef struct ___global_state_struct
     double (*ceil)
        ___P((double x),
             ());
+    double (*scalbn)
+       ___P((double x,
+             int n),
+            ());
+    int (*ilogb)
+       ___P((double x),
+            ());
     double (*exp)
        ___P((double x),
             ());
+    double (*expm1)
+       ___P((double x),
+            ());
     double (*log)
+       ___P((double x),
+            ());
+    double (*log1p)
        ___P((double x),
             ());
     double (*sin)
@@ -7728,29 +8291,35 @@ typedef struct ___global_state_struct
     double (*atan)
        ___P((double x),
             ());
-#ifdef ___GOOD_ATAN2
+    double (*sinh)
+       ___P((double x),
+            ());
+    double (*cosh)
+       ___P((double x),
+            ());
+    double (*tanh)
+       ___P((double x),
+            ());
+    double (*asinh)
+       ___P((double x),
+            ());
+    double (*acosh)
+       ___P((double x),
+            ());
+    double (*atanh)
+       ___P((double x),
+            ());
     double (*atan2)
        ___P((double y,
              double x),
             ());
-#endif
-#ifdef ___GOOD_POW
     double (*pow)
        ___P((double x,
              double y),
             ());
-#endif
     double (*sqrt)
        ___P((double x),
             ());
-#endif
-
-#ifdef ___USE_SETJMP
-#ifndef ___CAN_IMPORT_SETJMP_DYNAMICALLY
-    int (*setjmp)
-       ___P((jmp_buf env),
-            ());
-#endif
 #endif
 
 #ifndef ___CAN_IMPORT_DYNAMICALLY
@@ -7799,13 +8368,64 @@ typedef struct ___global_state_struct
     double (*___round)
        ___P((double x),
             ());
-#ifndef ___GOOD_ATAN2
+#ifdef ___DEFINE_SCALBN
+    double (*___scalbn)
+       ___P((double x,
+             int n),
+            ());
+#endif
+#ifdef ___DEFINE_ILOGB
+    int (*___ilogb)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_EXPM1
+    double (*___expm1)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_LOG1P
+    double (*___log1p)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_SINH
+    double (*___sinh)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_COSH
+    double (*___cosh)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_TANH
+    double (*___tanh)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_ASINH
+    double (*___asinh)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_ACOSH
+    double (*___acosh)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_ATANH
+    double (*___atanh)
+       ___P((double x),
+            ());
+#endif
+#ifdef ___DEFINE_ATAN2
     double (*___atan2)
        ___P((double y,
              double x),
             ());
 #endif
-#ifndef ___GOOD_POW
+#ifdef ___DEFINE_POW
     double (*___pow)
        ___P((double x,
              double y),
@@ -8740,6 +9360,28 @@ typedef struct ___global_state_struct
        ___P((___SCMOBJ ht_src,
              ___SCMOBJ ht_dst),
             ());
+    void (*___cleanup) ___PVOID;
+    void (*___cleanup_and_exit_process)
+       ___P((int status),
+            ());
+    ___SCMOBJ (*___resize_vm)
+       ___P((___PSD
+            ___SCMOBJ thunk,
+            int target_nb_processors),
+           ());
+    ___SCMOBJ (*___setup_vmstate)
+       ___P((___virtual_machine_state ___vms),
+            ());
+    void (*___cleanup_vmstate)
+       ___P((___virtual_machine_state ___vms),
+            ());
+    ___SCMOBJ (*___setup_pstate)
+       ___P((___processor_state ___ps,
+             ___virtual_machine_state ___vms),
+            ());
+    void (*___cleanup_pstate)
+       ___P((___processor_state ___ps),
+            ());
     ___SIZE_T (*___get_min_heap) ___PVOID;
     void (*___set_min_heap)
        ___P((___SIZE_T bytes),
@@ -8756,23 +9398,27 @@ typedef struct ___global_state_struct
     void (*___set_standard_level)
        ___P((int level),
             ());
-    void (*___set_gambcdir)
-       ___P((___UCS_2STRING gambcdir),
+    void (*___set_gambitdir)
+       ___P((___UCS_2STRING gambitdir),
             ());
     int (*___set_debug_settings)
        ___P((int mask,
              int new_settings),
             ());
     ___program_startup_info_struct *(*___get_program_startup_info) ___PVOID;
-    void (*___cleanup) ___PVOID;
-    void (*___cleanup_and_exit_process)
-       ___P((int status),
-            ());
     ___SCMOBJ (*___call)
        ___P((___PSD
              int nargs,
              ___SCMOBJ proc,
              ___SCMOBJ marker),
+            ());
+    ___SCMOBJ (*___run)
+       ___P((___PSD
+             ___SCMOBJ thunk),
+            ());
+    void (*___throw_error)
+       ___P((___PSD
+             ___SCMOBJ err),
             ());
     void (*___propagate_error)
        ___P((___PSD
@@ -8782,7 +9428,26 @@ typedef struct ___global_state_struct
     void (*___register_host_entry)
        ___P((___PSD
              ___WORD start,
-             char *module_name),
+             char *module_name,
+             char *file,
+             int line),
+            ());
+#endif
+#ifdef ___ACTIVITY_LOG
+    void (*___actlog_add_pstate)
+       ___P((___processor_state ___ps,
+             ___U16 *type,
+             char *name,
+             ___U32 color),
+            ());
+    void (*___actlog_begin_pstate)
+       ___P((___processor_state ___ps,
+             ___U16 *type,
+             char *name,
+             ___U32 color),
+            ());
+    void (*___actlog_end_pstate)
+       ___P((___processor_state ___ps),
             ());
 #endif
     void (*___raise_interrupt_pstate)
@@ -8797,21 +9462,21 @@ typedef struct ___global_state_struct
        ___P((int code),
             ());
     void (*___begin_interrupt_service_pstate)
-       ___P((___PSDNC),
+       ___P((___processor_state ___ps),
             ());
     ___BOOL (*___check_interrupt_pstate)
-       ___P((___PSD
+       ___P((___processor_state ___ps,
              int code),
             ());
     void (*___end_interrupt_service_pstate)
-       ___P((___PSD
+       ___P((___processor_state ___ps,
              int code),
             ());
     void (*___disable_interrupts_pstate)
-       ___P((___PSDNC),
+       ___P((___processor_state ___ps),
             ());
     void (*___enable_interrupts_pstate)
-       ___P((___PSDNC),
+       ___P((___processor_state ___ps),
             ());
     void *(*___alloc_mem)
        ___P((___SIZE_T bytes),
@@ -8825,11 +9490,18 @@ typedef struct ___global_state_struct
     void (*___free_mem_code)
        ___P((void *ptr),
             ());
-#ifdef ___USE_emulated_compare_and_swap_word
+#ifdef ___USE_emulated_sync
     ___WORD (*___emulated_compare_and_swap_word)
-       ___P((___WORD *ptr,
+       ___P((___WORD volatile *ptr,
              ___WORD oldval,
              ___WORD newval),
+            ());
+    ___WORD (*___emulated_fetch_and_add_word)
+       ___P((___WORD volatile *ptr,
+             ___WORD val),
+            ());
+    ___WORD (*___emulated_fetch_and_clear_word)
+       ___P((___WORD volatile *ptr),
             ());
 #endif
 #ifndef ___THREAD_LOCAL_STORAGE_CLASS
@@ -8840,6 +9512,14 @@ typedef struct ___global_state_struct
 #endif
     void (*___disable_heartbeat_interrupts) ___PVOID;
     void (*___enable_heartbeat_interrupts) ___PVOID;
+#endif
+
+#ifdef ___USE_SETJMP
+#ifndef ___CAN_IMPORT_SETJMP_DYNAMICALLY
+    int (*setjmp)
+       ___P((jmp_buf env),
+            ());
+#endif
 #endif
   } ___global_state_struct;
 
@@ -9905,23 +10585,96 @@ ___IMP_FUNC(double,___trunc)
 ___IMP_FUNC(double,___round)
    ___P((double x),
         ());
-#ifndef ___GOOD_ATAN2
+#ifdef ___DEFINE_SCALBN
+___IMP_FUNC(double,___scalbn)
+   ___P((double x,
+         int n),
+        ());
+#endif
+#ifdef ___DEFINE_ILOGB
+___IMP_FUNC(int,___ilogb)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_EXPM1
+___IMP_FUNC(double,___expm1)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_LOG1P
+___IMP_FUNC(double,___log1p)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_SINH
+___IMP_FUNC(double,___sinh)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_COSH
+___IMP_FUNC(double,___cosh)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_TANH
+___IMP_FUNC(double,___tanh)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_ASINH
+___IMP_FUNC(double,___asinh)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_ACOSH
+___IMP_FUNC(double,___acosh)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_ATANH
+___IMP_FUNC(double,___atanh)
+   ___P((double x),
+        ());
+#endif
+#ifdef ___DEFINE_ATAN2
 ___IMP_FUNC(double,___atan2)
    ___P((double y,
          double x),
         ());
 #endif
-#ifndef ___GOOD_POW
+#ifdef ___DEFINE_POW
 ___IMP_FUNC(double,___pow)
    ___P((double x,
          double y),
         ());
 #endif
 ___IMP_FUNC(void,___setup_params_reset)
-   ___P((struct ___setup_params_struct *setup_params),
+   ___P((___setup_params_struct *setup_params),
         ());
 ___IMP_FUNC(___SCMOBJ,___setup)
-   ___P((struct ___setup_params_struct *setup_params),
+   ___P((___setup_params_struct *setup_params),
+        ());
+___IMP_FUNC(void,___cleanup) ___PVOID;
+___IMP_FUNC(void,___cleanup_and_exit_process)
+   ___P((int status),
+        ());
+___IMP_FUNC(___SCMOBJ,___resize_vm)
+   ___P((___PSD
+         ___SCMOBJ thunk,
+         int target_nb_processors),
+        ());
+___IMP_FUNC(___SCMOBJ,___setup_vmstate)
+   ___P((___virtual_machine_state ___vms),
+        ());
+___IMP_FUNC(void,___cleanup_vmstate)
+   ___P((___virtual_machine_state ___vms),
+        ());
+___IMP_FUNC(___SCMOBJ,___setup_pstate)
+   ___P((___processor_state ___ps,
+         ___virtual_machine_state ___vms),
+        ());
+___IMP_FUNC(void,___cleanup_pstate)
+   ___P((___processor_state ___ps),
         ());
 ___IMP_FUNC(___SIZE_T,___get_min_heap) ___PVOID;
 ___IMP_FUNC(void,___set_min_heap)
@@ -9939,8 +10692,8 @@ ___IMP_FUNC(int,___get_standard_level) ___PVOID;
 ___IMP_FUNC(void,___set_standard_level)
    ___P((int level),
         ());
-___IMP_FUNC(void,___set_gambcdir)
-   ___P((___UCS_2STRING gambcdir),
+___IMP_FUNC(void,___set_gambitdir)
+   ___P((___UCS_2STRING gambitdir),
         ());
 ___IMP_FUNC(int,___set_debug_settings)
    ___P((int mask,
@@ -9948,15 +10701,18 @@ ___IMP_FUNC(int,___set_debug_settings)
         ());
 ___IMP_FUNC(___program_startup_info_struct*,___get_program_startup_info)
    ___PVOID;
-___IMP_FUNC(void,___cleanup) ___PVOID;
-___IMP_FUNC(void,___cleanup_and_exit_process)
-   ___P((int status),
-        ());
 ___IMP_FUNC(___SCMOBJ,___call)
    ___P((___PSD
          int nargs,
          ___SCMOBJ proc,
          ___SCMOBJ marker),
+        ());
+___IMP_FUNC(___SCMOBJ,___run)
+   ___P((___SCMOBJ thunk),
+        ());
+___IMP_FUNC(void,___throw_error)
+   ___P((___PSD
+         ___SCMOBJ err),
         ());
 ___IMP_FUNC(void,___propagate_error)
    ___P((___PSD
@@ -9966,7 +10722,26 @@ ___IMP_FUNC(void,___propagate_error)
 ___IMP_FUNC(void,___register_host_entry)
    ___P((___PSD
          ___WORD start,
-         char *module_name),
+         char *module_name,
+         char *file,
+         int line),
+        ());
+#endif
+#ifdef ___ACTIVITY_LOG
+___IMP_FUNC(void,___actlog_add_pstate)
+   ___P((___processor_state ___ps,
+         ___U16 *type,
+         char *name,
+         ___U32 color),
+        ());
+___IMP_FUNC(void,___actlog_begin_pstate)
+   ___P((___processor_state ___ps,
+         ___U16 *type,
+         char *name,
+         ___U32 color),
+        ());
+___IMP_FUNC(void,___actlog_end_pstate)
+   ___P((___processor_state ___ps),
         ());
 #endif
 ___IMP_FUNC(void,___raise_interrupt_pstate)
@@ -9981,21 +10756,21 @@ ___IMP_FUNC(void,___raise_interrupt)
    ___P((int code),
         ());
 ___IMP_FUNC(void,___begin_interrupt_service_pstate)
-   ___P((___PSDNC),
+   ___P((___processor_state ___ps),
         ());
 ___IMP_FUNC(___BOOL,___check_interrupt_pstate)
-   ___P((___PSD
+   ___P((___processor_state ___ps,
          int code),
         ());
 ___IMP_FUNC(void,___end_interrupt_service_pstate)
-   ___P((___PSD
+   ___P((___processor_state ___ps,
          int code),
         ());
 ___IMP_FUNC(void,___disable_interrupts_pstate)
-   ___P((___PSDNC),
+   ___P((___processor_state ___ps),
         ());
 ___IMP_FUNC(void,___enable_interrupts_pstate)
-   ___P((___PSDNC),
+   ___P((___processor_state ___ps),
         ());
 #endif
 
@@ -10015,11 +10790,18 @@ ___IMP_FUNC(void,___free_mem_code)
 #endif
 
 #ifndef ___INCLUDED_FROM_OS_THREAD
-#ifdef ___USE_emulated_compare_and_swap_word
+#ifdef ___USE_emulated_sync
 ___IMP_FUNC(___WORD,___emulated_compare_and_swap_word)
-   ___P((___WORD *ptr,
+   ___P((___WORD volatile *ptr,
          ___WORD oldval,
          ___WORD newval),
+        ());
+___IMP_FUNC(___WORD,___emulated_fetch_and_add_word)
+   ___P((___WORD volatile *ptr,
+         ___WORD val),
+        ());
+___IMP_FUNC(___WORD,___emulated_fetch_and_clear_word)
+   ___P((___WORD volatile *ptr),
         ());
 #endif
 #ifndef ___THREAD_LOCAL_STORAGE_CLASS

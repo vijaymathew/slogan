@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+# Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved.
 
 herefromroot="prebuilt/macosx"
 rootfromhere="../.."
@@ -12,7 +12,7 @@ if [ "`id -un`" != "root" ] ; then
   exit 1
 fi
 
-export INSTALL_PREFIX="/Library/Gambit-C"
+export INSTALL_PREFIX="/Library/Gambit"
 
 cd "`dirname $0`"
 
@@ -22,11 +22,11 @@ for VARIANT in intel32 intel64; do
 
   case "$VARIANT" in
       intel32) CONFIG_ARCH="-arch i386"
-               CONFIG_BUILD="--build=i386-apple-darwin9"
+               CONFIG_BUILD="--build=i386-apple-darwin13.0.2"
                RUN_TESTS=1
                ;;
       intel64) CONFIG_ARCH="-arch x86_64 -m64"
-               CONFIG_BUILD="--build=i386-apple-darwin9"
+               CONFIG_BUILD="--build=x86_64-apple-darwin13.0.2"
                RUN_TESTS=1
                ;;
            G3) CONFIG_ARCH="-arch ppc750"
@@ -49,9 +49,21 @@ for VARIANT in intel32 intel64; do
 
   #SYSROOT="/Developer/SDKs/MacOSX10.6.sdk"
   #SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
-  SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
+  #SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
 
-  CFLAGS="-isysroot $SYSROOT $CONFIG_ARCH" LDFLAGS="-mmacosx-version-min=10.5 -Wl,-syslibroot,$SYSROOT $CONFIG_ARCH" ./configure "$CONFIG_BUILD" --prefix="$INSTALL_PREFIX" --enable-multiple-versions --enable-symlinks --enable-single-host CC="gcc"
+  #CFLAGS="-isysroot $SYSROOT $CONFIG_ARCH" LDFLAGS="-mmacosx-version-min=10.5 -Wl,-syslibroot,$SYSROOT $CONFIG_ARCH" ./configure "$CONFIG_BUILD" --prefix="$INSTALL_PREFIX" --enable-multiple-versions --enable-symlinks --enable-single-host CC="gcc"
+
+  # use GNU gcc and hide options for compatibility with LLVM gcc
+
+  rm -f `pwd`/gcc
+  cat <<EOF > gcc
+#!/bin/sh
+exec /usr/local/Cellar/gcc5/5.2.0/bin/gcc-5 -fschedule-insns2 -fno-trapping-math -fwrapv -mieee-fp -fmodulo-sched -freschedule-modulo-scheduled-loops "\$@"
+EOF
+  chmod +x gcc
+  export PATH="`pwd`:$PATH"
+
+  CFLAGS="$CONFIG_ARCH" LDFLAGS="$CONFIG_ARCH" ./configure "$CONFIG_BUILD" --prefix="$INSTALL_PREFIX" --enable-multiple-versions --enable-symlinks --enable-single-host --enable-c-opt --disable-gnu-gcc-specific-options CC="gcc"
 
   cd "$herefromroot"
 

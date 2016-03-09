@@ -4,11 +4,11 @@
 
 ;;; File: "runtests.scm"
 
-;;; Copyright (c) 2012-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 2012-2015 by Marc Feeley, All Rights Reserved.
 
 ;;;----------------------------------------------------------------------------
 
-(define cleanup? #f)
+(define cleanup? #t)
 
 (define nb-good 0)
 (define nb-fail 0)
@@ -89,9 +89,12 @@
                      (print "*********************** FAILED TEST " file "\n")
                      (print "======================= EXPECTED:\n" (cdr (cdar results)))))
                (set! diff? #t)
-               (print "======================= " (car target) ":\n" (cdr result))
-'
-               (print "======================= " (car target) ":\n" (diff (car target) (cdr (cdar results)) (cdr result)))))))
+               (print "======================= ")
+               (write (cons (car target) (caddr target)))
+               (print ":\n")
+               (print (cdr result))
+               #;(print (diff (car target) (cdr (cdar results)) (cdr result)))
+               ))))
      (cdr results))
 
     (if diff?
@@ -138,39 +141,355 @@
                (ext (cadr t)))
            (cons t
                  (if ext
-                     (let ((out (string-append (path-strip-extension file) ext)))
+                     (let* ((file-no-ext (path-strip-extension file))
+                            (out_ (string-append file-no-ext "_" ext))
+                            (out (string-append file-no-ext ext)))
+
                        (if (not (equal? target "gambit"))
-                           (compile file target))
-                       (let ((result (apply run (append (cddr t) (list out)))))
+                           (compile file ext target (caddr t)))
+
+                       (let ((result
+                              (if (equal? target "java")
+                                  (begin
+                                    (run (string-append (path-directory (cadddr t)) "javac") out_ out)
+                                    (apply run
+                                           (append (cdddr t)
+                                                   (list "-classpath"
+                                                         (path-directory file-no-ext)
+                                                         (string-append (path-strip-directory file-no-ext) "_")))))
+                                  (apply run (append (cdddr t) (list out))))))
+
                          (if (not (equal? target "gambit"))
-                             (if cleanup? (delete-file out)))
+                             (if cleanup?
+                                 (begin
+                                   (if (not (equal? target "c"))
+                                       (delete-file out_))
+                                   (delete-file out)
+                                   (if (equal? target "java")
+                                       (parameterize ((current-directory
+                                                       (path-directory out)))
+                                         (shell-command "rm *.class"))))))
+
                          result))
-                     (apply run (append (cddr t) (list file)))))))
+
+                     (apply run (append (cdddr t) (list file)))))))
        (keep (lambda (t)
-               (member (car t) (cons "gambit" back-ends)))
+               (member (car t) (cons "c" back-ends)))
              targets)))
 
-(define (compile file target)
-  (let ((x
-         (if (equal? target "c")
-             (run "./gsc" "-:=.."                      file)
-             (run "./gsc" "-:=.." "-c" "-target" target file))))
+(define (compile file ext target options)
+  (let* ((file-no-ext
+          (path-strip-extension file))
+         (x
+          (if (equal? target "c")
+              (run "./gsc" "-:=.."                      file)
+              (apply run
+                     (append (list "./gsc" "-:=.." "-o" (path-directory file) "-target" target "-link" "-flat")
+                             options
+                             (list file))))))
     (if (not (= (car x) 0))
-        (error "couldn't compile" file target))))
+        (error "couldn't compile" file target))
+    (if (and (not (equal? target "c"))
+             (not (equal? target "java")))
+        (begin
+          (shell-command
+           (string-append
+            "cat "
+            (string-append file-no-ext "_" ext)
+            " "
+            (string-append file-no-ext ext)
+            " > "
+            (string-append file-no-ext "_merged" ext)))
+          (shell-command
+           (string-append
+            "mv "
+            (string-append file-no-ext "_merged" ext)
+            " "
+            (string-append file-no-ext ext)))))))
 
 (define targets
   '(
-    ("gambit" ".scm"  "./gsc" "-i")
-    ("c"      ".o1"   "./gsc" "-i")
-    ("x86"    #f      "./gsc32" "-:=.." "-target" "nat" "-c" "-e" "(load \"_t-x86.scm\")")
-    ("x86-64" #f      "./gsc64" "-:=.." "-target" "nat" "-c" "-e" "(load \"_t-x86.scm\")")
-    ("js"     ".js"   "d8")
-    ("python" ".py"   "python")
-;;    ("ruby"   ".rb"   "/usr/bin/ruby")
-    ("ruby"   ".rb"   "/usr/local/bin/ruby") ;; ruby 1.9.3p392
-;;    ("php"   ".php"   "/usr/bin/php")
-    ("php"   ".php"   "/usr/local/bin/php") ;; PHP 5.4.11
-;;    ("dart"   ".dart" "/Users/feeley/dart/dart-sdk/bin/dart")
+    ("gambit" ".scm"  ()
+                      "./gsc" "-i")
+
+    ("c"      ".o1"   ()
+                      "./gsc" "-i")
+
+    ("x86"    #f      ()
+                      "./gsc32" "-:=.." "-target" "nat" "-c" "-e" "(load \"_t-x86.scm\")")
+
+    ("x86-64" #f      ()
+                      "./gsc64" "-:=.." "-target" "nat" "-c" "-e" "(load \"_t-x86.scm\")")
+
+    ("java"   ".java" ()
+                      "java")
+
+    ("java"   ".java" ("-pre7")
+                      "/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Commands/java")
+
+    ("js"     ".js"   ()
+                      "d8")
+
+    ;; repr-module = globals
+    ("js"     ".js"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "d8")
+    ("js"     ".js"   ("-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "d8")
+    ("js"     ".js"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "d8")
+    ("js"     ".js"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "d8")
+    ;; repr-module = class
+    ("js"     ".js"   ("-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "d8")
+    ("js"     ".js"   ("-repr-module"    "class"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "d8")
+    ("js"     ".js"   ("-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "d8")
+    ("js"     ".js"   ("-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "d8")
+
+    ("python" ".py"   ()
+                      "python3")
+
+    ;; repr-module = globals
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python")
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python")
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "python")
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "python")
+
+#|
+    ;; repr-module = class
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python")
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "class"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python")
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "python")
+    ("python" ".py"   ("-pre3"
+                       "-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "python")
+|#
+    ;; repr-module = globals
+    ("python" ".py"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python3")
+    ("python" ".py"   ("-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python3")
+    ("python" ".py"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "python3")
+    ("python" ".py"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "python3")
+#|
+    ;; repr-module = class
+    ("python" ".py"   ("-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python3")
+    ("python" ".py"   ("-repr-module"    "class"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "python3")
+    ("python" ".py"   ("-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "python3")
+    ("python" ".py"   ("-repr-module"    "class"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "python3")
+|#
+#;
+    ("ruby"   ".rb"   ()
+                      "/usr/bin/ruby") ;; ruby 2.0.0p451
+#;
+    ("ruby"   ".rb"   ()
+                      "/usr/local/Cellar/ruby/2.1.5/bin/ruby") ;; ruby 2.1.5
+#;
+    ("ruby"   ".rb"   ()
+                      "/usr/local/bin/ruby") ;; ruby 1.9.3p392
+
+    ;; repr-module = globals
+    ("ruby"   ".rb"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "/usr/local/bin/ruby") ;; ruby 1.9.3p392
+#|
+    ("ruby"   ".rb"   ("-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "/usr/local/bin/ruby") ;; ruby 1.9.3p392
+    ("ruby"   ".rb"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "/usr/local/bin/ruby") ;; ruby 1.9.3p392
+    ("ruby"   ".rb"   ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "/usr/local/bin/ruby") ;; ruby 1.9.3p392
+|#
+#;
+    ("php"   ".php"   ()
+                      "/usr/bin/php") ;; PHP 5.5.20
+
+    ;; repr-module = globals
+    ("php"    ".php"  ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "/usr/bin/php") ;; PHP 5.5.20
+    ("php"    ".php"  ("-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "/usr/bin/php") ;; PHP 5.5.20
+    ("php"    ".php"  ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "/usr/bin/php") ;; PHP 5.5.20
+    ("php"    ".php"  ("-repr-module"    "globals"
+                       "-repr-procedure" "host"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "/usr/bin/php") ;; PHP 5.5.20
+
+    ;; repr-module = globals
+    ("php"    ".php"  ("-pre53"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "host"
+                       "-repr-flonum"    "class"
+                      )
+                      "/Users/feeley/php5.2.17/bin/php")
+    ("php"    ".php"  ("-pre53"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "class"
+                      )
+                      "/Users/feeley/php5.2.17/bin/php")
+    ("php"    ".php"  ("-pre53"
+                       "-repr-module"    "globals"
+                       "-repr-procedure" "class"
+                       "-repr-fixnum"    "class"
+                       "-repr-flonum"    "host"
+                      )
+                      "/Users/feeley/php5.2.17/bin/php")
+
+#;
+    ("dart"   ".dart" ()
+                      "/Users/feeley/dart/dart-sdk/bin/dart")
    ))
 
 (define (list-of-files-with-extension file-or-dir extension)
@@ -203,6 +522,17 @@
 (define back-ends '())
 
 (define (main . args)
+
+  (current-exception-handler
+   (lambda (e)
+     (current-exception-handler (lambda (e) (##exit 1)))
+     (display-exception e)
+     (if (scheduler-exception? e)
+         (begin
+           (write e)
+           (display " = ")
+           (display-exception (##vector-ref e 1))))
+     (##exit 1)))
 
   (let loop ()
     (if (and (pair? args)

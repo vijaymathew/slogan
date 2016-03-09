@@ -1,8 +1,8 @@
 ;;;============================================================================
 
-;;; File: "_num#.scm", Time-stamp: <2008-10-30 16:53:55 feeley>
+;;; File: "_num#.scm"
 
-;;; Copyright (c) 1994-2008 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -41,7 +41,7 @@
 ;;; Define type checking macros.
 
 (##define-macro (macro-index? var)
-  `(##not (##fixnum.negative? ,var)))
+  `(##not (##fxnegative? ,var)))
 
 (##define-macro (macro-index-range? var lo hi)
   `(macro-fixnum-range? ,var ,lo ,hi))
@@ -50,12 +50,12 @@
   `(macro-fixnum-range-incl? ,var ,lo ,hi))
 
 (##define-macro (macro-fixnum-range? var lo hi)
-  `(and (##not (##fixnum.< ,var ,lo))
-        (##fixnum.< ,var ,hi)))
+  `(and (##not (##fx< ,var ,lo))
+        (##fx< ,var ,hi)))
 
 (##define-macro (macro-fixnum-range-incl? var lo hi)
-  `(and (##not (##fixnum.< ,var ,lo))
-        (##not (##fixnum.< ,hi ,var))))
+  `(and (##not (##fx< ,var ,lo))
+        (##not (##fx< ,hi ,var))))
 
 (##define-macro (macro-fixnum-and-fixnum-range-incl? var lo hi)
   `(and (##fixnum? ,var)
@@ -249,10 +249,10 @@
        (##ratnum? ,obj)))
 
 (##define-macro (macro-flonum-int? obj) ;; obj must be a flonum
-  `(##flonum.integer? ,obj))
+  `(##flinteger? ,obj))
 
 (##define-macro (macro-flonum-rational? obj) ;; obj must be a flonum
-  `(##flonum.finite? ,obj))
+  `(##flfinite? ,obj))
 
 (##define-macro (macro-noncpxnum-int? obj) ;; obj must be in fixnum/bignum/ratnum/flonum
   `(if (##flonum? ,obj)
@@ -273,7 +273,7 @@
   `(and (macro-cpxnum-are-possibly-real?)
         (let ((imag (macro-cpxnum-imag ,obj)))
           (and (##flonum? imag)
-               (##flonum.zero? imag)
+               (##flzero? imag)
                (let ((real (macro-cpxnum-real ,obj)))
                  (macro-noncpxnum-rational? real))))))
 
@@ -281,20 +281,20 @@
   `(and (macro-cpxnum-are-possibly-real?)
         (let ((imag (macro-cpxnum-imag ,obj)))
           (and (##flonum? imag)
-               (##flonum.zero? imag)))))
+               (##flzero? imag)))))
 
 ;; Dispatch for number representation
 
-(##define-macro (macro-number-dispatch num err fix big rat flo cpx)
-  `(cond ((##fixnum? ,num)                                 ,fix)
-         ((##flonum? ,num)                                 ,flo)
-         ((##subtyped? ,num)
-          (let ((##s (##subtype ,num)))
-            (cond ((##fixnum.= ##s (macro-subtype-bignum)) ,big)
-                  ((##fixnum.= ##s (macro-subtype-ratnum)) ,rat)
-                  ((##fixnum.= ##s (macro-subtype-cpxnum)) ,cpx)
-                  (else                                    ,err))))
-         (else                                             ,err)))
+(macro-define-syntax macro-number-dispatch
+  (lambda (stx)
+    (syntax-case stx ()
+      ((_ num err fix big rat flo cpx)
+       #'(cond ((##fixnum? num) fix)
+               ((##flonum? num) flo)
+               ((##bignum? num) big)
+               ((##ratnum? num) rat)
+               ((##cpxnum? num) cpx)
+               (else            err))))))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -311,6 +311,8 @@
 (##define-macro (macro-inexact--pi)   -3.141592653589793)
 (##define-macro (macro-inexact-+pi/2)  1.5707963267948966)
 (##define-macro (macro-inexact--pi/2) -1.5707963267948966)
+(##define-macro (macro-inexact-+pi/4)   .7853981633974483)
+(##define-macro (macro-inexact-+3pi/4) 2.356194490192345)
 (##define-macro (macro-inexact-+inf)  (/ +1. 0.))
 (##define-macro (macro-inexact--inf)  (/ -1. 0.))
 (##define-macro (macro-inexact-+nan)  (/ 0. 0.))
@@ -345,6 +347,12 @@
 (##define-macro (macro-inexact-exp-+1/2) (exp +1/2))
 (##define-macro (macro-inexact-exp--1/2) (exp -1/2))
 (##define-macro (macro-inexact-log-2)    (log 2))
+
+;;; The next constants are for 64-bit, IEEE 754 binary arithmetic
+
+(##define-macro (macro-inexact-epsilon) 1.1102230246251565e-16)     ; (- 1 epsilon) <> 1, epsilon smallest
+(##define-macro (macro-inexact-lambda)  2.2250738585072014e-308)    ; smallest positive flonum
+(##define-macro (macro-inexact-omega)   1.7976931348623157e308)     ; largest finite flonum
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -436,15 +444,25 @@
 ;; slot 0 = numerator
 ;; slot 1 = denominator
 
-(##define-macro (macro-ratnum-make num den)
-  `(##subtype-set!
-    (##vector ,num ,den)
-    (macro-subtype-ratnum)))
+;;TODO: replace with ##ratnum-make
 
-(##define-macro (macro-ratnum-numerator r)          `(macro-slot 0 ,r))
-(##define-macro (macro-ratnum-numerator-set! r x)   `(macro-slot 0 ,r ,x))
-(##define-macro (macro-ratnum-denominator r)        `(macro-slot 1 ,r))
-(##define-macro (macro-ratnum-denominator-set! r x) `(macro-slot 1 ,r ,x))
+(macro-case-target
+
+ ((C)
+
+  (##define-macro (macro-ratnum-make num den)
+    `(##subtype-set!
+      (##vector ,num ,den)
+      (macro-subtype-ratnum)))
+
+  (##define-macro (macro-ratnum-numerator r)   `(macro-slot 0 ,r))
+  (##define-macro (macro-ratnum-denominator r) `(macro-slot 1 ,r)))
+
+ (else
+
+  (##define-macro (macro-ratnum-make num den) `(##ratnum-make ,num ,den))
+  (##define-macro (macro-ratnum-numerator r) `(##ratnum-numerator ,r))
+  (##define-macro (macro-ratnum-denominator r) `(##ratnum-denominator ,r))))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -454,20 +472,30 @@
 ;; slot 0 = real
 ;; slot 1 = imag
 
-(##define-macro (macro-cpxnum-make r i)
-  `(##subtype-set!
-    (##vector ,r ,i)
-    (macro-subtype-cpxnum)))
+;;TODO: replace with ##cpxnum-make
 
-(##define-macro (macro-cpxnum-real c)        `(macro-slot 0 ,c))
-(##define-macro (macro-cpxnum-real-set! c x) `(macro-slot 0 ,c ,x))
-(##define-macro (macro-cpxnum-imag c)        `(macro-slot 1 ,c))
-(##define-macro (macro-cpxnum-imag-set! c x) `(macro-slot 1 ,c ,x))
+(macro-case-target
+
+ ((C)
+
+  (##define-macro (macro-cpxnum-make r i)
+    `(##subtype-set!
+      (##vector ,r ,i)
+      (macro-subtype-cpxnum)))
+
+  (##define-macro (macro-cpxnum-real c) `(macro-slot 0 ,c))
+  (##define-macro (macro-cpxnum-imag c) `(macro-slot 1 ,c)))
+
+ (else
+
+  (##define-macro (macro-cpxnum-make r i) `(##cpxnum-make ,r ,i))
+  (##define-macro (macro-cpxnum-real c) `(##cpxnum-real ,c))
+  (##define-macro (macro-cpxnum-imag c) `(##cpxnum-imag ,c))))
 
 ;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 (##define-macro (macro-bignum-odd? x);;;;;;;;;;;;;;;;;;;;
-  `(##fixnum.odd? (##bignum.mdigit-ref ,x 0)))
+  `(##fxodd? (##bignum.mdigit-ref ,x 0)))
 
 (##define-macro (macro-real->inexact x)
   `(let ((x ,x))

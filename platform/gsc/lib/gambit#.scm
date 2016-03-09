@@ -2,7 +2,7 @@
 
 ;;; File: "gambit#.scm"
 
-;;; Copyright (c) 2005-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 2005-2015 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -34,6 +34,7 @@ receive
 time
 cond-expand
 define-cond-expand-feature
+letrec*
 
 ;; global variable
 default-random-source
@@ -41,6 +42,7 @@ default-random-source
 ;; procedures
 abandoned-mutex-exception?
 abort
+acosh
 address-info-family
 address-info-protocol
 address-info-socket-info
@@ -62,6 +64,8 @@ append-u64vectors
 append-u8vectors
 append-vectors
 arithmetic-shift
+asinh
+atanh
 bit-count
 bit-set?
 bitwise-and
@@ -98,6 +102,7 @@ condition-variable-specific
 condition-variable-specific-set!
 condition-variable?
 configure-command-string
+conjugate
 console-port
 continuation-capture
 continuation-graft
@@ -105,6 +110,7 @@ continuation-return
 continuation?
 copy-bit-field
 copy-file
+cosh
 cpu-time
 create-directory
 create-fifo
@@ -192,6 +198,7 @@ file-info-size
 file-info-type
 file-info?
 file-inode
+file-last-access-and-modification-times-set!
 file-last-access-time
 file-last-change-time
 file-last-modification-time
@@ -218,19 +225,26 @@ fl>
 fl>=
 flabs
 flacos
+flacosh
 flasin
+flasinh
 flatan
+flatanh
 flceiling
 flcos
+flcosh
 fldenominator
 fleven?
 flexp
+flexpm1
 flexpt
 flfinite?
 flfloor
+flilogb
 flinfinite?
 flinteger?
 fllog
+fllog1p
 flmax
 flmin
 flnan?
@@ -240,9 +254,13 @@ flodd?
 flonum?
 flpositive?
 flround
+flscalbn
 flsin
+flsinh
 flsqrt
+flsquare
 fltan
+fltanh
 fltruncate
 flzero?
 force-output
@@ -280,6 +298,7 @@ fxodd?
 fxpositive?
 fxquotient
 fxremainder
+fxsquare
 fxwrap*
 fxwrap+
 fxwrap-
@@ -288,6 +307,7 @@ fxwraparithmetic-shift
 fxwraparithmetic-shift-left
 fxwraplogical-shift-right
 fxwrapquotient
+fxwrapsquare
 fxxor
 fxzero?
 gc-report-set!
@@ -377,13 +397,15 @@ make-s8vector
 make-table
 make-thread
 make-thread-group
+make-tls-context
 make-u16vector
 make-u32vector
 make-u64vector
 make-u8vector
-make-uninterned-keyword
-make-uninterned-symbol
 make-will
+module-not-found-exception-arguments
+module-not-found-exception-procedure
+module-not-found-exception?
 multiple-c-return-exception?
 mutex-lock!
 mutex-name
@@ -592,6 +614,7 @@ sfun-conversion-exception-message
 sfun-conversion-exception-procedure
 sfun-conversion-exception?
 shell-command
+sinh
 six.!
 six.!x
 six.&x
@@ -670,6 +693,7 @@ socket-info-address
 socket-info-family
 socket-info-port-number
 socket-info?
+square
 stack-overflow-exception?
 started-thread-exception-arguments
 started-thread-exception-procedure
@@ -677,6 +701,8 @@ started-thread-exception?
 step
 step-level-set!
 string->keyword
+string->uninterned-keyword
+string->uninterned-symbol
 string-ci=?-hash
 string-shrink!
 string=?-hash
@@ -731,6 +757,7 @@ table-ref
 table-search
 table-set!
 table?
+tanh
 tcp-client-peer-socket-info
 tcp-client-self-socket-info
 tcp-server-socket-info
@@ -885,6 +912,7 @@ user-info-uid
 user-info?
 user-name
 vector-append
+vector-cas!
 vector-copy
 vector-shrink!
 void

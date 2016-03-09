@@ -1,6 +1,6 @@
 /* File: "os.h" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved. */
 
 #ifndef ___OS_H
 #define ___OS_H
@@ -31,10 +31,6 @@
 
 /* Determine if we are using POSIX or WIN32.  */
 
-#ifdef ___OS_WIN32
-#define USE_WIN32
-#endif
-
 #ifdef HAVE_WAITPID
 
 /*
@@ -43,18 +39,27 @@
 
 #define USE_POSIX
 
-#endif
+#else
 
-#ifndef USE_WIN32
-#ifndef USE_POSIX
+#ifdef ___OS_WIN32
 
 /*
- * If this is not a WIN32 or POSIX system, the OS is generic.
+ * ___OS_WIN32 is set by gambit.h when the C compiler defines _WIN32,
+ * a good indication that this is a WIN32 system.
+ */
+
+#define USE_WIN32
+
+#else
+
+/*
+ * If this is not a POSIX or WIN32 system, the OS is generic.
  */
 
 #define USE_GENERIC_OS
 
 #endif
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -74,6 +79,14 @@
  * The following basic features are used if they are available.
  */
 
+#ifdef HAVE_ENVIRON
+#define USE_environ
+#else
+#ifdef HAVE__NSGETENVIRON
+#define USE_environ
+#endif
+#endif
+
 #ifdef HAVE_GETENV
 #define USE_getenv
 #endif
@@ -86,6 +99,45 @@
 #define USE_unsetenv
 #endif
 
+#ifndef USE_WIN32
+
+/* avoid using these functions in favour of the Windows equivalents */
+
+#ifdef HAVE_REMOVE
+#define USE_remove_dir
+#define USE_remove_file
+#endif
+
+#ifdef HAVE_RENAME
+#define USE_rename
+#endif
+
+#ifdef HAVE_MKDIR
+#define USE_mkdir
+#endif
+
+#ifdef HAVE_OPENDIR
+#define USE_opendir
+#endif
+
+#if defined(HAVE_STAT64) && defined(HAVE_STRUCT_STAT64) && !(defined(__MACOSX__) || (defined(__APPLE__) && defined(__MACH__)))
+#define USE_stat
+#define ___struct_stat struct stat64
+#define ___stat stat64
+#define ___lstat lstat64
+#define ___fstat fstat64
+#else
+#ifdef HAVE_STAT
+#define USE_stat
+#define ___struct_stat struct stat
+#define ___stat stat
+#define ___lstat lstat
+#define ___fstat fstat
+#endif
+#endif
+
+#endif
+
 
 /* Operating-system specific features we require */
 
@@ -94,14 +146,6 @@
 #define USE_open
 
 /* Select features based on availability */
-
-#ifdef HAVE_ENVIRON
-#define USE_environ
-#else
-#ifdef HAVE__NSGETENVIRON
-#define USE_environ
-#endif
-#endif
 
 #ifdef HAVE_PIPE
 #define USE_pipe
@@ -143,20 +187,8 @@
 #define USE_link
 #endif
 
-#ifdef HAVE_MKDIR
-#define USE_mkdir
-#endif
-
 #ifdef HAVE_MKFIFO
 #define USE_mkfifo
-#endif
-
-#ifdef HAVE_OPENDIR
-#define USE_opendir
-#endif
-
-#ifdef HAVE_RENAME
-#define USE_rename
 #endif
 
 #ifdef HAVE_RMDIR
@@ -166,22 +198,6 @@
 #ifdef HAVE_SOCKET
 #define USE_socket
 #define USE_NETWORKING
-#endif
-
-#if defined(HAVE_STAT64) && defined(HAVE_STRUCT_STAT64) && !(defined(__MACOSX__) || (defined(__APPLE__) && defined(__MACH__)))
-#define USE_stat
-#define ___struct_stat struct stat64
-#define ___stat stat64
-#define ___lstat lstat64
-#define ___fstat fstat64
-#else
-#ifdef HAVE_STAT
-#define USE_stat
-#define ___struct_stat struct stat
-#define ___stat stat
-#define ___lstat lstat
-#define ___fstat fstat
-#endif
 #endif
 
 #define USE_NONBLOCKING_FILE_IO
@@ -209,6 +225,10 @@
 
 #ifdef HAVE_SYSCTL
 #define USE_sysctl
+#endif
+
+#ifdef HAVE_SYSLOG
+#define USE_syslog
 #endif
 
 #ifdef HAVE_TCGETSETATTR
@@ -293,7 +313,10 @@
 #define HAVE_CLOCK 1
 #define HAVE_CREATETHREAD 1
 #define HAVE_GETPROCESSTIMES 1
-#define HAVE_GETSYSTEMTIME 1
+#define HAVE_GETSYSTEMTIMEASFILETIME 1
+#define HAVE_QUERYPERFORMANCECOUNTER 1
+#define HAVE_SETFILETIME 1
+#define HAVE_TIMEBEGINPERIOD 1
 #define HAVE_GETSYSTEMINFO 1
 #define HAVE_LOADLIBRARY 1
 #define HAVE_MSGWAITFORMULTIPLEOBJECTS 1
@@ -341,13 +364,13 @@
 /* Determine which function for getting real time is most precise.  */
 
 #ifdef HAVE_CLOCK_GETTIME
-#define USE_clock_gettime
+#define USE_clock_gettime_realtime
 #else
 #ifdef HAVE_GETCLOCK
 #define USE_getclock
 #else
-#ifdef HAVE_GETSYSTEMTIME
-#define USE_GetSystemTime
+#ifdef HAVE_GETSYSTEMTIMEASFILETIME
+#define USE_GetSystemTimeAsFileTime
 #else
 #ifdef HAVE_GETTIMEOFDAY
 #define USE_gettimeofday
@@ -360,6 +383,21 @@
 #endif
 #endif
 #endif
+#endif
+#endif
+#endif
+
+
+/* Determine which function for getting monotonic time is most precise.  */
+
+#ifdef HAVE_MACH_ABSOLUTE_TIME
+#define USE_mach_absolute_time
+#else
+#ifdef HAVE_QUERYPERFORMANCECOUNTER
+#define USE_QueryPerformanceCounter
+#else
+#ifdef HAVE_CLOCK_GETTIME
+#define USE_clock_gettime_monotonic
 #endif
 #endif
 #endif
@@ -552,6 +590,59 @@
 #define USE_select
 #endif
 #endif
+#endif
+
+
+/* Determine which file time changing interface should be used.  */
+
+#ifdef HAVE_UTIMES
+#define USE_utimes
+#else
+#ifdef HAVE_SETFILETIME
+#define USE_SetFileTime
+#endif
+#endif
+
+
+#ifdef USE_utimes
+#undef USE_timeval
+#define USE_timeval
+#endif
+
+
+#ifdef USE_ppoll
+#undef USE_timespec
+#define USE_timespec
+#endif
+
+
+#ifdef USE_poll
+#undef USE_timeval
+#define USE_timeval
+#endif
+
+
+#ifdef USE_select
+#undef USE_timeval
+#define USE_timeval
+#endif
+
+
+#ifdef USE_SetFileTime
+#undef USE_FILETIME
+#define USE_FILETIME
+#endif
+
+
+#ifdef USE_GetSystemTimeAsFileTime
+#undef USE_FILETIME
+#define USE_FILETIME
+#endif
+
+
+#ifdef USE_GetFileAttributesEx
+#undef USE_FILETIME
+#define USE_FILETIME
 #endif
 
 
@@ -748,9 +839,19 @@ ___END_C_LINKAGE
 #define INCLUDE_sys_times_h
 #endif
 
-#ifdef USE_clock_gettime
+#ifdef USE_clock_gettime_realtime
 #undef INCLUDE_time_h
 #define INCLUDE_time_h
+#endif
+
+#ifdef USE_clock_gettime_monotonic
+#undef INCLUDE_time_h
+#define INCLUDE_time_h
+#endif
+
+#ifdef USE_mach_absolute_time
+#undef INCLUDE_mach_mach_time_h
+#define INCLUDE_mach_mach_time_h
 #endif
 
 #ifdef USE_getclock
@@ -912,6 +1013,19 @@ ___END_C_LINKAGE
 #define INCLUDE_netdb_h
 #endif
 
+#ifdef USE_OPENSSL
+#undef INCLUDE_openssl_ssl_h
+#define INCLUDE_openssl_ssl_h
+#undef INCLUDE_openssl_dh_h
+#define INCLUDE_openssl_dh_h
+#undef INCLUDE_openssl_ecdh_h
+#define INCLUDE_openssl_ecdh_h
+#undef INCLUDE_openssl_rand_h
+#define INCLUDE_openssl_rand_h
+#undef INCLUDE_openssl_err_h
+#define INCLUDE_openssl_err_h
+#endif
+
 #ifdef USE_getnetbyname
 #undef INCLUDE_sys_socket_h
 #define INCLUDE_sys_socket_h
@@ -924,6 +1038,16 @@ ___END_C_LINKAGE
 #ifdef USE_getgrnam
 #undef INCLUDE_grp_h
 #define INCLUDE_grp_h
+#endif
+
+#ifdef USE_timeval
+#undef INCLUDE_sys_time_h
+#define INCLUDE_sys_time_h
+#endif
+
+#ifdef USE_timespec
+#undef INCLUDE_time_h
+#define INCLUDE_time_h
 #endif
 
 #ifdef USE_fullpath
@@ -987,6 +1111,11 @@ ___END_C_LINKAGE
 #define INCLUDE_sys_types_h
 #undef INCLUDE_sys_sysctl_h
 #define INCLUDE_sys_sysctl_h
+#endif
+
+#ifdef USE_syslog
+#undef INCLUDE_syslog_h
+#define INCLUDE_syslog_h
 #endif
 
 #ifdef USE_tcgetsetattr
@@ -1105,6 +1234,12 @@ ___END_C_LINKAGE
 #endif
 #endif
 
+#ifdef INCLUDE_mach_mach_time_h
+#ifdef HAVE_MACH_MACH_TIME_H
+#include <mach/mach_time.h>
+#endif
+#endif
+
 #ifdef INCLUDE_sys_resource_h
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -1114,7 +1249,9 @@ ___END_C_LINKAGE
 #ifdef INCLUDE_sys_stat_h
 #ifdef HAVE_SYS_STAT_H
 /* the following defines are useful on Linux to map stat to stat64 */
+#undef __USE_LARGEFILE64
 #define __USE_LARGEFILE64
+#undef __USE_FILE_OFFSET64
 #define __USE_FILE_OFFSET64
 #include <sys/stat.h>
 #endif
@@ -1129,6 +1266,12 @@ ___END_C_LINKAGE
 #ifdef INCLUDE_sys_mman_h
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
+#endif
+#endif
+
+#ifdef INCLUDE_syslog_h
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
 #endif
 #endif
 
@@ -1466,6 +1609,32 @@ typedef unsigned int fpu_control_t __attribute__ ((__mode__ (__HI__)));
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#endif
+
+#ifdef INCLUDE_openssl_ssl_h
+#include <openssl/ssl.h>
+#endif
+
+#ifdef INCLUDE_openssl_dh_h
+#ifndef OPENSSL_NO_DH
+#include <openssl/dh.h>
+#endif
+#endif
+
+#ifdef INCLUDE_openssl_ecdh_h
+#if OPENSSL_VERSION_NUMBER >= 0x0090800fL
+#ifndef OPENSSL_NO_ECDH
+#include <openssl/ecdh.h>
+#endif
+#endif
+#endif
+
+#ifdef INCLUDE_openssl_rand_h
+#include <openssl/rand.h>
+#endif
+
+#ifdef INCLUDE_openssl_err_h
+#include <openssl/err.h>
 #endif
 
 /*

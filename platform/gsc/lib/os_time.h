@@ -1,6 +1,6 @@
 /* File: "os_time.h" */
 
-/* Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved. */
+/* Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved. */
 
 #ifndef ___OS_TIME_H
 #define ___OS_TIME_H
@@ -20,11 +20,6 @@
 (DAYS_UNTIL_JAN_1_2000(year) - DAYS_UNTIL_JAN_1_2000(TIME_REFERENCE_POINT))
 
 #define JAN_1(year)(DAYS_UNTIL_TIME_REFERENCE_POINT(year) * 24 * 60 * 60)
-
-#define FILETIME_TO_SECONDS(ft) \
-(((ft).dwHighDateTime * 4294967296.0 + (ft).dwLowDateTime) / 1.0e7)
-
-#define FILETIME_TO_TIME(ft) (FILETIME_TO_SECONDS(ft) - JAN_1(1601LL))
 
 
 /*---------------------------------------------------------------------------*/
@@ -172,9 +167,12 @@ extern void ___time_get_current_time
    ___P((___time *tim),
         ());
 
-extern void ___time_to_seconds
-   ___P((___time tim,
-         ___F64 *seconds),
+extern ___U64 ___time_get_monotonic_time ___PVOID;
+
+extern ___U64 ___time_get_monotonic_time_frequency ___PVOID;
+
+extern ___F64 ___time_to_seconds
+   ___P((___time tim),
         ());
 
 extern void ___time_from_seconds
@@ -205,9 +203,14 @@ extern void ___absolute_time_sleep
 
 #endif
 
-#ifdef USE_select
+#ifdef USE_timeval
 
-extern void ___absolute_time_to_nonnegative_timeval
+extern void ___absolute_time_to_timeval
+   ___P((___time tim,
+         struct timeval *tv),
+        ());
+
+extern void ___absolute_time_to_nonnegative_timeval_maybe_NULL
    ___P((___time tim,
          struct timeval **tv),
         ());
@@ -219,6 +222,24 @@ extern void ___absolute_time_to_nonnegative_timeval
 extern void ___absolute_time_to_nonnegative_msecs
    ___P((___time tim,
          DWORD *ms),
+        ());
+
+#endif
+
+#ifdef USE_FILETIME
+
+extern void ___time_to_FILETIME
+   ___P((___time tim,
+         FILETIME *ft),
+        ());
+
+extern void ___time_from_FILETIME
+   ___P((___time *tim,
+         FILETIME ft),
+        ());
+
+extern ___F64 ___FILETIME_to_seconds
+   ___P((FILETIME ft),
         ());
 
 #endif

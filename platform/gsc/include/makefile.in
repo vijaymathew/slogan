@@ -1,6 +1,6 @@
-# makefile for Gambit-C include directory.
+# makefile for Gambit include directory.
 
-# Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+# Copyright (c) 1994-2015 by Marc Feeley, All Rights Reserved.
 
 herefromroot = include
 rootfromhere = ..
@@ -28,12 +28,15 @@ FLAGS_EXE = @FLAGS_EXE_MF@
 DEFS = @DEFS@
 LIBS = @LIBS@
 
-GAMBCLIB_DEFS = @GAMBCLIB_DEFS_MF@
+GAMBITLIB_DEFS = @GAMBITLIB_DEFS_MF@
 LIB_PREFIX = @LIB_PREFIX@
+LIB_VERSION_SUFFIX = @LIB_VERSION_SUFFIX@
+LIB_MAJOR_VERSION_SUFFIX = @LIB_MAJOR_VERSION_SUFFIX@
+
 LIB_EXTENSION = @LIB_EXTENSION@
-GAMBCLIB = @GAMBCLIB@
-GAMBCGSCLIB = @GAMBCGSCLIB@
-GAMBCGSILIB = @GAMBCGSILIB@
+GAMBITLIB = @GAMBITLIB@
+GAMBITGSCLIB = @GAMBITGSCLIB@
+GAMBITGSILIB = @GAMBITGSILIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_LIB = @INSTALL_LIB@
@@ -74,7 +77,7 @@ DISTFILES = $(RCFILES) $(GENDISTFILES)
 all:
 
 all-pre:
-	major=`echo $(PACKAGE_VERSION) | sed -e "s/v//g" -e "s/\.[^.]*\.[^.]*//g"`; \
+	@major=`echo $(PACKAGE_VERSION) | sed -e "s/v//g" -e "s/\.[^.]*\.[^.]*//g"`; \
 	minor=`echo $(PACKAGE_VERSION) | sed -e "s/v[^.]*\.//g" -e "s/\.[^.]*//g"`; \
 	revision=`echo $(PACKAGE_VERSION) | sed -e "s/v[^.]*\.[^.]*\.//g" -e "s///g"`; \
 	version_num=`eval expr "\( 100000 \\* $$major \) + \( 1000 \\* $$minor \) + $$revision"`; \
@@ -94,52 +97,52 @@ bootstrap-post:
 install-pre:
 
 install-post: all
-	c_includedir=$(DESTDIR)$(prefix)/include; \
-	i_includedir=$(DESTDIR)$(includedir); \
-	t_includedir=$$i_includedir; \
+	c_includedir="$(DESTDIR)$(prefix)/include"; \
+	i_includedir="$(DESTDIR)$(includedir)"; \
+	t_includedir="$$i_includedir"; \
 	major=`echo $(PACKAGE_VERSION) | sed -e "s/v//g" -e "s/\.[^.]*\.[^.]*//g"`; \
 	minor=`echo $(PACKAGE_VERSION) | sed -e "s/v[^.]*\.//g" -e "s/\.[^.]*//g"`; \
 	revision=`echo $(PACKAGE_VERSION) | sed -e "s/v[^.]*\.[^.]*\.//g" -e "s///g"`; \
 	version_num=`eval expr "\( 100000 \\* $$major \) + \( 1000 \\* $$minor \) + $$revision"`; \
-	$(srcdirpfx)$(rootfromhere)/mkidirs $$i_includedir; \
+	$(srcdirpfx)$(rootfromhere)/mkidirs "$$i_includedir"; \
 	if test "@ENABLE_SYMLINKS@" = "yes"; then \
-	  $(srcdirpfx)$(rootfromhere)/mkidirs $$c_includedir; \
-	  t_includedir=$$c_includedir; \
+	  $(srcdirpfx)$(rootfromhere)/mkidirs "$$c_includedir"; \
+	  t_includedir="$$c_includedir"; \
 	fi; \
 	for file in gambit.h gambit-not$$version_num.h; do \
-	  $(INSTALL_DATA) $(srcdirpfx)$$file $$t_includedir/$$file; \
+	  $(INSTALL_DATA) "$(srcdirpfx)$$file" "$$t_includedir/$$file"; \
 	done; \
 	if test "$$t_includedir" != "$$i_includedir"; then \
 	  r_includedir=`$(rootfromhere)/relpath "$$t_includedir" "$$i_includedir" @ENABLE_MULTIPLE_VERSIONS@`; \
 	  for file in gambit.h gambit-not$$version_num.h; do \
-	    (cd $$i_includedir && $(LN_S) $$r_includedir$$file $$file); \
+	    (cd "$$i_includedir" && $(LN_S) "$$r_includedir$$file" "$$file"); \
 	  done; \
 	fi
 
 uninstall-pre:
 
 uninstall-post:
-	c_includedir=$(DESTDIR)$(prefix)/include; \
-	i_includedir=$(DESTDIR)$(includedir); \
-	t_includedir=$$i_includedir; \
+	c_includedir="$(DESTDIR)$(prefix)/include"; \
+	i_includedir="$(DESTDIR)$(includedir)"; \
+	t_includedir="$$i_includedir"; \
 	major=`echo $(PACKAGE_VERSION) | sed -e "s/v//g" -e "s/\.[^.]*\.[^.]*//g"`; \
 	minor=`echo $(PACKAGE_VERSION) | sed -e "s/v[^.]*\.//g" -e "s/\.[^.]*//g"`; \
 	revision=`echo $(PACKAGE_VERSION) | sed -e "s/v[^.]*\.[^.]*\.//g" -e "s///g"`; \
 	version_num=`eval expr "\( 100000 \\* $$major \) + \( 1000 \\* $$minor \) + $$revision"`; \
 	if test "@ENABLE_SYMLINKS@" = "yes"; then \
-	  t_includedir=$$c_includedir; \
+	  t_includedir="$$c_includedir"; \
 	fi; \
 	for file in gambit.h gambit-not$$version_num.h; do \
-	  rm -f $$t_includedir/$$file; \
+	  rm -f "$$t_includedir/$$file"; \
 	done; \
 	if test "$$t_includedir" != "$$i_includedir"; then \
 	  for file in gambit.h gambit-not$$version_num.h; do \
-	    rm -f $$i_includedir/$$file; \
+	    rm -f "$$i_includedir/$$file"; \
 	  done; \
 	fi; \
-	rmdir $$t_includedir 2> /dev/null; \
+	rmdir "$$t_includedir" 2> /dev/null; \
 	if test "$$t_includedir" != "$$i_includedir"; then \
-	  rmdir $$i_includedir 2> /dev/null; \
+	  rmdir "$$i_includedir" 2> /dev/null; \
 	fi
 
 select-gen-for-commit-pre:
@@ -284,7 +287,7 @@ dist-devel-recursive: dist-devel-pre
 stamp:
 	rm -f stamp2.h
 	eval `date -u '+stamp_ymd=%Y%m%d stamp_hms=%H%M%S'`; \
-	sed -e "s/#define ___STAMP_YMD [0-9][0-9]*/#define ___STAMP_YMD `expr $$stamp_ymd`/" -e "s/#define ___STAMP_HMS [0-9][0-9]*/#define ___STAMP_HMS `expr $$stamp_hms`/" stamp.h > stamp2.h
+	sed -e "s/#define ___STAMP_YMD [0-9][0-9]*/#define ___STAMP_YMD `expr 0 + $$stamp_ymd`/" -e "s/#define ___STAMP_HMS [0-9][0-9]*/#define ___STAMP_HMS `expr 0 + $$stamp_hms`/" $(srcdirpfx)stamp.h > stamp2.h
 	mv stamp2.h stamp.h
 	$(RC) add stamp.h
 

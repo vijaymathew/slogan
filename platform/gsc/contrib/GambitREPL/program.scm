@@ -2,7 +2,7 @@
 
 ;;; File: "program.scm"
 
-;;; Copyright (c) 2011-2012 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 2011-2015 by Marc Feeley, All Rights Reserved.
 
 ;; This program implements the "Gambit REPL" application for iOS
 ;; devices.  It is a simple development environment for Scheme.  The
@@ -26,9 +26,12 @@
 (##include "script#.scm")
 (##include "repo#.scm")
 (##include "help#.scm")
+(##include "emacs#.scm")
 
 (##namespace (""
               splash
+              set-page
+              set-page-content
               repl
               repl-eval
               repl-server
@@ -40,6 +43,7 @@
               store-script
               fetch-script
               view-script
+              emacs
              ))
 
 (declare
@@ -55,10 +59,13 @@
 ;; Add cond-expand features to identify Gambit-REPL.
 
 (set! ##cond-expand-features
-      (cons 'Gambit-REPL
-            (cons 'Gambit-REPL-iOS
-                  (cons 'Gambit-REPL-v4.0
+      (cons 'GambitREPL
+            (cons 'GambitREPL-iOS
+                  (cons 'GambitREPL-v4.0
                         ##cond-expand-features))))
+
+(define-runtime-syntax |\u03bb| ;; greek lowercase lambda
+  (##make-alias-syntax '##lambda))
 
 ;;;----------------------------------------------------------------------------
 
@@ -69,20 +76,63 @@
 <html>
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.25, maximum-scale=1.6">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=0.25, maximum-scale=1.6">
 
 <script>
 
-function gestureStart() {
+function handle_gestureStart() {
   var metas = document.getElementsByTagName('meta');
   for (var i=0; i<metas.length; i++) {
-    if (metas[i].name === "viewport") {
-      metas[i].content = "width=device-width, initial-scale=1.0, minimum-scale=0.25, maximum-scale=1.6";
+    if (metas[i].name === 'viewport') {
+      metas[i].content = 'width=device-width, height=device-height, initial-scale=1.0, minimum-scale=0.25, maximum-scale=1.6';
     }
   }
 }
 
-document.addEventListener("gesturestart", gestureStart, false);
+document.addEventListener('gesturestart', handle_gestureStart, false);
+
+function URL_encode(x) {
+  return encodeURIComponent(x);
+}
+
+function send_scheme_request(uri) {
+  window.location = encodeURI(uri);
+}
+
+var last_key_esc = false;
+
+function add_text_input(input) {
+  var ev = document.createEvent('TextEvent');
+  ev.initTextEvent('textInput', true, true, window, input);
+  document.activeElement.dispatchEvent(ev);
+  last_key_esc = false;
+}
+
+function add_key_input(input) {
+  if (input.length === 1) {
+    if (last_key_esc) {
+      if (input === '\015' || input === '\012')
+        cmd_return();
+      last_key_esc = false;
+    } else if (input === '\033') {
+      last_key_esc = true;
+    } else if (input.charCodeAt(0) >= 32) {
+      add_text_input(input);
+    }
+  } else if (input === 'M\015') {
+    cmd_return();
+    last_key_esc = false;
+  }
+}
+
+function cmd_return() {
+  var script_id = document.activeElement.id;
+  var index = script_id.replace(/^script/, '');
+  if (index !== script_id) {
+    last_focus_id = script_id;
+    send_scheme_event_with_scripts('run', index);
+  }
+}
 
 </script>
 
@@ -272,6 +322,17 @@ common-html-header-end
 
 <body class="splash">
 
+<script language="JavaScript">
+
+function send_scheme_event(e) {
+  send_scheme_request("event:" + e);
+}
+
+</script>
+
+<br/>
+<br/>
+
 <p>
 Welcome to <strong>
 splash-page-content-part1-end
@@ -305,7 +366,6 @@ In the REPL view, enter your command after the <strong><code>&gt;</code></strong
 </code>
 </strong>
 </p>
-
 </body>
 </html>
 
@@ -326,8 +386,25 @@ splash-page-content-part2-end
   (set-navigation -1)
   (set-event-handler
    (lambda (old-event-handler)
-     generic-event-handler))
+     (lambda (event)
+       (cond ((equal? event "event:foo")
+              (eval-js-in-webView
+               0
+               (string-append "alert('handler')")))
+             (else
+              (generic-event-handler event))))))
   (show-view 0))
+
+(define (set-page content handler #!optional (enable-scaling #f) (mime-type "text/html"))
+  (set-view-content 0 content #f enable-scaling mime-type)
+  (set-navigation -1)
+  (set-event-handler
+   (lambda (old-event-handler)
+     handler))
+  (show-view 0))
+
+(define (set-page-content content #!optional (enable-scaling #f) (mime-type "text/html"))
+  (set-page content generic-event-handler enable-scaling mime-type))
 
 
 ;;;----------------------------------------------------------------------------
@@ -361,12 +438,16 @@ splash-page-content-part2-end
                ((equal? event "event:r5rs")
                 (show-help-document r5rs-help-document #f))
 
-               ((equal? event "event:gambit-c")
-                (show-help-document gambit-c-help-document #f))
+               ((equal? event "event:gambit")
+                (show-help-document gambit-help-document #f))
 
                ((equal? event "cancel")
                 (hide-cancelButton)
                 (show-help-document main-help-document #f))
+
+               ((has-prefix? event "event:browse:") =>
+                (lambda (rest)
+                  (open-URL rest)))
 
                ((wiki-event-handler event))
 
@@ -400,7 +481,7 @@ splash-page-content-part2-end
   (set-event-handler
    (lambda (old-event-handler)
      generic-event-handler))
-  (show-textView 0))
+  (show-textView 0 #t #t))
 
 (define (repl-eval str)
   (if (string? str)
@@ -414,7 +495,9 @@ splash-page-content-part2-end
 
 (set! ##primordial-exception-handler-hook
       (lambda (exc other-handler)
-        (repl) ;; switch to REPL view on errors
+        (if (##eq? (##thread-repl-channel-get! (macro-primordial-thread))
+                   (##thread-repl-channel-get! (macro-current-thread)))
+            (repl)) ;; switch to REPL view on errors
         (##repl-exception-handler-hook exc other-handler)))
 
 
@@ -431,72 +514,86 @@ edit-page-content-part1-end
 
 (define edit-page-content-part2 #<<edit-page-content-part2-end
 
-function send_event(e)
-{ window.location = "event:" + e; }
+function send_scheme_event(e) {
+  send_scheme_request("event:" + e);
+}
 
-function send_event_with_scripts(e,index)
-{ window.location = event_with_scripts(e,index); }
+function send_scheme_event_with_scripts(e, index) {
+  send_scheme_request(event_with_scripts(e, index));
+}
 
-function event_with_scripts(e,index)
-{
-  var strings = ["event:"+e,index];
-  for (var i = 0; i<nb_scripts; i++)
-  {
-    strings.push(encodeURIComponent(document.getElementById("script"+i).value));
+function event_with_scripts(e, index) {
+  var strings = ["event:"+e, index];
+  for (var i = 0; i<nb_scripts; i++) {
+    strings.push(URL_encode(document.getElementById("script"+i).value));
   }
   strings.push("");
   return strings.join(":");
 }
 
-function click_new()
-{ send_event_with_scripts("new",0); }
+function click_new() {
+  send_scheme_event_with_scripts("new", 0);
+}
 
-function click_run(index)
-{ send_event_with_scripts("run",index); }
+function click_run(index) {
+  send_scheme_event_with_scripts("run", index);
+}
 
-function click_save(index)
-{ var script = document.getElementById("script"+index).value;
+function click_save(index) {
+  var script = document.getElementById("script"+index).value;
   var lines = script.split(/\n/);
   var line1 = lines[0];
   var name = line1.replace(/^;;; /,"");
   var event = (/^[^\n]*\s*$/.exec(script)) ? "remove" : "save";
-  if (name.length < line1.length && /^[A-Za-z][-\.A-Za-z0-9]*\.scm$/.exec(name))
-  {
-    if (confirm((event==="remove")?('Are you sure you want to remove\n\n'+name+'\n\nfrom the Documents folder?'):('Are you sure you want to save\n\n'+name+'\n\nto the Documents folder?')))
-      send_event_with_scripts(event,index);
+  if (name.length < line1.length && /^(~\/|)[A-Za-z][-\.A-Za-z0-9]*\.scm$/.exec(name)) {
+    if (confirm((event==="remove")?('Are you sure you want to remove\n\n'+name+'\n\nfrom the Documents folder?'):('Are you sure you want to save\n\n'+name+'\n\nto the Documents folder?'))) {
+      send_scheme_event_with_scripts(event, index);
+    }
   }
 
 edit-page-content-part2-end
 )
 
 (define edit-page-content-part3 #<<edit-page-content-part3-end
-  else if (name.length < line1.length && /^[A-Z][-\. A-Za-z0-9]*:[-\. A-Za-z0-9:]*\.scm$/.exec(name))
-  {
-    if (confirm((event==="remove")?('Are you sure you want to remove\n\n'+name+'\n\nfrom the Gambit wiki?'):('Are you sure you want to save\n\n'+name+'\n\nto the Gambit wiki? It will replace the current script by that name if it exists. Note that previous versions of the script will still be available in the Gambit wiki page history.')))
-      send_event_with_scripts(event,index);
+  else if (name.length < line1.length && /^[A-Z][-\. A-Za-z0-9]*:[-\. A-Za-z0-9:]*\.scm$/.exec(name)) {
+    if (confirm((event==="remove")?('Are you sure you want to remove\n\n'+name+'\n\nfrom the Gambit wiki?'):('Are you sure you want to save\n\n'+name+'\n\nto the Gambit wiki? It will replace the current script by that name if it exists. Note that previous versions of the script will still be available in the Gambit wiki page history.'))) {
+      send_scheme_event_with_scripts(event, index);
+    }
   }
 
 edit-page-content-part3-end
 )
 
 (define edit-page-content-part4 #<<edit-page-content-part4-end
-  else
-  {
-    alert("The script cannot be saved because it is improperly named.  The first line must be the name of the script preceded by three semicolons and a space, for example:\n\n;;; test.scm\n\nMoreover, the name must start with a letter, and end in '.scm', and contain only letters, digits, '.', and '-'.");
+  else {
+    alert("The script cannot be saved because it is improperly named.  The first line must be the name of the script preceded by three semicolons and a space, for example:\n\n;;; ~/test.scm\n\nMoreover, the name must start with '~/' followed by a letter, and end in '.scm', and contain only letters, digits, '.', and '-'.");
   }
 }
 
-function click_delete(index)
-{ if (confirm('Are you sure you want to delete this script from the Edit view?'))
-    send_event_with_scripts("delete",index);
+function click_delete(index) {
+  if (confirm('Are you sure you want to delete this script from the Edit view?')) {
+    send_scheme_event_with_scripts("delete", index);
+  }
 }
 
-function lose_focus()
-{ return event_with_scripts("exit",0); }
+var last_focus_id = "script0";
+
+function gain_focus() {
+  if (last_focus_id !== null) {
+    document.getElementById(last_focus_id).focus();
+  }
+}
+
+function lose_focus() {
+  last_focus_id = document.activeElement.id;
+  return event_with_scripts("exit",0);
+}
 
 </script>
 
 <body class="editor">
+
+<br/>
 
 <span class="editorhead">
 <div class="button3" onClick="click_new();">+</div>
@@ -527,7 +624,7 @@ edit-page-content-part5-end
     (list "<br/>\n"
           "<textarea class=\"script\" id=\"script" index "\" rows="
           edit-page-script-rows
-          ">"
+          " autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\">"
           (html-escape script)
           "</textarea>\n"
           "<center>\n"
@@ -586,7 +683,7 @@ edit-page-content-part5-end
        (handle-edit-event
         event
         (lambda ()
-          (handle-navigation-event
+          (generic-event-handler
            event
            (lambda ()
              (let ((new-event (eval-js-in-webView 3 "lose_focus()")))
@@ -595,7 +692,8 @@ edit-page-content-part5-end
                      new-event
                      (lambda ()
                        #f)))))))))))
-  (show-view 3))
+  (show-view 3 #t)
+  (eval-js-in-webView 3 "gain_focus()"))
 
 (define (get-index-and-update-script-db rest)
   (let ((x (get-event-parameters rest)))
@@ -743,11 +841,34 @@ edit-page-content-part5-end
            "/index.php/Special:RequestAccount"))
          #t)))
 
-(define (generic-event-handler event)
+(define (handle-icloud-event event)
+  (cond ((equal? event "iCloudAccountAvailabilityChanged")
+         (iCloudAccountAvailabilityChanged)
+         #t)
+        ((has-prefix? event "iCloudContainerDirChanged:") =>
+         (lambda (rest)
+           (iCloudContainerDirChanged rest)
+           #t))
+        (else
+         #f)))
+
+(define (handle-soft-keyboard-event event)
+  (and (or (equal? event "soft-keyboard-show")
+           (equal? event "soft-keyboard-hide"))
+       (begin
+         (popup-alert (string-append CFBundleName ".app")
+                      "The keyboard has changed"
+                      "OK"
+                      #f)
+         #t)))
+
+(define (generic-event-handler event #!optional (lose-focus-handler (lambda () #f)))
   (or (wiki-event-handler event)
       (handle-app-become-active-event event)
+      (handle-icloud-event event)
+      (handle-soft-keyboard-event event)
       (handle-create-account-event event)
-      (handle-navigation-event event (lambda () #f))))
+      (handle-navigation-event event lose-focus-handler)))
 
 (define run-script-event #f)
 (set! run-script-event
@@ -789,7 +910,7 @@ edit-page-content-part5-end
         (wiki-script-remove name)
         (back))
       ""
-      (list "<h3>Removing script</h3>" (html-escape name) "<br/>")
+      (list "<br/><h3>Removing script</h3>" (html-escape name) "<br/>")
       "The script has been removed from the Gambit wiki"
       "Could not remove script!"
       back))
@@ -812,7 +933,7 @@ edit-page-content-part5-end
         (wiki-script-store name script)
         (back))
       ""
-      (list "<h3>Storing script</h3>" (html-escape name) "<br/>")
+      (list "<br/><h3>Storing script</h3>" (html-escape name) "<br/>")
       "The script has been stored on the Gambit wiki"
       "Could not store script!"
       back))
@@ -840,7 +961,7 @@ edit-page-content-part5-end
           (set-edit-view)
           (back)))
       ""
-      (list "<h3>Fetching script</h3>" (html-escape name) "<br/>")
+      (list "<br/><h3>Fetching script</h3>" (html-escape name) "<br/>")
       "The script has been fetched from the Gambit wiki"
       "Could not fetch script!"
       back))
@@ -895,13 +1016,15 @@ edit-page-content-part5-end
 
 <body class="repo">
 
+<br/>
+
 repo-page-content-part1-end
 )
 
 (define repo-page-content-part2 #<<repo-page-content-part2-end
 
 <div class="repohead">
-<div class="button1" onClick="window.location='event:back';">&#9664;</div>
+<div class="button1" onClick="send_scheme_request('event:back');">&#9664;</div>
 </div>
 
 repo-page-content-part2-end
@@ -943,15 +1066,15 @@ repo-page-content-part5-end
       (list "<tr>"
             (if (pair? subtree)
                 (list "<td class=\"repoget\"></td>\n"
-                      "<td><div class=\"button1\" onClick=\"window.location='event:view:"
+                      "<td><div class=\"button1\" onClick=\"send_scheme_request('event:view:"
                       (url-encode name)
-                      "';\">&#9654;</div></td>\n")
-                (list "<td class=\"repoget\"><div class=\"button0\" onClick=\"window.location='event:get:"
+                      "');\">&#9654;</div></td>\n")
+                (list "<td class=\"repoget\"><div class=\"button0\" onClick=\"send_scheme_request('event:get:"
                       (url-encode name)
-                      "';\">Get</div></td>\n"
-                      "<td><div class=\"button1\" onClick=\"window.location='event:view:"
+                      "');\">Get</div></td>\n"
+                      "<td><div class=\"button1\" onClick=\"send_scheme_request('event:view:"
                       (url-encode name)
-                      "';\">View</div></td>\n"))
+                      "');\">View</div></td>\n"))
             "<td class=\"repoentry\">"
             (html-escape name)
             "</td>\n"
@@ -985,7 +1108,7 @@ repo-page-content-part5-end
          (let ((scripts (wiki-script-list)))
            (repo-browse #f (script-list->tree scripts))))
        repo-page-content-part3
-       (list "<h3>Accessing Gambit wiki</h3><br/>")
+       (list "<br/><h3>Accessing Gambit wiki</h3><br/>")
        #f
        "Could not get list of scripts!"
        repl)))
@@ -1063,7 +1186,7 @@ repo-page-content-part5-end
          repo-page-content-part5)
    #f
    #t)
-  (show-view 1))
+  (show-view 1 #t))
 
 (define (view-script name)
   (open-URL
@@ -1127,7 +1250,7 @@ repo-transaction-page-content-part3-end
     (let ((content (make-repo-transaction-page header msg spinner-html)))
       (set-navigation 1)
       (set-view-content 1 content #f #t)
-      (show-view 1))
+      (show-view 1 #t))
 
     (guard-repo-transaction
      (lambda ()
@@ -1228,10 +1351,13 @@ repo-transaction-page-content-part3-end
 
 <body class="login">
 
-<center>
-<h1>Log in to Gambit wiki</h1>
+<br/>
+<br/>
 
-<form onSubmit="window.location='event:login:'+encodeURIComponent(document.getElementById('username').value)+':'+encodeURIComponent(document.getElementById('password').value)+':'+encodeURIComponent(document.getElementById('rememberpass').value)+':'; return false;">
+<center>
+<h2>Log in to Gambit wiki</h2>
+
+<form onSubmit="send_scheme_request('event:login:'+URL_encode(document.getElementById('username').value)+':'+URL_encode(document.getElementById('password').value)+':'+URL_encode(document.getElementById('rememberpass').value)+':'); return false;">
 
 <table>
 <tr>
@@ -1241,7 +1367,7 @@ login-page-content-part1-end
 )
 
 (define login-page-content-part2 #<<login-page-content-part2-end
-" /></td>
+" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus/></td>
 </tr><tr>
   <td class="label">Password:</td>
   <td class="login"><input class="login" id="password" type="password" value="
@@ -1249,7 +1375,7 @@ login-page-content-part2-end
 )
 
 (define login-page-content-part3 #<<login-page-content-part3-end
-" /></td>
+" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/></td>
 <tr>
   <td></td>
   <td><input type="checkbox" id="rememberpass" 
@@ -1265,7 +1391,7 @@ login-page-content-part3-end
 
 <input type="submit" class="bigbutton" value="Log in" />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="button" class="bigbutton" value="Cancel" onClick="window.location='event:cancel';" />
+<input type="button" class="bigbutton" value="Cancel" onClick="send_scheme_request('event:cancel');" />
 
 </form>
 
@@ -1281,7 +1407,7 @@ login-page-content-part4-end
 
 <center>
 If you don't have an account, you should<br/>
-<div class="widebutton" onClick="window.location='event:create-account';">Create an account</div><br/>
+<div class="widebutton" onClick="send_scheme_request('event:create-account');">Create an account</div><br/>
 It's free!
 </center>
 
@@ -1342,7 +1468,7 @@ login-page-content-part5-end
              (else
               (generic-event-handler event))))))
   (set-view-content 1 page #f #t)
-  (show-view 1))
+  (show-view 1 #t))
 
 (define (attempt-login success fail username password remember-pass?)
 
@@ -1410,20 +1536,42 @@ login-page-content-part5-end
 
 ;;;----------------------------------------------------------------------------
 
-;; Key handler.
+;; Emacs.
 
-(set! handle-key
-  (lambda (str)
-    (if (char=? #\F (string-ref str 0))
-        (let ((script (get-script-by-name str)))
-          (if script
-              (run-script str script)
-              (let ((n (string->number (substring str 1 (string-length str)))))
-                (cond ((eqv? n 12)
-                       (##thread-interrupt! (macro-primordial-thread)))
-                      ((and n (<= n 10))
-                       (add-input-to-textView 0 (number->string (modulo n 10))))))))
-        (add-input-to-textView 0 str))))
+(##namespace ("" emacs))
+
+(define (emacs . files-to-visit)
+  (apply emacs#emacs files-to-visit))
+
+;;;----------------------------------------------------------------------------
+
+;; Input handlers.
+
+(set! handle-text-input
+      (lambda (str)
+        (add-text-input-to-currentView str)))
+
+(set! handle-key-input
+      (lambda (str)
+        (cond ((char=? #\F (string-ref str 0))
+               (let ((script (get-script-by-name str)))
+                 (if script
+                     (run-script str script)
+                     (cond ((string=? str "F12")
+                            (##thread-interrupt! (macro-primordial-thread)))
+                           (else
+                            (add-key-input-to-currentView str))))))
+              ((and (char=? #\M (string-ref str 0))
+                    (not (equal? CFBundleDisplayName "Not Emacs")))
+               (let ((n (string->number (substring str 1 (string-length str)))))
+                 (cond (n
+                        (if (> n 0)
+                            (send-event (string-append "NAV" (number->string (- n 1))))
+                            (toggle-toolbar)))
+                       (else
+                        (add-key-input-to-currentView str)))))
+              (else
+               (add-key-input-to-currentView str)))))
 
 
 ;;;----------------------------------------------------------------------------
@@ -1445,29 +1593,34 @@ login-page-content-part5-end
 
    (set-navigation-bar '("REPL" "Wiki" "Help" "Edit"))
 
+   (if (not (equal? CFBundleDisplayName "Gambit REPL"))
+       (repo-enable!))
+
    (set-splash-view) ;; init the splash view
    (set-edit-view) ;; init the edit view
 
-   (if (equal? CFBundleDisplayName "Gambit REPL dev")
-       (repo-enable!))
+   (add-output-to-textView 0 "\n\n\n") ;; leave space at top of REPL view
 
-   (if (get-pref "run-main-script")
+   (if (equal? CFBundleDisplayName "Not Emacs")
+
+       (emacs)
 
        (begin
-         (set-pref "run-main-script" #f)
-         (let* ((main-script-name "main")
-                (main-script (get-script-by-name main-script-name)))
-           (if main-script
-               (begin
-                 (load-script main-script-name main-script)
-                 (set-pref "run-main-script" "yes"))
-               (splash))))
+         (show-toolbar)
+         (cond ((get-pref "run-main-script")
+                (set-pref "run-main-script" #f)
+                (let* ((main-script-name "main")
+                       (main-script (get-script-by-name main-script-name)))
+                  (if main-script
+                      (begin
+                        (load-script main-script-name main-script)
+                        (set-pref "run-main-script" "yes"))
+                      (splash))))
 
-       (splash)) ;; show splash screen if main script did not work last time
+               (else
+                (splash))))) ;; show splash screen if main script did not work last time
 
-   (##repl-debug-main)
-
-   (exit)))
+   (##repl-debug-main)))
 
 
 ;;;============================================================================

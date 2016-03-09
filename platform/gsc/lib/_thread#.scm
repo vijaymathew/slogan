@@ -2,7 +2,7 @@
 
 ;;; File: "_thread#.scm"
 
-;;; Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -835,22 +835,26 @@
 
 ;;; Representation of blocked thread queues.
 
-(##define-macro (macro-btq-deq-next node)        `(macro-slot 1 ,node))
-(##define-macro (macro-btq-deq-next-set! node x) `(macro-slot 1 ,node ,x))
-(##define-macro (macro-btq-deq-prev node)        `(macro-slot 2 ,node))
-(##define-macro (macro-btq-deq-prev-set! node x) `(macro-slot 2 ,node ,x))
-(##define-macro (macro-btq-color node)           `(macro-slot 3 ,node))
-(##define-macro (macro-btq-color-set! node x)    `(macro-slot 3 ,node ,x))
-(##define-macro (macro-btq-parent node)          `(macro-slot 4 ,node))
-(##define-macro (macro-btq-parent-set! node x)   `(macro-slot 4 ,node ,x))
-(##define-macro (macro-btq-left node)            `(macro-slot 5 ,node))
-(##define-macro (macro-btq-left-set! node x)     `(macro-slot 5 ,node ,x))
-(##define-macro (macro-btq-right node)           `(macro-slot 6 ,node))
-(##define-macro (macro-btq-right-set! node x)    `(macro-slot 6 ,node ,x))
-(##define-macro (macro-btq-leftmost node)        `(macro-slot 6 ,node))
-(##define-macro (macro-btq-leftmost-set! node x) `(macro-slot 6 ,node ,x))
-(##define-macro (macro-btq-owner node)           `(macro-slot 7 ,node))
-(##define-macro (macro-btq-owner-set! node x)    `(macro-slot 7 ,node ,x))
+(##define-macro (macro-btq-lock1 node)           `(macro-slot 1 ,node))
+(##define-macro (macro-btq-lock1-set! node x)    `(macro-slot 1 ,node ,x))
+(##define-macro (macro-btq-deq-next node)        `(macro-slot 2 ,node))
+(##define-macro (macro-btq-deq-next-set! node x) `(macro-slot 2 ,node ,x))
+(##define-macro (macro-btq-deq-prev node)        `(macro-slot 3 ,node))
+(##define-macro (macro-btq-deq-prev-set! node x) `(macro-slot 3 ,node ,x))
+(##define-macro (macro-btq-color node)           `(macro-slot 4 ,node))
+(##define-macro (macro-btq-color-set! node x)    `(macro-slot 4 ,node ,x))
+(##define-macro (macro-btq-parent node)          `(macro-slot 5 ,node))
+(##define-macro (macro-btq-parent-set! node x)   `(macro-slot 5 ,node ,x))
+(##define-macro (macro-btq-left node)            `(macro-slot 6 ,node))
+(##define-macro (macro-btq-left-set! node x)     `(macro-slot 6 ,node ,x))
+(##define-macro (macro-btq-right node)           `(macro-slot 7 ,node))
+(##define-macro (macro-btq-right-set! node x)    `(macro-slot 7 ,node ,x))
+(##define-macro (macro-btq-leftmost node)        `(macro-slot 7 ,node))
+(##define-macro (macro-btq-leftmost-set! node x) `(macro-slot 7 ,node ,x))
+(##define-macro (macro-btq-owner node)           `(macro-slot 8 ,node))
+(##define-macro (macro-btq-owner-set! node x)    `(macro-slot 8 ,node ,x))
+(##define-macro (macro-btq-lock2 node)           `(macro-slot 9 ,node))
+(##define-macro (macro-btq-lock2-set! node x)    `(macro-slot 9 ,node ,x))
 
 (##define-macro (macro-btq-deq-init! deq)
   `(let ((deq ,deq))
@@ -901,16 +905,16 @@
 
 ;;; Representation of timeout queues.
 
-(##define-macro (macro-toq-color node)           `(macro-slot 8 ,node))
-(##define-macro (macro-toq-color-set! node x)    `(macro-slot 8 ,node ,x))
-(##define-macro (macro-toq-parent node)          `(macro-slot 9 ,node))
-(##define-macro (macro-toq-parent-set! node x)   `(macro-slot 9 ,node ,x))
-(##define-macro (macro-toq-left node)            `(macro-slot 10 ,node))
-(##define-macro (macro-toq-left-set! node x)     `(macro-slot 10 ,node ,x))
-(##define-macro (macro-toq-right node)           `(macro-slot 11 ,node))
-(##define-macro (macro-toq-right-set! node x)    `(macro-slot 11 ,node ,x))
-(##define-macro (macro-toq-leftmost node)        `(macro-slot 11 ,node))
-(##define-macro (macro-toq-leftmost-set! node x) `(macro-slot 11 ,node ,x))
+(##define-macro (macro-toq-color node)           `(macro-slot 10 ,node))
+(##define-macro (macro-toq-color-set! node x)    `(macro-slot 10 ,node ,x))
+(##define-macro (macro-toq-parent node)          `(macro-slot 11 ,node))
+(##define-macro (macro-toq-parent-set! node x)   `(macro-slot 11 ,node ,x))
+(##define-macro (macro-toq-left node)            `(macro-slot 12 ,node))
+(##define-macro (macro-toq-left-set! node x)     `(macro-slot 12 ,node ,x))
+(##define-macro (macro-toq-right node)           `(macro-slot 13 ,node))
+(##define-macro (macro-toq-right-set! node x)    `(macro-slot 13 ,node ,x))
+(##define-macro (macro-toq-leftmost node)        `(macro-slot 13 ,node))
+(##define-macro (macro-toq-leftmost-set! node x) `(macro-slot 13 ,node ,x))
 
 ;;; Representation of threads.
 
@@ -936,6 +940,8 @@
 
   unprintable:
 
+  (btq-lock1        init: 0)
+
   (btq-deq-next     init: #f) ;; blocked thread queues owned by thread
   (btq-deq-prev     init: #f)
 
@@ -945,6 +951,8 @@
   (btq-leftmost     init: #f)
 
   (tgroup           init: #f) ;; thread-group this thread belongs to
+
+  (btq-lock2        init: 0)
 
   (toq-color        init: #f) ;; to keep thread in a timeout queue
   (toq-parent       init: #f)
@@ -1048,9 +1056,7 @@
   `(macro-make-condvar #f))
 
 (##define-macro (macro-make-thread-cont parent-thread)
-  `(let ((cont (##vector 0)))
-     (##subtype-set! cont (macro-subtype-continuation))
-     cont))
+  `(macro-make-continuation (macro-end-of-cont-marker) #f))
 
 (##define-macro (macro-make-thread-denv parent-thread)
   `(let ((denv (macro-thread-denv ,parent-thread)))
@@ -1138,7 +1144,7 @@
   `(##run-queue))
 
 (##define-macro (macro-primordial-thread)
-  `(macro-run-queue-primordial-thread (macro-run-queue)))
+  `##primordial-thread)
 
 (##define-macro (macro-current-thread)
   `(##current-thread))
@@ -1150,26 +1156,26 @@
   `(let ((t1 ,t1) (t2 ,t2))
      (let ((floats1 (macro-thread-floats t1))
            (floats2 (macro-thread-floats t2)))
-       (##flonum.< (macro-effective-priority floats2) ;; high priority first
-                   (macro-effective-priority floats1)))))
+       (##fl< (macro-effective-priority floats2) ;; high priority first
+              (macro-effective-priority floats1)))))
 
 (##define-macro (macro-thread-sooner? t1 t2)
   `(let ((t1 ,t1) (t2 ,t2))
      (let ((floats1 (macro-thread-floats t1))
            (floats2 (macro-thread-floats t2)))
-       (##flonum.< (macro-timeout floats1)
-                   (macro-timeout floats2)))))
+       (##fl< (macro-timeout floats1)
+              (macro-timeout floats2)))))
 
 (##define-macro (macro-thread-sooner-or-simultaneous-and-higher-prio? t1 t2)
   `(let ((t1 ,t1) (t2 ,t2))
      (let ((floats1 (macro-thread-floats t1))
            (floats2 (macro-thread-floats t2)))
-       (if (##not (##flonum.= (macro-timeout floats1)
-                              (macro-timeout floats2)))
-         (##flonum.< (macro-timeout floats1)
-                     (macro-timeout floats2))
-         (##flonum.< (macro-effective-priority floats2) ;; high priority first
-                     (macro-effective-priority floats1))))))
+       (if (##not (##fl= (macro-timeout floats1)
+                         (macro-timeout floats2)))
+         (##fl< (macro-timeout floats1)
+                (macro-timeout floats2))
+         (##fl< (macro-effective-priority floats2) ;; high priority first
+                (macro-effective-priority floats1))))))
 
 (##define-macro (macro-thread-boost-and-clear-quantum-used! thread)
   `(let ((thread ,thread))
@@ -1178,9 +1184,9 @@
 
      (let ((floats (macro-thread-floats thread)))
        (macro-quantum-used-set! floats (macro-inexact-+0))
-       (if (##not (##flonum.= (##flonum.+ (macro-base-priority floats)
-                                          (macro-priority-boost floats))
-                              (macro-boosted-priority floats)))
+       (if (##not (##fl= (##fl+ (macro-base-priority floats)
+                                (macro-priority-boost floats))
+                         (macro-boosted-priority floats)))
          (begin
 
            ;; save old boosted priority for ##thread-boosted-priority-changed!
@@ -1191,8 +1197,8 @@
 
            (macro-boosted-priority-set!
             floats
-            (##flonum.+ (macro-base-priority floats)
-                        (macro-priority-boost floats)))
+            (##fl+ (macro-base-priority floats)
+                   (macro-priority-boost floats)))
 
             (##thread-boosted-priority-changed! thread))))))
 
@@ -1203,8 +1209,8 @@
 
      (let ((floats (macro-thread-floats thread)))
        (macro-quantum-used-set! floats (macro-inexact-+0))
-       (if (##not (##flonum.= (macro-base-priority floats)
-                              (macro-boosted-priority floats)))
+       (if (##not (##fl= (macro-base-priority floats)
+                         (macro-boosted-priority floats)))
          (begin
 
            ;; save old boosted priority for ##thread-boosted-priority-changed!
@@ -1226,8 +1232,8 @@
 
      (let ((thread-floats (macro-thread-floats thread))
            (parent-floats (macro-thread-floats parent)))
-       (if (##flonum.< (macro-effective-priority thread-floats)
-                       (macro-effective-priority parent-floats))
+       (if (##fl< (macro-effective-priority thread-floats)
+                  (macro-effective-priority parent-floats))
          (begin
            (macro-effective-priority-set!
             thread-floats
@@ -1273,17 +1279,21 @@
 
   unprintable:
 
-  ;; fields 1 and 2 are for maintaining this mutex in a deq of btqs
-  ;; fields 3 to 5 are for maintaining a queue of blocked threads
-  ;; field 6 is the leftmost thread in the queue of blocked threads
-  ;; field 7 is the owner of the mutex (or 'not-owned or 'abandoned or #f)
+  ;; field 1 and 9 are for locking the mutex in a multiprocessor system
+  ;; fields 2 and 3 are for maintaining this mutex in a deq of btqs
+  ;; fields 4 to 6 are for maintaining a queue of blocked threads
+  ;; field 7 is the leftmost thread in the queue of blocked threads
+  ;; field 8 is the owner of the mutex (or 'not-owned or 'abandoned
+  ;; or 'not-abandoned)
+  (btq-lock1    init: 0)
   (btq-deq-next init: #f)
   (btq-deq-prev init: #f)
   (btq-color    init: #f)
   (btq-parent   init: #f)
   (btq-left     init: #f)
   (btq-leftmost init: #f)
-  (btq-owner    init: #f)
+  (btq-owner    init: 'not-abandoned) ;; see (macro-mutex-state-not-abandoned)
+  (btq-lock2    init: 0)
 
   (name
    macro-mutex-name
@@ -1293,6 +1303,12 @@
    macro-mutex-specific-set!)
 )
 
+;; Mutex states (aside from "owned")
+
+(##define-macro (macro-mutex-state-not-owned)     ''not-owned)
+(##define-macro (macro-mutex-state-abandoned)     ''abandoned)
+(##define-macro (macro-mutex-state-not-abandoned) ''not-abandoned)
+
 (##define-macro (macro-make-mutex name)
   `(let ((name ,name))
      (let ((mutex (macro-construct-mutex name (##void))))
@@ -1301,57 +1317,70 @@
        mutex)))
 
 (##define-macro (macro-mutex-unlocked-not-abandoned-and-not-multiprocessor? mutex)
-  `(##not (macro-btq-owner ,mutex)))
+  `(##eq? (macro-btq-owner ,mutex)
+          (macro-mutex-state-not-abandoned)))
 
-(##define-macro (macro-mutex-lock! mutex absrel-timeout owner)
-  `(let ((mutex ,mutex) (absrel-timeout ,absrel-timeout) (owner ,owner))
+(##define-macro (macro-mutex-lock! mutex absrel-timeout new-owner)
+  `(let ((mutex ,mutex) (absrel-timeout ,absrel-timeout) (new-owner ,new-owner))
 
      (##declare (not interrupts-enabled))
 
-     (let ((state (macro-btq-owner mutex)))
-       (if state
-         (##mutex-lock-out-of-line! mutex absrel-timeout owner)
-         (begin
-           (macro-btq-link! mutex owner)
-           #t)))))
+     (##btq-lock! mutex)
+     (let ((owner (macro-btq-owner mutex)))
+       (if (##eq? owner (macro-mutex-state-not-abandoned))
+           (begin
+             (macro-btq-link! mutex new-owner)
+             (##btq-unlock! mutex)
+             #t)
+           (begin
+             (##btq-unlock! mutex)
+             (##mutex-lock-out-of-line! mutex absrel-timeout owner new-owner))))))
 
 (##define-macro (macro-mutex-lock-anonymously! mutex absrel-timeout)
   `(let ((mutex ,mutex) (absrel-timeout ,absrel-timeout))
 
      (##declare (not interrupts-enabled))
 
-     (let ((state (macro-btq-owner mutex)))
-       (if state
-         (##mutex-lock-out-of-line! mutex absrel-timeout #f)
-         (begin
-           (macro-btq-owner-set! mutex 'not-owned)
-           #t)))))
+     (##btq-lock! mutex)
+     (let ((owner (macro-btq-owner mutex)))
+       (if (##eq? owner (macro-mutex-state-not-abandoned))
+           (begin
+             (macro-btq-owner-set! mutex (macro-mutex-state-not-owned))
+             (##btq-unlock! mutex)
+             #t)
+           (begin
+             (##btq-unlock! mutex)
+             (##mutex-lock-out-of-line! mutex absrel-timeout owner #f))))))
 
 (##define-macro (macro-mutex-unlock! mutex)
   `(let ((mutex ,mutex))
 
      (##declare (not interrupts-enabled))
 
+     (##btq-lock! mutex)
      (macro-btq-deq-remove! mutex)
      (let ((leftmost (macro-btq-leftmost mutex)))
        (if (##eq? leftmost mutex)
-         (begin
-           (macro-btq-unlink! mutex #f)
-           (##void))
-         (##mutex-signal! mutex leftmost #f)))))
+           (begin
+             (macro-btq-unlink! mutex (macro-mutex-state-not-abandoned))
+             (##btq-unlock! mutex)
+             (##void))
+           (##mutex-signal! mutex leftmost #f)))))
 
 (##define-macro (macro-mutex-unlock-no-reschedule! mutex)
   `(let ((mutex ,mutex))
 
      (##declare (not interrupts-enabled))
 
+     (##btq-lock! mutex)
      (macro-btq-deq-remove! mutex)
      (let ((leftmost (macro-btq-leftmost mutex)))
        (if (##eq? leftmost mutex)
-         (begin
-           (macro-btq-unlink! mutex #f)
-           (##void))
-         (##mutex-signal-no-reschedule! mutex leftmost #f)))))
+           (begin
+             (macro-btq-unlink! mutex (macro-mutex-state-not-abandoned))
+             (##btq-unlock! mutex)
+             (##void))
+           (##mutex-signal-no-reschedule! mutex leftmost #f)))))
 
 ;;; Representation of condition variables.
 
@@ -1367,10 +1396,12 @@
 
   unprintable:
 
-  ;; fields 1 and 2 are for maintaining this condition variable in a deq of btqs
-  ;; fields 3 to 5 are for maintaining a queue of blocked threads
-  ;; field 6 is the leftmost thread in the queue of blocked threads
-  ;; field 7 is the owner of the condition variable
+  ;; fields 1 and 9 are for locking the condition variable in a multiprocessor system
+  ;; fields 2 and 3 are for maintaining this condition variable in a deq of btqs
+  ;; fields 4 to 6 are for maintaining a queue of blocked threads
+  ;; field 7 is the leftmost thread in the queue of blocked threads
+  ;; field 8 is the owner of the condition variable
+  (btq-lock1    init: 0)
   (btq-deq-next init: #f)
   (btq-deq-prev init: #f)
   (btq-color    init: #f)
@@ -1378,6 +1409,7 @@
   (btq-left     init: #f)
   (btq-leftmost init: #f)
   (btq-owner    init: #f)
+  (btq-lock2    init: 0)
 
   (name
    macro-condvar-name
@@ -1441,10 +1473,16 @@
   (unused5
    macro-tgroup-unused5
    macro-tgroup-unused5-set!)
-  (threads-deq-next
+  (unused6
+   macro-tgroup-unused6
+   macro-tgroup-unused6-set!)
+  (unused7
+   macro-tgroup-unused7
+   macro-tgroup-unused7-set!)
+  (threads-deq-next ;; must be at same pos as the same name field in a thread
    macro-tgroup-threads-deq-next
    macro-tgroup-threads-deq-next-set!)
-  (threads-deq-prev
+  (threads-deq-prev ;; must be at same pos as the same name field in a thread
    macro-tgroup-threads-deq-prev
    macro-tgroup-threads-deq-prev-set!)
 )
@@ -1460,6 +1498,8 @@
               tgroups
               parent
               name
+              #f
+              #f
               #f
               #f
               #f
@@ -1541,7 +1581,7 @@
 ;;; Representation of the run queue.
 
 (define-type run-queue
-  id: 2dbd1deb-107f-4730-a7ba-c191bcf132fe
+  id: A6899D11-290C-42A6-B47A-57C6B908698F
   type-exhibitor: macro-type-run-queue
   constructor: macro-construct-run-queue
   implementer: implement-type-run-queue
@@ -1552,14 +1592,16 @@
 
   unprintable:
 
-  ;; fields 1 and 2 are the deq links of blocking device condvars
-  ;; fields 3 to 5 are for maintaining a queue of runnable threads
-  ;; field 6 is the leftmost thread in the queue of runnable threads
-  ;; field 7 must be #f (the queue of runnable threads has no owner)
-  ;; fields 8 to 10 are for maintaining a timeout queue of threads
-  ;; field 11 is the leftmost thread in the timeout queue of threads
-  ;; field 14 is for storing the current time, heartbeat interval and a
+  ;; fields 1 and 9 are for locking the queue in a multiprocessor system
+  ;; fields 2 and 3 are the deq links of blocking device condvars
+  ;; fields 4 to 6 are for maintaining a queue of runnable threads
+  ;; field 7 is the leftmost thread in the queue of runnable threads
+  ;; field 8 must be #f (the queue of runnable threads has no owner)
+  ;; fields 10 to 11 are for maintaining a timeout queue of threads
+  ;; field 13 is the leftmost thread in the timeout queue of threads
+  ;; field 16 is for storing the current time, heartbeat interval and a
   ;; temporary float
+  btq-lock1
   condvar-deq-next
   condvar-deq-prev
   btq-color
@@ -1567,12 +1609,13 @@
   btq-left
   btq-leftmost
   false
+  btq-lock2
   toq-color
   toq-parent
   toq-left
   toq-leftmost
-  primordial-thread
-  unused
+  unused1
+  unused2
   floats
 )
 
@@ -1589,6 +1632,7 @@
 (##define-macro (macro-make-run-queue)
   `(let ((run-queue
           (macro-construct-run-queue
+           0
            #f
            #f
            #f
@@ -1596,6 +1640,7 @@
            #f
            #f
            #f
+           0
            #f
            #f
            #f

@@ -1,6 +1,6 @@
-# makefile for Gambit-C system.
+# makefile for Gambit system.
 
-# Copyright (c) 1994-2013 by Marc Feeley, All Rights Reserved.
+# Copyright (c) 1994-2016 by Marc Feeley, All Rights Reserved.
 
 PACKAGE_SHORTNAME = @PACKAGE_SHORTNAME@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -24,12 +24,15 @@ FLAGS_EXE = @FLAGS_EXE_MF@
 DEFS = @DEFS@
 LIBS = @LIBS@
 
-GAMBCLIB_DEFS = @GAMBCLIB_DEFS_MF@
+GAMBITLIB_DEFS = @GAMBITLIB_DEFS_MF@
 LIB_PREFIX = @LIB_PREFIX@
+LIB_VERSION_SUFFIX = @LIB_VERSION_SUFFIX@
+LIB_MAJOR_VERSION_SUFFIX = @LIB_MAJOR_VERSION_SUFFIX@
+
 LIB_EXTENSION = @LIB_EXTENSION@
-GAMBCLIB = @GAMBCLIB@
-GAMBCGSCLIB = @GAMBCGSCLIB@
-GAMBCGSILIB = @GAMBCGSILIB@
+GAMBITLIB = @GAMBITLIB@
+GAMBITGSCLIB = @GAMBITGSCLIB@
+GAMBITGSILIB = @GAMBITGSILIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_LIB = @INSTALL_LIB@
@@ -66,10 +69,10 @@ mandir = @mandir@
 #     (which will cause the makefiles to be regenerated when you run `make');
 # (2) otherwise, pass the desired values on the `make' command line.
 
-MDEFINES = prefix=$(prefix) exec_prefix=$(exec_prefix) \
-includedir=$(includedir) libdir=$(libdir) \
-bindir=$(bindir) docdir=$(docdir) \
-infodir=$(infodir) emacsdir=$(emacsdir)
+MDEFINES = prefix="$(prefix)" exec_prefix="$(exec_prefix)" \
+includedir="$(includedir)" libdir="$(libdir)" \
+bindir="$(bindir)" docdir="$(docdir)" \
+infodir="$(infodir)" emacsdir="$(emacsdir)"
 
 SUBDIRS = include lib gsi gsc bin misc doc tests examples contrib prebuilt
 
@@ -116,20 +119,23 @@ gsc-boot@exe@:
 fake_target:
 
 doc info pdf html txt: fake_target
-	cd doc && $(MAKE) $(MDEFINES) $@
+	@cd doc && $(MAKE) $(MDEFINES) $@
 
-check: fake_target all
-	cd tests && $(MAKE) $(MDEFINES) $@
+check ut: fake_target all
+	@cd tests && $(MAKE) $(MDEFINES) $@
 
 examples: fake_target all
-	cd examples && $(MAKE) $(MDEFINES) $@
+	@cd examples && $(MAKE) $(MDEFINES) $@
 
 prebuilt:  dist dist-devel
-	PATH="gsi:$$PATH" prebuilt/remote-connect $(BUILD_FARM) "" "(define tmpdir \"gambtmp0\")(define gambc-dist \"$(PACKAGE_TARNAME)\")(define timeout 3000)(ssh timeout (string-append \"rm -rf \" tmpdir \";mkdir \" tmpdir \";echo \\\"logged in on:\\\";hostname\"))(scp-to timeout (string-append gambc-dist \".tgz\") (string-append tmpdir \"/.\"))(ssh timeout (string-append \"ssh $(BUILD_HOST) \\\"cd \" tmpdir \";tar zxf \" gambc-dist \".tgz;cd \" gambc-dist \";./configure;make -j 4;mv ../\" gambc-dist \".tgz .;cd prebuilt;make prebuilt\\\"\"))(scp-from timeout (string-append tmpdir \"/\" gambc-dist \"/$(PACKAGE_TARNAME)-*\") \".\")"
+	PATH="gsi:$$PATH" prebuilt/remote-connect $(BUILD_FARM) "" "(define tmpdir \"gambtmp0\")(define gambit-dist \"$(PACKAGE_TARNAME)\")(define timeout 3000)(ssh timeout (string-append \"rm -rf \" tmpdir \";mkdir \" tmpdir \";echo \\\"logged in on:\\\";hostname\"))(scp-to timeout (string-append gambit-dist \".tgz\") (string-append tmpdir \"/.\"))(ssh timeout (string-append \"ssh $(BUILD_HOST) \\\"cd \" tmpdir \";tar zxf \" gambit-dist \".tgz;cd \" gambit-dist \";./configure;make -j 4;mv ../\" gambit-dist \".tgz .;cd prebuilt;make prebuilt\\\"\"))(scp-from timeout (string-append tmpdir \"/\" gambit-dist \"/$(PACKAGE_TARNAME)-*\") \".\")"
 	@# cd prebuilt && $(MAKE) $(MDEFINES) $@
 
+xactlog@exe@: fake_target
+	@cd contrib/xactlog && $(MAKE) $(MDEFINES) $@
+
 stamp: fake_target
-	cd include && $(MAKE) $(MDEFINES) $@
+	@cd include && $(MAKE) $(MDEFINES) $@
 
 commit: stamp deselect-gen-for-commit
 	$(RC) commit
@@ -146,6 +152,7 @@ status: fake_target
 push: fake_target
 	@if test "$(RC)" = "$(GIT)"; then \
 	  $(GIT) push git@github.com:feeley/gambit.git; \
+	  $(GIT) push --tags git@github.com:feeley/gambit.git; \
 	else \
 	  $(HG) push; \
 	fi
@@ -221,8 +228,8 @@ change-version: deselect-gen-for-commit
 	  $(RC) tag $(NEW_VERSION)-bootstrap; \
 	  if $(MAKE) bootstrap; then \
 	    misc/changev $$version_num $$new_version_num; \
-	    touch doc/gambit-c.txi; \
-	    cd tests; @SETDLPATH@ ../gsc/gsc -:~~bin=../bin,~~lib=../lib,~~include=../include -f -c mix.scm; mv mix.c test5.ok; cd ..; \
+	    touch doc/gambit.txi; \
+	    cd tests; @SETDLPATH@ ../gsc/gsc -:~~bin=../bin,~~lib=../lib,~~include=../include -f -warnings -c mix.scm; mv mix.c test5.ok; cd ..; \
 	    if $(MAKE) bootclean && $(MAKE) -j 2 && $(MAKE) check && $(MAKE) doc && $(MAKE) select-gen-for-commit; then \
 	      if test "$(RC)" = "$(GIT)"; then \
 	        $(GIT) commit -a -m "[RUNTIME CHANGES NEEDED FOR $(NEW_VERSION)] Changed version of runtime using misc/changev"; \
@@ -263,10 +270,10 @@ install-pre:
 install-post: all
 	if test "@ENABLE_MULTIPLE_VERSIONS@" = "yes"; then \
 	  if test "@bat@" = ""; then \
-	    $(srcdirpfx)./mkidirs $(DESTDIR)$(prefix); \
-	    rm -f $(DESTDIR)$(prefix)/../current \
-	      $(DESTDIR)$(prefix)/../current.lnk; \
-	    (cd $(DESTDIR)$(prefix)/.. && $(LN_S) $(PACKAGE_VERSION) current); \
+	    $(srcdirpfx)./mkidirs "$(DESTDIR)$(prefix)"; \
+	    rm -f "$(DESTDIR)$(prefix)/../current" \
+	      "$(DESTDIR)$(prefix)/../current.lnk"; \
+	    (cd "$(DESTDIR)$(prefix)/.." && $(LN_S) $(PACKAGE_VERSION) current); \
 	  fi; \
 	fi
 
@@ -275,7 +282,7 @@ uninstall-pre:
 uninstall-post:
 	if test "@ENABLE_MULTIPLE_VERSIONS@" = "yes"; then \
 	  if test "@bat@" = ""; then \
-	    (cd $(DESTDIR)$(prefix)/.. && \
+	    (cd "$(DESTDIR)$(prefix)/.." && \
 	     rm -f current && \
 	     rmdir $(PACKAGE_VERSION)); \
 	  fi; \
@@ -355,7 +362,7 @@ dist-pre:
 	done
 
 dist-post:
-	tar chof $(PACKAGE_TARNAME).tar $(PACKAGE_TARNAME)
+	COPYFILE_DISABLE=1 tar chof $(PACKAGE_TARNAME).tar $(PACKAGE_TARNAME)
 	gzip -9 $(PACKAGE_TARNAME).tar
 	mv $(PACKAGE_TARNAME).tar.gz $(PACKAGE_TARNAME).tgz
 	rm -rf $(PACKAGE_TARNAME)
@@ -393,7 +400,7 @@ dist-devel-pre:
 dist-devel-post:
 	rm -rf $(PACKAGE_TARNAME)-devel
 	mv $(PACKAGE_TARNAME) $(PACKAGE_TARNAME)-devel
-	tar chof $(PACKAGE_TARNAME)-devel.tar $(PACKAGE_TARNAME)-devel
+	COPYFILE_DISABLE=1 tar chof $(PACKAGE_TARNAME)-devel.tar $(PACKAGE_TARNAME)-devel
 	gzip -9 $(PACKAGE_TARNAME)-devel.tar
 	mv $(PACKAGE_TARNAME)-devel.tar.gz $(PACKAGE_TARNAME)-devel.tgz
 	rm -rf $(PACKAGE_TARNAME)-devel
