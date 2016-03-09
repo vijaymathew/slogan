@@ -1,0 +1,62 @@
+environment:
+  matrix:
+    - arch: "x86-32"
+      tools: "mingw"
+    
+    - arch: "x86-64"
+      tools: "mingw"
+
+    - arch: "x86-32"
+      tools: "msvc"
+    
+    - arch: "x86-64"
+      tools: "msvc"
+    
+
+
+install:
+
+  - ps: if($env:tools -eq 'msvc')
+        {
+          $env:c_comp = 'cl';
+          if($env:arch -eq 'x86-64') {
+            $env:vcvar_arg = 'x86_amd64';
+          }
+          elseif($env:arch -eq 'x86-32') {
+            $env:vcvar_arg = 'x86';
+          }
+        }
+        elseif($env:tools -eq 'mingw')
+        {
+          if($env:arch -eq 'x86-64')
+          {
+            $env:c_comp = 'gcc';
+            curl -outfile mw64.7z "http://libgd.blob.core.windows.net/mingw/x86_64-4.9.1-release-posix-seh-rt_v3-rev1.7z";
+            if((Get-FileHash mw64.7z -Algorithm SHA1).Hash -ne "91A35AE296C1A71802AB0C7228EE57F9AAC5D7C7")
+            {
+              echo "Invalid file hash";
+              exit 1;
+            };
+            7z x -oC:\ mw64.7z | out-null;
+          }
+        }
+
+
+
+build_script:
+
+  - '"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall" %vcvar_arg%'
+  - SET PATH=C:\MinGW\msys\1.0\bin;%PATH%
+
+  - IF [%tools%]==[mingw] IF [%arch%]==[x86-32] SET PATH=C:\MinGW\bin;%PATH%
+  - IF [%tools%]==[mingw] IF [%arch%]==[x86-64] SET PATH=C:\mingw64\bin;%PATH%
+
+  - IF [%tools%]==[mingw] sh -c "gcc -v"
+
+  - sh -c "./configure --enable-single-host CC=%c_comp%;make"
+
+
+
+test_script:
+
+  - sh -c "make check"
