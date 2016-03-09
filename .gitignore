@@ -1,6 +1,12 @@
+platform/gsc/bin/gambcomp-C
+platform/gsc/bin/gambdoc        
+platform/gsc/gsc/libgambitgsc.a
+platform/gsc/gsi/libgambitgsi.a
+platform/gsc/lib/libgambit.a
 platform/libffi-3.2.1/i686-pc-linux-gnu/
 platform/libffi-3.2.1/x86_64-apple-darwin14.5.0/
 platform/libffi-3.2.1/target/
 platform/libffi-3.2.1/Makefile
+platform/libffi-3.2.1/makefiles.out~
 src/slogan
 
