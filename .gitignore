@@ -9,4 +9,9 @@ platform/libffi-3.2.1/target/
 platform/libffi-3.2.1/Makefile
 platform/libffi-3.2.1/makefiles.out~
 src/slogan
+src/*.c
+src/*.o
+src/*.a
+src/core/*.c
+src/core/*.o
 
