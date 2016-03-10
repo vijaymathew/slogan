@@ -36,7 +36,7 @@
 
 (define *libslogan-path* (string-append *slogan-root* "/src/libslogan.a"))
 
-(define *default-ld-options* (string-append "-L" *libffi-lib* " -lffi " *libslogan-path*))
+(define *default-ld-options* (string-append "-L" *libffi-lib* " " *libslogan-path* " -lffi "))
 
 (define *default-eq* eqv?)
 
