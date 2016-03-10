@@ -53,7 +53,7 @@
                  " -o " (if output output (path-strip-extension script-name))
                  " -exe -l " (string-append *prelude-root* "/_slogan.c -ld-options ")
                  (if ld-options
-                     (string-append "\"" *default-ld-options* " " ld-options "\"")
+                     (string-append "\"" ld-options " " *default-ld-options* "\"")
                      (string-append "\"" *default-ld-options* "\""))
                  " "
                  out-file-name))
