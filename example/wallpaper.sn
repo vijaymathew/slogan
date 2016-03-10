@@ -5,22 +5,22 @@ link("util");
 function wallpaper(corna, cornb, side)
     let (r = range(1, 100))
     let (img = mkimage(100, 100)) {
-	[[letseq (x = 10 + i * side/100, 
-		  y = 10 + j * side/100, 
-		  c = truncate(x * x + y * y))
-	  if (is_even(c))
-	      image_put_pixel(img, i j 1) 
+    [[letseq (x = 10 + i * side/100, 
+              y = 10 + j * side/100, 
+              c = truncate(x * x + y * y))
+      if (is_even(c))
+          image_put_pixel(img, i j 1) 
 	  else 
 	      image_put_pixel(img, 0 0 0)
-	  | 
-	  j <- r] 
-	 | i <- r];
-	image_show(img)
-    };
+                  | 
+                  j <- r] 
+     | i <- r];
+    image_show(img)
+        };
 
 // Usage:
 /*
-define f = file_writer("wallpaper.ppm");
-show(stream = f, wallpaper(9, 5, 5));
-close_stream(f);
+  define f = file_writer("wallpaper.ppm");
+  show(stream = f, wallpaper(9, 5, 5));
+  close_stream(f);
 */

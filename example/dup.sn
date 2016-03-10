@@ -1,19 +1,20 @@
 // Prints duplicate lines in input along with their counts.
 // Reads input from both stdin and files passed as command-line arguments.
-
+   
 define counts = #{};
 define cl = command_line();
 
 if (length(cl) <= 1)
     let loop (s = read_line())
     { if (not(is_eof_object(s)))
-      { hashtable_set(counts, s, inc(hashtable_at(counts, s, 0)));
-        loop(read_line()) }}
+            { hashtable_set(counts, s, inc(hashtable_at(counts, s, 0)));
+                loop(read_line()) }}
 else for_each(fn(file_name) 
               let (f = file_reader(file_name))
               { for_each(fn(line) hashtable_set(counts, line, inc(hashtable_at(counts, line, 0))),
                          read_all(f, read_line));
-                close_stream(f) },
+                  close_stream(f) },
               tail(cl));
 
 hashtable_for_each(fn(k, v) {showln(k ", " v); if (v > 1) showln(k ": " v)}, counts);
+
