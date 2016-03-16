@@ -3,30 +3,30 @@
 // The contents found at the URLs are parallely fetched and printed.
 
 function http_get(url)
-    let (s = tcp_client_stream(url)
-         ssecs = time_to_seconds(now()))
-    { show(stream = s, "GET /\n");
-      flush_writer(s);
-      let (r = read_all_chars(s))
+  let (s = tcp_client_stream(url)
+       ssecs = time_to_seconds(now()))
+   { show(stream = s, "GET /\n");
+     flush_writer(s);
+     let (r = read_all_chars(s))
       { close_stream(s);
         (time_to_seconds(now())-ssecs):r }};
 
 function get_all(urls) map(http_get, urls);
 
 function groups(ss, n)
-    let loop (ss = ss, i = 0, grp = [], grps = [])
-        if (is_empty(ss)) grp:grps
-        else if (i == n) loop(tail(ss), 0, [], grp:grps)
-        else loop(tail(ss), i + 1, head(ss):grp, grps);
-
+  let loop (ss = ss, i = 0, grp = [], grps = [])
+   if (is_empty(ss)) grp:grps
+   else if (i == n) loop(tail(ss), 0, [], grp:grps)
+   else loop(tail(ss), i + 1, head(ss):grp, grps);
+     
 define args = tail(command_line());
 define num_processes = string_to_number(first(args));
 define urls = groups(rest(args), num_processes);
 define num_urls = length(urls);
 
 define procs = let loop (i = 0, procs = [])
-                 if (i >= num_urls) procs
-                 else loop(i + 1, spawn(get_all):procs);
+                if (i >= num_urls) procs
+                else loop(i + 1, spawn(get_all):procs);
 
 define fs = map(fn(p, us) p(us), procs, urls);
 

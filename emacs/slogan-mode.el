@@ -1,3 +1,5 @@
+;; Need lot of work here...
+
 (setq slogan-keywords '("fn" "function" "method" "define" "record"
                        "if" "else" "let" "letseq" "letrec" 
                        "case" "match" "where" "try" "trycc" "catch" "finally"
@@ -11,7 +13,7 @@
       `((,slogan-constant-regexp . font-lock-constant-face)
         (,slogan-keywords-regexp . font-lock-keyword-face)))
 
-(define-derived-mode slogan-mode java-mode
+(define-derived-mode slogan-mode fundamental-mode
   "slogan mode"
   "Major mode for editing Slogan programs"
   (setq font-lock-defaults '((slogan-font-lock-keywords))))
