@@ -1,0 +1,72 @@
+// The probability of an event occuring from `n` outcomes.
+// e.g probability of getting a head by tossing a fair coin:
+// > p(2);
+// => 0.5
+function p(n) 1./n;
+
+// The probability of the event `e` not occuring.
+// e.g the probability of not getting a head while tossing a fair coin:
+// > notp(0.5);
+// => 0.5
+function notp(e) 1-e;
+
+// The probability of n event with probabilities `ps` occuring in sequence.
+// This is also known as "composite probability". Each outcome is independent of the other.
+// e.g the probability of getting two heads in sequence while tossing a fair coin:
+// > compp([0.5, 0.5]);
+// => 0.25
+function compp(ps) fold_right(`*`, 1., ps);
+
+
+// Conditional probability
+// -----------------------
+
+// The probaility of events with probabilities `eps` happen if events
+// with probabilities `cps` happen before.
+// e.g the probability of seeing tails twice by picking up one of two loaded coins.
+// The first coin will always give heads, so probabilty
+// of getting a tail is 0 and the next coin will give tails with a probabilty of 0.4.
+// The probabilty of picking one of the coins is 0.5.
+// > condp([0.5 0.5] [[0. 0.] [0.4 0.4]]);
+// => 0.08
+function condp(cps, eps)
+  let (a = map(fn(ps) apply(`*`, ps), eps))
+   fold_right(`+`, 0, map(fn(cp, ps) cp * ps, cps a));
+
+
+// Posterior probability (Bayes rule)
+// -----------------------------------
+
+// Posterior probability applies some test results (or evidence) to the prior probability of an event
+// and readjusts the probability of the real outcome.
+// The probability of a test that returns positive is known as sensitivity.
+function jointp(p, sensep) p*sensep:notp(p)*notp(sensep);
+function normalizer(jp) head(jp) + tail(jp);
+
+// e.g A robot has equal chance of being in a red cell and a green cell.
+// We also have the following probabilities:
+// 1 - Robot see red while in red cell = 0.8
+// 2 - Robot see green while in green cell = 0.5
+// The posterior probabilities of the robot seeing red in red and green in green:
+// > posteriorp(head(jointp(0.5, 0.8)):head(jointp(0.5, 0.5)));
+// => .6153846153846154 : .3846153846153846
+function posteriorp(jp)
+  letseq (n = normalizer(jp))
+   head(jp)/n:tail(jp)/n;
+
+// Averages
+// --------
+
+function mean(xs) fold_right(`+`, 0, xs)*1./length(xs);
+
+function median(xs) at(quotient(length(xs), 2), xs);
+
+function mode(xs)
+  let (xs = sort(xs))
+   if (is_empty(xs)) false
+   else let loop (xs = tail(xs), prev = head(xs), n = 1, maxn = 1, md = head(xs))
+         if (is_empty(xs)) md
+         else if (head(xs) == prev) loop(tail(xs), head(xs), n + 1, maxn, md)
+         else if (n > maxn) loop(tail(xs), head(xs), 1, n, prev)
+         else loop(tail(xs), head(xs), 1, maxn, md);
+
