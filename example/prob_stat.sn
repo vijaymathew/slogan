@@ -17,7 +17,6 @@ function notp(e) 1-e;
 // => 0.25
 function compp(ps) fold_right(`*`, 1., ps);
 
-
 // Conditional probability
 // -----------------------
 
@@ -70,3 +69,87 @@ function mode(xs)
          else if (n > maxn) loop(tail(xs), head(xs), 1, n, prev)
          else loop(tail(xs), head(xs), 1, maxn, md);
 
+// variance(xs) = sum_of(square(x-mean(x)))/(1/length(xs))
+function variance(xs)
+  letseq (m = mean(xs)
+          ys = apply(add, map(fn(x) let (d = x - m) d * d, xs)))
+   ys * (1/length(xs));
+
+// standard deviation
+function stddev(xs) sqrt(variance(xs));
+
+// standard score relative to the point `x` = (x-mean)/standard_deviation.
+function stdscore(x, m, sd) (x - m)/sd;
+
+// confidence interval
+function ci(xs) stddev(xs)/sqrt(length(xs));
+
+// return the medians of the lower and higher halves, along with the median
+// of the whole sequence.
+function quartiles(xs)
+  letseq (xs = sort(xs)
+          len = length(xs)
+          low = quotient(quotient(len, 2), 2)
+          mid = quotient(len, 2)
+          hi = quotient(mid + len, 2))
+   [at(low, xs), at(mid, xs), at(hi, xs)];
+
+// remove values that lie outside the lower and higher medians.
+function trim_outliers(xs)
+  let (qs = quartiles(xs))
+   remp(fn(x) x > third(qs), remp(fn(x) x < first(qs), xs));
+
+function fact(n)
+{  fn iter(n, f)
+    if (n <= 1) f
+    else iter(n-1, f*n);
+
+  iter(n, 1) };
+
+function comb(n, k) fact(n)/(fact(k) * fact(n-k));
+
+// Binomial Distribution.
+// ----------------------
+
+// Gives the probablity of getting `k` outcomes with individual probablity of
+// `p` in a total of `n` experiements.
+// e.g Flip a loaded coins 5 times, with head having a probablity of 0.8.
+// What is the probablity of seeing 9 heads?
+// > bdistr(12, 9, 0.8);
+// => .236
+function bdistr(n, k, p) comb(n, k) * expt(p, k) * expt(1-p, n-k);
+  
+// Central Limit Theorom
+// ---------------------
+
+// The central limit theorem (CLT) states that, given certain conditions,
+// the arithmetic mean of a sufficiently large number of iterates of independent random variables,
+// each with a well-defined expected value and well-defined variance, will be approximately normally
+// distributed ("bell curved"), regardless of the underlying distribution.
+
+// Another definition of CLT:
+// Let `xxs` be a sequence of independent, identically distributed (i.i.d.) random variables.
+// Each `xs` has finite mean, mean(xs) = m, and finite variance, variance(xs) = v.
+// Now let `z` be the normalized average of the first n random variables,
+// i.e. z = apply(add, pick_n_xs(n))/ (v * sqrt(n))
+// then, the classical Central Limit Theorem says that `z` converges in distribution to a standard normal distribution.
+
+// The Central Limit Theorem assumes the following:
+// Randomization condition: The data must be sampled randomly.
+// Independence assumption: The sample values must be independent of each other.
+//                          This means that the occurrence of one event has no influence on the next event.
+// 10% condition: The sample size, n, should be no more than 10% of the population.
+// Sample size assumption: The sample size must be sufficiently large.
+// Although the Central Limit Theorem tells us that we can use a Normal model to think about the behavior
+// of sample means when the sample size is large enough, it does not tell us how large that should be.
+// If the population is very skewed, you will need a pretty large sample size to use the CLT, however if
+// the population is unimodal and symmetric, even small samples are acceptable. So think about your sample
+// size in terms of what you know about the population and decide whether the sample is large enough.
+// In general a sample size of 30 is considered sufficient if the sample is unimodal (and meets the 10% condition).
+
+
+// A utility to generate `n` random results.
+function flip(n) [if (random_real() >= 0.5) 1 else 0 | x <- range(1, n)];
+
+// Generate means for a large number of experiments.
+function sample(n) map(fn(xs) mean(xs), [flip(n) | x <- range(1, n)]);
