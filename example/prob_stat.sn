@@ -1,3 +1,5 @@
+// Some notes and sample code on Probability & Statistics.
+
 // The probability of an event occuring from `n` outcomes.
 // e.g probability of getting a head by tossing a fair coin:
 // > p(2);
@@ -20,7 +22,7 @@ function compp(ps) fold_right(`*`, 1., ps);
 // Conditional probability
 // -----------------------
 
-// The probaility of events with probabilities `eps` happen if events
+// The probaility of events with probabilities `eps` will happen if events
 // with probabilities `cps` happen before.
 // e.g the probability of seeing tails twice by picking up one of two loaded coins.
 // The first coin will always give heads, so probabilty
@@ -153,3 +155,53 @@ function flip(n) [if (random_real() >= 0.5) 1 else 0 | x <- range(1, n)];
 
 // Generate means for a large number of experiments.
 function sample(n) map(fn(xs) mean(xs), [flip(n) | x <- range(1, n)]);
+
+// Hypothesis tests
+// ----------------
+
+// Null hypothesis - not supported data.
+// Alternate hypothesis - supported by data, e.g a survey.
+
+// Linear Regression
+// -----------------
+
+// Linear regression is an approach for modeling the relationship between a scalar dependent variable `y`
+// and one or more explanatory variables (or independent variables) denoted `x`. 
+// In other words, linear regression consists of finding the best-fitting straight line that best describes the
+// data on a scatter plot. The best-fitting line is called a regression line.
+
+// Linear regression is defined by the formula `y = bx+a`, where `b` and `a` has to be determined from the data.
+
+function find_b(xs, ys, xm, ym)
+  letseq (sx = map(fn(x) x - xm, xs)
+          sy = map(fn(y) y - ym, ys)
+          s = apply(add, map(mult, sx, sy))
+          d = apply(add, map(fn(x) expt(x, 2.), sx)))
+   s/d;
+
+function find_a_b(xs, ys)
+  letseq (xm = mean(xs), ym = mean(ys)
+          b = find_b(xs, ys, xm, ym))
+    (ym - b * xm):b;
+
+function linreg(xs, ys)
+  letseq (ab = find_a_b(xs, ys)
+          a = head(ab), b = tail(ab))
+    map(fn(x) b * x + a, xs);
+
+// Correlation coefficient
+// -----------------------
+
+// This is a value between 1 and -1 that tells how "related" to variables are.
+// Both 1 and -1 stands for perfectly linear data.
+
+function cor(xs, ys)
+  letseq (xm = mean(xs), ym = mean(ys)
+          sx = map(fn(x) x - xm, xs)
+          sy = map(fn(y) y - ym, ys)
+          s = apply(add, map(mult, sx, sy))
+          d1 = apply(add, map(fn(x) expt(x, 2.), sx))
+          d2 = apply(add, map(fn(y) expt(y, 2.), sy)))
+   s/sqrt(d1*d2);
+
+

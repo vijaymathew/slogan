@@ -1,0 +1,73 @@
+// Some notes and sample code on Cryptography.
+
+// Cryptography (from two Greek words than mean "secret" and "writing".
+
+// Cryptography functions are often seen and used as black-boxes.
+// This is not always true, as there are "side-channels", i.e things we can observe
+// about a function other than it's inputs. The time it takes to encrypt
+// a particular message using a particular key is an example and this is called the
+// "timing side-channel".
+
+// Symmetric cryptosystems
+// -----------------------
+
+// Here encryption and decryption are done using the same keys.
+
+// Kerckhoff's Principle (1883):
+// "The cipher must not depend on the secrecy of the encryption mechanism."
+
+// A cryptography mechanism must satisfy the "correctness" and "security" properties.
+// The correctness property makes sure that the decryption function will always return
+// the original message when called with the cipher text and the right key.
+// The security property requires that ideally the cipher text should not reveal any information
+// about the key or the message.
+
+// The following two crytpo-systems satisfy the correctness property, though they are
+// not particularly secure:
+function encrypt_1(m k) m + k;
+function decrypt_1(c k) c - k;
+
+function encrypt_2(m k) m;
+function decrypt_2(c k) c;
+
+// some tests:
+define messages = range(1, 5);
+define keys = range(10, 20);
+map(decrypt_1, map(encrypt_1, messages, keys), keys) == messages;
+// => true
+map(decrypt_2, map(encrypt_2, messages, keys), keys) == messages;
+// => true
+
+// The following crytpo-system do not satisfy the correctness property:
+function encrypt_3(m k) mod(m k);
+function decrypt_3(c k) c * k;
+
+// test
+map(decrypt_3, map(encrypt_3, messages, keys), keys) == messages;
+// => false
+
+// The One-Time Pad
+// ----------------
+
+// This is the "perfect cipher" that reveals nothing about the key or the messages, but it's
+// very impractical.
+
+// The "xor" is the cryptographer's favorite operator because `xor(xor(x, y), x) == y`.
+
+// In the One-Time Pad, the key is a sequence of bits with as many bits as there in the message.
+// The key must be random and should not be reused.
+// The key-space must be as big as the message-space for the cipher for being perfect.
+// Shanon's theorom: if a cipher is perfect, it must be impractical.
+
+// A good cipher must not reveal any "statistical" properties of the message or the key.
+
+// Modern Symmetric Ciphers
+// -------------------------
+
+// Stream ciphers: encrypt a stream of bytes, say 1 byte at a time.
+// If the block size is large encrypt we can think of it as a block cipher.
+// Block ciphers: encrypts blocks of data, usually of 64, 126 or 258 bits in size.
+// If the block size if small enough we can think of it as a stream cipher.
+
+// An important block cipher is AES (Advanced Encryption Standard).
+
