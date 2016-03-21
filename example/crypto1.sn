@@ -71,3 +71,17 @@ map(decrypt_3, map(encrypt_3, messages, keys), keys) == messages;
 
 // An important block cipher is AES (Advanced Encryption Standard).
 
+// Random numbers
+// --------------
+
+// Kolmogrov complexity: Complexity of a sequence `s` is the length of
+// the shortest possible description of `s`, for e.g a program that can generate `s`.
+
+// Modes used in AES
+// -----------------
+
+// Cypher Block Chaining mode: c0 = E(xor(xor(m0, initialization_vector), key)), ci = E(xor(xor(mi, ci-1), key))
+// Counter mode: ci = E(xor(nonce+counter, mi))
+// Counter mode allows us to precompute the `nonce+counter` values and this can give it a performance advantage if
+// we are on a multi-core machine.
+// Cipher Feedback Mode: 
