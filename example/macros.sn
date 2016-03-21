@@ -17,9 +17,9 @@ macro nif(expr pos zero neg)
 nif(1 - 2, showln("+"), showln("0"), showln("-"));
 // -> -
 
-macro when(test body) %if(%%test) %%body;
+macro unless(test body) %if(not(%%test)) %%body;
 
-when(1 < 2, showln("hello"));
+unless(1 > 2, showln("hello"));
 // -> hello
 
 macro while(test body) %let loop () if (%%test) { %%body; loop() };
@@ -36,12 +36,12 @@ dolist(x, [1 2 3], showln(x * 100));
 //    200
 //    300
 
-macro let_when(var expr body) %let (%%var = %%expr) when(%%var, %%body);
+macro let_unless(var expr body) %let (%%var = %%expr) unless(%%var, %%body);
 
-let_when(x, 2 * 2, showln(x * 10));
-// -> 40
-let_when(x, 2 < 2, showln(x * 10));
-// 
+let_unless(x, 2 < 2, showln(2 * 10));
+// -> 20
+let_unless(x, 2 * 2, showln(x * 10));
+// false
 
 macro my_and(@rest args) 
     let (len = length(args)) 

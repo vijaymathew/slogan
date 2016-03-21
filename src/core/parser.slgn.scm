@@ -476,6 +476,16 @@
                           (scm-append expr (scm-list (if-expr tokenizer)))
                           (scm-append expr (scm-list (func-body-expr tokenizer #f #t)))))
                (scm-append expr '(#f)))))
+        (else (when-expr tokenizer))))
+
+(define (when-expr tokenizer)
+  (cond ((scm-eq? (tokenizer 'peek) 'when)
+         (tokenizer 'next)
+         (if (scm-not (scm-eq? (tokenizer 'next) '*open-paren*))
+             (parser-error tokenizer "Expected opening parenthesis."))         
+         (let ((expr (scm-cons 'if (scm-list (expression tokenizer)
+                                     (then-expr tokenizer)))))
+           (scm-append expr '(#f))))
         (else (case-expr tokenizer))))
 
 (define (case-expr tokenizer)
@@ -1342,7 +1352,7 @@
       expr))
 
 (define *reserved-names* '(fn function method define record true false
-			      if else let letseq letrec
+			      if else when let letseq letrec
 			      case match where try trycc catch finally
                               macro namespace import declare))
 
