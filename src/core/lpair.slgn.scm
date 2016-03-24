@@ -162,4 +162,22 @@
 	(loop (rest lst)
 	      (scm-cons (first lst) result)))))
 
+;; Since v0.3 - new lazy-pair builders (https://github.com/vijaymathew/slogan/issues/22)
+
+;; Returns a lazy-pair of evenly spaced values starting with `n`.
+(define (count #!key (start 0) (step 1)) (lpair-cons start (count start: (+ start step) step: step)))
+
+;; Returns a lazy-pair that return  elements from another lazy-pair `xs`. When all elements are
+;; exhausted, starts again from the head of `xs`. `rest(xs)` must become `[]` or `xs` itself should
+;; become `false` to indicate the end of sequence.
+(define (cycle xs)
+  (let ((old-xs xs))
+    (define (f xs)
+      (cond ((or (null? xs) (scm-not xs))
+             (f old-xs))
+            (else
+             (lpair-cons (first xs) (f (rest xs))))))
+    (f xs)))
+          
+  
   
