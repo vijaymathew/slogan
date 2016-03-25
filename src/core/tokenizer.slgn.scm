@@ -71,13 +71,8 @@
         ((yield-count-up) (set! yield-count (+ 1 yield-count)))
         ((yield-count-down) (if (> yield-count 0) (set! yield-count (- yield-count 1))))
         ((yield-count) yield-count)
+        ((reset-yield-count) (set! yield-count 0))
         (else (error "tokenizer received unknown message: " msg))))))
-
-(define (reset-yield-count! tokenizer old-count)
-  (let loop ((n (- (tokenizer 'yield-count) old-count)))
-    (if (> n 0)
-        (begin (tokenizer 'yield-count-down)
-               (loop (- n 1))))))
 
 (define (next-token port)
   (let ((c (port-pos-peek-char port)))

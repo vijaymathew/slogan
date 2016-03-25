@@ -212,9 +212,10 @@
 	     (found-else #f))
     (if (scm-not (scm-eq? (tokenizer 'next) '*inserter*))
 	(parser-error tokenizer "Missing -> after types expression."))
-    (let ((mdef (scm-cons types (scm-list 'define name (merge-lambda 
-						params 
-						(func-body-expr tokenizer params))))))
+    (let* ((body-expr (func-body-expr tokenizer params))
+           (mdef (scm-cons types (scm-list 'define name (merge-lambda 
+                                                         tokenizer params 
+                                                         body-expr)))))
       (cond ((scm-eq? (tokenizer 'peek) '*comma*)
 	     (tokenizer 'next)
 	     (cond ((scm-eq? (tokenizer 'peek) 'else)
@@ -247,8 +248,9 @@
              (scm-not noname))
 	(if is-lazy
             (parser-error tokenizer "lazy function must have a name.")
-	    (let ((params (func-params-expr tokenizer)))
-	      (merge-lambda params (func-body-expr tokenizer params))))
+	    (let* ((params (func-params-expr tokenizer))
+                   (body-expr (func-body-expr tokenizer params)))
+	      (merge-lambda tokenizer params body-expr)))
 	(begin (if (scm-not noname)
                    (begin (check-if-reserved-name name tokenizer)
                           (tokenizer 'next)
@@ -256,15 +258,16 @@
 	       (let ((params (func-params-expr tokenizer)))
 		 (if (and is-lazy (scm-not noname))
                      (def-lazy name (make-lazy #f #f)))
-                 (let ((expr (merge-lambda 
-				     params 
-				     (if (and is-lazy (scm-not noname))
-					 (expr-forcify (func-body-expr tokenizer params) params)
-					 (func-body-expr tokenizer params)))))
+                 (let* ((body-expr (func-body-expr tokenizer params))
+                        (expr (merge-lambda 
+                               tokenizer params 
+                               (if (and is-lazy (scm-not noname))
+                                   (expr-forcify (func-body-expr tokenizer params) params)
+                                   body-expr))))
                    (if (scm-not noname)
                        (scm-list 'define name expr)
                        expr)))))))
-                       
+
 (define (func-def? token) (or (scm-eq? 'fn token) (scm-eq? 'function token)))
 
 (define (func-def-stmt tokenizer)
@@ -326,9 +329,10 @@
            (remove-macro-lazy-fns-def name)
            (let ((types (method-types-decl tokenizer))
                  (params (func-params-expr tokenizer)))
-             (scm-cons types (scm-list 'define name (merge-lambda 
-                                             params 
-                                             (func-body-expr tokenizer params))))))))
+             (let ((body-expr (func-body-expr tokenizer params)))
+               (scm-cons types (scm-list 'define name (merge-lambda 
+                                                       tokenizer params 
+                                                       body-expr))))))))
 
 (define (method-def-stmt tokenizer)
   (cond ((scm-eq? (tokenizer 'peek) 'method)
@@ -984,27 +988,35 @@
 (define (func-def-expr tokenizer)
   (if (func-def? (tokenizer 'peek))
       (begin (tokenizer 'next)
-             (let ((params (func-params-expr tokenizer)))
-	       (merge-lambda params (func-body-expr tokenizer params))))
+             (let* ((params (func-params-expr tokenizer))
+                    (body-expr (func-body-expr tokenizer params)))
+	       (merge-lambda tokenizer params body-expr)))
       #f))
 
-(define (merge-lambda params lambda-body)
-  (let ((lambda-expr (scm-list 'lambda params)))
-    (if (scm-not (list? lambda-body))
-        (set! lambda-body (scm-list 'begin lambda-body)))
-    (if (<= 1 (scm-length lambda-body))
-        (scm-append lambda-expr (scm-list lambda-body))
-        (let loop ((lambda-expr lambda-expr)
-                   (lambda-body (if (scm-eq? (scm-car lambda-body) 'begin)
-                                    (scm-cdr lambda-body)
-                                    lambda-body)))
-          (if (null? lambda-body)
-              lambda-expr
-              (loop (scm-append lambda-expr (scm-list (scm-car lambda-body)))
-                    (scm-cdr lambda-body)))))))
+(define (wrap-caller-cc-decl expr)
+  `(let ((*caller-return* #f)) ,expr))
+
+(define (merge-lambda tokenizer params lambda-body)
+  (let ((expr (let ((lambda-expr (scm-list 'lambda params)))
+                (if (scm-not (list? lambda-body))
+                    (set! lambda-body (scm-list 'begin lambda-body)))
+                (if (<= 1 (scm-length lambda-body))
+                    (scm-append lambda-expr (scm-list lambda-body))
+                    (let loop ((lambda-expr lambda-expr)
+                               (lambda-body (if (scm-eq? (scm-car lambda-body) 'begin)
+                                                (scm-cdr lambda-body)
+                                                lambda-body)))
+                      (if (null? lambda-body)
+                          lambda-expr
+                          (loop (scm-append lambda-expr (scm-list (scm-car lambda-body)))
+                                (scm-cdr lambda-body))))))))
+    (if (> (tokenizer 'yield-count) 0)
+        (begin (tokenizer 'reset-yield-count)
+               (wrap-caller-cc-decl expr))
+        expr)))
 
 (define (wrap-in-return-cont expr)
-  `(let ((*caller-return* #f)) (call/cc (lambda (*return*) ,expr))))
+  `(call/cc (lambda (*return*) ,expr)))
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
   (let ((old-yield-count (tokenizer 'yield-count)))
@@ -1024,8 +1036,7 @@
                           (leave-scope)
                           expr))))))
       (if (and params (> (tokenizer 'yield-count) old-yield-count))
-          (begin (reset-yield-count! tokenizer old-yield-count)
-                 (wrap-in-return-cont body-expr))
+          (wrap-in-return-cont body-expr)
           body-expr))))
 
 (define (func-call-expr func-val tokenizer)
@@ -1057,7 +1068,7 @@
              (scm-eq? func-val 'task))
         (if (or (scm-not (list? (scm-car expr))) 
                 (scm-not (scm-eq? (scm-caar expr) 'lambda)))
-            (set! expr (scm-cons (merge-lambda '() (scm-car expr)) (scm-cdr expr)))))
+            (set! expr (scm-cons (merge-lambda tokenizer '() (scm-car expr)) (scm-cdr expr)))))
     (scm-cons func-val expr)))
 
 (define (macro-args-list tokenizer)

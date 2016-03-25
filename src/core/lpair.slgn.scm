@@ -8,7 +8,12 @@
 ;; A sequence can be either a normal list or a lazy-pair.
 
 (define (first lpair) (head lpair))
-(define (rest lpair) (scm-force (tail lpair)))
+
+(define (rest lpair)
+  (if (and (pair? lpair)
+           (procedure? (scm-cdr lpair)))
+      (iter-next lpair)
+      (scm-force (tail lpair))))
 
 (define (is_lpair obj)
   (and (pair? obj)

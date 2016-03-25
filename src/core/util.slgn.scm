@@ -309,7 +309,7 @@
   expr)
 
 ;; Move an iterator to the next element.
-(define (next iter)
+(define (iter-next iter)
   (callcc (lambda (caller-return)
             (if (pair? iter)
                 ((scm-cdr iter) caller-return)
