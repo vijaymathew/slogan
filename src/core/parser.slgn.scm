@@ -1,7 +1,11 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define (slogan tokenizer)
-  (expression/statement tokenizer))
+  (let ((expr (expression/statement tokenizer)))
+    (if (> (tokenizer 'yield-count) 0)
+        (begin (reset-yield-count! tokenizer 0)
+               (error "yield can be called only from a function."))
+        expr)))
 
 (define (expression/statement tokenizer #!optional (top #t))
   (if (eof-object? (tokenizer 'peek))
@@ -636,9 +640,9 @@
   (let ((token (tokenizer 'peek)))
     (cond ((scm-eq? token 'yield)
            (tokenizer 'next)
-           (tokenizer 'has-yield-on)
+           (tokenizer 'yield-count-up)
            (let ((expr (expression tokenizer)))
-             `(call/cc (lambda(*yield*) (*return* (scm-cons ,expr *yield*))))))
+             `(set! *caller-return* (call/cc (lambda(*yield*) ((if *caller-return* *caller-return* *return*) (scm-cons ,expr *yield*)))))))
           (else #f))))
 
 (define (normalize-sym s)
@@ -1000,11 +1004,10 @@
                     (scm-cdr lambda-body)))))))
 
 (define (wrap-in-return-cont expr)
-  `(call/cc (lambda (*return*) ,expr)))
+  `(let ((*caller-return* #f)) (call/cc (lambda (*return*) ,expr))))
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
-  (let ((old-has-yield? (tokenizer 'has-yield?)))
-    (tokenizer 'has-yield-off)
+  (let ((old-yield-count (tokenizer 'yield-count)))
     (let ((body-expr
            (let ((token (tokenizer 'peek)))
              (if (or (scm-eq? token '*semicolon*) 
@@ -1020,11 +1023,10 @@
                                               expr)))))
                           (leave-scope)
                           expr))))))
-      (if (tokenizer 'has-yield?)
-          (set! body-expr (wrap-in-return-cont body-expr)))
-      (if (scm-not old-has-yield?)
-          (tokenizer 'has-yield-off))
-      body-expr)))
+      (if (and params (> (tokenizer 'yield-count) old-yield-count))
+          (begin (reset-yield-count! tokenizer old-yield-count)
+                 (wrap-in-return-cont body-expr))
+          body-expr))))
 
 (define (func-call-expr func-val tokenizer)
   (if (and (symbol? func-val)

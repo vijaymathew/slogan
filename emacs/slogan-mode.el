@@ -1,7 +1,7 @@
 ;; Need lot of work here...
 
 (setq slogan-keywords '("fn" "function" "method" "define" "record"
-                       "if" "else" "when" "let" "letseq" "letrec" 
+                       "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
                        "macro" "namespace" "import" "declare"))
 (setq slogan-constants '("true" "false"))

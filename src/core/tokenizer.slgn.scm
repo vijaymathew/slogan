@@ -24,7 +24,7 @@
 	(quote-mode 0)
 	(macro-mode #f)
         (radix 10)
-        (has-yield? #f)
+        (yield-count 0)
         (lookahead-stack '()))
     (lambda (msg . args)
       (case msg
@@ -68,10 +68,16 @@
 	((macro-mode?) macro-mode)
         ((program-text) program-text)
         ((port-pos) port)
-        ((has-yield-off) (set! has-yield? #f))
-        ((has-yield-on) (set! has-yield? #t))
-        ((has-yield?) has-yield?)
+        ((yield-count-up) (set! yield-count (+ 1 yield-count)))
+        ((yield-count-down) (if (> yield-count 0) (set! yield-count (- yield-count 1))))
+        ((yield-count) yield-count)
         (else (error "tokenizer received unknown message: " msg))))))
+
+(define (reset-yield-count! tokenizer old-count)
+  (let loop ((n (- (tokenizer 'yield-count) old-count)))
+    (if (> n 0)
+        (begin (tokenizer 'yield-count-down)
+               (loop (- n 1))))))
 
 (define (next-token port)
   (let ((c (port-pos-peek-char port)))
