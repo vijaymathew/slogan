@@ -307,3 +307,9 @@
                           e)
                  (scm-map (lambda (d) (check-for-? (scm-car d) tokenizer)) e))))))
   expr)
+
+;; Move an iterator to the next element.
+(define (next iter)
+  (if (pair? iter)
+      ((scm-cdr iter))
+      '()))

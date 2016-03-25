@@ -596,7 +596,7 @@
                 (make-try-catch-expr token try-expr '(*e*) '(raise *e*)
                                      (finally-expr tokenizer)))
                (else (parser-error tokenizer "Expected catch or finally clauses.")))))
-          (else #f))))
+          (else (yield-expr tokenizer)))))
 
 (define (catch-args tokenizer)
   (tokenizer 'next)
@@ -631,7 +631,16 @@
                   (scm-list 'lambda '(*e*) '(begin (*finally*) (raise *e*)))
                   (scm-list 'lambda '() try-expr))
 	    '(*finally*)))))
-                   
+
+(define (yield-expr tokenizer)
+  (let ((token (tokenizer 'peek)))
+    (cond ((scm-eq? token 'yield)
+           (tokenizer 'next)
+           (tokenizer 'has-yield-on)
+           (let ((expr (expression tokenizer)))
+             `(call/cc (lambda(*yield*) (*return* (scm-cons ,expr *yield*))))))
+          (else #f))))
+
 (define (normalize-sym s)
   (if (and (list? s)
            (scm-eq? (scm-car s) 'quote))
@@ -990,21 +999,32 @@
               (loop (scm-append lambda-expr (scm-list (scm-car lambda-body)))
                     (scm-cdr lambda-body)))))))
 
+(define (wrap-in-return-cont expr)
+  `(call/cc (lambda (*return*) ,expr)))
+
 (define (func-body-expr tokenizer params #!optional (use-let #f))
-  (let ((token (tokenizer 'peek)))
-    (if (or (scm-eq? token '*semicolon*) 
-            (eof-object? token))
-        '(begin (quote ()))
-        (begin (enter-scope)
-	       (push-func-params params)
-               (let ((expr (if (scm-eq? (tokenizer 'peek) '*open-brace*)
-                               (block-expr tokenizer use-let)
-                               (let ((expr (statement tokenizer)))
-                                 (if (scm-not expr)
-                                     (expression tokenizer)
-                                     expr)))))
-                 (leave-scope)
-                 expr)))))
+  (let ((old-has-yield? (tokenizer 'has-yield?)))
+    (tokenizer 'has-yield-off)
+    (let ((body-expr
+           (let ((token (tokenizer 'peek)))
+             (if (or (scm-eq? token '*semicolon*) 
+                     (eof-object? token))
+                 '(begin (quote ()))
+                 (begin (enter-scope)
+                        (push-func-params params)
+                        (let ((expr (if (scm-eq? (tokenizer 'peek) '*open-brace*)
+                                        (block-expr tokenizer use-let)
+                                        (let ((expr (statement tokenizer)))
+                                          (if (scm-not expr)
+                                              (expression tokenizer)
+                                              expr)))))
+                          (leave-scope)
+                          expr))))))
+      (if (tokenizer 'has-yield?)
+          (set! body-expr (wrap-in-return-cont body-expr)))
+      (if (scm-not old-has-yield?)
+          (tokenizer 'has-yield-off))
+      body-expr)))
 
 (define (func-call-expr func-val tokenizer)
   (if (and (symbol? func-val)
@@ -1352,7 +1372,7 @@
       expr))
 
 (define *reserved-names* '(fn function method define record true false
-			      if else when let letseq letrec
+			      if else when let letseq letrec yield
 			      case match where try trycc catch finally
                               macro namespace import declare))
 
