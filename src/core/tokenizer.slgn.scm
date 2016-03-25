@@ -24,7 +24,6 @@
 	(quote-mode 0)
 	(macro-mode #f)
         (radix 10)
-        (has-yield? #f)
         (lookahead-stack '()))
     (lambda (msg . args)
       (case msg
@@ -68,9 +67,6 @@
 	((macro-mode?) macro-mode)
         ((program-text) program-text)
         ((port-pos) port)
-        ((has-yield-off) (set! has-yield? #f))
-        ((has-yield-on) (set! has-yield? #t))
-        ((has-yield?) has-yield?)
         (else (error "tokenizer received unknown message: " msg))))))
 
 (define (next-token port)
