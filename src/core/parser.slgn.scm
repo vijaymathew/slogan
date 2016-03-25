@@ -640,13 +640,18 @@
                   (scm-list 'lambda '() try-expr))
 	    '(*finally*)))))
 
+(define-structure s-yield fn)
+
 (define (yield-expr tokenizer)
   (let ((token (tokenizer 'peek)))
     (cond ((scm-eq? token 'yield)
            (tokenizer 'next)
            (tokenizer 'yield-count-up)
            (let ((expr (expression tokenizer)))
-             `(set! *caller-return* (call/cc (lambda(*yield*) ((if *caller-return* *caller-return* *return*) (scm-cons ,expr *yield*)))))))
+             `(set! *caller-return*
+                    (call/cc (lambda(*yield*)
+                               ((if *caller-return* *caller-return* *return*)
+                                (scm-cons ,expr (make-s-yield *yield*))))))))
           (else #f))))
 
 (define (normalize-sym s)

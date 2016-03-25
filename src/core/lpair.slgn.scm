@@ -4,14 +4,23 @@
 
 (define-macro (lpair-cons a b) `(scm-cons ,a (delay ,b)))
 
+(define (is_iterator obj)
+  (and (pair? obj)
+       (s-yield? (scm-cdr obj))))
+
+;; Move an iterator to the next element.
+(define (iter-next iter)
+  (callcc (lambda (caller-return)
+            ((s-yield-fn (scm-cdr iter)) caller-return)
+            (caller-return '()))))
+
 ;; Functions for working with sequences.
 ;; A sequence can be either a normal list or a lazy-pair.
 
 (define (first lpair) (head lpair))
 
 (define (rest lpair)
-  (if (and (pair? lpair)
-           (procedure? (scm-cdr lpair)))
+  (if (is_iterator lpair)
       (iter-next lpair)
       (scm-force (tail lpair))))
 
