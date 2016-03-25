@@ -10,13 +10,15 @@
 (define (pair a b)
   (scm-cons a b))
 
-(define (head seq) 
-  (if (null? seq) nil
-      (scm-car seq)))
+(define (head seq)
+  (if (pair? seq)
+      (scm-car seq)
+      nil))
 
 (define (tail seq) 
-  (if (null? seq) nil
-      (scm-cdr seq)))
+  (if (pair? seq)
+      (scm-cdr seq)
+      nil))
 
 (define (is_empty seq)
   (null? seq))
