@@ -1,0 +1,43 @@
+function f()
+{ yield 'a';
+  yield 'b';
+  yield 'c' };
+
+define iter = f();
+showln(head(iter)); // -> a
+iter = next(iter);
+showln(head(iter)); // -> b
+iter = next(iter);
+showln(head(iter)); // -> c
+
+function count(start = 0, step = 1)
+  let loop(n = start)
+  { yield n;
+    loop(n + step) };
+
+iter = count(10, 5);
+showln(head(iter)); // -> 10
+iter = next(iter);
+showln(head(iter)); // -> 15
+
+function cycle(seq)
+  let (saved = 
+    let loop (seq = seq, saved = [])
+     if (is_empty(seq)) reverse(saved)
+     else { yield first(seq);
+            loop(rest(seq), first(seq):saved) })
+   let loop()
+    let loop2(s = saved)
+     if (is_empty(s)) loop()
+     else { yield first(s);
+            loop2(rest(s)) };
+
+iter = cycle([1 2]);
+showln(head(iter)); // -> 1
+iter = next(iter);
+showln(head(iter)); // -> 2
+iter = next(iter);
+showln(head(iter)); // -> 1
+iter = next(iter);
+showln(head(iter)); // -> 2
+
