@@ -11,8 +11,9 @@
 ;; Move an iterator to the next element.
 (define (iter-next iter)
   (callcc (lambda (caller-return)
-            ((s-yield-fn (scm-cdr iter)) caller-return)
-            (caller-return '()))))
+            (let ((yield-obj (scm-cdr iter)))
+              (s-yield-k-set! yield-obj caller-return)
+              ((s-yield-fn yield-obj))))))
 
 ;; Functions for working with sequences.
 ;; A sequence can be either a normal list or a lazy-pair.

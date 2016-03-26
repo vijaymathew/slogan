@@ -74,6 +74,13 @@
         ((reset-yield-count) (set! yield-count 0))
         (else (error "tokenizer received unknown message: " msg))))))
 
+(define (reset-yield-count! tokenizer oldc)
+  (let loop ((diff (- (tokenizer 'yield-count) oldc)))
+    (if (> diff 0)
+        (begin (tokenizer 'yield-count-down)
+               (loop (- diff 1)))
+        (tokenizer 'yield-count))))
+
 (define (next-token port)
   (let ((c (port-pos-peek-char port)))
     (if (eof-object? c)

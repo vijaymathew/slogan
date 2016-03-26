@@ -11,8 +11,9 @@ iter = rest(iter);
 showln(first(iter)); // -> c
 
 function count(start = 0, step = 1)
-{ yield start;
-  count(start + step, step) };
+  let loop (n = start)
+  { yield n;
+    loop(n + step) };
 
 iter = count(10, 5);
 showln(first(iter)); // -> 10

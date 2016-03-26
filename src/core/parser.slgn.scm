@@ -1,5 +1,7 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+(define-structure s-yield fn k)
+
 (define (slogan tokenizer)
   (let ((expr (expression/statement tokenizer)))
     (if (> (tokenizer 'yield-count) 0)
@@ -640,18 +642,16 @@
                   (scm-list 'lambda '() try-expr))
 	    '(*finally*)))))
 
-(define-structure s-yield fn)
-
 (define (yield-expr tokenizer)
   (let ((token (tokenizer 'peek)))
     (cond ((scm-eq? token 'yield)
            (tokenizer 'next)
            (tokenizer 'yield-count-up)
            (let ((expr (expression tokenizer)))
-             `(set! *caller-return*
-                    (call/cc (lambda(*yield*)
-                               ((if *caller-return* *caller-return* *return*)
-                                (scm-cons ,expr (make-s-yield *yield*))))))))
+             `(call/cc (lambda(*yield*)
+                         (let ((*r* (s-yield-k *yield-obj*)))
+                           (s-yield-fn-set! *yield-obj* *yield*)
+                           (*r* (scm-cons ,expr *yield-obj*)))))))
           (else #f))))
 
 (define (normalize-sym s)
@@ -998,9 +998,6 @@
 	       (merge-lambda tokenizer params body-expr)))
       #f))
 
-(define (wrap-caller-cc-decl expr)
-  `(let ((*caller-return* #f)) ,expr))
-
 (define (merge-lambda tokenizer params lambda-body)
   (let ((expr (let ((lambda-expr (scm-list 'lambda params)))
                 (if (scm-not (list? lambda-body))
@@ -1016,12 +1013,11 @@
                           (loop (scm-append lambda-expr (scm-list (scm-car lambda-body)))
                                 (scm-cdr lambda-body))))))))
     (if (> (tokenizer 'yield-count) 0)
-        (begin (tokenizer 'reset-yield-count)
-               (wrap-caller-cc-decl expr))
-        expr)))
+        (tokenizer 'reset-yield-count))
+    expr))
 
 (define (wrap-in-return-cont expr)
-  `(call/cc (lambda (*return*) ,expr)))
+  `(call/cc (lambda (*return*) (let ((*yield-obj* (make-s-yield #f *return*))) ,expr))))
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
   (let ((old-yield-count (tokenizer 'yield-count)))
