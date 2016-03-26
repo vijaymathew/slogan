@@ -1017,7 +1017,12 @@
     expr))
 
 (define (wrap-in-return-cont expr)
-  `(call/cc (lambda (*return*) (let ((*yield-obj* (make-s-yield #f *return*))) ,expr))))
+  `(call/cc (lambda (*return*)
+              (let ((*yield-obj* (make-s-yield #f *return*)))
+                (begin ,expr
+                       (let ((*r* (s-yield-k *yield-obj*)))
+                         (s-yield-fn-set! *yield-obj* #f)
+                         (*r* *yield-obj*)))))))
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
   (let ((old-yield-count (tokenizer 'yield-count)))

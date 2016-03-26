@@ -1,14 +1,16 @@
+load("util");
+
 function f()
 { yield 'a';
   yield 'b';
   yield 'c' };
 
 define iter = f();
-showln(first(iter)); // -> a
+assert(first(iter), 'a');
 iter = rest(iter);
-showln(first(iter)); // -> b
+assert(first(iter), 'b');
 iter = rest(iter);
-showln(first(iter)); // -> c
+assert(first(iter), 'c');
 
 function count(start = 0, step = 1)
   let loop (n = start)
@@ -16,9 +18,9 @@ function count(start = 0, step = 1)
     loop(n + step) };
 
 iter = count(10, 5);
-showln(first(iter)); // -> 10
+assert(first(iter), 10);
 iter = rest(iter);
-showln(first(iter)); // -> 15
+assert(first(iter), 15);
 
 function cycle(seq)
   let (saved = 
@@ -33,11 +35,32 @@ function cycle(seq)
             loop2(rest(s)) };
 
 iter = cycle([1 2]);
-showln(first(iter)); // -> 1
+assert(first(iter), 1);
 iter = rest(iter);
-showln(first(iter)); // -> 2
+assert(first(iter), 2);
 iter = rest(iter);
-showln(first(iter)); // -> 1
+assert(first(iter), 1);
 iter = rest(iter);
-showln(first(iter)); // -> 2
+assert(first(iter), 2);
 
+function repeat(object, times=false)
+  if (not(times))
+   let loop()
+   { yield object;
+     loop() }
+  else let loop(i = 0)
+        when (i < times)
+        { yield object;
+          loop(i + 1) };
+
+let loop (i = 0, iter = repeat(10))
+ when (i < 5)
+ { assert(first(iter), 10);
+   loop(i + 1, rest(iter)) };
+
+iter = repeat(1, 2);
+assert(first(iter), 1);
+iter = rest(iter);
+assert(first(iter), 1);
+iter = rest(iter);
+assert(first(iter), []);
