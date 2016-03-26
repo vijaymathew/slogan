@@ -61,11 +61,31 @@
 
 (define old-map map)
 
+(define (iter-map fn xs more)
+  (call/cc
+   (lambda (*return*)
+     (let ((*yield-obj* (make-s-yield #f *return*)))
+       (let loop ((xs xs) (more more))
+         (let ((*r* (s-yield-k *yield-obj*)))
+           (cond ((null? xs)
+                  (s-yield-fn-set! *yield-obj* #f)
+                  (*r* *yield-obj*))
+                 (else
+                  (call/cc
+                   (lambda (*yield*)
+                     (s-yield-fn-set! *yield-obj* *yield*)
+                     (if (null? more)
+                         (*r* (scm-cons (fn (scm-car xs)) *yield-obj*))
+                         (*r* (scm-cons (scm-apply fn (scm-car xs) (old-map scm-car more)) *yield-obj*)))))
+                  (loop (rest xs) (if (null? more) '() (old-map rest more)))))))))))
+
 (define (lpair-map f ls more)
-  (if (null? more)
-      (lpair-cons (f (first ls)) (lpair-map f (rest ls) '()))
-      (lpair-cons (scm-apply f (first ls) (old-map first more))
-                   (lpair-map f (rest ls) (old-map rest more)))))
+  (if (null? (first ls))
+      '()
+      (if (null? more)
+          (lpair-cons (f (first ls)) (lpair-map f (rest ls) '()))
+          (lpair-cons (scm-apply f (first ls) (old-map first more))
+                      (lpair-map f (rest ls) (old-map rest more))))))
 
 (define (generic-map f ls more)
   (if (null? more)
@@ -83,9 +103,12 @@
               (scm-cons a b))))))
 
 (define (map f ls . more)
-  (if (is_lpair ls)
-      (lpair-map f ls more)
-      (generic-map f ls more)))
+  (cond ((is_lpair ls)
+         (lpair-map f ls more))
+        ((is_iterator ls)
+         (iter-map f ls more))
+        (else
+         (generic-map f ls more))))
 
 (define (generic-for-each f ls . more)
   (let ((lpair? (is_lpair ls)))
