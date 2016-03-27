@@ -817,6 +817,9 @@
 (define core_uninstall_package uninstall_package)
 (define core_load_package load_package)
 
+(define core_is_iterator is_iterator)
+(define core_is_lpair is_lpair)
+
 (namespace_create 'core '(compose identiy mapfn partial complement
                                   namespace_names namespace_hide namespace_unhide
                                   namespace_create namespace_delete apply until
@@ -938,4 +941,5 @@
                                   subf32array_fill subf32array_move is_f64array f64array make_f64array
                                   f64array_length f64array_at f64array_set f64array_to_list list_to_f64array
                                   f64array_fill f64array_append f64array_copy f64array_shrink subf64array
-                                  subf64array_fill subf64array_move))
+                                  subf64array_fill subf64array_move is_iterator is_lpair))
+
