@@ -606,7 +606,7 @@
                 (make-try-catch-expr token try-expr '(*e*) '(raise *e*)
                                      (finally-expr tokenizer)))
                (else (parser-error tokenizer "Expected catch or finally clauses.")))))
-          (else (yield-expr tokenizer)))))
+          (else #f))))
 
 (define (catch-args tokenizer)
   (tokenizer 'next)
@@ -1016,6 +1016,7 @@
         (tokenizer 'reset-yield-count))
     expr))
 
+<<<<<<< HEAD
 (define (wrap-in-return-cont expr)
   `(call/cc (lambda (*return*)
               (let ((*yield-obj* (make-s-yield #f *return*)))
@@ -1391,7 +1392,7 @@
       expr))
 
 (define *reserved-names* '(fn function method define record true false
-			      if else when let letseq letrec yield
+			      if else when let letseq letrec
 			      case match where try trycc catch finally
                               macro namespace import declare))
 
