@@ -110,15 +110,57 @@
         (else
          (generic-map f ls more))))
 
+(define (iter-for-each f xs more)
+  (let loop ((xs xs) (more more))
+    (if (not (null? xs))
+        (if (null? more)
+            (begin (f (first xs))
+                   (loop (rest xs) '()))
+            (begin (apply f (first xs) (old-map first more))
+                   (loop (rest xs) (old-map rest more)))))))
+
 (define (generic-for-each f ls . more)
-  (let ((lpair? (is_lpair ls)))
-    (let ((scm-car (if lpair? first car))
-	  (scm-cdr (if lpair? rest cdr)))
-      (do ((ls ls (scm-cdr ls)) (more more (scm-map scm-cdr more)))
-	  ((null? ls))
-	(scm-apply f (scm-car ls) (scm-map scm-car more))))))
+  (if (is_iterator ls)
+      (iter-for-each f ls more)
+      (let ((lpair? (is_lpair ls)))
+        (let ((scm-car (if lpair? first car))
+              (scm-cdr (if lpair? rest cdr)))
+          (do ((ls ls (scm-cdr ls)) (more more (scm-map scm-cdr more)))
+              ((null? ls))
+            (scm-apply f (scm-car ls) (scm-map scm-car more)))))))
 
 (define for_each generic-for-each)
+
+;; Code for `iter-filter` was generated from this Slogan definition:
+;;
+;; function `iter-filter`(f, xs)
+;;  let loop(xs = xs)
+;;   if (is_empty(xs))
+;;    xs
+;;  else
+;;    if (f(first(xs)))
+;;     { yield first(xs);
+;;       loop(rest(xs)) }
+;;    else loop(rest(xs));
+;;
+(define (iter-filter f xs)
+  (call/cc
+   (lambda (*return*)
+     (let ((*yield-obj* (make-s-yield #f *return*)))
+       (begin (let loop ((xs xs))
+                (if (is_empty xs)
+                    xs
+                    (if (f (first xs))
+                        (begin (call/cc
+                                (lambda (*yield*)
+                                  (let ((*r* (s-yield-k *yield-obj*)))
+                                    (s-yield-fn-set! *yield-obj* *yield*)
+                                    (*r* (scm-cons (first xs) *yield-obj*)))))
+                               (loop (rest xs)))
+                        (loop (rest xs)))))
+              (let ((*r* (s-yield-k *yield-obj*)))
+                (s-yield-fn-set! *yield-obj* #f)
+                (*r* *yield-obj*)))))))
 
 (define (lpair-filter fn lpair #!key drill)
   (cond ((null? lpair) 
@@ -135,18 +177,46 @@
 	 (lpair-filter fn (rest lpair) drill: drill))))      
 
 (define (filter fn ls #!key drill)
-  (if (is_lpair ls)
-      (lpair-filter fn ls drill: drill)
-      (let loop ((ls ls)
-		 (result '()))
-	(cond ((null? ls)
-	       (scm-reverse result))
-	      ((and (list? (scm-car ls)) drill)
-	       (loop (scm-cdr ls) (scm-cons (filter fn (scm-car ls) drill: drill) result)))
-	      ((fn (scm-car ls))
-	       (loop (scm-cdr ls) (scm-cons (scm-car ls) result)))
-	      (else
-	       (loop (scm-cdr ls) result))))))
+  (cond ((is_lpair ls)
+         (lpair-filter fn ls drill: drill))
+        ((is_iterator ls)
+         (iter-filter fn ls))
+        (else
+         (let loop ((ls ls)
+                    (result '()))
+           (cond ((null? ls)
+                  (scm-reverse result))
+                 ((and (list? (scm-car ls)) drill)
+                  (loop (scm-cdr ls) (scm-cons (filter fn (scm-car ls) drill: drill) result)))
+                 ((fn (scm-car ls))
+                  (loop (scm-cdr ls) (scm-cons (scm-car ls) result)))
+                 (else
+                  (loop (scm-cdr ls) result)))))))
+
+;; iter-accumulate generated from this Slogan definition:
+;;
+;; function `iter-accumulate`(f, initial, xs)
+;;   let loop (initial = initial, xs = xs)
+;;    if (is_empty(xs))
+;;     xs
+;;    else let (r = f(initial, first(xs)))
+;;         { yield r;
+;;           loop(r, rest(xs)) };
+;;
+(define (iter-accumulate f initial xs)
+  (call/cc
+   (lambda (*return*)
+     (let ((*yield-obj* (make-s-yield #f *return*)))
+       (begin (let loop ((initial initial) (xs xs))
+                (if (is_empty xs)
+                    xs
+                    (let ((r (f initial (first xs))))
+                      (begin (call/cc (lambda (*yield*)
+                                        (let ((*r* (s-yield-k *yield-obj*)))
+                                          (s-yield-fn-set! *yield-obj* *yield*)
+                                          (*r* (scm-cons r *yield-obj*)))))
+                             (loop r (rest xs))))))
+              (let ((*r* (s-yield-k *yield-obj*))) (s-yield-fn-set! *yield-obj* #f) (*r* *yield-obj*)))))))
 
 (define (lpair-accumulate fn initial lpair)
   (if (null? lpair)
@@ -155,9 +225,12 @@
         (lpair-cons r (lpair-accumulate fn r (rest lpair))))))
 
 (define (accumulate fn initial seq)
-  (if (is_lpair seq)
-      (lpair-accumulate fn initial seq)
-      (fold_right fn initial seq)))
+  (cond ((is_lpair seq)
+         (lpair-accumulate fn initial seq))
+        ((is_iterator seq)
+         (iter-accumulate fn initial seq))
+        (else
+         (fold_right fn initial seq))))
 
 (define (enumerate start end #!optional (cmpr <=) (next inc))
     (if (cmpr start end)
