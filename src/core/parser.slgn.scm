@@ -606,7 +606,7 @@
                 (make-try-catch-expr token try-expr '(*e*) '(raise *e*)
                                      (finally-expr tokenizer)))
                (else (parser-error tokenizer "Expected catch or finally clauses.")))))
-          (else #f))))
+          (else (yield-expr tokenizer)))))
 
 (define (catch-args tokenizer)
   (tokenizer 'next)
