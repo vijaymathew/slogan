@@ -23,7 +23,7 @@
    (if (scm-eq? (tokenizer 'peek) '*semicolon*) *void*
        (namespace-stmt tokenizer))))
 
-(define (highligted-line colno)
+(define (highlighted-line colno)
   (if (< colno 0)
       (set! colno 1))
   (with-output-to-string
@@ -34,7 +34,7 @@
 	    (begin (scm-display #\space)
 		   (loop (+ n 1))))))))
 
-(define (highligted-error-line tokenizer #!optional token)
+(define (highlighted-error-line tokenizer #!optional token)
   (let ((curr-tok-len (current-token-length tokenizer))
         (tlen (if token
                   (string-length (if (symbol? token) (symbol->string token) token))
@@ -44,7 +44,7 @@
                (program-text (tokenizer 'program-text)))
       (if (scm-not (null? program-text))
           (if (= n line-no)
-              (scm-cons (scm-car program-text) (highligted-line (+ tlen (- (tokenizer 'column) curr-tok-len))))
+              (scm-cons (scm-car program-text) (highlighted-line (tokenizer 'column)))
               (loop line-no (+ n 1) (scm-cdr program-text)))
           #f))))
 
@@ -57,7 +57,7 @@
                  (scm-println "at [line: "(tokenizer 'line) 
                           ", column: " (tokenizer 'column) "]. " 
                           msg))
-             (let ((hl (highligted-error-line tokenizer token)))
+             (let ((hl (highlighted-error-line tokenizer token)))
                (if hl (begin (scm-println (scm-car hl))
                              (scm-println (scm-cdr hl)))))))))
 

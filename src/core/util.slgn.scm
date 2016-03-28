@@ -109,6 +109,8 @@
              (slgn-display-rvar port))
             ((##promise? val)
              (slgn-display-promise port))
+            ((s-yield? val)
+             (slgn-display-special-obj "iterator" port))
             ((condition-variable? val)
              (slgn-display-special-obj "monitor" port))
             (else
