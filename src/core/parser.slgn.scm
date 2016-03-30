@@ -1162,19 +1162,25 @@
 	  (mk-struct-accessors/modifiers name members default-values preconds)))
 
 (define (mk-record-precond-expr precond mem)
-  (scm-list 'if (scm-list 'not precond) (scm-list 'error (with-output-to-string 
-                                               '()
-                                               (lambda () 
-                                                 (scm-display "Precondition failed: ")
-                                                 (scm-display precond)
-                                                 (scm-display ".")))
-                                      mem)))
+  (if (eq? precond #t)
+      precond
+      (scm-list 'if (scm-list 'not precond)
+                (scm-list
+                 'error (with-output-to-string 
+                          '()
+                          (lambda () 
+                            (scm-display "Precondition failed: ")
+                            (scm-display precond)
+                            (scm-display ".")))
+                 mem))))
 
 (define (mk-record-precond-exprs preconds mems)
   (let loop ((preconds preconds) (mems mems) (result '()))
     (if (null? preconds) (scm-append (scm-list 'begin) (scm-reverse result))
         (loop (scm-cdr preconds) (scm-cdr mems)
-              (scm-cons (mk-record-precond-expr (scm-car preconds) (scm-car mems)) result)))))
+              (if (eq? #t (scm-car preconds))
+                  result
+                  (scm-cons (mk-record-precond-expr (scm-car preconds) (scm-car mems)) result))))))
         
 (define (mk-record-constructor recname members default-values preconds)
   (scm-append (scm-list 'lambda (scm-append (scm-list '#!key) (mk-record-constructor-params members default-values)))
@@ -1217,7 +1223,7 @@
       (scm-list (scm-list 'define slgn-accessor scm-accessor)
             (scm-list 'define idx-accessor scm-accessor)
 	    (scm-list 'define slgn-modifier (scm-append (scm-list 'lambda (scm-list '*s* mem)) 
-                                                (scm-append (scm-list (mk-record-precond-expr precond mem))
+                                                (scm-append (if (eq? #t precond) '() (scm-list (mk-record-precond-expr precond mem)))
                                                         (scm-list (scm-list scm-modifier '*s* mem)))))))))
 
 (define (assert-comma-separator tokenizer end-seq-char #!optional comma-required)
