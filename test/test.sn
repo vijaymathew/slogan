@@ -1,0 +1,4 @@
+link("../example/util");
+link("../test/basic");
+link("../test/yield");
+link("../test/lazy");
