@@ -1,39 +1,8 @@
 // A utility macro for testing.
 macro assert(expr result) 
-    %let (r = %%expr) 
-	if (not(r == %%result)) 
-	    error("assert failed." %%expr "->" r);
-
-// Image output in PPM format.
-record image(width height pixels);
-
-function mkimage(width height) 
-    image(width = width, height = height, pixels = []);
-
-function image_put_pixel(img r g b)
-    image_set_pixels(img, append(image_pixels(img), [#b[r g b]]));
-
-function bit_to_n(ba i) 
-    if (bit_array_is_set(ba, i)) 1
-    else 0;
-
-function image_show(img) 
-    let (s = string_writer(), width = image_width(img)) {
-	show(stream = s, "P3\n", image_width(img), " ", image_height(img) " 1\n");
-	let loop (pixels = image_pixels(img), w = width) 
-	    if (is_empty(pixels)) get_output_string(s)
-	    else let (pixel = first(pixels)) {
-		show(stream = s, bit_to_n(pixel, 0), " "
-		     bit_to_n(pixel, 1), " ",
-		     bit_to_n(pixel, 2), " ");
-		if (is_zero(w - 1)) {
-		    newline(s);
-		    loop(tail(pixels), width)
-		} else {
-		    show(stream = s, " ");
-		    loop(tail(pixels), dec(w))
-		}
-	    }
-    };
+    %let (r = %%expr, res = %%result)
+	if (not(r == res)) 
+	    error("assertion failed - " r res)
+        else true;
 
 	

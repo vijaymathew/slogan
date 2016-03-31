@@ -1,3 +1,5 @@
+.PHONY: test
+
 SLOGAN_ROOT ?= ../
 
 INSTALL_DIR ?= /usr/bin
@@ -34,6 +36,16 @@ uninstall:
 	rm ${INSTALL_DIR}/slogan
 	rm -rf ${CONFIG_DIR}
 
+test:
+	pwd
+	rm -f ../example/*.scm
+	rm -f ../example/*.o*
+	rm -f ../test/test
+	rm -f ../test/*.o*
+	rm -f ../test/*.scm
+	./slogan -x ../test/test
+	../test/test
+
 clean:
 	rm -f *.o*
 	rm -f *.c
@@ -41,4 +53,10 @@ clean:
 	rm -f ./core/*.c
 	rm -f ./libslogan.a
 	rm -f ./slogan
+	rm -f ../example/*.scm
+	rm -f ../example/*.o*
+	rm -f ../test/test
+	rm -f ../test/*.o*
+	rm -f ../test/*.scm
+
 

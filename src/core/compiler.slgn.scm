@@ -10,15 +10,20 @@
       (filter (lambda (x) (scm-not (void? x))) exprs drill: #t)
       exprs))
 
+(define *loader-functions* '(link load reload))
+
 (define (compile->scheme tokenizer)
   (let loop ((v (eliminate-voids (slogan tokenizer)))
              (exprs '()))
     (if *compiler-log* (begin (scm-display v) (scm-newline)))
     (if (scm-not (eof-object? v))
-        (if (scm-not (void? v)) 
-            (loop (slogan tokenizer)
-                  (scm-cons v exprs))
-            (loop (slogan tokenizer) exprs))
+        (begin
+          (if (and (pair? v) (scm-memq (scm-car v) *loader-functions*))
+              (scm-eval v))
+          (if (scm-not (void? v)) 
+              (loop (slogan tokenizer)
+                    (scm-cons v exprs))
+              (loop (slogan tokenizer) exprs)))
         (scm-reverse exprs))))
 
 (define (read-script-file script-name)
@@ -76,7 +81,7 @@
                     (if exe
                         (exe-build-command script-name cc_options ld_options output out-file-name)
                         (string-append *gsc-compiler* " " out-file-name))))
-               (display build-cmd) (newline)
+               (scm-display build-cmd) (scm-newline)
 	       (if (zero? (shell-command build-cmd))
 		   (begin (delete-file out-file-name)
 			  #t)
