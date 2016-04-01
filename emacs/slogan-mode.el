@@ -4,7 +4,7 @@
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
                        "macro" "namespace" "import" "declare"))
-(setq slogan-constants '("true" "false"))
+(setq slogan-constants '("true" "false" "lazy"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))
 (setq slogan-constant-regexp (regexp-opt slogan-constants 'words))

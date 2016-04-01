@@ -54,3 +54,14 @@ x = [1 2 3 4];
 assert({match(x) [1 a 3 b] -> a + b}, 6);
 
 assert({case(x) [1 2 5 4] -> "ok"}, false);
+
+function lazy u(a, b) if (a) b else false;
+x = false;
+
+assert(u(false, 100), false);
+assert(u(true, 100), 100);
+u(false, {x = true});
+assert(x, false);
+u(true, {x = true});
+assert(x, true);
+

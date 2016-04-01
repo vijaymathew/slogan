@@ -45,6 +45,11 @@ test:
 	rm -f ../test/*.scm
 	./slogan -x ../test/test
 	../test/test
+	rm -f ../example/*.scm
+	rm -f ../example/*.o*
+	rm -f ../test/test
+	rm -f ../test/*.o*
+	rm -f ../test/*.scm
 
 clean:
 	rm -f *.o*

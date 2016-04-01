@@ -264,7 +264,7 @@
                         (expr (merge-lambda 
                                tokenizer params 
                                (if (and is-lazy (scm-not noname))
-                                   (expr-forcify (func-body-expr tokenizer params) params)
+                                   (expr-forcify body-expr params)
                                    body-expr))))
                    (if (scm-not noname)
                        (scm-list 'define name expr)
