@@ -1400,7 +1400,7 @@
       expr))
 
 (define *reserved-names* '(fn function method define record true false
-			      if else when let letseq letrec
+			      if else when let letseq letrec yield
 			      case match where try trycc catch finally
                               macro namespace import declare))
 

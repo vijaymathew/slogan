@@ -55,4 +55,4 @@ function lfilter(xs, f)
 
 x = lfilter([1 2 3 4 5], is_odd);
 assert(nth(1, x), 3);
-showln(nth(2, x), 5);
+assert(nth(2, x), 5);
