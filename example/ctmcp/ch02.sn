@@ -1,152 +1,35 @@
 reload("../util");
 
-// Examples of declarative programming. 
+// Exception example
 
-// A declarative program is one that is stateless and deterministic, i.e when called with the
-// same input it always give the same output. Declarative programs are compositional and easy
-// to reason about.
+function eval(e)
+  if (is_number(e)) e
+  else match(e)
+        [!plus x y] -> eval(x) + eval(y),
+        [!times x y] -> eval(x) * eval(y),
+        _ -> raise(ill-formed-expression, e);
 
-// Let us start with a simple program that demonstrates two declarative programming techniques
-// - using functions as the sole building blocks of a program and iteration. The program defines
-// a function that finds the square root of a number using Newton's method: 
+assert(eval(10), 10);
+assert(eval([!plus 10 20]), 30);
+assert(eval([!times [!plus 10 20] [!plus 1 2]]), 90);
+assert(try eval("hi") catch (e) !no, !no);
 
-function sqrt(x)
-{ function improve(guess) (guess + x/guess) / 2.0;
-  function is_good_enough(guess) abs(x-guess*guess)/x < 0.00001;
-  function sqrt_iter(guess) if (is_good_enough(guess)) guess else sqrt_iter(improve(guess));
-  sqrt_iter(1.0) };
+// Ex 8
+// Control abstractions
+macro and_then(e1, e2)
+ %if (%%e1) %%e2 else false;
 
-assert(floor(sqrt(10)), 3.);
+macro or_else(e1, e2)
+ %if (%%e1) true else %%e2;
 
-// Another technique is higher-order programming where functions are passed as arguments to
-// functions. This allows us to build powerful abstractions that separates the general
-// control flow of a program from each particular use of it. In the next example we abstract away
-// the iteration using this technique:
+define x = 1;
+assert(and_then(true, {x = 2; 10}), 10);
+assert(x, 2);
+assert(and_then(2 > 3, {x = 1; 10}), false);
+assert(x, 2);
 
-function iterate(s, is_done, transform) 
-  if (is_done(s)) s
-  else iterate(transform(s), is_done, transform);
-
-// We can now re-write `sqrt` more concisely using the `iterate` abstraction:
-
-function sqrt(x) iterate(1.0, fn (g) abs(x-g*g)/x<0.00001, fn (g) (g+x/g)/2.0);
-
-assert(floor(sqrt(10)), 3.);
-
-// Recursion is more general than iteration in that a recursive call can occur anywhere
-// in the function body. One consequence of this is that recursion can lead to a growing
-// stack in proportion to the input. An important technique in declarative programming is
-// to control the growing stack size whenever possible. As an example, we show the `factorial`
-// function. First the normal definition that grows the stack in proportion to the function's
-// argument:
-
-function factorial(n) 
-  if (n == 0) 1
-  else if (n > 0) n * factorial(n - 1)
-  else error("factorial - n must be positive.");
-
-assert(factorial(10), 3628800);
-assert(try factorial(-1) catch (e) false, false);
-// We can convert the recursion to iteration by adding an accumulator argument that keeps track of
-// the numbers multiplied so far and by pushing the recursive call to the tail-position of the
-// function:
-
-function factorial(n)
-{ function fact_iter(n, a) 
-    if (n == 0) a
-    else if (n > 0) fact_iter(n - 1, n * a)
-    else error("factorial - n must be positive.");
-  
-  fact_iter(n, 1) };
-
-assert(factorial(10), 3628800);
-assert(try factorial(-1) catch (e) false, false);
-
-// An implementation of mergesort:
-
-function merge(xs, ys) 
-  match(xs:ys) 
-   []:ys         -> ys,
-   xs:[]         -> xs,
-   (x:xr):(y:yr) -> 
-   if (x < y) x:merge(xr, ys)
-   else y:merge(xs, yr);
-
-function split(xs) 
-{ function iter(xs, xrs, yrs) 
-    match(xs) 
-     []       -> xrs:yrs,
-     [x]      -> (x:xrs):yrs,
-     x1:x2:xr -> iter(xr, x1:xrs, x2:yrs);
-   iter(xs, [], []) };
-
-function mergesort(xs) 
-  match(xs) 
-   []  -> [],
-   [x] -> [x],
-   _   -> let (parts = split(xs)) 
-           merge(mergesort(head(parts)),
-                 mergesort(tail(parts)));
-
-assert(mergesort([3 1 0 2]), [0 1 2 3]);
-
-// Amortized constant-time ephemeral queue
-function make_queue() []:[];
-
-function check_queue(q)
-  match(q)
-   []:r -> reverse(r):[],
-    _ -> q;
-
-function insert_queue(q, x) match(q) f:r -> check_queue(f:(x:r));
-function delete_queue(q) match(q) f:r -> check_queue(tail(f):r);
-function is_empty_queue(q) match(q) f:r -> is_empty(f);
-
-// Ordered binary trees
-record leaf();
-define default_leaf = leaf();
-record tree(key, value, left = default_leaf, right = default_leaf);
-
-function lookup(k, tree)
-  match(tree)
-   leaf() -> !notfound,
-   tree(key, value, left, right) -> 
-          if (k < key) lookup(k, left)
-          else if (k > key) lookup(k, right)
-          else value;
-
-// There is an alternative way to write `lookup` using `where` guards.
-// This is more declarative and makes it easy to verify that no cases
-// are overlooked.
-function lookup_2(k, tree) 
-  match(tree) 
-   leaf() -> !notfound,
-   tree(key, value, _, _) where key == k -> value,
-   tree(key, _, left, _) where k < key -> lookup_2(k, left),
-   tree(key, _, _, right) where k > key -> lookup_2(k, right);
-
-function insert(k, v, t)
-  match(t)
-   leaf() -> tree(key = k, value = v),
-   tree(key, value, left, right) where key == k -> make_tree(k, v, left, right),
-   tree(key, value, left, right) where k < key -> make_tree(key, value, insert(k, v, left), right),
-   tree(key, value, left, right) where k > key -> make_tree(key, value, left, insert(k, v, right));
-
-function delete(x, tree)
-  match(tree)
-   leaf() -> default_leaf,
-   tree(key, value, left, right) where key == x ->
-   { match(remove_smallest(right))
-      [] -> left,
-      yp:vp:tp -> make_tree(yp, vp, left, tp) },
-   tree(key, value, left, right) where x < key -> make_tree(key, value, delete(x, left), right),
-   tree(key, value, left, right) where x > key -> make_tree(key, value, left, delete(x, right));
-
-function remove_smallest(tree)
-  match(tree)
-   leaf() -> [],
-   tree(key, value, left, right) ->
-   { match(remove_smallest(left))
-      [] -> key:value:right,
-   yp:vp:tp -> yp:vp:make_tree(key, value, tp, right) };
-
+x = 1;
+assert(or_else(true, {x = 2; 10}), true);
+assert(x, 1);
+assert(or_else(2 > 3, {x = 2; 10}), 10);
+assert(x, 2);
