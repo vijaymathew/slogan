@@ -153,3 +153,54 @@ function for_all_acc(xs, func, init)
    else loop(rest(xs), func(r, first(xs)));
 
 assert(for_all_acc([1 2 3 4 5], fn(a, c) a + c, 0), 15);
+
+// List based dictionary:
+function new_dictionary() [];
+
+function put(ds, key, value)
+  match (ds)
+   [] -> [key:value],
+   (k:v):dr where k == key -> (key:value):dr,
+   (k:v):dr where k > key -> (key:value):(k:v):dr,
+   (k:v):dr where k < key -> (k:v):put(dr, key, value);
+
+function cond_get(ds, key, default)
+  match (ds)
+   [] -> default,
+   (k:v):dr where k == key -> v,
+   (k:v):dr where k > key -> default,
+   (k:v):dr where k < key -> cond_get(dr, key, default);
+
+function domain(ds) map(first, ds);
+
+define dict = put(put(put(new_dictionary(), 1, 100), 10, 1000), 5, 500);
+assert(cond_get(dict, 1, 0), 100);
+assert(cond_get(dict, 10, 0), 1000);
+assert(cond_get(dict, 5, 0), 500);
+assert(cond_get(dict, 2, 0), 0);
+assert(sort(domain(dict)), [1 5 10]);
+
+// Tree based dictionary:
+function new_dictionary() default_leaf;
+
+function put(ds, key, value) insert(key, value, ds);
+
+function cond_get(ds, key, default)
+  let (r = lookup_2(key, ds))
+   if (r == !notfound) default
+   else r;
+
+function domain(ds)
+{ function domain_helper(ds, d)
+    match (ds)
+     leaf() -> d,
+     tree(key, _ , left, right) -> key:domain_helper(left, domain_helper(right, d));
+  domain_helper(ds, []) };
+  
+dict = put(put(put(new_dictionary(), 1, 100), 10, 1000), 5, 500);
+assert(cond_get(dict, 1, 0), 100);
+assert(cond_get(dict, 10, 0), 1000);
+assert(cond_get(dict, 5, 0), 500);
+assert(cond_get(dict, 2, 0), 0);
+assert(sort(domain(dict)), [1 5 10]);
+
