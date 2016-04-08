@@ -121,3 +121,35 @@ function remove_smallest(tree)
       [] -> key:value:right,
    yp:vp:tp -> yp:vp:make_tree(key, value, tp, right) };
 
+// An integer loop:
+function for(start, end, step, func)
+{ function loop(c, cmpr)
+   when (cmpr(c, end))
+   { func(c);
+     loop(c + step, cmpr) };
+
+  if (is_positive(step)) loop(start, `<=`)
+  else loop(start, `>=`) };
+
+define x = 0;
+for(0, 10, 1, fn(i) x = i);
+assert(x, 10);
+for(10, 1, -2, fn(i) x = i);
+assert(x, 2);
+
+// Accumulator loops:
+function for_acc(start, end, step, func, init)
+{ let (cmpr = if (is_positive(step)) `<=` else `>=`)
+   let loop (c = start, r = init)
+    if (cmpr(c, end)) loop(c + step, func(r, c))
+    else r };
+
+assert(for_acc(0, 5, 1, fn(a, c) c + a, 0), 15);
+assert(for_acc(10, 0, -2, fn(a, c) c + a, 2), 32);
+
+function for_all_acc(xs, func, init)
+  let loop (xs = xs, r = init)
+   if (is_empty(xs)) r
+   else loop(rest(xs), func(r, first(xs)));
+
+assert(for_all_acc([1 2 3 4 5], fn(a, c) a + c, 0), 15);
