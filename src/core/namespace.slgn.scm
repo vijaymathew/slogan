@@ -79,11 +79,19 @@
                (imports '()))
       (if (null? defs)
           (scm-cons 'begin imports)
-          (let ((import-name (get-import-name (scm-car defs) prefix)))
-            (loop (scm-cdr defs) (scm-cons `(,(if (in-declared-imports? import-name) 'set! 'define)
-                                    ,import-name
-                                    ,(get-name-from-namespace (scm-car defs) name))
-                                 imports)))))))
+          (let ((fdef (scm-car defs)))
+            (let ((import-name (get-import-name fdef prefix))
+                  (n (get-name-from-namespace fdef name)))
+              (loop (scm-cdr defs)
+                    (scm-cons `(begin (,(if (in-declared-imports? import-name) 'set! 'define)
+                                       ,import-name ,n)
+                                      (cond ((get-macro-def ',n)
+                                             (def-macro ',import-name #t))
+                                            (else
+                                             (let ((d (get-lazy-def ',n)))
+                                               (if d
+                                                   (def-lazy ',import-name d))))))
+                              imports))))))))
 
 (define (validate-import-names defs namespace)
   (let loop ((defs defs))

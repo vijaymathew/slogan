@@ -261,11 +261,14 @@
 		 (if (and is-lazy (scm-not noname))
                      (def-lazy name (make-lazy #f #f)))
                  (let* ((body-expr (func-body-expr tokenizer params))
-                        (expr (merge-lambda 
-                               tokenizer params 
-                               (if (and is-lazy (scm-not noname))
-                                   (expr-forcify body-expr params)
-                                   body-expr))))
+                        (fexpr (merge-lambda 
+                                tokenizer params 
+                                (if (and is-lazy (scm-not noname))
+                                    (expr-forcify body-expr params)
+                                    body-expr)))
+                        (expr `(begin ,(if (and is-lazy (scm-not noname))
+                                           `(def-lazy ',name (make-lazy #f #f)))
+                                      ,fexpr)))
                    (if (scm-not noname)
                        (scm-list 'define name expr)
                        expr)))))))
@@ -397,11 +400,13 @@
   (check-if-reserved-name macro-name tokenizer)
   (remove-macro-lazy-fns-def macro-name)
   (tokenizer 'macro-mode-on)
-  (scm-eval (let ((expr (scm-list 'define macro-name (func-def-stmt-from-name tokenizer #f #t))))
-          (add-def-to-namespace expr #t)))
-  (def-macro macro-name #t)
-  (tokenizer 'macro-mode-off)
-  *void*)
+  (let ((expr (scm-list 'define macro-name (func-def-stmt-from-name tokenizer #f #t))))
+    (scm-eval (add-def-to-namespace expr #t))
+    (def-macro macro-name #t)
+    (let ((mexpr `(begin ,expr
+                         (def-macro ',macro-name #t))))
+      (tokenizer 'macro-mode-off)
+      mexpr)))
 
 (define (enter-scope) (push-macros-lazy-fns))
 
