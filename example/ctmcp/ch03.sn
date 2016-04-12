@@ -1,4 +1,4 @@
-reload("../util");
+load("../util");
 
 function sqrt(x)
 { function improve(guess) (guess + x/guess) / 2.0;
@@ -204,3 +204,94 @@ assert(cond_get(dict, 5, 0), 500);
 assert(cond_get(dict, 2, 0), 0);
 assert(sort(domain(dict)), [1 5 10]);
 
+// Secure ADTs
+function new_wrapper()
+  letseq (key = gensym()
+          wrap = fn(x) fn(k) when (k == key) x
+          unwrap = fn(w) w(key))
+   fn(message)
+    match(message)
+     !wrap -> wrap,
+     !unwrap -> unwrap;
+
+function stack()
+  let (w = new_wrapper())
+   let (new = fn() w.wrap([])
+        push = fn(s, e) w.wrap(e:w.unwrap(s))
+        pop = fn(s) match(w.unwrap(s)) e:xs -> w.wrap(xs)
+        top = fn(s) match(w.unwrap(s)) e:_ -> e
+        is_empty = fn(s) is_empty(w.unwrap(s)))
+     fn(message)
+      case(message)
+       new -> new,
+       push -> push,
+       pop -> pop,
+       top -> top,
+       is_empty -> is_empty,
+       else -> error("invalid message - " message);
+
+define s = stack();
+define a = s.new();
+a = s.push(a, 10);
+a = s.push(a, 20);
+assert(s.top(a), 20);
+a = s.pop(a);
+assert(s.top(a), 10);
+assert(s.is_empty(a), false);
+a = s.pop(a);
+assert(s.is_empty(a), true);
+
+// Ex 2
+
+function cube_root(x)
+{ function improve(guess) (x/(guess*guess) + 2.0*guess)/3.0;
+  function is_good_enough(guess) abs(x-guess*guess)/x < 0.001;
+  function iter(guess) if (is_good_enough(guess)) guess else iter(improve(guess));
+  iter(1.0) };
+
+// Ex 3
+// half-interval method
+function has_root(f, a, b) f(a) < 0 < f(b);
+function is_close_enough(a, c) abs(a-c) < 0.00001;
+
+function find_root(f, a, b)
+ if (has_root(f, a, b))
+  letseq (x = (a + b) * 0.5, r = f(x))
+   if (is_close_enough(a, x)) x
+   else if (is_positive(r)) find_root(f, a, x)
+   else if (is_negative(r)) find_root(f, x, b)
+   else x
+  else false;
+
+assert(find_root(sin, 4.0, 2.0), 3.1415939331054688);
+
+// Ex 4
+// Iterative factorial
+function fact(n)
+ let loop (n = n, r = 1)
+  if (n <= 1) r
+  else loop(n - 1, r * n);
+
+assert(fact(10), 3628800);
+
+// Ex 5
+// Iterative sum_list
+function sum_list(xs)
+ let loop (xs = xs, r = 0)
+  if (is_empty(xs)) r
+  else loop(tail(xs), r + head(xs));
+
+assert(sum_list([1 2 3 4 5]), 15);
+
+// Ex 8
+// Iterative append
+function iter_append(xs, ys)
+ let loop(ls = xs, xs_done = false, r = [])
+  if (is_empty(ls))
+   if (xs_done || is_empty(ys)) reverse(r)
+   else loop(tail(ys), true, head(ys):r)
+  else loop(tail(ls), xs_done, head(ls):r);
+
+assert(iter_append([1 2 3] [4 5 6]), [1 2 3 4 5 6]);
+assert(iter_append([], [1 2 3]), [1 2 3]);
+assert(iter_append([1 2 3], []), [1 2 3]);

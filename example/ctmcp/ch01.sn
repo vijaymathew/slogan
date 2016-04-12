@@ -1,4 +1,4 @@
-reload("../util");
+load("../util");
 
 // Ex 1(a)
 // Calculate the exact value of 2^100 without using any new functions.
