@@ -63,9 +63,12 @@
                  " "
                  out-file-name))
 
+(define (compile-exception-handler ex)
+  (raise ex))
+
 (define (compile script-name #!key assemble exe
 		 ld_options cc_options output
-                 (exception_handler display-exception))
+                 (exception_handler compile-exception-handler))
   (let ((is-scm (string-ends-with? script-name *scm-extn*)))
     (with-exception-catcher
      exception_handler

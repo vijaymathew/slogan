@@ -53,10 +53,10 @@
 (define (pop-namespace)
   (if (scm-not (null? *namespaces*))
       (let ((top (scm-car *namespaces*)))
-	  (set! *namespaces* (scm-cdr *namespaces*))
-	  (let ((expr `(table-set! *active-namespaces* ',(scm-car top) ',(scm-cdr top))))
-	    (scm-eval expr)
-	    expr))
+          (set! *namespaces* (scm-cdr *namespaces*))
+          (let ((expr `(table-set! *active-namespaces* ',(scm-car top) ',(scm-cdr top))))
+            (scm-eval expr)
+            expr))
       #f))
 
 (define (existing-namespace-defs name)
@@ -83,15 +83,18 @@
             (let ((import-name (get-import-name fdef prefix))
                   (n (get-name-from-namespace fdef name)))
               (loop (scm-cdr defs)
-                    (scm-cons `(begin (,(if (in-declared-imports? import-name) 'set! 'define)
-                                       ,import-name ,n)
-                                      (cond ((get-macro-def ',n)
-                                             (def-macro ',import-name #t))
-                                            (else
-                                             (let ((d (get-lazy-def ',n)))
-                                               (if d
-                                                   (def-lazy ',import-name d))))))
-                              imports))))))))
+                    (let ((def-expr `(,(if (in-declared-imports? import-name) 'set! 'define)
+                                      ,import-name ,n)))
+                      (let ((compiler-defs-expr `(cond ((get-macro-def ',n)
+                                                        (def-macro ',import-name #t))
+                                                       (else
+                                                        (let ((d (get-lazy-def ',n)))
+                                                          (if d
+                                                              (def-lazy ',import-name d)))))))
+                        (if (get-macro-def n)
+                            (scm-eval def-expr))
+                        (scm-eval compiler-defs-expr)
+                        (append `(,def-expr ,compiler-defs-expr) imports))))))))))
 
 (define (validate-import-names defs namespace)
   (let loop ((defs defs))
@@ -150,10 +153,12 @@
           (intern-to-top-namespace expr top))
       expr))
 
-(define (intern-to-top-namespace expr top)
+(define (intern-to-top-namespace expr top #!optional new-def)
   (if top
       (if (null? *namespaces*) expr
-          (intern-to-namespace expr (scm-caar *namespaces*) (scm-cdar *namespaces*)))
+          (let ((n (scm-caar *namespaces*))
+                (defs (scm-cdar *namespaces*)))
+            (intern-to-namespace expr n (if new-def (scm-cons new-def defs) defs))))
       expr))
 
 (define (let-vars bindings)
@@ -260,3 +265,4 @@
         (if (null? names)
             (scm-append '(begin) (scm-reverse expr))
             (loop (scm-cdr names) (scm-cons (add-to-declared-imported! (scm-car names)) expr))))))
+
