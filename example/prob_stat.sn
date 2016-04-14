@@ -1,207 +1,108 @@
-// Some notes and sample code on Probability & Statistics.
+load("util");
 
-// The probability of an event occuring from `n` outcomes.
-// e.g probability of getting a head by tossing a fair coin:
-// > p(2);
-// => 0.5
-function p(n) 1./n;
-
-// The probability of the event `e` not occuring.
-// e.g the probability of not getting a head while tossing a fair coin:
-// > notp(0.5);
-// => 0.5
-function notp(e) 1-e;
-
-// The probability of n event with probabilities `ps` occuring in sequence.
-// This is also known as "composite probability". Each outcome is independent of the other.
-// e.g the probability of getting two heads in sequence while tossing a fair coin:
-// > compp([0.5, 0.5]);
-// => 0.25
-function compp(ps) fold_right(`*`, 1., ps);
-
-// Conditional probability
-// -----------------------
-
-// The probaility of events with probabilities `eps` will happen if events
-// with probabilities `cps` happen before.
-// e.g the probability of seeing tails twice by picking up one of two loaded coins.
-// The first coin will always give heads, so probabilty
-// of getting a tail is 0 and the next coin will give tails with a probabilty of 0.4.
-// The probabilty of picking one of the coins is 0.5.
-// > condp([0.5 0.5] [[0. 0.] [0.4 0.4]]);
-// => 0.08
-function condp(cps, eps)
-  let (a = map(fn(ps) apply(`*`, ps), eps))
-   fold_right(`+`, 0, map(fn(cp, ps) cp * ps, cps a));
-
-
-// Posterior probability (Bayes rule)
-// -----------------------------------
-
-// Posterior probability applies some test results (or evidence) to the prior probability of an event
-// and readjusts the probability of the real outcome.
-// The probability of a test that returns positive is known as sensitivity.
-function jointp(p, sensep) p*sensep:notp(p)*notp(sensep);
-function normalizer(jp) head(jp) + tail(jp);
-
-// e.g A robot has equal chance of being in a red cell and a green cell.
-// We also have the following probabilities:
-// 1 - Robot see red while in red cell = 0.8
-// 2 - Robot see green while in green cell = 0.5
-// The posterior probabilities of the robot seeing red in red and green in green:
-// > posteriorp(head(jointp(0.5, 0.8)):head(jointp(0.5, 0.5)));
-// => .6153846153846154 : .3846153846153846
-function posteriorp(jp)
-  letseq (n = normalizer(jp))
-   head(jp)/n:tail(jp)/n;
-
-// Averages
-// --------
-
-function mean(xs) fold_right(`+`, 0, xs)*1./length(xs);
-
-function median(xs) at(quotient(length(xs), 2), xs);
-
-function mode(xs)
-  let (xs = sort(xs))
-   if (is_empty(xs)) false
-   else let loop (xs = tail(xs), prev = head(xs), n = 1, maxn = 1, md = head(xs))
-         if (is_empty(xs)) md
-         else if (head(xs) == prev) loop(tail(xs), head(xs), n + 1, maxn, md)
-         else if (n > maxn) loop(tail(xs), head(xs), 1, n, prev)
-         else loop(tail(xs), head(xs), 1, maxn, md);
-
-// variance(xs) = sum_of(square(x-mean(x)))/(1/length(xs))
-function variance(xs)
-  letseq (m = mean(xs)
-          ys = apply(add, map(fn(x) let (d = x - m) d * d, xs)))
-   ys * (1/length(xs));
-
-// standard deviation
-function stddev(xs) sqrt(variance(xs));
-
-// standard score relative to the point `x` = (x-mean)/standard_deviation.
-function stdscore(x, m, sd) (x - m)/sd;
-
-// confidence interval
-function ci(xs) stddev(xs)/sqrt(length(xs));
-
-// return the medians of the lower and higher halves, along with the median
-// of the whole sequence.
-function quartiles(xs)
-  letseq (xs = sort(xs)
-          len = length(xs)
-          low = quotient(quotient(len, 2), 2)
-          mid = quotient(len, 2)
-          hi = quotient(mid + len, 2))
-   [at(low, xs), at(mid, xs), at(hi, xs)];
-
-// remove values that lie outside the lower and higher medians.
-function trim_outliers(xs)
-  let (qs = quartiles(xs))
-   remp(fn(x) x > third(qs), remp(fn(x) x < first(qs), xs));
-
-function fact(n)
-{  fn iter(n, f)
-    if (n <= 1) f
-    else iter(n-1, f*n);
-
-  iter(n, 1) };
-
-function comb(n, k) fact(n)/(fact(k) * fact(n-k));
-
-// Binomial Distribution.
-// ----------------------
-
-// Gives the probablity of getting `k` outcomes with individual probablity of
-// `p` in a total of `n` experiements.
-// e.g Flip a loaded coins 5 times, with head having a probablity of 0.8.
-// What is the probablity of seeing 9 heads?
-// > bdistr(12, 9, 0.8);
-// => .236
-function bdistr(n, k, p) comb(n, k) * expt(p, k) * expt(1-p, n-k);
+function random_dataset(count, max_val)
+ let loop (c = count, rs = [])
+  if (c <= 0) rs
+  else loop(c - 1, random_integer(max_val):rs);
   
-// Central Limit Theorom
-// ---------------------
+define q10 = partial(quotient, 10);
+define r10 = partial(remainder, 10);
 
-// The central limit theorem (CLT) states that, given certain conditions,
-// the arithmetic mean of a sufficiently large number of iterates of independent random variables,
-// each with a well-defined expected value and well-defined variance, will be approximately normally
-// distributed ("bell curved"), regardless of the underlying distribution.
+function split_last_digit(xs)
+{ function tabify(xss)
+   let loop (xss = xss, tab = #{})
+    if (is_empty(xss))
+    { hashtable_for_each(fn(k, v) @(tab, k, value = sort(v)), tab);
+      tab }
+    else letseq (k = head(head(xss))
+                 v = tail(head(xss))
+                 ds = @(tab, k))
+     { if (ds) @(tab, k, value = v:ds)
+       else if (v) @(tab, k, value = [v])
+       else @(tab, k, value = v);
+       loop(tail(xss), tab) };
+ tabify(map(fn (x) if (x < 10) 0:x else q10(x):r10(x), xs)) };
 
-// Another definition of CLT:
-// Let `xxs` be a sequence of independent, identically distributed (i.i.d.) random variables.
-// Each `xs` has finite mean, mean(xs) = m, and finite variance, variance(xs) = v.
-// Now let `z` be the normalized average of the first n random variables,
-// i.e. z = apply(add, pick_n_xs(n))/ (v * sqrt(n))
-// then, the classical Central Limit Theorem says that `z` converges in distribution to a standard normal distribution.
+function stemplot(xs)
+ let (table = split_last_digit(sort(xs)))
+  hashtable_for_each(fn(k, v)
+                     { show(k ":");
+                       for_each(show, v);
+                       newline() }
+                     table);
 
-// The Central Limit Theorem assumes the following:
-// Randomization condition: The data must be sampled randomly.
-// Independence assumption: The sample values must be independent of each other.
-//                          This means that the occurrence of one event has no influence on the next event.
-// 10% condition: The sample size, n, should be no more than 10% of the population.
-// Sample size assumption: The sample size must be sufficiently large.
-// Although the Central Limit Theorem tells us that we can use a Normal model to think about the behavior
-// of sample means when the sample size is large enough, it does not tell us how large that should be.
-// If the population is very skewed, you will need a pretty large sample size to use the CLT, however if
-// the population is unimodal and symmetric, even small samples are acceptable. So think about your sample
-// size in terms of what you know about the population and decide whether the sample is large enough.
-// In general a sample size of 30 is considered sufficient if the sample is unimodal (and meets the 10% condition).
+function sum(xs) apply(`+`, xs);
 
+function mean(xs)
+ when (not(is_empty(xs)))
+  sum(xs)/length(xs);
 
-// A utility to generate `n` random results.
-function flip(n) [if (random_real() >= 0.5) 1 else 0 | x <- range(1, n)];
+assert(mean([1 10 5 4 3.]), 4.6);
+assert(mean([3]), 3);
+assert(median([]), false);
 
-// Generate means for a large number of experiments.
-function sample(n) map(fn(xs) mean(xs), [flip(n) | x <- range(1, n)]);
+function median(xs)
+ let (ln = length(xs))
+  if (ln == 0) false
+  else if (ln == 1) head(xs)
+  else let (xs = sort(xs)
+            m = dec(quotient(ln, 2)))
+        if (is_even(ln))
+         quotient((at(m, xs) + at(m + 1, xs)), 2)
+        else
+         at(m, xs);
 
-// Hypothesis tests
-// ----------------
+assert(median([1 10 5 4 3]), 3);
+assert(median([3]), 3);
+assert(median([]), false);
 
-// Null hypothesis - not supported data.
-// Alternate hypothesis - supported by data, e.g a survey.
+function split_at_median(ys)
+ let (m = median(ys))
+  when (m)
+   let loop (xs = sort(ys), ls = [], rs = [])
+    if (is_empty(xs))
+     if (memq(m, ys))
+      (reverse(m:ls)):(append([m], reverse(rs)))
+     else reverse(ls):reverse(rs)
+    else let (x = head(xs))
+          if (x < m) loop(rest(xs), x:ls, rs)
+          else if (x > m) loop(rest(xs), ls, x:rs)
+          else loop(rest(xs), ls, rs);
+               
+function interquartile_range(xs)
+ let (parts = split_at_median(xs))
+  when (parts)
+   let (q1 = median(head(parts))
+        q3 = median(tail(parts)))
+    when (q1 && q3) q3 - q1;
 
-// Linear Regression
-// -----------------
+assert(interquartile_range([1, 3, 4, 5, 5, 6, 7, 11]), 3);
+assert(interquartile_range([1]), 0);
+assert(interquartile_range([]), false);
 
-// Linear regression is an approach for modeling the relationship between a scalar dependent variable `y`
-// and one or more explanatory variables (or independent variables) denoted `x`. 
-// In other words, linear regression consists of finding the best-fitting straight line that best describes the
-// data on a scatter plot. The best-fitting line is called a regression line.
+function square(x) x * x;
 
-// Linear regression is defined by the formula `y = bx+a`, where `b` and `a` has to be determined from the data.
+function variance(xs)
+ if (is_empty(xs)) false
+ else if (is_empty(tail(xs))) head(xs)
+ else let (m = mean(xs))
+       when (m) sum(map(fn(x) square(x - m), xs))/dec(length(xs));
 
-function find_b(xs, ys, xm, ym)
-  letseq (sx = map(fn(x) x - xm, xs)
-          sy = map(fn(y) y - ym, ys)
-          s = apply(add, map(mult, sx, sy))
-          d = apply(add, map(fn(x) expt(x, 2.), sx)))
-   s/d;
+assert(variance([3 5 7 7 38]), 214);
+assert(variance([1]), 1);
+assert(variance([]), false);
 
-function find_a_b(xs, ys)
-  letseq (xm = mean(xs), ym = mean(ys)
-          b = find_b(xs, ys, xm, ym))
-    (ym - b * xm):b;
+function standard_deviation(xs)
+ let (v = variance(xs))
+  when (v) sqrt(v);
 
-function linreg(xs, ys)
-  letseq (ab = find_a_b(xs, ys)
-          a = head(ab), b = tail(ab))
-    map(fn(x) b * x + a, xs);
+assert(standard_deviation([3 5 7 7 38]), 14.628738838327793);
+assert(standard_deviation([1]), 1);
+assert(standard_deviation([]), false);
 
-// Correlation coefficient
-// -----------------------
-
-// This is a value between 1 and -1 that tells how "related" to variables are.
-// Both 1 and -1 stands for perfectly linear data.
-
-function cor(xs, ys)
-  letseq (xm = mean(xs), ym = mean(ys)
-          sx = map(fn(x) x - xm, xs)
-          sy = map(fn(y) y - ym, ys)
-          s = apply(add, map(mult, sx, sy))
-          d1 = apply(add, map(fn(x) expt(x, 2.), sx))
-          d2 = apply(add, map(fn(y) expt(y, 2.), sy)))
-   s/sqrt(d1*d2);
-
+function z_scores(xs)
+ let (s = standard_deviation(xs)
+      m = mean(xs))
+  when (s && m) map(fn (x) (x - m)/s, xs);
+  
 
