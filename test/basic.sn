@@ -99,3 +99,9 @@ assert(x, false);
 u(true, {x = true});
 assert(x, true);
 
+function run_add(i, x) i + x;
+assert(do_times(10, run_add, init = 0), 45);
+assert(do_times(10, run_add, init = 0, start=5), 35);
+assert(do_times(10, run_add, init = 0, start=-5), 30);
+assert(do_times(-10, run_add, init = 0, start=-5), 0);
+assert(do_times(-10, run_add, init = 0, start=-50), -1220);

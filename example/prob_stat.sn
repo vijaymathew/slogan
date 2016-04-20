@@ -39,7 +39,7 @@ function mean(xs)
 
 assert(mean([1 10 5 4 3.]), 4.6);
 assert(mean([3]), 3);
-assert(median([]), false);
+assert(mean([]), false);
 
 function median(xs)
  let (ln = length(xs))
@@ -105,4 +105,8 @@ function z_scores(xs)
       m = mean(xs))
   when (s && m) map(fn (x) (x - m)/s, xs);
   
+// Probability of any one of the events e or f to occur:
+function por(pe, pf, pe_and_f) pe + pf - pe_and_f;
 
+// Probability of event e occuring given f has occured:
+function condp(pe_and_f, pf) pe_and_f/pf;

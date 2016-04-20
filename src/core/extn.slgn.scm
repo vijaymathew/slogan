@@ -96,3 +96,12 @@
     (if (scm-not (scm-eq? value *void*))
         (map-mutate tab key value))
     v))
+
+(define (do_times end fn #!key (start 0) init)
+  (if (not (procedure? fn))
+    (error "expected procedure instead of " fn))
+  (let loop ((i start) (res init))
+    (if (< i end)
+      (loop (+ i 1) (fn i res))
+      res)))
+               
