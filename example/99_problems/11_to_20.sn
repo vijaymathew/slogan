@@ -12,7 +12,7 @@ function encode_modified(xs)
 	    else [length(xs) first(xs)],
 	pack(xs));
 
-assert(encode_modified(%[a a a a b c c a a d e e e e]),
+assert_eq(encode_modified(%[a a a a b c c a a d e e e e]),
        %[[4 a] b [2 c] [2 a] d [4 e]]);
 
 // 12. (**) Decode a run-length encoded list. 
@@ -27,7 +27,7 @@ function decode_modified(xs)
 	        else list_of(first(xs) second(xs)),
 	       xs));
 
-assert(decode_modified(encode_modified(%[a a a a b c c a a d e e e e])),
+assert_eq(decode_modified(encode_modified(%[a a a a b c c a a d e e e e])),
        %[a a a a b c c a a d e e e e]);
 
 // 13. (**) Run-length encoding of a list (direct solution).
@@ -49,7 +49,7 @@ function encode_direct(xs)
 	[] -> [],
 	x : xs -> encode_helper(1 x xs []);
 
-assert(encode_direct(%[a a a a b c c a a d e e e e]),
+assert_eq(encode_direct(%[a a a a b c c a a d e e e e]),
        %[[4 a] b [2 c] [2 a] d [4 e]]);
 
 // 14. (*) Duplicate the elements of a list. 
@@ -59,7 +59,7 @@ function dupli(xs)
 	[] -> [],
 	x : xs -> x : x : dupli(xs);
 
-assert(dupli([ 1 2 3]),
+assert_eq(dupli([ 1 2 3]),
        [1, 1, 2, 2, 3, 3]);
 
 // 15. (**) Replicate the elements of a list a given number of times.
@@ -70,7 +70,7 @@ function repli(n xs)
 	x : xs -> append(list_of(n x)
 			 repli(n xs));
 
-assert(repli(3 %[a b c])
+assert_eq(repli(3 %[a b c])
        %[a, a, a, b, b, b, c, c, c]);
 
 // 16. (**) Drop every N'th element from a list. 
@@ -84,14 +84,14 @@ function drop_every(n i xs r)
 
 function drop_nth(n xs) drop_every(n 1 xs []);
 
-assert(drop_nth(3 %[a b c d e f g h i k])
+assert_eq(drop_nth(3 %[a b c d e f g h i k])
        %[a, b, d, e, g, h, k]);
 
 // 17. (*) Split a list into two parts; the length of the first part is given.
 
 function split(n xs) [take(n xs) drop(n xs)];
     
-assert(split(3 %[a b c d e f g h i k])
+assert_eq(split(3 %[a b c d e f g h i k])
        %[[a, b, c], [d, e, f, g, h, i, k]]);
 
 // 18. (**) Extract a slice from a list.
@@ -101,7 +101,7 @@ assert(split(3 %[a b c d e f g h i k])
 
 function slice(i j xs) take(j - dec(i), drop(dec(i) xs));
 
-assert(slice(3 7 %[a b c d e f g h i k])
+assert_eq(slice(3 7 %[a b c d e f g h i k])
        %[c, d, e, f, g]);
 
 // 19. (**) Rotate a list N places to the left. 
@@ -111,9 +111,9 @@ function rotate(n xs)
   	      else n) 
 	append(drop(n xs) take(n xs));
 
-assert(rotate(-2, %[a b c d e f g h])
+assert_eq(rotate(-2, %[a b c d e f g h])
        %[g, h, a, b, c, d, e, f]);
-assert(rotate(3 %[a b c d e f g h])
+assert_eq(rotate(3 %[a b c d e f g h])
        %[d, e, f, g, h, a, b, c]);
 
 // 20. (*) Remove the K'th element from a list. 
@@ -122,5 +122,5 @@ function remove_at(n xs)
     append(take(dec(n) xs)
 	   drop(n xs));
 
-assert(remove_at(2 %[a b c d])
+assert_eq(remove_at(2 %[a b c d])
        %[a, c, d]);

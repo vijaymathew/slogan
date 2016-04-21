@@ -1,5 +1,3 @@
-load("util");
-
 function random_dataset(count, max_val)
  let loop (c = count, rs = [])
   if (c <= 0) rs
@@ -37,9 +35,9 @@ function mean(xs)
  when (not(is_empty(xs)))
   sum(xs)/length(xs);
 
-assert(mean([1 10 5 4 3.]), 4.6);
-assert(mean([3]), 3);
-assert(mean([]), false);
+assert mean([1 10 5 4 3.]) == 4.6;
+assert mean([3]) == 3;
+assert mean([]) == false;
 
 function median(xs)
  let (ln = length(xs))
@@ -52,9 +50,9 @@ function median(xs)
         else
          at(m, xs);
 
-assert(median([1 10 5 4 3]), 3);
-assert(median([3]), 3);
-assert(median([]), false);
+assert median([1 10 5 4 3]) == 3;
+assert median([3]) == 3;
+assert(median([]) == false);
 
 function split_at_median(ys)
  let (m = median(ys))
@@ -76,9 +74,9 @@ function interquartile_range(xs)
         q3 = median(tail(parts)))
     when (q1 && q3) q3 - q1;
 
-assert(interquartile_range([1, 3, 4, 5, 5, 6, 7, 11]), 3);
-assert(interquartile_range([1]), 0);
-assert(interquartile_range([]), false);
+assert(interquartile_range([1, 3, 4, 5, 5, 6, 7, 11]) == 3);
+assert(interquartile_range([1]) == 0);
+assert(interquartile_range([]) == false);
 
 function square(x) x * x;
 
@@ -88,17 +86,17 @@ function variance(xs)
  else let (m = mean(xs))
        when (m) sum(map(fn(x) square(x - m), xs))/dec(length(xs));
 
-assert(variance([3 5 7 7 38]), 214);
-assert(variance([1]), 1);
-assert(variance([]), false);
+assert(variance([3 5 7 7 38]) == 214);
+assert(variance([1]) == 1);
+assert(variance([]) == false);
 
 function standard_deviation(xs)
  let (v = variance(xs))
   when (v) sqrt(v);
 
-assert(standard_deviation([3 5 7 7 38]), 14.628738838327793);
-assert(standard_deviation([1]), 1);
-assert(standard_deviation([]), false);
+assert(standard_deviation([3 5 7 7 38]) == 14.628738838327793);
+assert(standard_deviation([1]) == 1);
+assert(standard_deviation([]) == false);
 
 function z_scores(xs)
  let (s = standard_deviation(xs)

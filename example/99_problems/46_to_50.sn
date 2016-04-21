@@ -48,7 +48,7 @@ function table(f)
     [ [a b f(a b)]
       | a <- [true false], b <- [true false]];
 
-assert(table(fn(a b) and_2(a or_2(a b)))
+assert_eq(table(fn(a b) and_2(a or_2(a b)))
        [[true, true, true],
         [true, false, true],
         [false, true, false],
@@ -59,7 +59,7 @@ assert(table(fn(a b) and_2(a or_2(a b)))
 //         as being operators.
 
 // Using slogan's built-in logical operators:
-assert(table(fn(a b) a && (a || b))
+assert_eq(table(fn(a b) a && (a || b))
        [[true, true, true],
         [true, false, true],
         [false, true, false],
@@ -78,7 +78,7 @@ function tablen(n f)
     map(fn(args) append(args, [apply(f, args)]),
         eliminate_duplicates(combinations(n apply(append list_of(n [true false])))));
 
-// assert(tablen(3, fn(a b c) a && ((b || c == (a && b)) || (a && c)))
+// assert_eq(tablen(3, fn(a b c) a && ((b || c == (a && b)) || (a && c)))
 //        [[true, false, true, true], [true, false, false, true],
 //         [true, true, false, true], [true, true, true, true],
 //         [false, true, false, true], [false, true, true, true],
@@ -89,7 +89,7 @@ function tablen(n f)
 function gray(n) 
      eliminate_duplicates(combinations(n apply(append list_of(n [0 1]))));
 
-assert(gray(3)
+assert_eq(gray(3)
        [[0, 1, 0], [0, 1, 1],
         [0, 0, 1], [0, 0, 0],
         [1, 0, 1], [1, 0, 0],
@@ -154,5 +154,5 @@ function encode_symbol(symbol tree) {
 
 define sample_tree = make_code_tree(make_leaf(!A 4), make_code_tree(make_leaf(!B 2), make_code_tree(make_leaf(!D 1) make_leaf(!C 1))));
 define message = %[A D A B B C A];
-assert(decode(encode(message sample_tree) sample_tree)
+assert_eq(decode(encode(message sample_tree) sample_tree)
        message);

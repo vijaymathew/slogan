@@ -2,21 +2,21 @@ function recur(a)
   if (a > 0) recur(a - 1)
   else a;
 
-assert(recur(10), 0);
-assert(recur(-10), -10);
+assert recur(10) == 0;
+assert recur(-10) == -10;
 
 declare generic concat(a, b);
 
 method concat(list, list)(a, b) append(a, b);
 method concat(string, string)(a, b) string_append(a, b);
 
-assert(concat([1 2 3], [4 5 6]), [1 2 3 4 5 6]);
-assert(concat("hello " "world"), "hello world");
+assert concat([1 2 3], [4 5 6]) == [1 2 3 4 5 6];
+assert concat("hello " "world") == "hello world";
 
 define old_add = `+`;
 method `+`(string, string)(a, b) concat(a, b);
-assert("hello " + "world", "hello world");
-assert(1 + 2, 3);
+assert "hello " + "world" == "hello world";
+assert 1 + 2 == 3;
 `+` = old_add;
 
 namespace n;
@@ -25,83 +25,85 @@ macro m(a, b) if (a) b else false;
 function lazy lf(a, b) if (a) b else false;
 namespace;
 
-assert(n_f(10), 10);
+assert n_f(10) == 10;
 define x = 10;
 n_m(true, {x = 200});
-assert(x, 200);
+assert x == 200;
 n_m(false, {x = 0});
-assert(x, 200);
+assert x == 200;
 x = 100;
 n_lf(true, {x = 300});
-assert(x, 300);
+assert x == 300;
 n_lf(false, {x = 0});
-assert(x, 300);
+assert x == 300;
 
 import n as b;
-assert(b_f(20), 20);
+assert b_f(20) == 20;
 x = 10;
 b_m(true, {x = 400});
-assert(x, 400);
+assert x == 400;
 b_m(false, {x = 0});
-assert(x, 400);
+assert x == 400;
 x = 0;
 b_lf(true, {x = 1});
-assert(x, 1);
+assert x == 1;
 b_lf(false, {x = 0});
-assert(x, 1);
+assert x == 1;
 
 import n;
-assert(f(100), 100);
+assert f(100) == 100;
 x = 0;
 m(true, {x = 1});
-assert(x, 1);
+assert x == 1;
 m(false, {x = 0});
-assert(x, 1);
+assert x == 1;
 x = 0;
 lf(true, {x = 1});
-assert(x, 1);
+assert x == 1;
 lf(false, {x = 1});
-assert(x, 1);
+assert x == 1;
 
 record r(a, b where is_integer(b));
 define a = r(a = "hi", b = 20);
-assert(r_a(a), "hi");
-assert(r_b(a), 20);
+assert r_a(a) == "hi";
+assert r_b(a) == 20;
 
 define x = true;
 try r_set_b(a, "ok")
 catch (e) r_set_b(a, 200)
 finally x = false;
 
-assert(r_b(a), 200);
-assert(x, false);
+assert r_b(a) == 200;
+assert x == false;
 
 define x = ?;
 task({task_sleep(2); ?x = 100});
-assert(?x, 100);
+assert ?x == 100;
 
 function ints(n) n::ints(n+1);
 x = ints(0);
-assert(nth(10, x), 10);
+assert nth(10, x) == 10;
 
 x = [1 2 3 4];
-assert({match(x) [1 a 3 b] -> a + b}, 6);
+assert {match(x) [1 a 3 b] -> a + b} == 6;
 
-assert({case(x) [1 2 5 4] -> "ok"}, false);
+assert {case(x) [1 2 5 4] -> "ok"} == false;
 
 function lazy u(a, b) if (a) b else false;
 x = false;
 
-assert(u(false, 100), false);
-assert(u(true, 100), 100);
+assert u(false, 100) == false;
+assert u(true, 100) == 100;
 u(false, {x = true});
-assert(x, false);
+assert x == false;
 u(true, {x = true});
-assert(x, true);
+assert x == true;
 
-function run_add(i, x) i + x;
-assert(do_times(10, run_add, init = 0), 45);
-assert(do_times(10, run_add, init = 0, start=5), 35);
-assert(do_times(10, run_add, init = 0, start=-5), 30);
-assert(do_times(-10, run_add, init = 0, start=-5), 0);
-assert(do_times(-10, run_add, init = 0, start=-50), -1220);
+function run_add(i, x, b) i + x;
+assert do_times(10, run_add, init = 0) == 45;
+assert do_times(10, run_add, init = 0, start=5) == 35;
+assert do_times(10, run_add, init = 0, start=-5) == 30;
+assert do_times(-10, run_add, init = 0, start=-5) == -35;
+assert do_times(-10, run_add, init = 0, start=-50) == -1220;
+assert do_times(10, fn(i, x, b) if (i == 5) b("ok") else i) == "ok";
+assert do_times(0, run_add, init = 0, start = 9) == 45;

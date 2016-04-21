@@ -1,18 +1,16 @@
-load("../util");
-
 // Ex 1(a)
 // Calculate the exact value of 2^100 without using any new functions.
 define a = apply(`*`, list_of(2, 10));
 define b = apply(`*`, list_of(a, 10));
 
-assert(b, expt(2, 100));
+assert b == expt(2, 100);
 
 // Factorial:
 function fact(n) if (n == 0) 1 else n * fact(n-1);
 
 // Ex 1(b)
 // Calculate the exact value of 100! without using any new functions.
-assert(apply(`*`, range(1, 100)), fact(100));
+assert apply(`*`, range(1, 100)) == fact(100);
 
 // Combination:
 function comb(n, k) fact(n)/(fact(k) * fact(n-k));
@@ -26,16 +24,16 @@ function efficient_comb(n, k)
     if (k == 0) 1
     else numer/denom;
 
-assert(efficient_comb(10, 3), comb(10, 3));
-assert(efficient_comb(10, 0), comb(10, 0));
-assert(efficient_comb(10, 6), comb(10, 6));
+assert efficient_comb(10, 3) == comb(10, 3);
+assert efficient_comb(10, 0) == comb(10, 0);
+assert efficient_comb(10, 6) == comb(10, 6);
 
 // Ex 8
 define accumulate = let (acc = 0) fn(n) { acc = acc + n; acc };
 
-assert(accumulate(5), 5);
-assert(accumulate(100), 105);
-assert(accumulate(45), 150);
+assert accumulate(5) == 5;
+assert accumulate(100) == 105;
+assert accumulate(45) == 150;
 
 // Pascal's triangle
 function shift_left(xs)
@@ -50,9 +48,9 @@ function fast_pascal(n)
   else let (xs = fast_pascal(n-1))
    map(`+`, shift_left(xs), shift_right(xs));
 
-assert(fast_pascal(4), [1 3 3 1]);
-assert(fast_pascal(20), [1 19 171 969 3876 11628 27132 50388 75582 92378
-                         92378 75582 50388 27132 11628 3876 969 171 19 1]);
+assert fast_pascal(4) == [1 3 3 1];
+assert fast_pascal(20) == [1 19 171 969 3876 11628 27132 50388 75582 92378
+                           92378 75582 50388 27132 11628 3876 969 171 19 1];
 
 // Ex 9(b)
 // faster_pascal with memoization.
@@ -65,6 +63,6 @@ define faster_pascal = let (mem = #{})
                               hashtable_set(mem, n, xs) };
                             map(`+`, shift_left(xs), shift_right(xs)) };
                             
-assert(faster_pascal(4), fast_pascal(4));
-assert(faster_pascal(20), fast_pascal(20));
+assert faster_pascal(4) == fast_pascal(4);
+assert faster_pascal(20) == fast_pascal(20);
 

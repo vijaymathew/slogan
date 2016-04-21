@@ -7,8 +7,8 @@ record tree (left, right);
 // 54a. (*) Check whether a given term represents a binary tree.
 // Requires no solution. The predicate is_tree() is auto-generated.
 
-assert(is_tree(tree(left = 1, right = tree(left = 2, right = 3))), true);
-assert(is_tree([1 [2 3]]), false);
+assert_eq(is_tree(tree(left = 1, right = tree(left = 2, right = 3))), true);
+assert_eq(is_tree([1 [2 3]]), false);
 
 // 55. (**) Construct completely balanced binary trees
 
@@ -38,9 +38,9 @@ function is_symmetric(t)
         tree(l, r) -> is_mirror(l, r),
         _ -> true;
 
-assert(is_symmetric(tree(left = 1, right = 2)), true);
-assert(is_symmetric(tree(left = 1, right = tree(left = 100, right = 200))), false);
-assert(is_symmetric(tree(left = tree(left = 1, right = 2), right = tree(left = 100, right = 200))), true);
+assert_eq(is_symmetric(tree(left = 1, right = 2)), true);
+assert_eq(is_symmetric(tree(left = 1, right = tree(left = 100, right = 200))), false);
+assert_eq(is_symmetric(tree(left = tree(left = 1, right = 2), right = tree(left = 100, right = 200))), true);
 
 //  57. (**) Binary search trees (dictionaries)
 

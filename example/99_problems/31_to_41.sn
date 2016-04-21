@@ -12,8 +12,8 @@ function my_is_prime(n)
                         loop(k + 2))));
 
 
-assert(my_is_prime(7) true);
-assert(my_is_prime(40) false);
+assert_eq(my_is_prime(7) true);
+assert_eq(my_is_prime(40) false);
 
 // 32. (**) Determine the greatest common divisor of two positive integer numbers.
 //          Use Euclid's algorithm.
@@ -23,7 +23,7 @@ function my_gcd(a b)
     if (is_zero(b)) abs(a)
     else my_gcd(b, mod(a b));
 
-assert([my_gcd(36 63) my_gcd(-3, -6) my_gcd(-3, 6)]
+assert_eq([my_gcd(36 63) my_gcd(-3, -6) my_gcd(-3, 6)]
        [9 3 3]);
 
 // 33. (*) Determine whether two positive integer numbers are coprime.
@@ -31,7 +31,7 @@ assert([my_gcd(36 63) my_gcd(-3, -6) my_gcd(-3, 6)]
 
 function is_coprime(a b) gcd(a b) == 1;
 
-assert(is_coprime(35 64) true);
+assert_eq(is_coprime(35 64) true);
 
 // 34. (**) Calculate Euler's totient function phi(m).
 //          Euler's so-called totient function phi(m) is defined as the number of
@@ -54,7 +54,7 @@ function totient_phi(m) {
     else totient_phi_helper(m)
 };
     
-assert(totient_phi(10) 4);
+assert_eq(totient_phi(10) 4);
 
 // 35. (**) Determine the prime factors of a given positive integer.
 //          Construct a flat list containing the prime factors in ascending order.
@@ -68,7 +68,7 @@ function prime_factors(n) {
     prime_factors_helper(n 2)
 };
 
-assert(prime_factors(315)
+assert_eq(prime_factors(315)
        [3, 3, 5, 7]);
 
 // 36. (**) Determine the prime factors of a given positive integer.
@@ -78,7 +78,7 @@ function prime_factors_mult(n)
     let (swap = fn(p) match(p) [x y] -> [y x]) 
         map(swap encode(prime_factors(n)));
 
-assert(prime_factors_mult(315)
+assert_eq(prime_factors_mult(315)
        [[3, 2], [5, 1], [7, 1]]);
 
 
@@ -97,7 +97,7 @@ function totient_phi_imp(m)
     apply(`*` map(fn(pm) match(pm) [p m] -> dec(p) * expt(p dec(m))
                   prime_factors_mult(m)));
 
-assert(totient_phi_imp(315)
+assert_eq(totient_phi_imp(315)
        totient_phi(315));
 
 // 38 (*) Compare the two methods of calculating Euler's totient function.
@@ -112,7 +112,7 @@ assert(totient_phi_imp(315)
 
 function primes_r(a b) filter(is_prime, enumerate(a b));
 
-assert(take(4, primes_r(10 20))
+assert_eq(take(4, primes_r(10 20))
        [11, 13, 17, 19]);
 
 // 40 (**) Goldbach's conjecture.
@@ -126,7 +126,7 @@ function goldbach(n)
     let (pr = primes_r(2, n-2)) 
         head([[x, y] | x <- pr, y <- pr where x + y == n]);
 
-assert(goldbach(28), [5, 23]);
+assert_eq(goldbach(28), [5, 23]);
 
 
 // 41 (**) Given a range of integers by its lower and upper limit, print a list of all even

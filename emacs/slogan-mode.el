@@ -4,7 +4,7 @@
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
                        "macro" "namespace" "import" "declare" "from" "as"
-                       "generic" "ffi"))
+                       "generic" "ffi" "assert"))
 (setq slogan-constants '("true" "false" "lazy"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))

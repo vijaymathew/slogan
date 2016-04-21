@@ -1,12 +1,10 @@
-load("../util");
-
 function sqrt(x)
 { function improve(guess) (guess + x/guess) / 2.0;
   function is_good_enough(guess) abs(x-guess*guess)/x < 0.00001;
   function sqrt_iter(guess) if (is_good_enough(guess)) guess else sqrt_iter(improve(guess));
   sqrt_iter(1.0) };
 
-assert(floor(sqrt(10)), 3.);
+assert floor(sqrt(10)) == 3.;
 
 function iterate(s, is_done, transform) 
   if (is_done(s)) s
@@ -14,15 +12,15 @@ function iterate(s, is_done, transform)
 
 function sqrt(x) iterate(1.0, fn (g) abs(x-g*g)/x<0.00001, fn (g) (g+x/g)/2.0);
 
-assert(floor(sqrt(10)), 3.);
+assert floor(sqrt(10)) == 3.;
 
 function factorial(n) 
   if (n == 0) 1
   else if (n > 0) n * factorial(n - 1)
   else error("factorial - n must be positive.");
 
-assert(factorial(10), 3628800);
-assert(try factorial(-1) catch (e) false, false);
+assert factorial(10) == 3628800;
+assert try factorial(-1) catch (e) false == false;
 
 function factorial(n)
 { function fact_iter(n, a) 
@@ -32,8 +30,8 @@ function factorial(n)
   
   fact_iter(n, 1) };
 
-assert(factorial(10), 3628800);
-assert(try factorial(-1) catch (e) false, false);
+assert factorial(10) == 3628800;
+assert try factorial(-1) catch (e) false == false;
 
 function merge(xs, ys) 
   match(xs:ys) 
@@ -59,7 +57,7 @@ function mergesort(xs)
            merge(mergesort(head(parts)),
                  mergesort(tail(parts)));
 
-assert(mergesort([3 1 0 2]), [0 1 2 3]);
+assert mergesort([3 1 0 2]) == [0 1 2 3];
 
 // Amortized constant-time ephemeral queue
 function make_queue() []:[];
@@ -133,9 +131,9 @@ function for(start, end, step, func)
 
 define x = 0;
 for(0, 10, 1, fn(i) x = i);
-assert(x, 10);
+assert x == 10;
 for(10, 1, -2, fn(i) x = i);
-assert(x, 2);
+assert x == 2;
 
 // Accumulator loops:
 function for_acc(start, end, step, func, init)
@@ -144,15 +142,15 @@ function for_acc(start, end, step, func, init)
     if (cmpr(c, end)) loop(c + step, func(r, c))
     else r };
 
-assert(for_acc(0, 5, 1, fn(a, c) c + a, 0), 15);
-assert(for_acc(10, 0, -2, fn(a, c) c + a, 2), 32);
+assert for_acc(0, 5, 1, fn(a, c) c + a, 0) == 15;
+assert for_acc(10, 0, -2, fn(a, c) c + a, 2) == 32;
 
 function for_all_acc(xs, func, init)
   let loop (xs = xs, r = init)
    if (is_empty(xs)) r
    else loop(rest(xs), func(r, first(xs)));
 
-assert(for_all_acc([1 2 3 4 5], fn(a, c) a + c, 0), 15);
+assert for_all_acc([1 2 3 4 5], fn(a, c) a + c, 0) == 15;
 
 // List based dictionary:
 function new_dictionary() [];
@@ -174,11 +172,11 @@ function cond_get(ds, key, default)
 function domain(ds) map(first, ds);
 
 define dict = put(put(put(new_dictionary(), 1, 100), 10, 1000), 5, 500);
-assert(cond_get(dict, 1, 0), 100);
-assert(cond_get(dict, 10, 0), 1000);
-assert(cond_get(dict, 5, 0), 500);
-assert(cond_get(dict, 2, 0), 0);
-assert(sort(domain(dict)), [1 5 10]);
+assert cond_get(dict, 1, 0) == 100;
+assert cond_get(dict, 10, 0) == 1000;
+assert cond_get(dict, 5, 0) == 500;
+assert cond_get(dict, 2, 0) == 0;
+assert sort(domain(dict)) == [1 5 10];
 
 // Tree based dictionary:
 function new_dictionary() default_leaf;
@@ -198,11 +196,11 @@ function domain(ds)
   domain_helper(ds, []) };
   
 dict = put(put(put(new_dictionary(), 1, 100), 10, 1000), 5, 500);
-assert(cond_get(dict, 1, 0), 100);
-assert(cond_get(dict, 10, 0), 1000);
-assert(cond_get(dict, 5, 0), 500);
-assert(cond_get(dict, 2, 0), 0);
-assert(sort(domain(dict)), [1 5 10]);
+assert cond_get(dict, 1, 0) == 100;
+assert cond_get(dict, 10, 0) == 1000;
+assert cond_get(dict, 5, 0) == 500;
+assert cond_get(dict, 2, 0) == 0;
+assert sort(domain(dict)) == [1 5 10];
 
 // Secure ADTs
 function new_wrapper()
@@ -234,12 +232,12 @@ define s = stack();
 define a = s.new();
 a = s.push(a, 10);
 a = s.push(a, 20);
-assert(s.top(a), 20);
+assert s.top(a) == 20;
 a = s.pop(a);
-assert(s.top(a), 10);
-assert(s.is_empty(a), false);
+assert s.top(a) == 10;
+assert s.is_empty(a) == false;
 a = s.pop(a);
-assert(s.is_empty(a), true);
+assert s.is_empty(a) == true;
 
 // Ex 2
 
@@ -263,7 +261,7 @@ function find_root(f, a, b)
    else x
   else false;
 
-assert(find_root(sin, 4.0, 2.0), 3.1415939331054688);
+assert find_root(sin, 4.0, 2.0) == 3.1415939331054688;
 
 // Ex 4
 // Iterative factorial
@@ -272,7 +270,7 @@ function fact(n)
   if (n <= 1) r
   else loop(n - 1, r * n);
 
-assert(fact(10), 3628800);
+assert fact(10) == 3628800;
 
 // Ex 5
 // Iterative sum_list
@@ -281,7 +279,7 @@ function sum_list(xs)
   if (is_empty(xs)) r
   else loop(tail(xs), r + head(xs));
 
-assert(sum_list([1 2 3 4 5]), 15);
+assert sum_list([1 2 3 4 5]) == 15;
 
 // Ex 8
 // Iterative append
@@ -292,6 +290,6 @@ function iter_append(xs, ys)
    else loop(tail(ys), true, head(ys):r)
   else loop(tail(ls), xs_done, head(ls):r);
 
-assert(iter_append([1 2 3] [4 5 6]), [1 2 3 4 5 6]);
-assert(iter_append([], [1 2 3]), [1 2 3]);
-assert(iter_append([1 2 3], []), [1 2 3]);
+assert iter_append([1 2 3] [4 5 6]) == [1 2 3 4 5 6];
+assert iter_append([], [1 2 3]) == [1 2 3];
+assert iter_append([1 2 3], []) == [1 2 3];
