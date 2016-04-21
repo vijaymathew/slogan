@@ -98,10 +98,14 @@
     v))
 
 (define (do_times end fn #!key (start 0) init)
-  (if (not (procedure? fn))
-    (error "expected procedure instead of " fn))
-  (let loop ((i start) (res init))
-    (if (< i end)
-      (loop (+ i 1) (fn i res))
-      res)))
+  (call/cc
+    (lambda (break)
+      (if (not (procedure? fn))
+        (error "expected procedure instead of " fn))
+      (let ((cmpr (if (> end start) < >))
+            (trans (if (> end start) + -)))
+        (let loop ((i start) (res init))
+          (if (cmpr i end)
+            (loop (trans i 1) (fn i res break))
+            res))))))
                
