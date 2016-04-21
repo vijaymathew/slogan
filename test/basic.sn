@@ -101,9 +101,9 @@ assert x == true;
 
 function run_add(i, x, b) i + x;
 assert do_times(10, run_add, init = 0) == 45;
-assert do_times(10, run_add, init = 0, start=5) == 35;
-assert do_times(10, run_add, init = 0, start=-5) == 30;
-assert do_times(-10, run_add, init = 0, start=-5) == -35;
-assert do_times(-10, run_add, init = 0, start=-50) == -1220;
+assert do_times(10, run_add, init = 0, from = 5) == 35;
+assert do_times(10, run_add, init = 0, from = -5) == 30;
+assert do_times(-10, run_add, init = 0, from = -5) == -35;
+assert do_times(-10, run_add, init = 0, from = -50) == -1220;
 assert do_times(10, fn(i, x, b) if (i == 5) b("ok") else i) == "ok";
-assert do_times(0, run_add, init = 0, start = 9) == 45;
+assert do_times(0, run_add, init = 0, from = 9) == 45;

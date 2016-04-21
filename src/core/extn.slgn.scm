@@ -97,15 +97,15 @@
         (map-mutate tab key value))
     v))
 
-(define (do_times end fn #!key (start 0) init)
+(define (do_times n fn #!key (from 0) init)
   (call/cc
     (lambda (break)
       (if (not (procedure? fn))
         (error "expected procedure instead of " fn))
-      (let ((cmpr (if (> end start) < >))
-            (trans (if (> end start) + -)))
-        (let loop ((i start) (res init))
-          (if (cmpr i end)
+      (let ((cmpr (if (> n from) < >))
+            (trans (if (> n from) + -)))
+        (let loop ((i from) (res init))
+          (if (cmpr i n)
             (loop (trans i 1) (fn i res break))
             res))))))
                

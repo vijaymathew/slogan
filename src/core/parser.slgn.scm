@@ -659,18 +659,23 @@
            (else (assert-stmt tokenizer)))))
 
 (define *assertions-enabled* #t)
-(define (disable_assertions) (set! *assertions-enabled* #f))
-(define (enable_assertions) (set! *assertions-enabled* #t))
+(define (enable_asserts flag) (set! *assertions-enabled* flag))
 
 (define (assert-stmt tokenizer)
   (let ((token (tokenizer 'peek)))
     (cond ((scm-eq? token 'assert)
            (tokenizer 'next)
            (let ((expr (expression tokenizer)))
+             (let ((msg (if (scm-eq? '*comma* (tokenizer 'peek))
+                          (begin (tokenizer 'next)
+                                 (expression tokenizer))
+                          #f)))
              (if *assertions-enabled*
                `(if (not ,expr)
-                  (error "Assertion failed -" ',expr))
-               #t)))
+                  (if ,msg
+                    (error ,msg)
+                    (error "Assertion failed -" ',expr))) 
+               #t))))
           (else #f))))
 
 (define (normalize-sym s)

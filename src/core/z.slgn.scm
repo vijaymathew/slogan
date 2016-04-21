@@ -820,6 +820,7 @@
 (define core_is_iterator is_iterator)
 (define core_is_lpair is_lpair)
 (define core_do_times do_times)
+(define core_enable_asserts enable_asserts)
 
 (namespace_create 'core '(compose identiy mapfn partial complement
                                   namespace_names namespace_hide namespace_unhide
@@ -942,5 +943,5 @@
                                   subf32array_fill subf32array_move is_f64array f64array make_f64array
                                   f64array_length f64array_at f64array_set f64array_to_list list_to_f64array
                                   f64array_fill f64array_append f64array_copy f64array_shrink subf64array
-                                  subf64array_fill subf64array_move is_iterator is_lpair do_times))
+                                  subf64array_fill subf64array_move is_iterator is_lpair do_times enable_asserts))
 
