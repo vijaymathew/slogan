@@ -656,6 +656,21 @@
                          (let ((*r* (s-yield-k *yield-obj*)))
                            (s-yield-fn-set! *yield-obj* *yield*)
                            (*r* (scm-cons ,expr *yield-obj*)))))))
+           (else (assert-stmt tokenizer)))))
+
+(define *assertions-enabled* #t)
+(define (disable_assertions) (set! *assertions-enabled* #f))
+(define (enable_assertions) (set! *assertions-enabled* #t))
+
+(define (assert-stmt tokenizer)
+  (let ((token (tokenizer 'peek)))
+    (cond ((scm-eq? token 'assert)
+           (tokenizer 'next)
+           (let ((expr (expression tokenizer)))
+             (if *assertions-enabled*
+               `(if (not ,expr)
+                  (error "Assertion failed -" ',expr))
+               #t)))
           (else #f))))
 
 (define (normalize-sym s)
@@ -702,7 +717,8 @@
                       ((*less-than-equals*) (loop (swap-operands (scm-append (lteq-expr tokenizer) (scm-list expr)))))
                       ((*greater-than-equals*) (loop (swap-operands (scm-append (gteq-expr tokenizer) (scm-list expr))))))
                     expr))))
-    (if (safe-cmpr-expr? expr)
+    (if (and (safe-cmpr-expr? expr)
+             (= (scm-length expr) 3))
         (scm-append expr (scm-list #t))
         expr)))
 
@@ -1406,7 +1422,7 @@
 (define *reserved-names* '(fn function method define record true false
 			      if else when let letseq letrec yield
 			      case match where try trycc catch finally
-                              macro namespace import declare))
+                              macro namespace import declare assert))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
