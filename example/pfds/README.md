@@ -1,1 +1,0 @@
-Code based on Okasaki's Purely Functional Data Structures.
