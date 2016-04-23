@@ -109,3 +109,4 @@
             (loop (trans i 1) (fn i res break))
             res))))))
                
+(define == equal?)
