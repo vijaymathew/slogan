@@ -708,24 +708,16 @@
                         (loop (scm-append expr (scm-list (expression/statement tokenizer #f)))
                               (+ 1 count)))))))))
 
-(define (safe-cmpr-expr? expr)
-  (and (pair? expr)
-       (scm-memq (scm-car expr) '(safe-equal? safe-< safe-<= safe-> safe->=))))
-
 (define (cmpr-expr tokenizer)
-  (let ((expr (let loop ((expr (addsub-expr tokenizer)))
-                (if (cmpr-opr? (tokenizer 'peek))
-                    (case (tokenizer 'next)
-                      ((*equals*) (loop (swap-operands (scm-append (eq-expr tokenizer) (scm-list expr)))))
-                      ((*less-than*) (loop (swap-operands (scm-append (lt-expr tokenizer) (scm-list expr)))))
-                      ((*greater-than*) (loop (swap-operands (scm-append (gt-expr tokenizer) (scm-list expr)))))
-                      ((*less-than-equals*) (loop (swap-operands (scm-append (lteq-expr tokenizer) (scm-list expr)))))
-                      ((*greater-than-equals*) (loop (swap-operands (scm-append (gteq-expr tokenizer) (scm-list expr))))))
-                    expr))))
-    (if (and (safe-cmpr-expr? expr)
-             (= (scm-length expr) 3))
-        (scm-append expr (scm-list #t))
-        expr)))
+  (let loop ((expr (addsub-expr tokenizer)))
+    (if (cmpr-opr? (tokenizer 'peek))
+      (case (tokenizer 'next)
+        ((*equals*) (loop (swap-operands (scm-append (eq-expr tokenizer) (scm-list expr)))))
+        ((*less-than*) (loop (swap-operands (scm-append (lt-expr tokenizer) (scm-list expr)))))
+        ((*greater-than*) (loop (swap-operands (scm-append (gt-expr tokenizer) (scm-list expr)))))
+        ((*less-than-equals*) (loop (swap-operands (scm-append (lteq-expr tokenizer) (scm-list expr)))))
+        ((*greater-than-equals*) (loop (swap-operands (scm-append (gteq-expr tokenizer) (scm-list expr))))))
+      expr)))
 
 (define (logical-and-expr tokenizer)
   (let loop ((expr (logical-or-expr tokenizer)))
@@ -1372,19 +1364,19 @@
   (swap-operands (scm-cons '/ (scm-list (factor-expr tokenizer)))))
 
 (define (eq-expr tokenizer)
-  (swap-operands (scm-cons 'safe-equal? (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'equal? (scm-list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
-  (swap-operands (scm-cons 'safe-< (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons '< (scm-list (addsub-expr tokenizer)))))
 
 (define (lteq-expr tokenizer)
-  (swap-operands (scm-cons 'safe-<= (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons '<= (scm-list (addsub-expr tokenizer)))))
 
 (define (gt-expr tokenizer)
-  (swap-operands (scm-cons 'safe-> (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons '> (scm-list (addsub-expr tokenizer)))))
 
 (define (gteq-expr tokenizer)
-  (swap-operands (scm-cons 'safe->= (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons '>= (scm-list (addsub-expr tokenizer)))))
 
 (define (and-expr tokenizer)
   (swap-operands (scm-cons 'and (scm-list (logical-or-expr tokenizer)))))

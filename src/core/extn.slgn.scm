@@ -59,20 +59,6 @@
 
 (define (complement f) (lambda (#!rest args) (scm-not (scm-apply f args))))
 
-(define (safe-equal? a b #!optional final)
-  (if (equal? a b) (if final #t b) #f))
-
-(define (safe-num-cmpr a b f final)
-  (if (and (number? a)
-           (number? b))
-      (if (f a b) (if final #t b) #f)
-      #f))
-
-(define (safe-< a b #!optional final) (safe-num-cmpr a b < final))
-(define (safe-> a b #!optional final) (safe-num-cmpr a b > final))
-(define (safe-<= a b #!optional final) (safe-num-cmpr a b <= final))
-(define (safe->= a b #!optional final) (safe-num-cmpr a b >= final))
-
 (define (map-mutate tab key val)
   (cond ((list? tab)
          (set-cdr! (scm-assoc key tab) val))
