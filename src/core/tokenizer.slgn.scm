@@ -144,6 +144,7 @@
                                               (scm-cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (scm-list (scm-cons "==" '*equals*)
+                                             (scm-cons "<>" '*not-equals*)
                                              (scm-cons ">" '*greater-than*)
                                              (scm-cons "<" '*less-than*)
                                              (scm-cons ">=" '*greater-than-equals*)
@@ -198,7 +199,10 @@
     (cond ((char=? c #\=) 
            (port-pos-read-char! port)
            '*less-than-equals*)
-          ((char=? c #\-)
+	  ((char=? c #\>)
+	   (port-pos-read-char! port)
+	   '*not-equals*)
+	  ((char=? c #\-)
            (port-pos-read-char! port)
            '*extractor*)
           (else '*less-than*))))
@@ -552,3 +556,23 @@
                         (if token "true" "false"))
                        (else token)))))
     (if (string? token) (string-length token) 0)))
+
+(define (add-sub-opr? token)
+  (or (scm-eq? token '*plus*)
+      (scm-eq? token '*minus*)))
+
+(define (mult-div-opr? token)
+  (or (scm-eq? token '*asterisk*)
+      (scm-eq? token '*backslash*)))
+
+(define (cmpr-opr? token)
+  (or (scm-eq? token '*equals*)
+      (scm-eq? token '*not-equals*)
+      (scm-eq? token '*less-than*)
+      (scm-eq? token '*greater-than*)
+      (scm-eq? token '*less-than-equals*)
+      (scm-eq? token '*greater-than-equals*)))
+
+(define (and-or-opr? token)
+  (or (scm-eq? token '*and*)
+      (scm-eq? token '*or*)))

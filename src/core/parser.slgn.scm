@@ -713,6 +713,7 @@
     (if (cmpr-opr? (tokenizer 'peek))
       (case (tokenizer 'next)
         ((*equals*) (loop (swap-operands (scm-append (eq-expr tokenizer) (scm-list expr)))))
+        ((*not-equals*) (loop (swap-operands (scm-append (not-eq-expr tokenizer) (scm-list expr)))))	
         ((*less-than*) (loop (swap-operands (scm-append (lt-expr tokenizer) (scm-list expr)))))
         ((*greater-than*) (loop (swap-operands (scm-append (gt-expr tokenizer) (scm-list expr)))))
         ((*less-than-equals*) (loop (swap-operands (scm-append (lteq-expr tokenizer) (scm-list expr)))))
@@ -1366,6 +1367,9 @@
 (define (eq-expr tokenizer)
   (swap-operands (scm-cons 'equal? (scm-list (addsub-expr tokenizer)))))
 
+(define (not-eq-expr tokenizer)
+  (swap-operands (scm-cons 'not-equal? (scm-list (addsub-expr tokenizer)))))
+
 (define (lt-expr tokenizer)
   (swap-operands (scm-cons '< (scm-list (addsub-expr tokenizer)))))
 
@@ -1391,25 +1395,6 @@
           ((*asterisk*) (loop (swap-operands (scm-append (mult-expr tokenizer) (scm-list expr)))))
           ((*backslash*) (loop (swap-operands (scm-append (div-expr tokenizer) (scm-list expr))))))
         expr)))
-
-(define (add-sub-opr? token)
-  (or (scm-eq? token '*plus*)
-      (scm-eq? token '*minus*)))
-
-(define (mult-div-opr? token)
-  (or (scm-eq? token '*asterisk*)
-      (scm-eq? token '*backslash*)))
-
-(define (cmpr-opr? token)
-  (or (scm-eq? token '*equals*)
-      (scm-eq? token '*less-than*)
-      (scm-eq? token '*greater-than*)
-      (scm-eq? token '*less-than-equals*)
-      (scm-eq? token '*greater-than-equals*)))
-
-(define (and-or-opr? token)
-  (or (scm-eq? token '*and*)
-      (scm-eq? token '*or*)))
 
 (define (swap-operands expr)
   (if (= 3 (scm-length expr))

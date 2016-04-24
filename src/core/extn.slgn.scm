@@ -94,5 +94,9 @@
           (if (cmpr i n)
             (loop (trans i 1) (fn i res break))
             res))))))
-               
+
+(define (not-equal? a b)
+  (scm-not (equal? a b)))
+
 (define == equal?)
+(define <> not-equal?)

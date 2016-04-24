@@ -1,4 +1,5 @@
 assert 1 + 2 == 3;
+assert (1 + 2 <> 3) == false;
 assert 1 + 2 * 5 == 11;
 assert 1 + 2 <= 3;
 assert 1 + 2 <= 3 && 4 * 3 == 12;
