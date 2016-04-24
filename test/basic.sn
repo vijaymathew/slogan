@@ -14,14 +14,14 @@ assert recur(-10) == -10;
 
 declare generic concat(a, b);
 
-method concat(list, list)(a, b) append(a, b);
-method concat(string, string)(a, b) string_append(a, b);
+method concat(a:list, b:list) append(a, b);
+method concat(a:string, b:string) string_append(a, b);
 
 assert concat([1 2 3], [4 5 6]) == [1 2 3 4 5 6];
 assert concat("hello " "world") == "hello world";
 
 define old_add = `+`;
-method `+`(string, string)(a, b) concat(a, b);
+method `+`(a:string, b:string) concat(a, b);
 assert "hello " + "world" == "hello world";
 assert 1 + 2 == 3;
 `+` = old_add;

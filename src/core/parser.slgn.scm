@@ -198,7 +198,7 @@
 
 (define (define-generic-method name tokenizer)
   (check-if-reserved-name name tokenizer)
-  (let ((params (func-params-expr tokenizer)))
+  (let ((params (scm-car (func-params-expr tokenizer))))
     (let ((generic-expr
 	   `(define ,name 
 	      (lambda ,params
@@ -250,14 +250,14 @@
              (scm-not noname))
 	(if is-lazy
             (parser-error tokenizer "lazy function must have a name.")
-	    (let* ((params (func-params-expr tokenizer))
+	    (let* ((params (scm-car (func-params-expr tokenizer)))
                    (body-expr (func-body-expr tokenizer params)))
 	      (merge-lambda tokenizer params body-expr)))
 	(begin (if (scm-not noname)
                    (begin (check-if-reserved-name name tokenizer)
                           (tokenizer 'next)
                           (remove-macro-lazy-fns-def name)))
-	       (let ((params (func-params-expr tokenizer)))
+	       (let ((params (scm-car (func-params-expr tokenizer))))
 		 (if (and is-lazy (scm-not noname))
                      (scm-eval (intern-to-top-namespace `(begin (def-lazy ',name (make-lazy #f #f))) #t name)))
                  (let* ((body-expr (func-body-expr tokenizer params))
@@ -332,12 +332,13 @@
         (parser-error tokenizer "Method must have a valid name."))
     (begin (tokenizer 'next)
            (remove-macro-lazy-fns-def name)
-           (let ((types (method-types-decl tokenizer))
-                 (params (func-params-expr tokenizer)))
-             (let ((body-expr (func-body-expr tokenizer params)))
-               (scm-cons types (scm-list 'define name (merge-lambda 
-                                                       tokenizer params 
-                                                       body-expr))))))))
+	   (let ((pts (func-params-expr tokenizer)))
+	     (let ((types (scm-cdr pts))
+		   (params (scm-car pts)))
+	       (let ((body-expr (func-body-expr tokenizer params)))
+		 (scm-cons types (scm-list 'define name (merge-lambda 
+							 tokenizer params 
+							 body-expr)))))))))
 
 (define (method-def-stmt tokenizer)
   (cond ((scm-eq? (tokenizer 'peek) 'method)
@@ -1011,7 +1012,7 @@
 (define (func-def-expr tokenizer)
   (if (func-def? (tokenizer 'peek))
       (begin (tokenizer 'next)
-             (let* ((params (func-params-expr tokenizer))
+             (let* ((params (scm-car (func-params-expr tokenizer)))
                     (body-expr (func-body-expr tokenizer params)))
 	       (merge-lambda tokenizer params body-expr)))
       #f))
@@ -1298,40 +1299,54 @@
   (check-if-reserved-name (tokenizer 'peek) tokenizer)
   (tokenizer 'next))
 
+(define (func-param-type tokenizer)
+  (let ((type (cond ((scm-eq? (tokenizer 'peek) '*colon*)
+		     (tokenizer 'next)
+		     (let ((s (tokenizer 'next)))
+		       (if (symbol? s) s (parser-error tokenizer "Expected type name."))))
+		    (else '_))))
+    (assert-comma-separator tokenizer '*close-paren*)
+    type))
+
 (define (func-params-expr tokenizer)
   (cond ((scm-eq? (tokenizer 'peek) '*open-paren*)
          (tokenizer 'next)
-         (let loop ((params '())
+         (let loop ((params '()) (types '())
                     (directives-found #f))
            (let ((token (tokenizer 'peek)))
              (cond ((valid-identifier? token)
                     (let ((sym (check-func-param tokenizer)))
                       (cond ((param-directive? sym)
-                             (loop (scm-cons (slgn-directive->scm-directive sym) params) #t))
+                             (loop (scm-cons (slgn-directive->scm-directive sym) params)
+				   (scm-cons (func-param-type tokenizer) types)
+				   #t))
                             ((scm-eq? (tokenizer 'peek) '*assignment*)
                              (tokenizer 'next)
                              (let ((expr (expression tokenizer)))
-                               (assert-comma-separator tokenizer '*close-paren*)
                                (if directives-found
-                                   (loop (scm-cons (scm-list sym expr) params) directives-found)
+                                   (loop (scm-cons (scm-list sym expr) params)
+					 (scm-cons (func-param-type tokenizer) types)					 
+					 directives-found)
 				   (loop (scm-cons 
 					  (scm-list sym expr) 
 					  (scm-cons 
-					   (slgn-directive->scm-directive '@optional) params)) 
+					   (slgn-directive->scm-directive '@optional) params))
+					 (scm-cons (func-param-type tokenizer) types)					 
 					 #t))))
                             (else 
-                             (assert-comma-separator tokenizer '*close-paren*)
-                             (loop (scm-cons sym params) directives-found)))))
+                             (loop (scm-cons sym params)
+				   (scm-cons (func-param-type tokenizer) types)				   
+				   directives-found)))))
                    ((scm-eq? '*unquote* token)
                     (if (scm-not (tokenizer 'quote-mode?))
                         (parser-error tokenizer "Not in quote more.")
-                        (begin (assert-comma-separator tokenizer '*close-paren*)
-                               (loop (scm-cons (expression tokenizer) params)
-                                     directives-found))))
+			(loop (scm-cons (expression tokenizer) params)
+			      (scm-cons (func-param-type tokenizer) types)				     
+			      directives-found)))
                    (else
                     (if (scm-eq? token '*close-paren*)
                         (begin (tokenizer 'next)
-                               (scm-reverse params))
+                               (scm-cons (scm-reverse params) (scm-reverse types)))
                         (parser-error tokenizer "Missing closing parenthesis after parameter list.")))))))
         ((valid-identifier? (tokenizer 'peek))
          (check-func-param tokenizer))
@@ -1365,10 +1380,10 @@
   (swap-operands (scm-cons '/ (scm-list (factor-expr tokenizer)))))
 
 (define (eq-expr tokenizer)
-  (swap-operands (scm-cons 'equal? (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons '== (scm-list (addsub-expr tokenizer)))))
 
 (define (not-eq-expr tokenizer)
-  (swap-operands (scm-cons 'not-equal? (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons '<> (scm-list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
   (swap-operands (scm-cons '< (scm-list (addsub-expr tokenizer)))))
