@@ -1318,7 +1318,7 @@
                     (let ((sym (check-func-param tokenizer)))
                       (cond ((param-directive? sym)
                              (loop (scm-cons (slgn-directive->scm-directive sym) params)
-				   (scm-cons (func-param-type tokenizer) types)
+				   (if (eq? sym '@rest) (scm-cons sym types) types)
 				   #t))
                             ((scm-eq? (tokenizer 'peek) '*assignment*)
                              (tokenizer 'next)
