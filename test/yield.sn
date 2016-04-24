@@ -69,3 +69,13 @@ function in(n) let loop(n = n) when (n <= 5) { yield n; loop(n + 1) };
 
 assert nth(1, map(`+`, filter(is_even, ln(1)))) == nth(1, map(`+`, filter(is_even, in(1)))); // both return 4
 assert nth(4, map(`+`, accumulate(`+`, 1, ln(1)))) == nth(4, map(`+`, accumulate(`+`, 1, in(1)))); // both return 16
+
+function ints(a, b)
+ let loop (a = a, b = b)
+  if (is_zero(b)) []
+  else { yield a; loop(a+1, b - 1) };
+
+// harmonic series
+define a = rest(accumulate(fn(i, sum) sum + 1.0/i, 0, ints(1,2)));
+assert first(a) == 1.5;
+assert rest(a) == [];

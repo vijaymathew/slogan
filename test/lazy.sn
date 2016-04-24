@@ -56,3 +56,8 @@ function lfilter(xs, f)
 x = lfilter([1 2 3 4 5], is_odd);
 assert nth(1, x) == 3;
 assert nth(2, x) == 5;
+
+// harmonic series
+define a = rest(accumulate(fn(i, sum) sum + 1.0/i, 0, enumerate(1,2)));
+assert first(a) == 1.5;
+assert rest(a) == [];

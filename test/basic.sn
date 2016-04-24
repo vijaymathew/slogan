@@ -114,3 +114,7 @@ assert do_times(-10, run_add, init = 0, from = -5) == -35;
 assert do_times(-10, run_add, init = 0, from = -50) == -1220;
 assert do_times(10, fn(i, x, b) if (i == 5) b("ok") else i) == "ok";
 assert do_times(0, run_add, init = 0, from = 9) == 45;
+
+// harmonic series
+define a = fold_left(fn(i, sum) sum + 1.0/i, 0, range(1,2));
+assert a == 1.5;

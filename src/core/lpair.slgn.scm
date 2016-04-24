@@ -210,7 +210,7 @@
        (begin (let loop ((initial initial) (xs xs))
                 (if (is_empty xs)
                     xs
-                    (let ((r (f initial (first xs))))
+                    (let ((r (f (first xs) initial)))
                       (begin (call/cc (lambda (*yield*)
                                         (let ((*r* (s-yield-k *yield-obj*)))
                                           (s-yield-fn-set! *yield-obj* *yield*)
@@ -221,7 +221,7 @@
 (define (lpair-accumulate fn initial lpair)
   (if (null? lpair)
       '()
-      (let ((r (fn initial (first lpair))))
+      (let ((r (fn (first lpair) initial)))
         (lpair-cons r (lpair-accumulate fn r (rest lpair))))))
 
 (define (accumulate fn initial seq)
@@ -230,7 +230,7 @@
         ((is_iterator seq)
          (iter-accumulate fn initial seq))
         (else
-         (fold_right fn initial seq))))
+         (fold_left fn initial seq))))
 
 (define (enumerate start end #!optional (cmpr <=) (next inc))
     (if (cmpr start end)
