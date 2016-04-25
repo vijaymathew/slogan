@@ -3,6 +3,7 @@
 (define *namespaces* '())
 (define *active-namespaces* (make-table))
 (define *declared-imported* '())
+(define *namespace-counter* -1)
 
 (define (namespace_names namespace-name)
   (table-ref *active-namespaces* namespace-name #f))
@@ -45,12 +46,30 @@
                  #t)
           (error "exported names must be a list of symbols - " symbols))))
 
+(define (engage-namespace-counter) (set! *namespace-counter* 0))
+
+(define (incr-namespace-counter)
+  (if (>= *namespace-counter* 0)
+      (set! *namespace-counter* (+ *namespace-counter* 1))))
+
+(define (decr-namespace-counter)
+  (if (> *namespace-counter* 0)
+      (set! *namespace-counter* (- *namespace-counter* 1))))
+
+(define (disengage-namespace-counter)
+  (if (> *namespace-counter* 0)
+      (begin (pop-namespace)
+	     (disengage-namespace-counter))
+      (set! *namespace-counter* -1)))
+
 (define (push-namespace name)
+  (incr-namespace-counter)
   (set! *namespaces* (scm-cons (scm-cons (add-parent-namespace-names name) 
                                  (existing-namespace-defs name)) 
                            *namespaces*)))
 
 (define (pop-namespace)
+  (decr-namespace-counter)
   (if (scm-not (null? *namespaces*))
       (let ((top (scm-car *namespaces*)))
           (set! *namespaces* (scm-cdr *namespaces*))

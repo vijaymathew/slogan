@@ -37,9 +37,8 @@
                 (begin (write-char c)
                        (loop (read-char port))))))))))
 
-(define (compile-slgn-script->scm-script script-name 
-                                         out-file-name
-					 assemble exe)
+(define (compile-slgn-script->scm-script script-name out-file-name assemble exe)
+  (engage-namespace-counter)
   (call-with-output-file out-file-name
     (lambda (out-port)
       (let ((program-text (read-script-file script-name)))
@@ -50,7 +49,8 @@
           (if (scm-not (null? exprs))
               (begin (scm-write (scm-car exprs) out-port)
                      (scm-newline out-port)
-                     (loop (scm-cdr exprs)))))))))
+                     (loop (scm-cdr exprs))))))))
+  (disengage-namespace-counter))
 
 (define (exe-build-command script-name cc-options ld-options output out-file-name)
   (string-append *gsc-compiler*
