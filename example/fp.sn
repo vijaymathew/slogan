@@ -1,0 +1,17 @@
+function iter(n f)
+ if (n == 0) identity
+ else compose(f, iter(n-1, f));
+
+assert iter(4, fn(x) x*x)(2) == 65536;
+
+function loop(p f x)
+ if (p(x)) x
+ else loop(p f f(x));
+
+function dicho(f a b epsilon)
+ let (is_ok = fn(x) | a:b -> abs(a-b) < epsilon
+      do_better = fn(x) | a:b -> let (c = (a + b)/2.0)
+                                  if (f(a) * f(c) >  0.0) c:b
+                                  else a:c)
+  loop(is_ok, do_better, a:b);
+  
