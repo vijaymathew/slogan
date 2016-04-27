@@ -1,0 +1,41 @@
+// issue #38 - `@` to work with strings and all kinds of arrays.
+function @tests(a, real = false)
+{ assert @(a, 1) == if (real) 2. else 2;
+  assert @(a, 10, default = 100) == 100;
+  @(a, 1, value = if (real) 100. else 100);
+  assert @(a, 1) == if (real) 100. else 100 };
+  
+@tests(#[1 2 3 4 5]);
+@tests(#u8[1 2 3 4 5]);
+@tests(#s8[1 2 3 4 5]);
+@tests(#u16[1 2 3 4 5]);
+@tests(#s16[1 2 3 4 5]);
+@tests(#u32[1 2 3 4 5]);
+@tests(#s32[1 2 3 4 5]);
+@tests(#u64[1 2 3 4 5]);
+@tests(#s64[1 2 3 4 5]);
+
+@tests(#f32[1. 2. 3. 4. 5.], true);
+@tests(#f64[1. 2. 3. 4. 5.], true);
+
+define ba = #b[0 1 1 0 1];
+assert @(ba, 0) == false;
+assert @(ba, 1);
+assert @(ba, 10, default = 100) == 100;
+@(ba, 3, value = 100);
+assert @(ba, 3);
+
+define s = apply(string, string_to_list("hello world"));
+assert @(s, 1) == 'e';
+assert @(s, 20) == false;
+assert @(s, 20, default = 100) == 100;
+@(s, 1, value = 'a');
+assert @(s, 1) == 'a';
+
+// issue #40 - implicit match for functions.
+function f(a, b) |
+ [x, 100] -> x * 100,
+ [y, 1000] -> y * 1000;
+
+assert f(10, 100) == 1000;
+assert f(10, 1000) == 10000;
