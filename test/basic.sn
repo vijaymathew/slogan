@@ -92,7 +92,9 @@ x = ints(0);
 assert nth(10, x) == 10;
 
 x = [1 2 3 4];
-assert {match(x) [1 a 3 b] -> a + b} == 6;
+assert {match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b} == 6;
+x = [10 2 3 4];
+assert {match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b} == 1000;
 
 assert {case(x) [1 2 5 4] -> "ok"} == false;
 

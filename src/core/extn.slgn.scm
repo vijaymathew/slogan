@@ -59,23 +59,55 @@
 
 (define (complement f) (lambda (#!rest args) (scm-not (scm-apply f args))))
 
+(define (array-accessor&mutator tab)
+  (cond
+    ((vector? tab) (scm-cons vector-ref vector-set!))
+    ((string? tab) (scm-cons string-ref string-set!))
+    ((u8vector? tab) (scm-cons u8vector-ref u8vector-set!))
+    ((s8vector? tab) (scm-cons s8vector-ref s8vector-set!))
+    ((u16vector? tab) (scm-cons u16vector-ref u16vector-set!))
+    ((s16vector? tab) (scm-cons s16vector-ref s16vector-set!))
+    ((u32vector? tab) (scm-cons u32vector-ref u32vector-set!))
+    ((s32vector? tab) (scm-cons s32vector-ref s32vector-set!))
+    ((u64vector? tab) (scm-cons u64vector-ref u64vector-set!))
+    ((s64vector? tab) (scm-cons s64vector-ref s64vector-set!))
+    ((f32vector? tab) (scm-cons f32vector-ref f32vector-set!))
+    ((f64vector? tab) (scm-cons f64vector-ref f64vector-set!))
+    (else #f)))
+
 (define (map-mutate tab key val)
-  (cond ((list? tab)
-         (set-cdr! (scm-assoc key tab) val))
-        ((vector? tab)
-         (vector-set! tab key val))
-        (else
-         (hashtable_set tab key val))))
+  (cond
+    ((list? tab)
+      (set-cdr! (scm-assoc key tab) val))
+    ((hashtable? tab)
+      (hashtable_set tab key val))
+    ((%bitvector? tab)
+      (if val
+        (bitvector-set! tab key)
+        (bitvector-clear! tab key)))
+    (else
+      (let ((aam (array-accessor&mutator tab)))
+        (if aam
+          ((scm-cdr aam) tab key val)
+          (error "Mutator not found for object - " tab))))))
 
 (define (map-access tab key default)
-  (cond ((list? tab)
-         (get key tab default))
-        ((vector? tab)
-         (with-exception-handler
-          (lambda (e) default)
-          (lambda () (vector-ref tab key))))
-        (else
-         (hashtable_at tab key default))))
+  (cond
+    ((list? tab)
+      (get key tab default))
+    ((hashtable? tab)
+      (hashtable_at tab key default))
+    ((%bitvector? tab)
+      (if (< key (bitvector-length tab))
+        (bitvector-set? tab key)
+        default))
+    (else
+      (let ((aam (array-accessor&mutator tab)))
+        (if aam
+          (with-exception-handler
+            (lambda (e) default)
+            (lambda () ((scm-car aam) tab key)))
+          (error "Accessor not found for object - " tab))))))
 
 (define (@ tab key #!key (value *void*) (default #f))
   (let ((v (map-access tab key default)))

@@ -1,3 +1,4 @@
 link("../test/basic");
 link("../test/yield");
 link("../test/lazy");
+link("../test/v061");
