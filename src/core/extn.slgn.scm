@@ -53,7 +53,7 @@
 
 (define (mapfn f) (lambda (xs #!rest ys) (scm-apply map f xs ys)))
 
-(define (partial f #!rest args) (lambda (#!rest args2) (scm-apply f (scm-append args2 args))))
+(define (partial f #!rest args) (lambda (#!rest args2) (scm-apply f (scm-append args args2))))
 
 (define (until p f x) (if (p x) x (until p f (f x))))
 

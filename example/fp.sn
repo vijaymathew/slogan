@@ -1,3 +1,5 @@
+// Examples of higher-order programming.
+
 function iter(n f)
  if (n == 0) identity
  else compose(f, iter(n-1, f));
@@ -14,4 +16,57 @@ function dicho(f a b epsilon)
                                   if (f(a) * f(c) >  0.0) c:b
                                   else a:c)
   loop(is_ok, do_better, a:b);
-  
+
+function deriv(f dx x) (f(x+dx) - f(x))/dx;
+
+function newton(f start dx epsilon)
+ let (is_ok = fn(x) abs(f(x)) < epsilon
+      do_better = fn(x)
+                   let (fp = partial(deriv, f, dx))
+                    x - f(x)/fp(x))
+  loop(is_ok do_better start);
+
+assert newton(cos, 1.5, 1e-10, 1e-10) * 2 == 3.141592653608288;
+
+function sigma(f a b)
+ if (a > b) 0
+ else f(a) + sigma(f a + 1 b);
+
+function summation(incr test op e f a)
+ if (test(a)) e
+ else op(f(a) summation(incr test op e f incr(a)));
+
+function sum(op e f a b dx) summation(fn(x) x + dx, fn(x) x > b, op e f a);
+
+function integrate(f a b dx) sum(add 0, fn(x) f(x) * dx, a b dx);
+
+assert integrate(fn(x) 1./x, 1. 2. .001) == .6938972430599593;
+
+function summation_int(op e f a b) summation(fn(x) x + 1, fn(x) x > b, op e f a);
+
+sigma = partial(summation_int add 0);
+define pi = partial(summation_int mult 1);
+
+define fact = partial(pi identity 1);
+
+assert fact(10) == 3628800;
+
+assert sigma(fn(n) 1. / fact(n), 0 20) == 2.718281828459045;
+
+record complex(re_part:real, img_part:real);
+
+function complex_add(c1 c2) |
+ [complex(a, b), complex(c, d)] -> complex(re_part = a + c, img_part = b + d);
+
+define c = complex_add(complex(re_part = 10, img_part = 100) complex(re_part = 20, img_part = 200));
+assert complex_re_part(c) == 30;
+assert complex_img_part(c) == 300;
+
+function len(xs) fold_left(fn(_, n) n + 1, 0, xs);
+assert len([1 20 3 40]) == 4;
+
+function apnd(xs, ys) fold_right(pair, ys, xs);
+assert apnd([1 2 3] [4 5 6]) == [1 2 3 4 5 6];
+
+function rev(xs) fold_right(fn(x, xs) apnd(xs [x]), [], xs);
+assert rev([1 2 3 4 5]) == [5 4 3 2 1];

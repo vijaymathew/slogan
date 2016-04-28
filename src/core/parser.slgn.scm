@@ -203,7 +203,7 @@
 	   `(define ,name 
 	      (lambda ,params
 	      (error "Method not defined.")))))
-      (if (scm-eq? (tokenizer 'peek) 'cases)
+      (if (scm-eq? (tokenizer 'peek) '*pipe*)
 	  `(begin ,generic-expr ,@(generic-cases-expr tokenizer name params))
 	  generic-expr))))
 
@@ -216,8 +216,8 @@
 	(parser-error tokenizer "Missing -> after types expression."))
     (let* ((body-expr (func-body-expr tokenizer params))
            (mdef (scm-cons types (scm-list 'define name (merge-lambda 
-                                                         tokenizer params 
-                                                         body-expr)))))
+                                                          tokenizer params 
+                                                          body-expr)))))
       (cond ((scm-eq? (tokenizer 'peek) '*comma*)
 	     (tokenizer 'next)
 	     (cond ((scm-eq? (tokenizer 'peek) 'else)
@@ -365,11 +365,11 @@
         (let ((parent-call (if (types-has-rest? types)
                                `(scm-apply ,old-name ,@args)
                                `(,old-name ,@args))))
-          `(define ,name (let ((,old-name ,name))
-                           (lambda ,params 
-                             (if ,types-chk 
-                                 ,body
-                                 ,parent-call)))))))))
+          `(set! ,name (let ((,old-name ,name))
+                         (lambda ,params 
+                           (if ,types-chk 
+                             ,body
+                             ,parent-call)))))))))
   
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))
@@ -1168,20 +1168,34 @@
   (let ((precond (expression tokenizer)))
     (assert-comma-separator tokenizer '*close-paren*)
     precond))
-  
-(define (rec-get-field-def tokenizer)
-  (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
-         (tokenizer 'next)
-         (let ((val (expression tokenizer)))
-           (if (scm-eq? (tokenizer 'peek) 'where)
-               (scm-cons val (rec-get-precond tokenizer))
-               (begin (assert-comma-separator tokenizer '*close-paren*)
-                      (scm-cons val #t)))))
-        (else
-         (if (scm-eq? (tokenizer 'peek) 'where)
-             (scm-cons #f (rec-get-precond tokenizer))
-             (begin (assert-comma-separator tokenizer '*close-paren*)
-                    (scm-cons #f #t))))))
+
+(define (mk-rec-type-check-expr field-name type-name)
+  (let ((predic-name (string->symbol (string-append "is_" (symbol->string type-name)))))
+    `(,predic-name ,field-name)))
+
+(define (rec-get-field-def tokenizer field-name)
+  (let ((token (tokenizer 'peek)))
+    (cond
+      ((scm-eq? token '*assignment*)
+        (tokenizer 'next)
+        (let ((val (expression tokenizer)))
+          (if (scm-eq? (tokenizer 'peek) 'where)
+            (scm-cons val (rec-get-precond tokenizer))
+            (begin (assert-comma-separator tokenizer '*close-paren*)
+              (scm-cons val #t)))))
+      ((scm-eq? token '*colon*)
+        (tokenizer 'next)
+        (let ((type-name (tokenizer 'next)))
+          (if (symbol? type-name)
+            (let ((expr (scm-cons #f (mk-rec-type-check-expr field-name type-name))))
+              (assert-comma-separator tokenizer '*close-paren*)
+              expr)
+            (parser-error tokenizer "Expected a type name here."))))
+      (else
+        (if (scm-eq? token 'where)
+          (scm-cons #f (rec-get-precond tokenizer))
+          (begin (assert-comma-separator tokenizer '*close-paren*)
+            (scm-cons #f #t)))))))
   
 (define (mk-record-expr name tokenizer)
   (cond ((scm-eq? (tokenizer 'peek) '*open-paren*)
@@ -1191,7 +1205,7 @@
                     (preconds '()))
            (cond ((valid-identifier? token)
                   (let ((token (tokenizer 'next))
-                        (fdef (rec-get-field-def tokenizer)))
+                        (fdef (rec-get-field-def tokenizer token)))
                     (loop (tokenizer 'peek) (scm-cons token members)
                           (scm-cons (scm-car fdef) default-values) 
                           (scm-cons (scm-cdr fdef) preconds))))
@@ -1207,16 +1221,17 @@
 
 (define (mk-record-precond-expr precond mem)
   (if (eq? precond #t)
-      precond
-      (scm-list 'if (scm-list 'not precond)
-                (scm-list
-                 'error (with-output-to-string 
-                          '()
-                          (lambda () 
-                            (scm-display "Precondition failed: ")
-                            (scm-display precond)
-                            (scm-display ".")))
-                 mem))))
+    precond
+    (scm-list
+      'if (scm-list 'not precond)
+      (scm-list
+        'error `(scm-cons 'preconditon_failed
+                  ,(with-output-to-string 
+                     '()
+                     (lambda () 
+                       (scm-display precond)
+                       (scm-display ".")))))
+      mem)))
 
 (define (mk-record-precond-exprs preconds mems)
   (let loop ((preconds preconds) (mems mems) (result '()))
