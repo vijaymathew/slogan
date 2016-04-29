@@ -32,6 +32,40 @@ assert @(s, 20, default = 100) == 100;
 @(s, 1, value = 'a');
 assert @(s, 1) == 'a';
 
+s = [!a:1 !b:2];
+assert @(s, !a) == 1;
+assert @(s, !b) == 2;
+assert @(s, !c, default = 100) == 100;
+@(s, !c, value = 200);
+@(s !a value = 1000);
+assert @(s, !a) == 1000;
+assert @(s, !b) == 2;
+assert @(s, !c) == 200;
+@(s !b value = 2000);
+assert @(s, !b) == 2000;
+
+s = #{1:2 3:4};
+assert @(s, 1) == 2;
+assert @(s, 3) == 4;
+assert @(s, 10, default=100) == 100;
+@(s, 10, value = 200);
+assert @(s, 1) == 2;
+assert @(s, 3) == 4;
+assert @(s, 10, default=100) == 200;
+@(s, 1, value = 300);
+assert @(s, 1) == 300;
+assert @(s, 3) == 4;
+assert @(s, 10, default=100) == 200;
+
+s = [1 2 3 4];
+assert @(s, 1) == 2;
+assert @(s, 10) == false;
+assert @(s, 10, default = 100) == 100;
+@(s, 2, value = 100);
+assert @(s, 1) == 2;
+assert @(s, 10) == false;
+assert @(s, 2) == 100;
+
 // issue #40 - implicit match for functions.
 function f(a, b) |
  [x, 100] -> x * 100,

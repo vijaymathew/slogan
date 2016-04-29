@@ -75,10 +75,26 @@
     ((f64vector? tab) (scm-cons f64vector-ref f64vector-set!))
     (else #f)))
 
+(define (list-set-at! xs n v)
+  (if (>= n 0)
+    (let loop ((ys xs) (n n))
+      (cond
+        ((null? ys)
+          #f)
+        ((<= n 0)
+          (set-car! ys v))
+        (else
+          (loop (scm-cdr ys) (- n 1)))))))
+
 (define (map-mutate tab key val)
   (cond
     ((list? tab)
-      (set-cdr! (scm-assoc key tab) val))
+      (if (integer? key)
+        (list-set-at! tab key val)
+        (let ((entry (scm-assoc key tab)))
+          (if entry
+            (set-cdr! entry val)
+            (set-cdr! tab (scm-cons (scm-cons key val) (scm-cdr tab)))))))
     ((hashtable? tab)
       (hashtable_set tab key val))
     ((%bitvector? tab)
@@ -94,7 +110,11 @@
 (define (map-access tab key default)
   (cond
     ((list? tab)
-      (get key tab default))
+      (if (integer? key)
+        (with-exception-handler
+          (lambda (e) default)
+          (lambda () (list-ref tab key)))
+        (get key tab default)))
     ((hashtable? tab)
       (hashtable_at tab key default))
     ((%bitvector? tab)
@@ -110,10 +130,9 @@
           (error "Accessor not found for object - " tab))))))
 
 (define (@ tab key #!key (value *void*) (default #f))
-  (let ((v (map-access tab key default)))
-    (if (scm-not (scm-eq? value *void*))
-        (map-mutate tab key value))
-    v))
+  (if (scm-not (scm-eq? value *void*))
+    (map-mutate tab key value)
+    (map-access tab key default)))
 
 (define (do_times n fn #!key (from 0) init)
   (call/cc
