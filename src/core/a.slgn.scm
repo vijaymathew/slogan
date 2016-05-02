@@ -14,6 +14,7 @@
 (define scm-caddr caddr)
 (define scm-cadddr cadddr)
 (define scm-cadar cadar)
+(define scm-cdadr cdadr)
 (define scm-list list)
 (define scm-length length)
 (define scm-reverse reverse)

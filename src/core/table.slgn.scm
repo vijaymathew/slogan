@@ -57,3 +57,12 @@
 
 (define (hashtable_for_each proc ht)
   (table-for-each proc (hashtable-table ht)))
+
+(define (make-equal-hashtable args)
+  (let ((ht (make_equal_hashtable)))
+    (let loop ((args args))
+      (if (null? args)
+        ht
+        (let ((a (scm-car args)))
+          (hashtable_set ht (scm-car a) (scm-cdr a))
+          (loop (scm-cdr args)))))))

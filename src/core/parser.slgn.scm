@@ -934,16 +934,18 @@
 
 (define (table-literal tokenizer)
   (tokenizer 'next)
-  (let loop ((expr '(let ((*table* (make_equal_hashtable))))))
-    (if (scm-eq? (tokenizer 'peek) '*close-brace*)
-        (begin (tokenizer 'next)
-               (scm-append expr '(*table*)))
+  (let ((expr '(make-equal-hashtable)))
+    (let loop ((args '()))
+      (if (scm-eq? (tokenizer 'peek) '*close-brace*)
+        (begin
+          (tokenizer 'next)
+          (scm-append expr (scm-list (scm-append '(scm-list) (scm-reverse args)))))
         (let ((keyval (expression tokenizer)))
-          (if (scm-not (and (pair? keyval)
-                        (scm-eq? (scm-car keyval) 'scm-cons)))
-              (parser-error tokenizer "Key-value must be a pair.")
-              (begin (assert-comma-separator tokenizer '*close-brace*)
-                     (loop (scm-append expr (scm-list `(hashtable_set *table* ,(scm-cadr keyval) ,(scm-caddr keyval)))))))))))
+          (if (scm-not (and (pair? keyval) (scm-eq? (scm-car keyval) 'scm-cons)))
+            (parser-error tokenizer "Key-value must be a pair.")
+            (begin
+              (assert-comma-separator tokenizer '*close-brace*)
+              (loop (scm-cons keyval args)))))))))
     
 (define (array-or-table-literal tokenizer)
   (tokenizer 'next)

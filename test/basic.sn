@@ -96,11 +96,40 @@ x = ints(0);
 assert nth(10, x) == 10;
 
 x = [1 2 3 4];
-assert {match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b} == 6;
+assert (match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b) == 6;
 x = [10 2 3 4];
-assert {match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b} == 1000;
+assert (match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b) == 1000;
 
-assert {case(x) [1 2 5 4] -> "ok"} == false;
+assert (case(x) [1 2 5 4] -> "ok") == false;
+x = 5;
+assert (case(x) [1 2 5 4] -> "ok") == "ok";
+
+record rec_a(x, y);
+record rec_b(x, y, z);
+x = rec_a(x = 100, y = 200);
+y = rec_b(x = 1, y = 2, z = 3);
+
+assert (match(x) rec_a(x, y) -> x * y, rec_b(x, y, z = 3) -> x + y) == 20000;
+assert (match(y) rec_a(x, y) -> x * y, rec_b(x, y, z = 3) -> x + y) == 3;
+
+y = rec_b(x = 1, y = 2, z = 4);
+
+assert (match(y) rec_a(x, y) -> x * y, rec_b(x, y, z = 3) -> x + y, rec_b(x, y, z = 4) -> y * 2) == 4;
+
+y = rec_b(x = 1, y = 3, z = 4);
+
+assert (match(y) rec_a(x, y) -> x * y, rec_b(x, y = 2, z) -> x + z, rec_b(x, y, z = 4) -> y * 2) == 6;
+assert (match([1 2 3]) rec_a(x, y) -> x * y, [x y z] -> x + y + z) == 6;
+assert (match(x) rec_a(x, y) -> x * y, [x y z] -> x + y + z) == 20000;
+
+x = #{!name:!nemo !age:3};
+assert (match(x) #{!name:n !age:a} -> [n a]) == [!nemo 3];
+assert (match(x) #{!age:a !name:n} -> [n a]) == [!nemo 3];
+x = [!name:!nemo !age:3];
+assert (match(x) [!name:n !age:a] -> [n a]) == [!nemo 3];
+assert (match(x) [!age:a !name:n] -> [n a], _ -> false) == false;
+assert (match(#{1:2 3:[1 2 3 4 5]}) [1:a 3:[1 b 3 c 5]] -> a * b * c, #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 8;
+assert (match([1:2 3:[1 2 3 4 5]]) [1:a 3:[1 b 3 c 5]] -> a * b * c, #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 16;
 
 function lazy u(a, b) if (a) b else false;
 x = false;
