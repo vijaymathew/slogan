@@ -37,7 +37,7 @@ function make_account(balance, password) {
 // Exercise 3.4
 function make_account(balance, password) {
 
-    define incorrect_attempts = 0;
+    let incorrect_attempts = 0;
 
     function call_the_cops() "Cops called!";
     
@@ -137,7 +137,7 @@ function make_joint(account, pswd, new_pswd) {
 };
 
 // Exercise 3.8
-define f = let (state = 0) fn(x) let (s = state) { state = state + x; s };
+let f = let (state = 0) fn(x) let (s = state) { state = state + x; s };
 `+`(f(0), f(1)); // will evaluate to 0 if `+` evaluates its arguments left-right, 1 otherwise.
 
 // Exercise 3.17
@@ -305,7 +305,7 @@ function make_table(is_same_key)
 
 // Exercise 3.25
 // The solution for Exercise 3.24 already works for this.
-define table = make_table(is_equal);
+let table = make_table(is_equal);
 
 // Exercise 3.26
 function make_tree_node(key value left right) [key:value, left:right];
@@ -367,7 +367,7 @@ function stream_map(proc @rest argstreams)
 // Exercise 3.54
 function mul_streams(s1 s2) stream_map(`*` s1 s2);
 function integers(n) n::integers(n+1);
-define factorials = 1::mul_streams(factorials integers(2));
+let factorials = 1::mul_streams(factorials integers(2));
 
 // Exercise 3.55
 function add_streams(s1 s2) stream_map(`+` s1 s2);

@@ -152,7 +152,7 @@ function encode_symbol(symbol tree) {
         else error("symbol not in tree" symbol)
 };
 
-define sample_tree = make_code_tree(make_leaf(!A 4), make_code_tree(make_leaf(!B 2), make_code_tree(make_leaf(!D 1) make_leaf(!C 1))));
-define message = %[A D A B B C A];
+let sample_tree = make_code_tree(make_leaf(!A 4), make_code_tree(make_leaf(!B 2), make_code_tree(make_leaf(!D 1) make_leaf(!C 1))));
+let message = %[A D A B B C A];
 assert_eq(decode(encode(message sample_tree) sample_tree)
        message);

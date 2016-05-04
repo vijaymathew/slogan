@@ -20,7 +20,7 @@ method concat(a:string, b:string) string_append(a, b);
 assert concat([1 2 3], [4 5 6]) == [1 2 3 4 5 6];
 assert concat("hello " "world") == "hello world";
 
-define old_add = `+`;
+let old_add = `+`;
 method `+`(a:string, b:string) concat(a, b);
 assert "hello " + "world" == "hello world";
 assert 1 + 2 == 3;
@@ -33,7 +33,7 @@ function lazy lf(a, b) if (a) b else false;
 namespace;
 
 assert n_f(10) == 10;
-define x = 10;
+let x = 10;
 n_m(true, {x = 200});
 assert x == 200;
 n_m(false, {x = 0});
@@ -71,15 +71,15 @@ lf(false, {x = 1});
 assert x == 1;
 
 record r(a, b where is_integer(b) && b > 100);
-define a = r(a = "hi", b = 200);
+let a = r(a = "hi", b = 200);
 assert r_a(a) == "hi";
 assert r_b(a) == 200;
-define x = false;
-define y = false;
+let x = false;
+let y = false;
 try r(a=1, b=100) catch (e) x = true finally y = true;
 assert x && y;
 
-define x = true;
+let x = true;
 try r_set_b(a, "ok")
 catch (e) r_set_b(a, 200)
 finally x = false;
@@ -87,7 +87,7 @@ finally x = false;
 assert r_b(a) == 200;
 assert x == false;
 
-define x = ?;
+let x = ?;
 task({task_sleep(2); ?x = 100});
 assert ?x == 100;
 
@@ -151,19 +151,19 @@ assert do_times(10, fn(i, x, b) if (i == 5) b("ok") else i) == "ok";
 assert do_times(0, run_add, init = 0, from = 9) == 45;
 
 // harmonic series
-define a = fold_left(fn(i, sum) sum + 1.0/i, 0, range(1,2));
+let a = fold_left(fn(i, sum) sum + 1.0/i, 0, range(1,2));
 assert a == 1.5;
 
 // list comprehensions
-define s =[expt(x,2) | x <- range(0, 10)];
+let s =[expt(x,2) | x <- range(0, 10)];
 assert s == [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100];
 assert [x | x <- s where remainder(x, 2) == 0] == [0, 4, 16, 36, 64, 100];
 
-define words = string_split("The quick brown fox jumps over the lazy dog");
+let words = string_split("The quick brown fox jumps over the lazy dog");
 words = [[string_upcase(w), string_downcase(w), string_length(w)] | w <- words];
 assert words == [["THE", "the", 3], ["QUICK", "quick", 5], ["BROWN", "brown", 5], ["FOX", "fox", 3], ["JUMPS", "jumps", 5], ["OVER", "over", 4], ["THE", "the", 3], ["LAZY", "lazy", 4], ["DOG", "dog", 3]];
 
 // partial application
 function deriv(f dx x) (f(x+dx) - f(x))/dx;
-define pf = partial(deriv, cos 1.5);
+let pf = partial(deriv, cos 1.5);
 assert pf(1e-10) == deriv(cos, 1.5, 1e-10);

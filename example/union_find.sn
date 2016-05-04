@@ -40,7 +40,7 @@ function union(ufo p q)
     
 namespace;
 
-define guf = uf;
+let guf = uf;
 
 // Weighted quick union-find
 namespace wquf;

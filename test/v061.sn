@@ -18,14 +18,14 @@ function @tests(a, real = false)
 @tests(#f32[1. 2. 3. 4. 5.], true);
 @tests(#f64[1. 2. 3. 4. 5.], true);
 
-define ba = #b[0 1 1 0 1];
+let ba = #b[0 1 1 0 1];
 assert @(ba, 0) == false;
 assert @(ba, 1);
 assert @(ba, 10, default = 100) == 100;
 @(ba, 3, value = 100);
 assert @(ba, 3);
 
-define s = apply(string, string_to_list("hello world"));
+let s = apply(string, string_to_list("hello world"));
 assert @(s, 1) == 'e';
 assert @(s, 20) == false;
 assert @(s, 20, default = 100) == 100;
@@ -85,6 +85,6 @@ assert join([1, 2, 3], "hello") == [1, 2, 3, 'h', 'e', 'l', 'l', 'o'];
 assert join([1, 2, 3], 43) == [[1, 2, 3], 43];
 
 // issue #42 - parameter order of range changed
-define noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, fn(x) x+i)];
-define primes = [x | x <- range(2, 50) where not(memq(x, noprimes))];
+let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, fn(x) x+i)];
+let primes = [x | x <- range(2, 50) where not(memq(x, noprimes))];
 assert primes == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];

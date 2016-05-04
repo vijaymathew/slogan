@@ -92,7 +92,7 @@ function sum(term a next b)
 function cube (x) mult(x, x, x);
 
 function simpson(f a b n)
-{ define h = (b - a) / n;
+{ let h = (b - a) / n;
   function y(k) f(a + k * h);
   function term(k) 
   (if (is_odd(k)) 4
@@ -170,7 +170,7 @@ function half_interval_method(f, a, b)
         else if (is_negative(b_value) && is_positive(a_value)) search(f, b, a)
         else error("Values are not of opposite sign", a, b);
 
-define tolerance = 0.00001;
+let tolerance = 0.00001;
 
 // Exercise 1.35
 
@@ -221,7 +221,7 @@ function d(i)
     if (not(is_zero(remainder(i+1, 3)))) 1
     else 2 * (inc(i)/3);
 
-define e = 2 + cont_frac(fn(i) 1.0, d, 10);
+let e = 2 + cont_frac(fn(i) 1.0, d, 10);
 
 // Exercise 1.39
 
@@ -234,7 +234,7 @@ function tan_cf(x k)
 
 // Exercise 1.40
 
-define dx = 0.00001;
+let dx = 0.00001;
 function deriv(g) fn(x) (g(x+dx) - g(x)) / dx;
 function newton_transform(g) fn(x) x - g(x)/(deriv(g))(x);
 function newtons_method(g guess) fixed_point(newton_transform(g), guess);

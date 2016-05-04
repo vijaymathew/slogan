@@ -64,8 +64,8 @@ for(i, 0, 10, showln(i));
 //    1
 //    ...
 
-// How to use a macro to define a new global variable:
-macro def(var, value) %{define %%var = %%value};
+// How to use a macro to let a new global variable:
+macro def(var, value) %{let %%var = %%value};
 
 def(x, 100);
 showln(x);

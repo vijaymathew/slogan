@@ -1,4 +1,4 @@
-define clib = ffi_open("./clib.so");
+let clib = ffi_open("./clib.so");
 declare ffi clib [
     int add_i[int, int]
     uint add_ui[uint, uint]
@@ -47,22 +47,22 @@ showln(add_ld(10.2 20.3)); // => 30.5
 showln(add_c(60 65)); // => 125
 
 // Functions that return and take pointers to structs:
-define p = alloc_person("tom", 30);
+let p = alloc_person("tom", 30);
 showln(person_age(p)); // => 30
 showln(person_name(p)); // => tomcc
-define copy = clone_person(p);
+let copy = clone_person(p);
 showln(person_age(copy)); // => 30
 showln(person_name(copy)); // => tom
 free_person(copy);
 
 // If the struct prototype is declared, a pointer can be converted to
 // a Slogan object that represents that structure.
-define np = pointer_to_c_struct(!person, p);
+let np = pointer_to_c_struct(!person, p);
 showln(c_struct_get(np, !age)); // => 30
 showln(c_struct_get(np, !name)); // => tom
 
 // Nested structures:
-define e = alloc_employee(p, 1000.23);
+let e = alloc_employee(p, 1000.23);
 showln(person_age(employee_person(e))); // => 30
 showln(person_name(employee_person(e))); // => tom
 showln(employee_salary(e)); // => 1000.22998046875
@@ -80,7 +80,7 @@ showln(c_struct_get(p, !x)); // => 100
 showln(c_struct_get(p, !y)); // => 340
 
 // Create a c_struct instance in Slogan and pass it to a C function:
-define pp = c_struct_instance(!point, [10 20]);
+let pp = c_struct_instance(!point, [10 20]);
 print_point(pp); // => 10:20
 
 ffi_close(clib);

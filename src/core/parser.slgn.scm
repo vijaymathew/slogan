@@ -11,11 +11,11 @@
 
 (define (expression/statement tokenizer #!optional (top #t))
   (if (eof-object? (tokenizer 'peek))
-      (tokenizer 'next)
-      (let ((v (add-def-to-namespace (statement tokenizer) top)))
-        (if (scm-not v) (set! v (intern-to-top-namespace (expression tokenizer) top)))
-        (assert-semicolon tokenizer)
-        v)))
+    (tokenizer 'next)
+    (let ((v (add-def-to-namespace (statement tokenizer) top)))
+      (if (scm-not v) (set! v (intern-to-top-namespace (expression tokenizer) top)))
+      (assert-semicolon tokenizer)
+      v)))
 
 (define (statement tokenizer)
   (sanitize-expression
@@ -373,17 +373,25 @@
   
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))
-      (let ((sym (tokenizer 'next)))
-	(if (scm-eq? sym 'define)
-	    (define-stmt tokenizer)
-	    (cond ((scm-not (valid-identifier? sym))
-		   (tokenizer 'put sym)
-		   #f)
-		  ((scm-eq? (tokenizer 'peek) '*assignment*)
-		   (set-stmt sym tokenizer))
-		  (else (tokenizer 'put sym) 
-			#f))))
-      #f))
+    (let ((sym (tokenizer 'next)))
+      (if (scm-eq? sym 'let)
+        (let ((n (tokenizer 'peek)))
+          (if (symbol? n)
+            (if (eq? '*open-paren* n)
+              (begin
+                (tokenizer 'put sym)
+                (let-expr tokenizer))
+              (define-stmt tokenizer))))
+        (cond
+          ((scm-not (valid-identifier? sym))
+            (tokenizer 'put sym)
+            #f)
+          ((scm-eq? (tokenizer 'peek) '*assignment*)
+            (set-stmt sym tokenizer))
+          (else
+            (tokenizer 'put sym) 
+            #f))))
+    #f))
 
 (define (macro-def-stmt tokenizer)
   (if (scm-eq? (tokenizer 'peek) 'macro)
@@ -414,15 +422,27 @@
 
 (define (define-stmt tokenizer)
   (let ((token (tokenizer 'next)))
-    (if (symbol? token)
+    (cond
+      ((symbol? token)
         (let ((unquote? (scm-eq? '*unquote* token)))
           (if unquote?
-              (if (scm-not (tokenizer 'quote-mode?))
-                  (parser-error tokenizer "Not in quote mode.")
-                  (set! token (tokenizer 'next))))
+            (if (scm-not (tokenizer 'quote-mode?))
+              (parser-error tokenizer "Not in quote mode.")
+              (set! token (tokenizer 'next))))
           (check-if-reserved-name token tokenizer)
-          (var-def-set (if unquote? (scm-list 'unquote token) token) tokenizer #t))
-        (parser-error tokenizer "Invalid variable name."))))
+          (cond
+            ((eq? '*assignment* (tokenizer 'peek))
+              (var-def-set (if unquote? (scm-list 'unquote token) token) tokenizer #t))
+            ((eq? '*open-paren* (tokenizer 'peek))
+              (tokenizer 'put token)
+              (enter-scope)
+              (let ((expr (named-let-expr 'let tokenizer)))
+                (leave-scope)
+                expr))
+            (else
+              (parser-error tokenizer "Invalid let expression.")))))
+      (else
+        (parser-error tokenizer "Invalid variable name.")))))
 
 (define (set-stmt sym tokenizer) (var-def-set sym tokenizer #f))
 
@@ -1456,7 +1476,7 @@
       (scm-list (scm-car expr) (scm-caddr expr) (scm-cadr expr))
       expr))
 
-(define *reserved-names* '(fn function method define record true false
+(define *reserved-names* '(fn function method record true false
 			      if else when let letseq letrec yield
 			      case match where try trycc catch finally
                               macro namespace import declare assert))

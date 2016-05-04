@@ -3,8 +3,8 @@ function random_dataset(count, max_val)
   if (c <= 0) rs
   else loop(c - 1, random_integer(max_val):rs);
   
-define q10 = partial(quotient, 10);
-define r10 = partial(remainder, 10);
+let q10 = partial(quotient, 10);
+let r10 = partial(remainder, 10);
 
 function split_last_digit(xs)
 { function tabify(xss)

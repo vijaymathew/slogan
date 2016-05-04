@@ -45,9 +45,9 @@ assert integrate(fn(x) 1./x, 1. 2. .001) == .6938972430599593;
 function summation_int(op e f a b) summation(fn(x) x + 1, fn(x) x > b, op e f a);
 
 sigma = partial(summation_int add 0);
-define pi = partial(summation_int mult 1);
+let pi = partial(summation_int mult 1);
 
-define fact = partial(pi identity 1);
+let fact = partial(pi identity 1);
 
 assert fact(10) == 3628800;
 
@@ -58,7 +58,7 @@ record complex(re_part:real, img_part:real);
 function complex_add(c1 c2) |
  [complex(a, b), complex(c, d)] -> complex(re_part = a + c, img_part = b + d);
 
-define c = complex_add(complex(re_part = 10, img_part = 100) complex(re_part = 20, img_part = 200));
+let c = complex_add(complex(re_part = 10, img_part = 100) complex(re_part = 20, img_part = 200));
 assert complex_re_part(c) == 30;
 assert complex_img_part(c) == 300;
 
@@ -108,8 +108,8 @@ function add_to_set(e, xs)
 function union(xs ys) fold_left(add_to_set, xs ys);
 function intersect(xs ys) filter(fn(x) member(x, ys), xs);
 
-define s = make_set([1 2 3 2 1]);
-define r = make_set([1 4 3 1 5]);
+let s = make_set([1 2 3 2 1]);
+let r = make_set([1 4 3 1 5]);
 assert union(s r) == [5, 4, 1, 2, 3];
 assert intersect(s r) == [1, 3];
 

@@ -1,8 +1,8 @@
 // Prints duplicate lines in input along with their counts.
 // Reads input from both stdin and files passed as command-line arguments.
 
-define counts = #{};
-define cl = command_line();
+let counts = #{};
+let cl = command_line();
 
 if (length(cl) <= 1)
   let loop (s = read_line())

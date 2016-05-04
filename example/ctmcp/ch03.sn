@@ -73,7 +73,7 @@ function is_empty_queue(q) match(q) f:r -> is_empty(f);
 
 // Ordered binary trees
 record leaf();
-define default_leaf = leaf();
+let default_leaf = leaf();
 record tree(key, value, left = default_leaf, right = default_leaf);
 
 function lookup(k, tree)
@@ -129,7 +129,7 @@ function for(start, end, step, func)
   if (is_positive(step)) loop(start, `<=`)
   else loop(start, `>=`) };
 
-define x = 0;
+let x = 0;
 for(0, 10, 1, fn(i) x = i);
 assert x == 10;
 for(10, 1, -2, fn(i) x = i);
@@ -171,7 +171,7 @@ function cond_get(ds, key, default)
 
 function domain(ds) map(first, ds);
 
-define dict = put(put(put(new_dictionary(), 1, 100), 10, 1000), 5, 500);
+let dict = put(put(put(new_dictionary(), 1, 100), 10, 1000), 5, 500);
 assert cond_get(dict, 1, 0) == 100;
 assert cond_get(dict, 10, 0) == 1000;
 assert cond_get(dict, 5, 0) == 500;
@@ -228,8 +228,8 @@ function stack()
        is_empty -> is_empty,
        else -> error("invalid message - " message);
 
-define s = stack();
-define a = s.new();
+let s = stack();
+let a = s.new();
 a = s.push(a, 10);
 a = s.push(a, 20);
 assert s.top(a) == 20;

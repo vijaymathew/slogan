@@ -19,16 +19,16 @@ function groups(ss, n)
    else if (i == n) loop(tail(ss), 0, [], grp:grps)
    else loop(tail(ss), i + 1, head(ss):grp, grps);
      
-define args = tail(command_line());
-define num_processes = string_to_number(first(args));
-define urls = groups(rest(args), num_processes);
-define num_urls = length(urls);
+let args = tail(command_line());
+let num_processes = string_to_number(first(args));
+let urls = groups(rest(args), num_processes);
+let num_urls = length(urls);
 
-define procs = let loop (i = 0, procs = [])
+let procs = let loop (i = 0, procs = [])
                 if (i >= num_urls) procs
                 else loop(i + 1, spawn(get_all):procs);
 
-define fs = map(fn(p, us) p(us), procs, urls);
+let fs = map(fn(p, us) p(us), procs, urls);
 
 for_each(fn(f) showln(head(f())), fs);
 for_each(fn(p) p.quit, procs);

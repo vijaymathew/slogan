@@ -82,7 +82,7 @@ function one(f) fn(x) f(x);
 function two(f) fn(x) f(f(x));
 function add_church(m n) fn(f) fn(x) (m(f))(n(f)(x));
 
-define three = add_church(one two);
+let three = add_church(one two);
 (three(inc))(0); // => 3
 
 // Exercise 2.7
@@ -475,11 +475,11 @@ function make_leaf_set(pairs)
                    make_leaf_set(tail(pairs)));
 
 // Exercise 2.67
-define sample_tree = make_code_tree(make_leaf(!A 4),
+let sample_tree = make_code_tree(make_leaf(!A 4),
                                     make_code_tree(make_leaf(!B 2),
                                                    make_code_tree(make_leaf(!D 1),
                                                                   make_leaf(!C 1))));
-define sample_message = [0 1 1 0 0 1 0 1 0 1 1 1 0];
+let sample_message = [0 1 1 0 0 1 0 1 0 1 1 1 0];
 decode(sample_message sample_tree); // => [A, D, A, B, B, C, A]
 
 // Section 2.4.1  Representations for Complex Numbers

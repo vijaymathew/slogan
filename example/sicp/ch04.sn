@@ -51,7 +51,7 @@ function eval_assignment(exp env)
   !ok };
 
 function eval_definition(exp env)
-{ define_variable(definition_variable(exp)
+{ let_variable(definition_variable(exp)
                   evaluate(definition_value(exp) env)
                   env);
   !ok };
@@ -82,7 +82,7 @@ function is_assignment(exp) is_tagged_list(exp !`set!`);
 function assignment_variable(exp) head(tail(exp));
 function assignment_value(exp) head(tail(tail(exp)));
 
-function is_definition(exp) is_tagged_list(exp !define);
+function is_definition(exp) is_tagged_list(exp !let);
 
 function definition_variable(exp) 
     if (is_symbol(second(exp))) second(exp)
@@ -201,7 +201,7 @@ function let_to_combination(exp)
     let (vars = let_vars(exp)
          vals = let_vals(exp)) 
         if (is_symbol(first(exp)))
-            [!begin [!define first(exp) make_lambda(vars let_body(exp))]
+            [!begin [!let first(exp) make_lambda(vars let_body(exp))]
              append(first(exp) vals)]
         else append([make_lambda(vars, [let_body(exp)])] vals);
 
@@ -257,7 +257,7 @@ function procedure_environment(p) fourth(p);
 
 function enclosing_environment(env) tail(env);
 function first_frame(env) head(env);
-define the_empty_environment = [];
+let the_empty_environment = [];
 
 function make_frame(variables values) variables:values;
 function frame_variables(frame) head(frame);
@@ -297,7 +297,7 @@ function set_variable_value(var val env)
       scan(frame_variables(frame) frame_values(frame)) };
     env_loop(env) };
 
-function define_variable(var val env) 
+function let_variable(var val env) 
     let (frame = first_frame(env)) 
     { function scan(vars vals) 
         if (is_empty(vars)) add_binding_to_frame(var val frame)
@@ -309,7 +309,7 @@ function define_variable(var val env)
 function is_primitive_procedure(proc) is_tagged_list(proc !primitive);
 function primitive_implementation(proc) head(tail(proc));
 
-define primitive_procedures = [[!car car] [!cdr cdr]
+let primitive_procedures = [[!car car] [!cdr cdr]
                                [!cons cons] [!`+` `+`]
                                [!`-` `-`] [!`*` `*`] [!`/` `/`]
                                [!`null?` is_empty]];
@@ -323,14 +323,14 @@ function setup_environment()
     let (initial_env = extend_environment(primitive_procedure_names(),
                                           primitive_procedure_objects(),
                                           the_empty_environment))
-    { define_variable(!true true initial_env);
-      define_variable(!false false initial_env);
+    { let_variable(!true true initial_env);
+      let_variable(!false false initial_env);
       initial_env };
 
-define the_global_environment = setup_environment();
+let the_global_environment = setup_environment();
 
-define input_prompt = ";;; M-Eval input:";
-define output_prompt = ";;; M-Eval value:";
+let input_prompt = ";;; M-Eval input:";
+let output_prompt = ";;; M-Eval value:";
 
 function driver_loop()
 { prompt_for_input(input_prompt);
@@ -353,7 +353,7 @@ function user_print(object)
 (fn(n) (fn(fib) fib(fib n)) (fn(f k) if (k == 0) 0 else if (k == 1) 1 else f(f, k - 2) + f(f, k - 1)))(10); // => 55
 
 // 4.1.7 Separating Syntactic Analysis from Execution
-define evaluate_1 = evaluate;
+let evaluate_1 = evaluate;
 
 function evaluate(exp env) let (e = analyze(exp)) { e(env) };
 
@@ -385,7 +385,7 @@ function analyze_assignment(exp)
 function analyze_definition(exp) 
     let (var = definition_variable(exp)
          vproc = analyze(definition_value(exp))) 
-        fn(env) { define_variable(var vproc(env) env);
+        fn(env) { let_variable(var vproc(env) env);
                   !ok };
 
 function analyze_if(exp) 

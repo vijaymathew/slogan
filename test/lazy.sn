@@ -11,8 +11,8 @@ function ints(n) {
     n :: ints(n + 1)
 };
 
-define in = ints(1);
-define out = buffer(in, 5);
+let in = ints(1);
+let out = buffer(in, 5);
 assert nth(10, out) == 11;
 
 // Lazy list functions:
@@ -22,7 +22,7 @@ function lappend(xs, ys)
         [] -> ys,
         x:xs -> x::lappend(xs, ys);
 
-define x = lappend([1 2 3] [4 5 6]);
+let x = lappend([1 2 3] [4 5 6]);
 assert nth(2, x) == 3;
 assert nth(4, x) == 5;
 
@@ -58,6 +58,6 @@ assert nth(1, x) == 3;
 assert nth(2, x) == 5;
 
 // harmonic series
-define a = rest(accumulate(fn(i, sum) sum + 1.0/i, 0, enumerate(1,2)));
+let a = rest(accumulate(fn(i, sum) sum + 1.0/i, 0, enumerate(1,2)));
 assert first(a) == 1.5;
 assert rest(a) == [];

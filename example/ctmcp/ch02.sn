@@ -20,7 +20,7 @@ macro and_then(e1, e2)
 macro or_else(e1, e2)
  %if (%%e1) true else %%e2;
 
-define x = 1;
+let x = 1;
 assert and_then(true, {x = 2; 10}) == 10;
 assert x == 2;
 assert and_then(2 > 3, {x = 1; 10}) == false;

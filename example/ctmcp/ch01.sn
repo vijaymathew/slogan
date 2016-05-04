@@ -1,7 +1,7 @@
 // Ex 1(a)
 // Calculate the exact value of 2^100 without using any new functions.
-define a = apply(`*`, list_of(2, 10));
-define b = apply(`*`, list_of(a, 10));
+let a = apply(`*`, list_of(2, 10));
+let b = apply(`*`, list_of(a, 10));
 
 assert b == expt(2, 100);
 
@@ -29,7 +29,7 @@ assert efficient_comb(10, 0) == comb(10, 0);
 assert efficient_comb(10, 6) == comb(10, 6);
 
 // Ex 8
-define accumulate = let (acc = 0) fn(n) { acc = acc + n; acc };
+let accumulate = let (acc = 0) fn(n) { acc = acc + n; acc };
 
 assert accumulate(5) == 5;
 assert accumulate(100) == 105;
@@ -54,7 +54,7 @@ assert fast_pascal(20) == [1 19 171 969 3876 11628 27132 50388 75582 92378
 
 // Ex 9(b)
 // faster_pascal with memoization.
-define faster_pascal = let (mem = #{})
+let faster_pascal = let (mem = #{})
                         fn(n)
                          if (n == 1) [1]
                          else letseq (n = n - 1, xs = hashtable_at(mem, n))

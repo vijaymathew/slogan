@@ -34,7 +34,7 @@ function is_coprime(a b) gcd(a b) == 1;
 assert_eq(is_coprime(35 64) true);
 
 // 34. (**) Calculate Euler's totient function phi(m).
-//          Euler's so-called totient function phi(m) is defined as the number of
+//          Euler's so-called totient function phi(m) is letd as the number of
 //          positive integers r (1 <= r < m) that are coprime to m.
 
 // Let's use lazy streams!
