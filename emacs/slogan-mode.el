@@ -1,6 +1,6 @@
 ;; Need lot of work here...
 
-(setq slogan-keywords '("fn" "function" "method" "define" "record"
+(setq slogan-keywords '("fn" "function" "method" "record"
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
                        "macro" "namespace" "import" "declare" "from" "as"
