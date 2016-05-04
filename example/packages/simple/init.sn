@@ -1,0 +1,3 @@
+let load_path = string_append(slogan_root() "/packages/simple");
+if (not(file_exists(load_path))) load_path = "."; // dev mode
+link(string_append(load_path "/src/core"));
