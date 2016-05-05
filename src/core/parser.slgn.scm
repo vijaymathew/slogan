@@ -1357,7 +1357,8 @@
   
 (define (check-func-param tokenizer) 
   (check-if-reserved-name (tokenizer 'peek) tokenizer)
-  (tokenizer 'next))
+  (let ((sym (tokenizer 'next)))
+    (if (eq? sym '_) (gensym) sym)))
 
 (define (func-param-type tokenizer)
   (let ((type (cond ((scm-eq? (tokenizer 'peek) '*colon*)

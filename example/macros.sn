@@ -77,3 +77,13 @@ macro null(var) %`set!`(%%var, nil);
 null(x);
 showln(x);
 // -> []
+
+// Defining functions instrumented to report its execution time:
+macro timed_fn(args, body) %fn (%%%rest(args)) time(%%body);
+
+function fibonacci (n)
+ if (n < 2) n
+ else fibonacci(n-1) + fibonacci(n-2);
+           
+let f = timed_fn([a, b], fibonacci(a*b));
+f(10, 3);
