@@ -784,7 +784,9 @@
 
 (define (token->neg-number token)
   (if (number? token)
-      (string->number (string-append "-" (number->string token)))
+      (if (complex? token)
+          (scm-list '* token -1)
+          (string->number (string-append "-" (number->string token))))
       (scm-list '- token)))
 
 (define (literal-expr tokenizer)
@@ -952,26 +954,34 @@
                                (loop (scm-cons e expr) (tokenizer 'peek)))))))
         (parser-error tokenizer "Invalid start of array literal."))))
 
-(define (table-literal tokenizer)
+(define (table-literal mkset? tokenizer)
   (tokenizer 'next)
-  (let ((expr '(make-equal-hashtable)))
+  (let ((close-token (if mkset? '*close-paren* '*close-brace*)))
     (let loop ((args '()))
-      (if (scm-eq? (tokenizer 'peek) '*close-brace*)
-        (begin
-          (tokenizer 'next)
-          (scm-append expr (scm-list (scm-append '(scm-list) (scm-reverse args)))))
-        (let ((keyval (expression tokenizer)))
-          (if (scm-not (and (pair? keyval) (scm-eq? (scm-car keyval) 'scm-cons)))
-            (parser-error tokenizer "Key-value must be a pair.")
+      (if (scm-eq? (tokenizer 'peek) close-token)
+          (begin
+            (tokenizer 'next)
+            (scm-append (if mkset? '(list->set) '(make-equal-hashtable))
+                        (scm-list (scm-append '(scm-list) (scm-reverse args)))))
+          (let ((keyval (expression tokenizer)))
             (begin
-              (assert-comma-separator tokenizer '*close-brace*)
-              (loop (scm-cons keyval args)))))))))
+              (if (and (not mkset?)
+                       (scm-not (and
+                                 (pair? keyval)
+                                 (scm-eq? (scm-car keyval) 'scm-cons))))
+                  (parser-error tokenizer "Expected key-value pair."))
+              (assert-comma-separator tokenizer close-token)
+              (loop (scm-cons keyval args))))))))
     
 (define (array-or-table-literal tokenizer)
   (tokenizer 'next)
-  (if (scm-eq? (tokenizer 'peek) '*open-brace*)
-      (table-literal tokenizer)
-      (array-literal tokenizer)))
+  (let ((token (tokenizer 'peek)))
+    (cond ((scm-eq? token '*open-brace*)
+           (table-literal #f tokenizer))
+          ((scm-eq? token '*open-paren*)
+           (table-literal #t tokenizer))
+          (else
+           (array-literal tokenizer)))))
 
 (define (let-expr tokenizer)
   (enter-scope)

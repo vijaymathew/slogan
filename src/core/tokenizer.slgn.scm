@@ -278,16 +278,21 @@
   (string->number (list->string (filter (lambda (c) (scm-not (char=? c #\_))) (string->list s))) radix))
 
 (define (read-number port prefix #!optional (radix 10))
-  (let loop ((c (port-pos-peek-char port))
-             (prev-c #\space)
-             (result (if prefix (scm-list prefix) '())))
-    (if (char-valid-in-number? c prev-c)
-        (begin (port-pos-read-char! port)
-               (loop (port-pos-peek-char port) c
-                     (scm-cons c result)))
-        (let ((n (numeric-string->number (list->string (scm-reverse result)) radix)))
-          (if n n
-              (tokenizer-error "read-number failed. invalid number format."))))))
+  (let ((num (let loop ((c (port-pos-peek-char port))
+                        (prev-c #\space)
+                        (result (if prefix (scm-list prefix) '())))
+               (if (char-valid-in-number? c prev-c)
+                   (begin (port-pos-read-char! port)
+                          (loop (port-pos-peek-char port) c
+                                (scm-cons c result)))
+                   (let ((n (numeric-string->number (list->string (scm-reverse result)) radix)))
+                     (if n n
+                         (tokenizer-error "read-number failed. invalid number format.")))))))
+    (let ((c (port-pos-peek-char port)))
+      (if (char=? c #\i)
+          (begin (port-pos-read-char! port)
+                 (make-rectangular 0 num))
+          num))))
 
 (define (prec-prefix? c)
   (and (string? c)

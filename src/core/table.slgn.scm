@@ -66,3 +66,86 @@
         (let ((a (scm-car args)))
           (hashtable_set ht (scm-car a) (scm-cdr a))
           (loop (scm-cdr args)))))))
+
+;; The set datatype
+(define (list->set xs)
+  (let ((ht (make-table test: equal?)))
+    (let loop ((xs xs))
+      (if (null? xs)
+          (scm-cons '*set* ht)
+          (begin (table-set! ht (scm-car xs) #t)
+                 (loop (scm-cdr xs)))))))
+
+(define (set->list s)
+  (scm-map scm-car (table->list (scm-cdr s))))
+
+(define (make-set x . xs)
+  (list->set (scm-cons x xs)))
+
+(define (set? obj)
+  (and (pair? obj) (eq? (scm-car obj) '*set*)
+       (table? (scm-cdr obj))))
+
+(define (set-contains? s x)
+  (table-ref (scm-cdr s) x #f))
+
+(define (set-merge predic s1 ss)
+  (if (null? ss)
+      s1
+      (let loop ((s1keys (set->list s1))
+                 (rkeys '()))
+        (if (null? s1keys)
+            (list->set rkeys)
+            (loop (scm-cdr s1keys)
+                  (let ((x (scm-car s1keys)))
+                    (if (for_all predic (scm-map (lambda (s) (set-contains? s x)) ss))
+                        (scm-cons x rkeys)
+                        rkeys)))))))
+
+(define (hashtable->set ht)
+  (list->set (table->list (hashtable-table ht))))
+
+(define (set_difference s1 #!rest ss)
+  (set-merge is_false s1 ss))
+
+(define (set_intersection s1 #!rest ss)
+  (set-merge is_true s1 ss))
+
+(define (set_union s1 #!rest ss)
+  (list->set (scm-apply scm-append (set->list s1) (scm-map set->list ss))))
+
+(define (is_superset s1 s2)
+  (let ((orig-s1keys (set->list s1)))
+    (let loop ((s1keys orig-s1keys)
+               (s2keys (set->list s2)))
+      (cond ((null? s2keys)
+             #t)
+            ((null? s1keys)
+             #f)
+            ((scm-member (scm-car s2keys) orig-s1keys)
+             (loop (scm-cdr s1keys) (scm-cdr s2keys)))
+            (else #f)))))
+
+(define (is_subset s1 s2) (is_superset s2 s1))
+
+(define list_to_set list->set)
+(define set_to_list set->list)
+(define is_set set?)
+(define make_set make-set)
+(define is_set_member set-contains?)
+(define hashtable_to_set hashtable->set)
+
+(define (set obj)
+  (cond ((set? obj)
+         obj)
+        ((hashtable? obj)
+         (hashtable->set obj))
+        ((list? obj)
+         (list->set obj))
+        ((vector? obj)
+         (list->set (vector->list obj)))
+        ((string? obj)
+         (list->set (string->list obj)))
+        (else
+         (error "Cannot convert object to set."))))
+

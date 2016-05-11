@@ -19,6 +19,7 @@
 (define scm-length length)
 (define scm-reverse reverse)
 (define scm-memq memq)
+(define scm-member member)
 (define scm-assoc assoc)
 (define scm-assq assq)
 (define scm-append append)

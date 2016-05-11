@@ -822,6 +822,20 @@
 (define core_do_times do_times)
 (define core_enable_asserts enable_asserts)
 
+;; set functions
+(define core_set_difference set_difference)
+(define core_set_intersection set_intersection)
+(define core_set_union set_union)
+(define core_is_superset is_superset)
+(define core_is_subset is_subset)
+(define core_list_to_set list_to_set)
+(define core_set_to_list set_to_list)
+(define core_is_set is_set)
+(define core_make_set make_set)
+(define core_is_set_member is_set_member)
+(define core_hashtable_to_set hashtable_to_set)
+(define core_set set)
+
 (namespace_create 'core '(compose identiy mapfn partial complement
                                   namespace_names namespace_hide namespace_unhide
                                   namespace_create namespace_delete apply until
@@ -943,5 +957,7 @@
                                   subf32array_fill subf32array_move is_f64array f64array make_f64array
                                   f64array_length f64array_at f64array_set f64array_to_list list_to_f64array
                                   f64array_fill f64array_append f64array_copy f64array_shrink subf64array
-                                  subf64array_fill subf64array_move is_iterator is_lpair do_times enable_asserts))
+                                  subf64array_fill subf64array_move is_iterator is_lpair do_times enable_asserts
+                                  set_difference set_intersection set_union is_superset is_subset
+                                  list_to_set set_to_list is_set make_set is_set_member hashtable_to_set set))
 
