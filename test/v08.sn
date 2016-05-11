@@ -1,0 +1,53 @@
+// issue #48 - complex number literal
+assert 1+3i + 10+20i == 11+23i;
+let x = 1+3i;
+assert expt(x-1, 2) == -9;
+assert 1+2i*3 == 1+6i;
+assert expt(4*3i, 2) == -144;
+assert real_part(x) == 1;
+assert imag_part(x) == 3;
+x = 1-3i;
+assert real_part(x) == 1;
+assert imag_part(x) == -3;
+
+function solve(a b c) (c-b)/a;
+assert solve(10 5 30.) == 2.5;
+assert solve(10+5i, 5, 20.) == 1.2-.6i;
+
+// issue #44 - set data type
+assert set_intersection(#()) == #();
+assert set_intersection(#(1)) == #(1);
+assert set_intersection(#(1 2) #(2 3)) == #(2);
+assert set_intersection(#(1 2) #(2 3) #(3 4)) == #();
+assert set_intersection(#(1 !a) #(!a 3) #(!a)) == #(!a);
+assert set_union(#()) == #();
+assert set_union(#(1 2)) == #(1 2);
+assert set_union(#(1 2) #(2 3)) == #(1 2 3);
+assert set_union(#(1 2) #(2 3) #(3 4)) == #(1 2 3 4);
+assert set_difference(#(1 2 3)) == #(1 2 3);
+assert set_difference(#(1 2) #(2 3)) == #(1);
+assert set_difference(#(1 2 3) #(1) #(1 4) #(3)) == #(2);
+assert set_intersection(#(1 2 3) #(1) #(1 4) #(3)) == #();
+assert set_union(#(1 2 3) #(1) #(1 4) #(3)) == #(1 2 3 4);
+
+let a = #{1:2 3:4};
+let b = #{5:6};
+assert is_hashtable(a);
+assert not(is_set(a));
+let s1 = hashtable_to_set(a);
+let s2 = hashtable_to_set(b);
+assert is_set(s1);
+assert not(is_hashtable(s1));
+assert set_union(s1, s2) == set(#{1:2 3:4 5:6});
+
+assert is_superset(#(0) #(0));
+assert is_superset(#(0 1) #(0));
+assert is_superset(#(0) #(0 1)) == false;
+assert is_subset(#(2 3) #(1 2 3 4));
+assert is_subset(#(2 4) #(1 2 3 4));
+assert is_subset(#(2 5) #(1 2 3 4)) == false;
+
+assert is_set(set([1 2 3 4 5]));
+assert is_set(set(#[1 2 3 4 5]));
+assert set_union(#('a' 'b') set("cd")) == #('a' 'b' 'c' 'd');
+assert set_intersection(set([1 2 3]) set(#[2 3])) == #(2 3);
