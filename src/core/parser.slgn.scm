@@ -1419,10 +1419,8 @@
                         (begin (tokenizer 'next)
                                (scm-cons (scm-reverse params) (scm-reverse types)))
                         (parser-error tokenizer "Missing closing parenthesis after parameter list.")))))))
-        ((valid-identifier? (tokenizer 'peek))
-         (check-func-param tokenizer))
-        (else 
-         (parser-error tokenizer "Missing opening parenthesis at the start of parameter list."))))
+        (else
+	 (scm-cons '() '()))))
 
 (define (param-directive? sym)
   (scm-memq sym '(@optional @key @rest)))
