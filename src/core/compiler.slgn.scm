@@ -17,14 +17,11 @@
              (exprs '()))
     (if *compiler-log* (begin (scm-display v) (scm-newline)))
     (if (scm-not (eof-object? v))
-        (begin
-          (if (and (pair? v) (scm-memq (scm-car v) *loader-functions*))
-              (scm-eval v))
           (if (scm-not (void? v)) 
               (loop (slogan tokenizer)
                     (scm-cons v exprs))
-              (loop (slogan tokenizer) exprs)))
-        (scm-reverse exprs))))
+              (loop (slogan tokenizer) exprs))
+	  (scm-reverse exprs))))
 
 (define (read-script-file script-name)
   (call-with-input-file (add-slgn-extn script-name)

@@ -15,7 +15,7 @@ declare ffi libname [
 namespace sqlite;
 let open = c_sqlite_db_open;
 let close = c_sqlite_db_close;
-let prepare = fn(db, sql) c_sqlite_db_prepare(db, sql, string_length(sql));
+let prepare = ^(db, sql) c_sqlite_db_prepare(db, sql, string_length(sql));
 let step = c_sqlite_db_step;
 let bind_int = c_sqlite_db_bind_int;
 let column_int = c_sqlite_db_column_int;
