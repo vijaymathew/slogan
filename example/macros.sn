@@ -29,7 +29,7 @@ let (i = 0) while(i < 10, { showln("hello"); i = i + 1 });
 //    hello
 //    ...
 
-macro dolist(var xs body) %for_each(fn(%%var) %%body, %%xs);
+macro dolist(var xs body) %for_each(^(%%var) %%body, %%xs);
 
 dolist(x, [1 2 3], showln(x * 100));
 // -> 100
@@ -79,7 +79,7 @@ showln(x);
 // -> []
 
 // Defining functions instrumented to report its execution time:
-macro timed_fn(args, body) %fn (%%%rest(args)) time(%%body);
+macro timed_fn(args, body) %^(%%%rest(args)) time(%%body);
 
 function fibonacci (n)
  if (n < 2) n

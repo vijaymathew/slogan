@@ -29,7 +29,7 @@ assert 1 + 2 == 3;
 namespace n;
 function f(a) a;
 macro m(a, b) if (a) b else false;
-function lazy lf(a, b) if (a) b else false;
+function lf(a, b) if (a) b() else false;
 namespace;
 
 assert n_f(10) == 10;
@@ -39,9 +39,9 @@ assert x == 200;
 n_m(false, {x = 0});
 assert x == 200;
 x = 100;
-n_lf(true, {x = 300});
+n_lf(true, ^x = 300);
 assert x == 300;
-n_lf(false, {x = 0});
+n_lf(false, ^x = 0);
 assert x == 300;
 
 import n as b;
@@ -52,9 +52,9 @@ assert x == 400;
 b_m(false, {x = 0});
 assert x == 400;
 x = 0;
-b_lf(true, {x = 1});
+b_lf(true, ^x = 1);
 assert x == 1;
-b_lf(false, {x = 0});
+b_lf(false, ^x = 0);
 assert x == 1;
 
 import n;
@@ -65,9 +65,9 @@ assert x == 1;
 m(false, {x = 0});
 assert x == 1;
 x = 0;
-lf(true, {x = 1});
+lf(true, ^x = 1);
 assert x == 1;
-lf(false, {x = 1});
+lf(false, ^x = 1);
 assert x == 1;
 
 record r(a, b where is_integer(b) && b > 100);
@@ -131,14 +131,14 @@ assert (match(x) [!age:a !name:n] -> [n a], _ -> false) == false;
 assert (match(#{1:2 3:[1 2 3 4 5]}) [1:a 3:[1 b 3 c 5]] -> a * b * c, #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 8;
 assert (match([1:2 3:[1 2 3 4 5]]) [1:a 3:[1 b 3 c 5]] -> a * b * c, #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 16;
 
-function lazy u(a, b) if (a) b else false;
+function u(a, b) if (a) b() else false;
 x = false;
 
-assert u(false, 100) == false;
-assert u(true, 100) == 100;
-u(false, {x = true});
+assert u(false, ^100) == false;
+assert u(true, ^100) == 100;
+u(false, ^x = true);
 assert x == false;
-u(true, {x = true});
+u(true, ^x = true);
 assert x == true;
 
 function run_add(i, x, b) i + x;
@@ -147,11 +147,11 @@ assert do_times(10, run_add, init = 0, from = 5) == 35;
 assert do_times(10, run_add, init = 0, from = -5) == 30;
 assert do_times(-10, run_add, init = 0, from = -5) == -35;
 assert do_times(-10, run_add, init = 0, from = -50) == -1220;
-assert do_times(10, fn(i, x, b) if (i == 5) b("ok") else i) == "ok";
+assert do_times(10, ^(i, x, b) if (i == 5) b("ok") else i) == "ok";
 assert do_times(0, run_add, init = 0, from = 9) == 45;
 
 // harmonic series
-let a = fold_left(fn(i, sum) sum + 1.0/i, 0, range(1,2));
+let a = fold_left(^(i, sum) sum + 1.0/i, 0, range(1,2));
 assert a == 1.5;
 
 // list comprehensions

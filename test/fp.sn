@@ -4,15 +4,15 @@ function iter(n f)
  if (n == 0) identity
  else compose(f, iter(n-1, f));
 
-assert iter(4, fn(x) x*x)(2) == 65536;
+assert iter(4, ^(x) x*x)(2) == 65536;
 
 function loop(p f x)
  if (p(x)) x
  else loop(p f f(x));
 
 function dicho(f a b epsilon)
- let (is_ok = fn(x) | a:b -> abs(a-b) < epsilon
-      do_better = fn(x) | a:b -> let (c = (a + b)/2.0)
+ let (is_ok = ^(x) | a:b -> abs(a-b) < epsilon
+      do_better = ^(x) | a:b -> let (c = (a + b)/2.0)
                                   if (f(a) * f(c) >  0.0) c:b
                                   else a:c)
   loop(is_ok, do_better, a:b);
@@ -20,8 +20,8 @@ function dicho(f a b epsilon)
 function deriv(f dx x) (f(x+dx) - f(x))/dx;
 
 function newton(f start dx epsilon)
- let (is_ok = fn(x) abs(f(x)) < epsilon
-      do_better = fn(x)
+ let (is_ok = ^(x) abs(f(x)) < epsilon
+      do_better = ^(x)
                    let (fp = partial(deriv, f, dx))
                     x - f(x)/fp(x))
   loop(is_ok do_better start);
@@ -36,13 +36,13 @@ function summation(incr test op e f a)
  if (test(a)) e
  else op(f(a) summation(incr test op e f incr(a)));
 
-function sum(op e f a b dx) summation(fn(x) x + dx, fn(x) x > b, op e f a);
+function sum(op e f a b dx) summation(^(x) x + dx, ^(x) x > b, op e f a);
 
-function integrate(f a b dx) sum(add 0, fn(x) f(x) * dx, a b dx);
+function integrate(f a b dx) sum(add 0, ^(x) f(x) * dx, a b dx);
 
-assert integrate(fn(x) 1./x, 1. 2. .001) == .6938972430599593;
+assert integrate(^(x) 1./x, 1. 2. .001) == .6938972430599593;
 
-function summation_int(op e f a b) summation(fn(x) x + 1, fn(x) x > b, op e f a);
+function summation_int(op e f a b) summation(^(x) x + 1, ^(x) x > b, op e f a);
 
 sigma = partial(summation_int add 0);
 let pi = partial(summation_int mult 1);
@@ -51,7 +51,7 @@ let fact = partial(pi identity 1);
 
 assert fact(10) == 3628800;
 
-assert sigma(fn(n) 1. / fact(n), 0 20) == 2.718281828459045;
+assert sigma(^(n) 1. / fact(n), 0 20) == 2.718281828459045;
 
 record complex(re_part:real, img_part:real);
 
@@ -62,13 +62,13 @@ let c = complex_add(complex(re_part = 10, img_part = 100) complex(re_part = 20, 
 assert complex_re_part(c) == 30;
 assert complex_img_part(c) == 300;
 
-function len(xs) fold_left(fn(_, n) n + 1, 0, xs);
+function len(xs) fold_left(^(_, n) n + 1, 0, xs);
 assert len([1 20 3 40]) == 4;
 
 function apnd(xs, ys) fold_right(pair, ys, xs);
 assert apnd([1 2 3] [4 5 6]) == [1 2 3 4 5 6];
 
-function rev(xs) fold_right(fn(x, xs) apnd(xs [x]), [], xs);
+function rev(xs) fold_right(^(x, xs) apnd(xs [x]), [], xs);
 assert rev([1 2 3 4 5]) == [5 4 3 2 1];
 
 function qsort(xs, order)
@@ -106,7 +106,7 @@ function add_to_set(e, xs)
  else e:xs;
 
 function union(xs ys) fold_left(add_to_set, xs ys);
-function intersect(xs ys) filter(fn(x) member(x, ys), xs);
+function intersect(xs ys) filter(^(x) member(x, ys), xs);
 
 let s = make_set([1 2 3 2 1]);
 let r = make_set([1 4 3 1 5]);
@@ -121,7 +121,7 @@ function is_member(order, e, xs)
    if (order(x, e)) is_member(order, e, xs)
    else e == x;
 
-add_to_set = fn (order, e, xs)
+add_to_set = ^(order, e, xs)
  match (xs)
   [] -> [],
   x:xs ->
@@ -129,7 +129,7 @@ add_to_set = fn (order, e, xs)
    else if (e == x) x:xs
    else x:add_to_set(order e xs);
 
-intersect = fn (xs, ys, order = `<`)
+intersect = ^(xs, ys, order = `<`)
  match (xs:ys)
   _:[] -> [],
   []:_ -> [],
@@ -138,7 +138,7 @@ intersect = fn (xs, ys, order = `<`)
    else if (order(x, y)) intersect(xs, y:ys, order)
    else intersect(x:xs, ys, order);
 
-union = fn (xs, ys, order = `<`)
+union = ^(xs, ys, order = `<`)
  match (xs:ys)
   []:ys -> ys,
   xs:[] -> xs,

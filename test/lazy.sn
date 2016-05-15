@@ -1,7 +1,7 @@
 // A lazy bounded buffer:
 function buffer(in, n) 
     letrec (end = nth_tail(n, in),
-            loop = fn(in, end) 
+            loop = ^(in, end) 
                      match(in) 
                        i : in2 -> i :: loop(in2, nth_tail(1, end)))
       loop(in, end);
@@ -31,7 +31,7 @@ function lmap(xs, f)
         [] -> [],
         x:xs -> f(x)::lmap(xs, f);
 
-x = lmap([1 2 3 4 5], fn(x) x * 10);
+x = lmap([1 2 3 4 5], ^(x) x * 10);
 assert nth(3, x) == 40;
 
 function lflatten(xs) {
@@ -58,6 +58,6 @@ assert nth(1, x) == 3;
 assert nth(2, x) == 5;
 
 // harmonic series
-let a = rest(accumulate(fn(i, sum) sum + 1.0/i, 0, enumerate(1,2)));
+let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, enumerate(1,2)));
 assert first(a) == 1.5;
 assert rest(a) == [];

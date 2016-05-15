@@ -104,12 +104,8 @@
               (loop (scm-cdr defs)
                     (let ((def-expr `(,(if (in-declared-imports? import-name) 'set! 'define)
                                       ,import-name ,n)))
-                      (let ((compiler-defs-expr `(cond ((get-macro-def ',n)
-                                                        (def-macro ',import-name #t))
-                                                       (else
-                                                        (let ((d (get-lazy-def ',n)))
-                                                          (if d
-                                                              (def-lazy ',import-name d)))))))
+                      (let ((compiler-defs-expr `(if (get-macro-def ',n)
+						     (def-macro ',import-name #t))))
                         (if (get-macro-def n)
                             (scm-eval def-expr))
                         (scm-eval compiler-defs-expr)

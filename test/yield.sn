@@ -76,6 +76,6 @@ function ints(a, b)
   else { yield a; loop(a+1, b - 1) };
 
 // harmonic series
-let a = rest(accumulate(fn(i, sum) sum + 1.0/i, 0, ints(1,2)));
+let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)));
 assert first(a) == 1.5;
 assert rest(a) == [];

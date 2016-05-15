@@ -1,11 +1,11 @@
 ;; Need lot of work here...
 
-(setq slogan-keywords '("fn" "function" "method" "record"
+(setq slogan-keywords '("^" "function" "method" "record"
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
                        "macro" "namespace" "import" "declare" "from" "as"
                        "generic" "ffi" "assert"))
-(setq slogan-constants '("true" "false" "lazy"))
+(setq slogan-constants '("true" "false"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))
 (setq slogan-constant-regexp (regexp-opt slogan-constants 'words))
