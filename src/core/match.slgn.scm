@@ -5,7 +5,7 @@
 (define (normalize-list-for-matching lst)
   (if (and (list? lst)
            (scm-not (null? lst)))
-      (if (scm-eq? (scm-car lst) 'list)
+      (if (scm-eq? (scm-car lst) 'scm-list)
           (scm-cdr lst)
           (list->record-pattern lst))
       lst))
@@ -48,19 +48,21 @@
                                    (expand-consequent pattern consequent))
                               '*unbound*))))))
 
-(define (vector-pattern? fname)
-  (or (scm-eq? fname 'scm-vector)
-      (scm-eq? fname 'scm-u8vector)
-      (scm-eq? fname 'scm-s8vector)
-      (scm-eq? fname 'bit_array)
-      (scm-eq? fname 'scm-u16vector)
-      (scm-eq? fname 'scm-s16vector)
-      (scm-eq? fname 'scm-u32vector)
-      (scm-eq? fname 'scm-s32vector)
-      (scm-eq? fname 'scm-u64vector)
-      (scm-eq? fname 'scm-s64vector)
-      (scm-eq? fname 'scm-f32vector)
-      (scm-eq? fname 'scm-f64vector)))
+(define *vector-patterns* '(scm-vector
+                            scm-u8vector
+                            scm-s8vector
+                            bit_array
+                            make-set
+                            scm-u16vector
+                            scm-s16vector
+                            scm-u32vector
+                            scm-s32vector
+                            scm-u64vector
+                            scm-s64vector
+                            scm-f32vector
+                            scm-f64vector))
+
+(define (vector-pattern? fname) (scm-memq fname *vector-patterns*))
 
 (define (vector-test-fn fname)
   (case fname
@@ -68,6 +70,7 @@
     ((scm-u8vector) 'u8vector?)
     ((scm-s8vector) 's8vector?)
     ((bit_array) 'is_bit_array)
+    ((make-set) 'set?)    
     ((scm-u16vector) 'u16vector?)
     ((scm-s16vector) 's16vector?)
     ((scm-u32vector) 'u32vector?)
@@ -84,6 +87,7 @@
     ((scm-u8vector) 'u8vector-length)
     ((scm-s8vector) 's8vector-length)
     ((bit_array) 'bit_array_length)
+    ((make-set) 'set-length)    
     ((scm-u16vector) 'u16vector-length)
     ((scm-s16vector) 's16vector-length)
     ((scm-u32vector) 'u32vector-length)
@@ -100,6 +104,7 @@
     ((scm-u8vector) 'u8vector->list)
     ((scm-s8vector) 's8vector->list)
     ((bit_array) 'bit_array_to_list)
+    ((make-set) 'set->list)
     ((scm-u16vector) 'u16vector->list)
     ((scm-s16vector) 's16vector->list)
     ((scm-u32vector) 'u32vector->list)
@@ -114,89 +119,58 @@
   (eq? (scm-car p) 'make-equal-hashtable))
 
 (define (match-hashtable-pattern pattern bindings)
-  (let* ( (pkey-vals (scm-cdadr pattern))
-          (pkeys-1 (scm-map scm-cadr pkey-vals))
-          (pvals (scm-map scm-caddr pkey-vals)))
+  (let* ((pkey-vals (scm-cdadr pattern))
+         (pkeys-1 (scm-map scm-cadr pkey-vals))
+         (pvals (scm-map scm-caddr pkey-vals)))
     (let loop ((pkeys pkeys-1) (pvals pvals) (expr '()))
       (if (null? pkeys)
-        `(if (and (is_hashtable *value*)
+          `(if (and (is_hashtable *value*)
                (for_all (lambda (k) (hashtable_contains *value* k)) ,(scm-append '(scm-list) pkeys-1)))
-           (begin
-             (set! *match-found* #t)
-             ,@(scm-reverse expr))
-           (set! *match-found* #f))
-        (let ((pk (scm-car pkeys)) (pv (scm-car pvals)))
-          (loop
-            (scm-cdr pkeys) (scm-cdr pvals)
-            (scm-cons
+               (begin
+                 (set! *match-found* #t)
+                 ,@(scm-reverse expr))
+               (set! *match-found* #f))
+          (let ((pk (scm-car pkeys)) (pv (scm-car pvals)))
+            (loop
+             (scm-cdr pkeys) (scm-cdr pvals)
+             (scm-cons
               `(begin
                  (let ((*v* (hashtable_at *value* ,pk)))
                    ,(cond
-                      ((symbol? pv)
-                        (pattern-vars-bindings-set! bindings
-                          (scm-cons (scm-list pv #f) (pattern-vars-bindings bindings)))
-                        `(set! *match-found* #t))
-                      (else
-                        `(let ((*value* *v*))
-                           ,(match-pattern-helper pv bindings))))))
+                     ((symbol? pv)
+                      (pattern-vars-bindings-set! bindings
+                                                  (scm-cons (scm-list pv #f) (pattern-vars-bindings bindings)))
+                      `(set! *match-found* #t))
+                     (else
+                      `(let ((*value* *v*))
+                         ,(match-pattern-helper pv bindings))))))
               expr)))))))
 
-(define (match-pattern-helper pattern bindings)
-  (set! pattern (normalize-list-for-matching pattern))
-  (cond ((null? pattern)
-         `(if (null? *value*)
-              (set! *match-found* #t)
-              (set! *match-found* #f)))
-        ((scm-cons? pattern)
-         (set! pattern (scm-cdr pattern))
-         `(if (pair? *value*)
-              (begin (let ((*value* (first *value*)))
-                       ,(match-pattern-helper (scm-car pattern) bindings))
-                     (if *match-found*
-                         (let ((*value* (rest *value*)))
-                           ,(match-pattern-helper (scm-cadr pattern) bindings))))
-              (set! *match-found* #f)))
-        ((list? pattern)
-          (cond
-            ((scm-eq? (scm-car pattern) 'quote)
-              `(if (equal? ,pattern *value*)
-                 (set! *match-found* #t)
-                 (set! *match-found* #f)))
-            ((vector-pattern? (scm-car pattern))
-              (match-vector-pattern (scm-car pattern) (scm-cdr pattern) bindings))
-            ((hashtable-pattern? pattern)
-              (match-hashtable-pattern pattern bindings))
-            (else
-              (let ((pattern-length (scm-length pattern)))
-                `(if (and (list? *value*)
-                       (= ,pattern-length (scm-length *value*)))
-                   (begin (let ((*value* (first *value*)))
-                            ,(match-pattern-helper (scm-car pattern) bindings))
-                     (if *match-found*
-                       (let ((*value* (rest *value*)))
-                         ,(match-pattern-helper (scm-cdr pattern) bindings))))
-                   (set! *match-found* #f))))))
-        ((record-pattern? pattern)
-         (match-record-pattern pattern bindings))
-        ((symbol? pattern)
-         (if (scm-not (scm-eq? pattern '_))
-           (pattern-vars-bindings-set! bindings (scm-cons (scm-list pattern #f) (pattern-vars-bindings bindings))))
-         `(set! *match-found* #t))
-        (else `(if (equal? ,pattern *value*)
-                   (set! *match-found* #t)
-                   (set! *match-found* #f)))))
+(define (set-pattern? p)
+  (eq? (scm-car p) 'make-set))
+
+(define (match-list-pattern pattern bindings)
+  (let ((pattern-length (scm-length pattern)))
+    `(if (and (list? *value*)
+              (= ,pattern-length (scm-length *value*)))
+         (begin (let ((*value* (first *value*)))
+                  ,(match-pattern-helper (scm-car pattern) bindings))
+                (if *match-found*
+                    (let ((*value* (rest *value*)))
+                      ,(match-pattern-helper (scm-cdr pattern) bindings))))
+         (set! *match-found* #f))))
 
 (define (match-vector-pattern fname pattern bindings)
   (let ((pattern-length (scm-length pattern)))
     `(if (and (,(vector-test-fn fname) *value*)
               (= ,pattern-length (,(vector-len-fn fname) *value*)))
-         (begin (let ((*value* (,(vector-to-list-fn fname) *value*)))
-                  (set! *conv-value* *value*)
-                  (let ((*value* (scm-car *value*)))
-                    ,(match-pattern-helper (scm-car pattern) bindings))
-                  (if *match-found*
-                      (let ((*value* (scm-cdr *value*)))
-                        ,(match-pattern-helper (scm-cdr pattern) bindings)))))
+         (let ((*value* (,(vector-to-list-fn fname) *value*)))
+           (set! *conv-value* *value*)
+           (let ((*value* (scm-car *value*)))
+             ,(match-pattern-helper (scm-car pattern) bindings))
+           (if *match-found*
+               (let ((*value* (scm-cdr *value*)))
+                 ,(match-pattern-helper (scm-cdr pattern) bindings))))
          (set! *match-found* #f))))
 
 (define (match-record-pattern pattern bindings)
@@ -224,6 +198,43 @@
                  (loop (scm-cdr members) (scm-cons `(equal? ,(scm-cdar members) (,accessor *value*)) conds))))
               (else
                (error "Invalid record pattern: " pattern)))))))
+
+(define (match-pattern-helper pattern bindings)
+  (set! pattern (normalize-list-for-matching pattern))
+  (cond ((null? pattern)
+         `(if (null? *value*)
+              (set! *match-found* #t)
+              (set! *match-found* #f)))
+        ((scm-cons? pattern)
+         (set! pattern (scm-cdr pattern))
+         `(if (pair? *value*)
+              (begin (let ((*value* (first *value*)))
+                       ,(match-pattern-helper (scm-car pattern) bindings))
+                     (if *match-found*
+                         (let ((*value* (rest *value*)))
+                           ,(match-pattern-helper (scm-cadr pattern) bindings))))
+              (set! *match-found* #f)))
+        ((list? pattern)
+          (cond
+            ((scm-eq? (scm-car pattern) 'quote)
+              `(if (equal? ,pattern *value*)
+                 (set! *match-found* #t)
+                 (set! *match-found* #f)))
+            ((vector-pattern? (scm-car pattern))
+              (match-vector-pattern (scm-car pattern) (scm-cdr pattern) bindings))
+            ((hashtable-pattern? pattern)
+             (match-hashtable-pattern pattern bindings))
+            (else
+             (match-list-pattern pattern bindings))))
+        ((record-pattern? pattern)
+         (match-record-pattern pattern bindings))
+        ((symbol? pattern)
+         (if (scm-not (scm-eq? pattern '_))
+           (pattern-vars-bindings-set! bindings (scm-cons (scm-list pattern #f) (pattern-vars-bindings bindings))))
+         `(set! *match-found* #t))
+        (else `(if (equal? ,pattern *value*)
+                   (set! *match-found* #t)
+                   (set! *match-found* #f)))))
 
 (define (expand-vector-consequent pattern consequent)
   `(let* ((*value* *conv-value*)

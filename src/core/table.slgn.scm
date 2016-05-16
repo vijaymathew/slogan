@@ -79,8 +79,10 @@
 (define (set->list s)
   (scm-map scm-car (table->list (scm-cdr s))))
 
-(define (make-set x . xs)
-  (list->set (scm-cons x xs)))
+(define (set->rlist s) (scm-reverse (set->list s)))
+
+(define (make-set #!rest xs)
+  (list->set xs))
 
 (define (set? obj)
   (and (pair? obj) (eq? (scm-car obj) '*set*)
@@ -104,6 +106,8 @@
 
 (define (hashtable->set ht)
   (list->set (table->list (hashtable-table ht))))
+
+(define (set-length s) (table-length (scm-cdr s)))
 
 (define (set_difference s1 #!rest ss)
   (set-merge is_false s1 ss))

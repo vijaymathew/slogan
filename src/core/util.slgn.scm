@@ -137,7 +137,7 @@
 
 (define (slgn-display-set s port)
   (scm-display "#(" port)
-  (let loop ((xs (set->list s)))
+  (let loop ((xs (scm-reverse (set->list s))))
     (if (not (null? xs))
         (begin (slgn-display (scm-car xs) port: port)
                (if (not (null? (scm-cdr xs)))

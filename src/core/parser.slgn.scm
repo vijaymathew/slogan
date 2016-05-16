@@ -123,7 +123,7 @@
     (if (scm-not (symbol? struct-name))
         (parser-error tokenizer "Struct name must be a symbol." struct-name)
         (let ((memtypes (expression tokenizer)))
-          (if (scm-not (scm-eq? (scm-car memtypes) 'list))
+          (if (scm-not (scm-eq? (scm-car memtypes) 'scm-list))
               (parser-error tokenizer "Struct member types must be a list." memtypes)
               `(def-c-struct ',struct-name ',(normalize-c-struct-members (scm-cdr memtypes))))))))
 
@@ -134,7 +134,7 @@
         (let ((paramtypes (expression tokenizer)))
           (if (scm-not (pair? paramtypes))
               (parser-error tokenizer "Expected parameter list."))
-          (if (scm-not (scm-eq? (scm-car paramtypes) 'list))
+          (if (scm-not (scm-eq? (scm-car paramtypes) 'scm-list))
               (parser-error tokenizer "Parameter types must be a list." paramtypes)
               (let ((name fn-name))
                 (if (scm-eq? (tokenizer 'peek) 'as)
@@ -630,9 +630,9 @@
 (define (make-try-catch-expr try-token try-expr catch-args catch-expr finally-expr)
   (let ((try-expr (scm-list (get-exception-handler-fnname try-token)
 			(scm-list 'lambda catch-args catch-expr)
-			(scm-list 'lambda (list) try-expr))))
+			(scm-list 'lambda (scm-list) try-expr))))
     (if (void? finally-expr) try-expr
-	(scm-list 'let (scm-list (scm-list '*finally* (scm-list 'lambda (list) finally-expr)))
+	(scm-list 'let (scm-list (scm-list '*finally* (scm-list 'lambda (scm-list) finally-expr)))
             (scm-list (get-exception-handler-fnname try-token)
                   (scm-list 'lambda '(*e*) '(begin (*finally*) (raise *e*)))
                   (scm-list 'lambda '() try-expr))
@@ -834,8 +834,8 @@
 (define (list-literal tokenizer)
   (tokenizer 'next)
   (let loop ((result (if (tokenizer 'quote-mode?) 
-                         (list) 
-                         (scm-list 'list))))
+                         (scm-list) 
+                         (scm-list 'scm-list))))
     (let ((token (tokenizer 'peek)))
       (if (scm-eq? token '*close-bracket*)
           (begin (tokenizer 'next)
@@ -932,8 +932,9 @@
       (if (scm-eq? (tokenizer 'peek) close-token)
           (begin
             (tokenizer 'next)
-            (scm-append (if mkset? '(list->set) '(make-equal-hashtable))
-                        (scm-list (scm-append '(scm-list) (scm-reverse args)))))
+            (if mkset?
+                `(make-set ,@args)
+                `(make-equal-hashtable (scm-list ,@args))))
           (let ((keyval (expression tokenizer)))
             (begin
               (if (and (not mkset?)
@@ -1073,7 +1074,7 @@
     (let ((match-value (if implicit-match?
                          (if (= (scm-length params) 1)
                            (scm-car params)
-                           (append '(list) (extract-param-names params))))))
+                           (append '(scm-list) (extract-param-names params))))))
       (let ((old-yield-count (tokenizer 'yield-count)))
         (let ((body-expr
                 (let ((token (tokenizer 'peek)))
