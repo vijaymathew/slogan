@@ -125,7 +125,7 @@
           (i 0))
       (table-for-each (lambda (k v)
                         (slgn-display k port: port)
-                        (scm-display " : " port)
+                        (scm-display ": " port)
                         (slgn-display v port: port)
                         (set! i (+ 1 i))
                         (if (not (> i len))
@@ -179,7 +179,7 @@
 
 (define (slgn-display-pair p port)
   (slgn-display (scm-car p) port: port)
-  (scm-display " : " port)
+  (scm-display ":" port)
   (slgn-display (scm-cdr p) port: port))
 
 (define (slgn-display-array a port 

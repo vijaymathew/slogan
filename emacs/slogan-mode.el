@@ -3,7 +3,7 @@
 (setq slogan-keywords '("^" "function" "method" "record"
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
-                       "macro" "namespace" "import" "declare" "from" "as"
+                       "macro" "namespace" "use" "declare" "from" "as"
                        "generic" "ffi" "assert"))
 (setq slogan-constants '("true" "false"))
 
@@ -16,7 +16,6 @@
 
 (defvar slogan-mode-syntax-table
   (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?_ "w" st)
     (modify-syntax-entry ?/ ". 124b" st)
     (modify-syntax-entry ?* ". 23" st)
     (modify-syntax-entry ?\n "> b" st)

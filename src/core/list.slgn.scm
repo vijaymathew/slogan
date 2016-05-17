@@ -5,20 +5,18 @@
 (define (is_atom x) (and (scm-not (pair? x))
                          (scm-not (null? x))))
 
-(define nil '())
-
 (define (pair a b)
   (scm-cons a b))
 
 (define (head seq)
   (if (pair? seq)
       (scm-car seq)
-      nil))
+      #f))
 
 (define (tail seq) 
   (if (pair? seq)
       (scm-cdr seq)
-      nil))
+      #f))
 
 (define (is_empty seq)
   (null? seq))

@@ -44,7 +44,7 @@ assert x == 300;
 n_lf(false, ^x = 0);
 assert x == 300;
 
-import n as b;
+use n as b;
 assert b_f(20) == 20;
 x = 10;
 b_m(true, {x = 400});
@@ -57,7 +57,7 @@ assert x == 1;
 b_lf(false, ^x = 0);
 assert x == 1;
 
-import n;
+use n;
 assert f(100) == 100;
 x = 0;
 m(true, {x = 1});

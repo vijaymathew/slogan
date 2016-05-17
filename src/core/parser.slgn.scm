@@ -86,7 +86,7 @@
         (import-from-namespace ns-name import-names prefix))))
   
 (define (import-stmt tokenizer)
-  (if (scm-eq? (tokenizer 'peek) 'import)
+  (if (scm-eq? (tokenizer 'peek) 'use)
       (begin (tokenizer 'next)
              (let ((import-names (import-defs tokenizer)))
                (cond ((list? import-names)
@@ -108,7 +108,6 @@
       (begin (tokenizer 'next)
              (let ((name (tokenizer 'next)))
                (case name
-                 ((imported) (declare-imported-stmt tokenizer))
                  ((generic) (declare-generic-stmt tokenizer))
                  ((ffi) (declare-ffi-stmt tokenizer))
                  (else
@@ -176,13 +175,6 @@
           (def-ffi tokenizer lname `(begin (define ,lname (if (string? ,libname)
                                                               (ffi_open ,libname)
                                                               ,libname))))))))
-(define (declare-imported-stmt tokenizer)
-  (if (valid-identifier? (tokenizer 'peek))
-      (declare-imported (tokenizer 'next))
-      (let ((names (parened-names->list tokenizer)))
-        (if names (declare-imported names)
-            (parser-error tokenizer "Invalid import list.")))))
-
 (define (declare-generic-stmt tokenizer)
   (let ((name (tokenizer 'next)))
     (if (valid-identifier? name)
@@ -239,13 +231,18 @@
 
 (define (func-def-stmt-with-name tokenizer)
   (let ((name (tokenizer 'peek)))
-    (check-if-reserved-name name tokenizer)
-    (tokenizer 'next)
-    (remove-macro-lazy-fns-def name)
-    (let ((params (scm-car (func-params-expr tokenizer #t))))
-      (let* ((body-expr (func-body-expr tokenizer params))
-	     (fexpr (merge-lambda tokenizer params body-expr)))
-	(scm-list 'define name fexpr)))))
+    (let ((has-name? (not (eq? name '*open-paren*))))
+      (if has-name?
+          (begin
+            (check-if-reserved-name name tokenizer)
+            (tokenizer 'next)            
+            (remove-macro-lazy-fns-def name)))
+      (let* ((params (scm-car (func-params-expr tokenizer #t)))
+             (body-expr (func-body-expr tokenizer params))
+             (fexpr (merge-lambda tokenizer params body-expr)))
+        (if has-name?
+            (scm-list 'define name fexpr)
+            fexpr)))))
 
 (define (func-def-stmt tokenizer)
   (cond ((eq? 'function (tokenizer 'peek))
@@ -1014,12 +1011,13 @@
       #f))
 
 (define (func-def-expr tokenizer)
-  (if (eq? '*fn* (tokenizer 'peek))
-      (begin (tokenizer 'next)
-             (let* ((params (scm-car (func-params-expr tokenizer #f)))
-                    (body-expr (func-body-expr tokenizer params)))
-	       (merge-lambda tokenizer params body-expr)))
-      #f))
+  (let ((token (tokenizer 'peek)))
+    (if (or (eq? '*fn* token) (eq? 'function token))
+        (begin (tokenizer 'next)
+               (let* ((params (scm-car (func-params-expr tokenizer #f)))
+                      (body-expr (func-body-expr tokenizer params)))
+                 (merge-lambda tokenizer params body-expr)))
+        #f)))
 
 (define (merge-lambda tokenizer params lambda-body)
   (let ((expr (let ((lambda-expr (scm-list 'lambda params)))
@@ -1460,7 +1458,7 @@
 (define *reserved-names* '(^ function method record true false
 			     if else when let letseq letrec yield
 			     case match where try trycc catch finally
-			     macro namespace import declare assert))
+			     macro namespace use declare assert))
 
 (define (reserved-name? sym)
   (and (symbol? sym)

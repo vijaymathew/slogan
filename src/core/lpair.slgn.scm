@@ -18,7 +18,7 @@
     (if (and (not (pair? r))
              (s-yield? r)
              (not (s-yield-fn r)))
-        '()
+        #f
         r)))
 
 ;; Functions for working with sequences.
@@ -135,7 +135,7 @@
 ;;
 ;; function `iter-filter`(f, xs)
 ;;  let loop(xs = xs)
-;;   if (is_empty(xs))
+;;   if (not(xs))
 ;;    xs
 ;;  else
 ;;    if (f(first(xs)))
@@ -148,7 +148,7 @@
    (lambda (*return*)
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (begin (let loop ((xs xs))
-                (if (is_empty xs)
+                (if (not xs)
                     xs
                     (if (f (first xs))
                         (begin (call/cc
@@ -197,7 +197,7 @@
 ;;
 ;; function `iter-accumulate`(f, initial, xs)
 ;;   let loop (initial = initial, xs = xs)
-;;    if (is_empty(xs))
+;;    if (not(xs))
 ;;     xs
 ;;    else let (r = f(initial, first(xs)))
 ;;         { yield r;
@@ -208,7 +208,7 @@
    (lambda (*return*)
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (begin (let loop ((initial initial) (xs xs))
-                (if (is_empty xs)
+                (if (not xs)
                     xs
                     (let ((r (f (first xs) initial)))
                       (begin (call/cc (lambda (*yield*)

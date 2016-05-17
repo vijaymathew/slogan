@@ -61,7 +61,8 @@ assert first(iter) == 1;
 iter = rest(iter);
 assert first(iter) == 1;
 iter = rest(iter);
-assert first(iter) == [];
+assert not(first(iter));
+assert not(rest(iter));
 
 // Most lazy-pair functions also work on iterators.
 function ln(n) if (n > 5) [] else n::ln(n + 1);
@@ -78,4 +79,4 @@ function ints(a, b)
 // harmonic series
 let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)));
 assert first(a) == 1.5;
-assert rest(a) == [];
+assert not(rest(a));
