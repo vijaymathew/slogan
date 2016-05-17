@@ -55,7 +55,7 @@
            (lambda ()
              (if tokenizer
                  (scm-println "at [line: "(tokenizer 'line) 
-                          ", column: " (tokenizer 'column) "]. " 
+                          ", column: " (tokenizer 'column) "] " 
                           msg))
              (let ((hl (highlighted-error-line tokenizer token)))
                (if hl (begin (scm-println (scm-car hl))
