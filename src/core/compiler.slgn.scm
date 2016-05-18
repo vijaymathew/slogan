@@ -10,8 +10,6 @@
       (filter (lambda (x) (scm-not (void? x))) exprs drill: #t)
       exprs))
 
-(define *loader-functions* '(link load reload))
-
 (define (compile->scheme tokenizer)
   (let loop ((v (eliminate-voids (slogan tokenizer)))
              (exprs '()))

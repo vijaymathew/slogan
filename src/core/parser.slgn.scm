@@ -1361,7 +1361,7 @@
 				   #t))
                             ((scm-eq? (tokenizer 'peek) '*assignment*)
                              (tokenizer 'next)
-                             (let ((expr (expression tokenizer)))
+                             (let ((expr (intern-to-top-namespace (expression tokenizer) #t)))
                                (if directives-found
                                    (loop (scm-cons (scm-list sym expr) params)
 					 (scm-cons (func-param-type tokenizer) types)					 
