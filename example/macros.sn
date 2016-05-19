@@ -1,7 +1,7 @@
 macro times(n, expr) 
-    %let loop (c = %%n) 
-    if (c > 0) { %%expr; 
-                 loop(c - 1) };
+    %(let loop (c = ~(n)) 
+    if (c > 0) { ~(expr); 
+                 loop(c - 1) });
 
 times(10, showln("hello"));
 // -> hello
@@ -9,34 +9,34 @@ times(10, showln("hello"));
 //    ...
 
 macro nif(expr pos zero neg) 
-        %let (r = %%expr) 
-            if (is_positive(r)) %%pos
-            else if (is_zero(r)) %%zero
-            else %%neg;
+        %(let (r = ~(expr)) 
+            if (is_positive(r)) ~(pos)
+            else if (is_zero(r)) ~(zero)
+            else ~(neg));
 
 nif(1 - 2, showln("+"), showln("0"), showln("-"));
 // -> -
 
-macro unless(test body) %if(not(%%test)) %%body;
+macro unless(test body) %(if(not(~(test))) ~(body));
 
 unless(1 > 2, showln("hello"));
 // -> hello
 
-macro while(test body) %let loop () if (%%test) { %%body; loop() };
+macro while(test body) %(let loop () if (~(test)) { ~(body); loop() });
 
 let (i = 0) while(i < 10, { showln("hello"); i = i + 1 });
 // -> hello
 //    hello
 //    ...
 
-macro dolist(var xs body) %for_each(^(%%var) %%body, %%xs);
+macro dolist(var xs body) %(for_each(^(~(var)) ~(body), ~(xs)));
 
 dolist(x, [1 2 3], showln(x * 100));
 // -> 100
 //    200
 //    300
 
-macro let_unless(var expr body) %let (%%var = %%expr) unless(%%var, %%body);
+macro let_unless(var expr body) %(let (~(var) = ~(expr)) unless(~(var), ~(body)));
 
 let_unless(x, 2 < 2, showln(2 * 10));
 // -> 20
@@ -47,7 +47,7 @@ macro my_and(@rest args)
     let (len = length(args)) 
         if (len == 0) true
         else if (len == 1) first(args)
-        else %if (%%first(args)) my_and(%%%tail(args)) else false;
+        else %(if (~(first(args))) my_and(~@(tail(args))) else false);
 
 my_and(1 2 3 { showln("ok"); 4 });
 // -> ok
@@ -56,8 +56,8 @@ my_and(1 2 false { showln("ok"); 4 });
 // => false
 
 macro for(var start stop body) 
-   %let loop (%%var = %%start) 
-        if (%%{var} < %%{stop}) { %%body; loop(inc(%%var)) };
+   %(let loop (~(var) = ~(start))
+        if (~({var}) < ~({stop})) { ~(body); loop(inc(~(var))) });
 
 for(i, 0, 10, showln(i));
 // -> 0
@@ -65,14 +65,14 @@ for(i, 0, 10, showln(i));
 //    ...
 
 // How to use a macro to let a new global variable:
-macro def(var, value) %{let %%var = %%value};
+macro def(var, value) %(let ~(var) = ~(value));
 
 def(x, 100);
 showln(x);
 // -> 100
 
 // How to use a macro to update a variable:
-macro null(var) %`set!`(%%var, nil);
+macro null(var) %({~(var) = []});
 
 null(x);
 showln(x);

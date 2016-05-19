@@ -21,7 +21,6 @@
                           '()))
         (port (make-port-pos port 1 0))
         (pattern-mode #f)
-	(quote-mode 0)
 	(macro-mode #f)
         (radix 10)
         (yield-count 0)
@@ -59,10 +58,6 @@
         ((pattern-mode-on) (set! pattern-mode #t))
         ((pattern-mode-off) (set! pattern-mode #f))
         ((pattern-mode?) pattern-mode)
-	((quote-mode-on) (set! quote-mode (+ quote-mode 1)))
-	((quote-mode-off) (if (scm-not (zero? quote-mode)) 
-                              (set! quote-mode (- quote-mode 1))))
-	((quote-mode?) (scm-not (zero? quote-mode)))
 	((macro-mode-on) (set! macro-mode #t))
 	((macro-mode-off) (set! macro-mode #f))
 	((macro-mode?) macro-mode)
@@ -81,47 +76,41 @@
                (loop (- diff 1)))
         (tokenizer 'yield-count))))
 
-(define (sanitize-token t)
-  (if (eq? t 'define)
-    '*-define-*
-    t))
-
 (define (next-token port)
-  (sanitize-token
-    (let ((c (port-pos-peek-char port)))
-      (if (eof-object? c)
+  (let ((c (port-pos-peek-char port)))
+    (if (eof-object? c)
         c
         (let ((opr (single-char-operator? c)))
           (if opr (begin
                     (port-pos-read-char! port)
                     (if (and (char-comment-start? c) 
-                          (char-comment-part? (port-pos-peek-char port)))
-                      (begin
-                        (skip-comment port)
-                        (next-token port))
-                      (scm-cdr opr)))
-            (cond
-              ((char-whitespace? c)
+                             (char-comment-part? (port-pos-peek-char port)))
+                        (begin
+                          (skip-comment port)
+                          (next-token port))
+                        (scm-cdr opr)))
+              (cond
+               ((char-whitespace? c)
                 (skip-whitespace port)
                 (next-token port))
-              ((char-numeric? c)
+               ((char-numeric? c)
                 (if (char=? c #\0)
-                  (begin
-                    (port-pos-read-char! port)
-                    (read-number-with-radix-prefix port))
-                  (read-number port #f)))
-              ((multi-char-operator? c)
+                    (begin
+                      (port-pos-read-char! port)
+                      (read-number-with-radix-prefix port))
+                    (read-number port #f)))
+               ((multi-char-operator? c)
                 (read-multi-char-operator port))
-              ((char=? c #\")
+               ((char=? c #\")
                 (read-string port))
-              ((char=? c #\')
+               ((char=? c #\')
                 (port-pos-read-character port))
-              ((char=? c #\.)
+               ((char=? c #\.)
                 (port-pos-read-char! port)
                 (if (char-numeric? (port-pos-peek-char port))
-                  (read-number port #\.)
-                  '*period*))
-              (else (read-name port)))))))))
+                    (read-number port #\.)
+                    '*period*))
+               (else (read-name port))))))))
 
 (define *single-char-operators* (scm-list (scm-cons #\+ '*plus*)
                                       (scm-cons #\/ '*backslash*)
@@ -163,14 +152,12 @@
                                              (scm-cons "<=" '*less-than-equals*)
                                              (scm-cons "&&" '*and*)
                                              (scm-cons "||" '*or*)
-                                             (scm-cons "!!" '*unquote*)
                                              (scm-cons "->" '*inserter*)
                                              (scm-cons "<-" '*extractor*)))
 
 (define *special-operators-strings* (scm-list (scm-cons "=" '*assignment*)
                                           (scm-cons "." '*period*)
                                           (scm-cons "-" '*minus*)
-                                          (scm-cons "%" '*quasiquote*)
                                           (scm-cons "|" '*pipe*)))
 
 (define (math-operator? sym)
@@ -189,7 +176,6 @@
            (char=? c #\>)
            (char=? c #\&)
            (char=? c #\-)
-           (char=? c #\%)
            (char=? c #\|))))
 
 (define (fetch-operator-string token strs)
@@ -250,12 +236,9 @@
            opr)
           ((scm-eq? opr '*or*)
            '*pipe*)
-          ((scm-eq? opr '*unquote*)
-           '*quasiquote*)
           (else
-           (tokenizer-error 
-            "invalid character in operator. expected - "
-            c " - found - " next)))))
+           (tokenizer-error "invalid character in operator. expected - "
+                            c " - found - " next)))))
 
 (define (read-multi-char-operator port)
   (let ((c (port-pos-peek-char port)))
@@ -266,11 +249,9 @@
           ((char=? c #\>)
            (fetch-operator port #\= '*greater-than-equals* '*greater-than*))
 	  ((or (char=? c #\&)
-	       (char=? c #\|)
-               (char=? c #\%))
+	       (char=? c #\|))
 	   (fetch-same-operator port c (cond ((char=? c #\&) '*and*)
-                                             ((char=? c #\|) '*or*)
-                                             (else '*unquote*))))
+                                             ((char=? c #\|) '*or*))))
           ((char=? c #\-)
            (fetch-operator port #\> '*inserter* '*minus*))
           (else
@@ -390,6 +371,7 @@
            (char=? c #\_)
            (char=? c #\$)
            (char=? c #\?)
+           (char=? c #\%)
            (char=? c #\~)
            (char=? c #\@))))
 
@@ -398,20 +380,28 @@
        (or (char-valid-name-start? c)
            (char-numeric? c))))
 
+(define (transform-scm-macro-name name)
+  (cond ((or (eq? name 'namespace) (eq? name 'define))
+         (let ((new-name (string-append "*-" (symbol->string name) "-*")))
+           (string->symbol new-name)))
+        ((eq? name '%) 'quasiquote)
+        (else name)))
+  
 (define (read-name port)
-  (cond ((char-valid-name-start? (port-pos-peek-char port))
-         (let loop ((c (port-pos-peek-char port))
-                    (result '()))
-           (if (char-valid-in-name? c)
-               (begin (port-pos-read-char! port)
-                      (loop (port-pos-peek-char port)
-                            (scm-cons c result)))
-               (string->symbol (list->string (scm-reverse result))))))
-        ((char=? #\` (port-pos-peek-char port))
-         (port-pos-read-char! port)
-	 (read-sym-with-spaces port))
-        (else
-         (tokenizer-error "read-name failed at " (port-pos-read-char! port)))))
+  (transform-scm-macro-name
+   (cond ((char-valid-name-start? (port-pos-peek-char port))
+          (let loop ((c (port-pos-peek-char port))
+                     (result '()))
+            (if (char-valid-in-name? c)
+                (begin (port-pos-read-char! port)
+                       (loop (port-pos-peek-char port)
+                             (scm-cons c result)))
+                (string->symbol (list->string (scm-reverse result))))))
+         ((char=? #\` (port-pos-peek-char port))
+          (port-pos-read-char! port)
+          (read-sym-with-spaces port))
+         (else
+          (tokenizer-error "read-name failed at " (port-pos-read-char! port))))))
 
 (define (read-sym-with-spaces port)
   (let loop ((c (port-pos-peek-char port))

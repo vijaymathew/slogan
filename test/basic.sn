@@ -26,44 +26,27 @@ assert "hello " + "world" == "hello world";
 assert 1 + 2 == 3;
 `+` = old_add;
 
-namespace n;
-function f(a) a;
-macro m(a, b) if (a) b else false;
-function lf(a, b) if (a) b() else false;
-namespace;
+module n(f, lf)
+{ function f(a) a;
+  function lf(a, b) if (a) b() else false };
 
-assert n_f(10) == 10;
+assert n.f(10) == 10;
 let x = 10;
-n_m(true, {x = 200});
-assert x == 200;
-n_m(false, {x = 0});
-assert x == 200;
-x = 100;
-n_lf(true, ^x = 300);
+n.lf(true, ^x = 300);
 assert x == 300;
-n_lf(false, ^x = 0);
+n.lf(false, ^x = 0);
 assert x == 300;
 
-use n as b;
-assert b_f(20) == 20;
+let b = n;
+assert b.f(20) == 20;
 x = 10;
-b_m(true, {x = 400});
-assert x == 400;
-b_m(false, {x = 0});
-assert x == 400;
-x = 0;
-b_lf(true, ^x = 1);
+b.lf(true, ^x = 1);
 assert x == 1;
-b_lf(false, ^x = 0);
+b.lf(false, ^x = 0);
 assert x == 1;
 
-use n;
+let f, lf = n.f, n.lf;
 assert f(100) == 100;
-x = 0;
-m(true, {x = 1});
-assert x == 1;
-m(false, {x = 0});
-assert x == 1;
 x = 0;
 lf(true, ^x = 1);
 assert x == 1;
@@ -96,9 +79,9 @@ x = ints(0);
 assert nth(10, x) == 10;
 
 x = [1 2 3 4];
-assert (match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b) == 6;
+assert (match(x) [10, a, 3, b] -> 1000 | [1 a 3 b] -> a + b) == 6;
 x = [10 2 3 4];
-assert (match(x) [10, a, 3, b] -> 1000, [1 a 3 b] -> a + b) == 1000;
+assert (match(x) [10, a, 3, b] -> 1000 | [1 a 3 b] -> a + b) == 1000;
 
 assert (case(x) [1 2 5 4] -> "ok") == false;
 x = 5;
@@ -109,27 +92,27 @@ record rec_b(x, y, z);
 x = rec_a(x = 100, y = 200);
 y = rec_b(x = 1, y = 2, z = 3);
 
-assert (match(x) rec_a(x, y) -> x * y, rec_b(x, y, z = 3) -> x + y) == 20000;
-assert (match(y) rec_a(x, y) -> x * y, rec_b(x, y, z = 3) -> x + y) == 3;
+assert (match(x) rec_a(x, y) -> x * y | rec_b(x, y, z = 3) -> x + y) == 20000;
+assert (match(y) rec_a(x, y) -> x * y | rec_b(x, y, z = 3) -> x + y) == 3;
 
 y = rec_b(x = 1, y = 2, z = 4);
 
-assert (match(y) rec_a(x, y) -> x * y, rec_b(x, y, z = 3) -> x + y, rec_b(x, y, z = 4) -> y * 2) == 4;
+assert (match(y) rec_a(x, y) -> x * y | rec_b(x, y, z = 3) -> x + y | rec_b(x, y, z = 4) -> y * 2) == 4;
 
 y = rec_b(x = 1, y = 3, z = 4);
 
-assert (match(y) rec_a(x, y) -> x * y, rec_b(x, y = 2, z) -> x + z, rec_b(x, y, z = 4) -> y * 2) == 6;
-assert (match([1 2 3]) rec_a(x, y) -> x * y, [x y z] -> x + y + z) == 6;
-assert (match(x) rec_a(x, y) -> x * y, [x y z] -> x + y + z) == 20000;
+assert (match(y) rec_a(x, y) -> x * y | rec_b(x, y = 2, z) -> x + z | rec_b(x, y, z = 4) -> y * 2) == 6;
+assert (match([1 2 3]) rec_a(x, y) -> x * y | [x y z] -> x + y + z) == 6;
+assert (match(x) rec_a(x, y) -> x * y | [x y z] -> x + y + z) == 20000;
 
 x = #{!name:!nemo !age:3};
 assert (match(x) #{!name:n !age:a} -> [n a]) == [!nemo 3];
 assert (match(x) #{!age:a !name:n} -> [n a]) == [!nemo 3];
 x = [!name:!nemo !age:3];
 assert (match(x) [!name:n !age:a] -> [n a]) == [!nemo 3];
-assert (match(x) [!age:a !name:n] -> [n a], _ -> false) == false;
-assert (match(#{1:2 3:[1 2 3 4 5]}) [1:a 3:[1 b 3 c 5]] -> a * b * c, #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 8;
-assert (match([1:2 3:[1 2 3 4 5]]) [1:a 3:[1 b 3 c 5]] -> a * b * c, #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 16;
+assert (match(x) [!age:a !name:n] -> [n a] | _ -> false) == false;
+assert (match(#{1:2 3:[1 2 3 4 5]}) [1:a 3:[1 b 3 c 5]] -> a * b * c | #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 8;
+assert (match([1:2 3:[1 2 3 4 5]]) [1:a 3:[1 b 3 c 5]] -> a * b * c | #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 16;
 
 function u(a, b) if (a) b() else false;
 x = false;

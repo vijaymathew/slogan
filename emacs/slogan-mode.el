@@ -3,8 +3,8 @@
 (setq slogan-keywords '("^" "function" "method" "record"
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
-                       "macro" "namespace" "use" "declare" "from" "as"
-                       "generic" "ffi" "assert"))
+                       "macro" "module" "declare" "generic" "ffi" "assert"))
+
 (setq slogan-constants '("true" "false"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))

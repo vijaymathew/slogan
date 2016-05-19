@@ -62,9 +62,9 @@ assert conjugate(3-4i) == 3+4i;
 
 // pattern match on sets
 let r = ^(v) match(v)
-              [a b c] -> a * b * c * 10,
-              #[a b c] -> a * b * c * 1000,
-              #(a b c) -> a + b + c;
+              [a b c] -> a * b * c * 10
+              | #[a b c] -> a * b * c * 1000
+              | #(a b c) -> a + b + c;
 
 assert r(#(1 2 3)) == 6;
 assert r(#[1 2 3]) == 6000;

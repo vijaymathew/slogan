@@ -7,13 +7,13 @@
     (if (> (tokenizer 'yield-count) 0)
         (begin (reset-yield-count! tokenizer 0)
                (error "yield can be called only from a function."))
-        expr)))
+        (escape-quotes expr))))
 
 (define (expression/statement tokenizer #!optional (top #t))
   (if (eof-object? (tokenizer 'peek))
     (tokenizer 'next)
-    (let ((v (add-def-to-namespace (statement tokenizer) top)))
-      (if (scm-not v) (set! v (intern-to-top-namespace (expression tokenizer) top)))
+    (let ((v (statement tokenizer)))
+      (if (scm-not v) (set! v (expression tokenizer)))
       (assert-semicolon tokenizer)
       v)))
 
@@ -21,7 +21,7 @@
   (sanitize-expression
    tokenizer
    (if (scm-eq? (tokenizer 'peek) '*semicolon*) *void*
-       (namespace-stmt tokenizer))))
+       (declare-stmt tokenizer))))
 
 (define (highlighted-line colno)
   (if (< colno 0)
@@ -49,7 +49,6 @@
           #f))))
 
 (define (parser-error tokenizer msg #!optional token)
-  (pop-namespace)
   (error (with-output-to-string 
            '()
            (lambda ()
@@ -69,39 +68,6 @@
         (if (scm-eq? token '*semicolon*)
             (tokenizer 'next))
         (parser-error tokenizer "Statement or expression not properly terminated."))))
-
-(define (namespace-stmt tokenizer)
-  (if (scm-eq? (tokenizer 'peek) 'namespace)
-      (begin (tokenizer 'next)
-             (if (valid-identifier? (tokenizer 'peek))
-		 (push-namespace (check-if-reserved-name (tokenizer 'next) tokenizer))
-		 (pop-namespace)))
-      (import-stmt tokenizer)))
-
-(define (import-with-prefix tokenizer ns-name import-names)
-  (tokenizer 'next)
-  (let ((prefix (tokenizer 'next)))
-    (if (scm-not (valid-identifier? prefix))
-        (parser-error tokenizer "Expected name prefix.")
-        (import-from-namespace ns-name import-names prefix))))
-  
-(define (import-stmt tokenizer)
-  (if (scm-eq? (tokenizer 'peek) 'use)
-      (begin (tokenizer 'next)
-             (let ((import-names (import-defs tokenizer)))
-               (cond ((list? import-names)
-                      (if (scm-not (scm-eq? (tokenizer 'next) 'from))
-                          (parser-error tokenizer "Expected `from <namespace_name>'."))
-                      (let ((nname (tokenizer 'next)))
-                        (if (scm-not (valid-identifier? nname))
-                            (parser-error tokenizer "Expected namespace name."))
-                        (if (scm-eq? (tokenizer 'peek) 'as)
-                            (import-with-prefix tokenizer nname import-names)
-                            (import-from-namespace nname import-names))))
-                     (else (if (scm-eq? (tokenizer 'peek) 'as)
-                               (import-with-prefix tokenizer import-names #f)
-                               (import-from-namespace import-names))))))
-      (declare-stmt tokenizer)))
 
 (define (declare-stmt tokenizer)
   (if (scm-eq? (tokenizer 'peek) 'declare)
@@ -203,7 +169,7 @@
            (mdef (scm-cons types (scm-list 'define name (merge-lambda 
                                                           tokenizer params 
                                                           body-expr)))))
-      (cond ((scm-eq? (tokenizer 'peek) '*comma*)
+      (cond ((scm-eq? (tokenizer 'peek) '*pipe*)
 	     (tokenizer 'next)
 	     (cond ((scm-eq? (tokenizer 'peek) 'else)
 		    (tokenizer 'next)
@@ -218,16 +184,6 @@
 	     (scm-cons (mk-method-def mdef) (scm-reverse method-defs)))
 	    (else
 	     (scm-reverse (scm-cons (mk-method-def mdef) method-defs)))))))
-
-(define (import-defs tokenizer)
-  (if (valid-identifier? (tokenizer 'peek))
-      (tokenizer 'next)
-      (import-defs-list tokenizer)))
-
-(define (import-defs-list tokenizer)
-  (let ((names (parened-names->list tokenizer)))
-    (if names names
-        (parser-error tokenizer "Invalid import list."))))
 
 (define (func-def-stmt-with-name tokenizer)
   (let ((name (tokenizer 'peek)))
@@ -339,7 +295,7 @@
                            (if ,types-chk 
                              ,body
                              ,parent-call)))))))))
-  
+
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))
     (let ((sym (tokenizer 'next)))
@@ -352,14 +308,14 @@
                 (let-expr tokenizer))
               (define-stmt tokenizer))))
         (cond
-          ((scm-not (valid-identifier? sym))
-            (tokenizer 'put sym)
-            #f)
-          ((scm-eq? (tokenizer 'peek) '*assignment*)
-            (set-stmt sym tokenizer))
-          (else
-            (tokenizer 'put sym) 
-            #f))))
+         ((scm-not (valid-identifier? sym))
+          (tokenizer 'put sym)
+          #f)
+         ((scm-eq? (tokenizer 'peek) '*assignment*)
+          (set-stmt sym tokenizer))
+         (else
+          (tokenizer 'put sym) 
+          #f))))
     #f))
 
 (define (macro-def-stmt tokenizer)
@@ -380,7 +336,7 @@
   (let ((expr (scm-list 'define macro-name (macro-def-expr tokenizer))))
     (let ((mexpr `(begin ,expr
                          (def-macro ',macro-name #t))))
-      (scm-eval (add-def-to-namespace mexpr #t))
+      (scm-eval mexpr)
       (tokenizer 'macro-mode-off)
       mexpr)))
 
@@ -388,29 +344,76 @@
 
 (define (leave-scope) (pop-macros-lazy-fns))
 
+(define (vars-defs-set syms exprs def)
+  (display syms) (newline) (display exprs) (newline)
+  (if (not (= (scm-length syms) (scm-length exprs)))
+      (error "Not enough values or variables." syms exprs))
+  (let loop ((syms syms) (exprs exprs) (defexprs '()))
+    (if (not (null? syms))
+        (let ((sym (scm-car syms)))
+          (remove-macro-lazy-fns-def sym)
+          (let ((defexpr
+                  (if (rvar? sym)
+                      (let ((sym (normalize-rvar sym)))
+                        (if def
+                            `(begin
+                               (define ,sym (scm-rvar))
+                               (scm-rbind ,sym ,(scm-car exprs)))
+                            (scm-list 'scm-rbind sym (scm-car exprs))))
+                      (scm-list (if def 'define 'set!) sym (scm-car exprs)))))
+            (loop (scm-cdr syms) (scm-cdr exprs) (scm-cons defexpr defexprs))))
+        (scm-append '(begin) (scm-reverse defexprs)))))
+
+(define (def-vars-list tokenizer)
+  (let loop ((token (tokenizer 'peek))
+             (names '()))
+    (cond ((eq? token '*assignment*)
+           (scm-reverse names))
+          ((eq? token '*comma*)
+           (tokenizer 'next)
+           (loop (tokenizer 'peek) names))
+          ((symbol? token)
+           (check-if-reserved-name token tokenizer)
+           (tokenizer 'next)
+           (loop (tokenizer 'peek) (scm-cons token names)))
+          (else
+           (parser-error tokenizer "Invalid variable name.")))))
+
+(define (def-exprs-list tokenizer)
+  (let loop ((e (expression tokenizer))
+             (exprs '()))
+    (let ((token (tokenizer 'peek)))
+      (cond ((eq? token '*comma*)
+             (tokenizer 'next)
+             (loop (expression tokenizer)
+                   (scm-cons e exprs)))
+            (else (scm-reverse (scm-cons e exprs)))))))
+
 (define (define-stmt tokenizer)
   (let ((token (tokenizer 'next)))
     (cond
       ((symbol? token)
-        (let ((unquote? (scm-eq? '*unquote* token)))
-          (if unquote?
-            (if (scm-not (tokenizer 'quote-mode?))
-              (parser-error tokenizer "Not in quote mode.")
-              (set! token (tokenizer 'next))))
-          (check-if-reserved-name token tokenizer)
-          (cond
-            ((eq? '*assignment* (tokenizer 'peek))
-              (var-def-set (if unquote? (scm-list 'unquote token) token) tokenizer #t))
-            ((eq? '*open-paren* (tokenizer 'peek))
-              (tokenizer 'put token)
-              (enter-scope)
-              (let ((expr (named-let-expr 'let tokenizer)))
-                (leave-scope)
-                expr))
-            (else
-              (parser-error tokenizer "Invalid let expression.")))))
+       (check-if-reserved-name token tokenizer)
+       (cond
+        ((eq? '*assignment* (tokenizer 'peek))
+         (var-def-set token tokenizer #t))
+        ((eq? '*comma* (tokenizer 'peek))
+         (tokenizer 'next)
+         (let ((vars (scm-append (scm-list token) (def-vars-list tokenizer))))
+           (if (eq? '*assignment* (tokenizer 'next))
+               (let ((exprs (def-exprs-list tokenizer)))
+                 (vars-defs-set vars exprs #t))
+               (parser-error tokenizer "Expected assignment."))))
+        ((eq? '*open-paren* (tokenizer 'peek))
+         (tokenizer 'put token)
+         (enter-scope)
+         (let ((expr (named-let-expr 'let tokenizer)))
+           (leave-scope)
+           expr))
+        (else
+         (parser-error tokenizer "Invalid let expression."))))
       (else
-        (parser-error tokenizer "Invalid variable name.")))))
+       (parser-error tokenizer "Invalid variable name.")))))
 
 (define (set-stmt sym tokenizer) (var-def-set sym tokenizer #f))
 
@@ -457,9 +460,7 @@
     (let ((tail-expr (if lpair? 
 			 `(delay ,(expression tokenizer))
 			 (expression tokenizer))))
-      (if (tokenizer 'quote-mode?)
-	  `(,expr . ,tail-expr)
-	  `(scm-cons ,expr ,tail-expr)))))
+      `(scm-cons ,expr ,tail-expr))))
 
 (define (then-expr tokenizer)
   (if (scm-not (scm-eq? (tokenizer 'next) '*close-paren*))
@@ -507,7 +508,7 @@
                        (tokenizer 'next))
                    (let ((result (func-body-expr tokenizer #f #t))
                          (next (tokenizer 'peek)) (le #f))
-                     (if (scm-eq? next '*comma*)
+                     (if (scm-eq? next '*pipe*)
                          (tokenizer 'next)
                          (set! le #t))
                      (loop (tokenizer 'peek) le
@@ -577,7 +578,7 @@
                                              '*unbound*))))
             (let ((next (tokenizer 'peek))
                   (le (scm-eq? pattern 'else)))
-              (if (scm-eq? next '*comma*)
+              (if (scm-eq? next '*pipe*)
                   (if (scm-not le) (tokenizer 'next))
                   (if (scm-not le) (set! le #t)))
               (loop (tokenizer 'peek)
@@ -668,8 +669,7 @@
           (else #f))))
 
 (define (normalize-sym s)
-  (if (and (list? s)
-           (scm-eq? (scm-car s) 'quote))
+  (if (and (list? s) (scm-eq? (scm-car s) 'quote))
       (scm-cadr s)
       s))
 
@@ -784,29 +784,13 @@
                  (block-expr tokenizer (scm-not (tokenizer 'macro-mode?))))
                 ((scm-eq? token '*hash*)
                  (array-or-table-literal tokenizer))
-		((scm-eq? token '*quasiquote*)
-		 (tokenizer 'next)
-                 (let ((already-in-quote-mode (tokenizer 'quote-mode?)))
-                   (tokenizer 'quote-mode-on)
-                   (let ((e (expression tokenizer)))
-                     (tokenizer 'quote-mode-off)
-                     (if (scm-not already-in-quote-mode) (scm-list 'quasiquote e) e))))
-                ((scm-eq? token '*unquote*)
-                 (if (scm-not (tokenizer 'quote-mode?))
-                     (parser-error tokenizer "Not in quote mode."))
-                 (tokenizer 'next)
-                 (let ((splice? (if (scm-eq? (tokenizer 'peek) '*quasiquote*)
-                                    (begin (tokenizer 'next) #t)
-                                    #f)))
-                   (scm-list (if splice? 'unquote-splicing 'unquote) (func-body-expr tokenizer #f))))
                 ((scm-eq? token '*quote*)
                  (tokenizer 'next)
                  (let ((sym (tokenizer 'peek)))
                    (if (scm-not (symbol? sym))
                        (parser-error tokenizer "Expected symbol."))
                    (tokenizer 'next)
-                   (if (tokenizer 'quote-mode?) sym
-                       (scm-list 'quote sym))))
+                   (scm-list 'quote sym)))
 		((symbol? token) (handle-symbol token tokenizer))
                 (else (parser-error tokenizer "Invalid literal expression.")))))))
 
@@ -830,9 +814,7 @@
 
 (define (list-literal tokenizer)
   (tokenizer 'next)
-  (let loop ((result (if (tokenizer 'quote-mode?) 
-                         (scm-list) 
-                         (scm-list 'scm-list))))
+  (let loop ((result (scm-list 'scm-list)))
     (let ((token (tokenizer 'peek)))
       (if (scm-eq? token '*close-bracket*)
           (begin (tokenizer 'next)
@@ -969,8 +951,7 @@
 
 (define (named-let-expr letkw tokenizer)
   (if (scm-not (scm-eq? letkw 'let))
-      (parser-error tokenizer (string-append "Cannot define "
-                                             (symbol->string letkw)
+      (parser-error tokenizer (string-append "Cannot define " (symbol->string letkw)
                                              " as a named let.")))
   (let ((name (tokenizer 'next)))
     (remove-macro-lazy-fns-def name)
@@ -984,21 +965,16 @@
     (cond ((scm-eq? token '*close-paren*)
 	   bindings)
 	  ((symbol? token)
-           (let ((unqoute? (scm-eq? token '*unquote*)))
-             (if unqoute?
-                 (if (scm-not (tokenizer 'quote-mode?))
-                     (parser-error tokenizer "Not in quote mode.")
-                     (set! token (tokenizer 'next))))
-             (check-if-reserved-name token tokenizer)
-             (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
-                 (parser-error tokenizer "Expected assignment."))
-             (if (scm-not unqoute?) (remove-macro-lazy-fns-def token))
-             (let ((expr (func-body-expr tokenizer #f)))
-               (let ((next (tokenizer 'peek)))
-                 (if (scm-eq? next '*comma*) 
-                     (tokenizer 'next)))
-               (loop (tokenizer 'next) (scm-append bindings (scm-list (scm-list (if unqoute? (scm-list 'unquote token) token) expr)))))))
-	  (else (parser-error tokenizer "Expected variable declaration.")))))
+           (check-if-reserved-name token tokenizer)
+           (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
+               (parser-error tokenizer "Expected assignment."))
+           (remove-macro-lazy-fns-def token)
+           (let ((expr (func-body-expr tokenizer #f)))
+             (let ((next (tokenizer 'peek)))
+               (if (scm-eq? next '*comma*) 
+                   (tokenizer 'next)))
+             (loop (tokenizer 'next) (scm-append bindings (scm-list (scm-list token expr))))))
+          (else (parser-error tokenizer "Expected variable declaration.")))))
 
 (define (letkw? sym)
   (if (and (symbol? sym)
@@ -1010,6 +986,69 @@
             (else sym))
       #f))
 
+(define (mod-exports-list tokenizer)
+  (let ((token (tokenizer 'peek)))
+    (cond ((not (eq? '*open-paren* token))
+           '())
+          (else
+           (tokenizer 'next)
+           (let loop ((exports '()))
+             (let ((token (tokenizer 'peek)))
+               (if (scm-not (scm-eq? token '*close-paren*))
+                   (if (symbol? token)
+                       (begin
+                         (check-if-reserved-name token tokenizer)
+                         (tokenizer 'next)
+                         (assert-comma-separator tokenizer '*close-paren*)
+                         (loop (scm-cons token exports)))
+                       (parser-error tokenizer "Invalid exported name."))
+                   (begin
+                     (tokenizer 'next)
+                     (scm-reverse exports)))))))))
+
+(define (check-if-body-has-exported-names body exports)
+  (let ((defs-in-body
+          (let loop ((body body) (defs '()))
+            (if (null? body)
+                defs
+                (loop (scm-cdr body)
+                      (if (and (pair? (scm-car body))
+                               (eq? (scm-caar body) 'define))
+                          (scm-cons (scm-cadar body) defs)
+                          defs))))))
+    (let loop ((exports exports))
+      (if (null? exports)
+          #t
+          (if (scm-memq (scm-car exports) defs-in-body)
+              (loop (scm-cdr exports))
+              (error "Exported name not found in definitions." (scm-car exports)))))))
+
+(define (merge-module name exports body)
+  (check-if-body-has-exported-names body exports)
+  (let ((dispatch-expr
+         (let loop ((es exports)
+                    (dispatcher `(case *name*)))
+           (if (null? es)
+               `(if *name*
+                    ,(scm-append dispatcher '((else (error "Name not exported by module." *name*))))
+                    ',exports)
+               (let ((n (scm-car es)))
+                 (loop (scm-cdr es) (scm-append dispatcher `(((,n) ,n)))))))))
+    (let ((body-expr `(begin ,body ,dispatch-expr)))
+      `(define ,name (lambda (#!optional *name*) ,body-expr)))))
+                       
+(define (module-def-expr tokenizer)
+  (cond ((eq? 'module (tokenizer 'peek))
+         (tokenizer 'next)
+         (let ((mod-name (tokenizer 'next)))
+           (if (not (symbol? mod-name))
+               (parser-error tokenizer "Expected module name.")
+               (check-if-reserved-name mod-name tokenizer))
+           (let ((mod-exports (mod-exports-list tokenizer))
+                 (mod-body (func-body-expr tokenizer '())))
+             (merge-module mod-name mod-exports mod-body))))
+        (else #f)))
+             
 (define (func-def-expr tokenizer)
   (let ((token (tokenizer 'peek)))
     (if (or (eq? '*fn* token) (eq? 'function token))
@@ -1017,7 +1056,7 @@
                (let* ((params (scm-car (func-params-expr tokenizer #f)))
                       (body-expr (func-body-expr tokenizer params)))
                  (merge-lambda tokenizer params body-expr)))
-        #f)))
+        (module-def-expr tokenizer))))
 
 (define (merge-lambda tokenizer params lambda-body)
   (let ((expr (let ((lambda-expr (scm-list 'lambda params)))
@@ -1080,17 +1119,17 @@
                         (eof-object? token))
                     '(begin (quote ()))
                     (begin (enter-scope)
-                      (push-func-params params)
-                      (let ((expr (if implicit-match?
-                                    (match-body-expr match-value tokenizer)
-                                    (if (scm-eq? (tokenizer 'peek) '*open-brace*)
-                                      (block-expr tokenizer use-let)
-                                      (stmt-or-expr tokenizer)))))
-                        (leave-scope)
-                        expr))))))
+                           (push-func-params params)
+                           (let ((expr (if implicit-match?
+                                           (match-body-expr match-value tokenizer)
+                                           (if (scm-eq? (tokenizer 'peek) '*open-brace*)
+                                               (block-expr tokenizer use-let)
+                                               (stmt-or-expr tokenizer)))))
+                             (leave-scope)
+                             expr))))))
           (if (and params (> (tokenizer 'yield-count) old-yield-count))
-            (wrap-in-return-cont body-expr)
-            body-expr))))))
+              (wrap-in-return-cont body-expr)
+              body-expr))))))
 
 (define (func-call-expr func-val tokenizer)
   (if (and (symbol? func-val)
@@ -1244,7 +1283,7 @@
 (define (mk-record-constructor recname members default-values preconds)
   (scm-append (scm-list 'lambda (scm-append (scm-list '#!key) (mk-record-constructor-params members default-values)))
           (scm-list (mk-record-precond-exprs preconds members) 
-                (scm-cons (string->symbol (string-append "make-" (add-namespace-prefix recname))) members))))
+                (scm-cons (string->symbol (string-append "make-" recname)) members))))
 
 (define (mk-record-constructor-params members default-values)
   (let loop ((members members) (default-values default-values) 
@@ -1263,10 +1302,10 @@
                       (scm-list 'define (string->symbol sname) 
                             (mk-record-constructor sname members default-values preconds))
                       (scm-list 'define (string->symbol (string-append "make_" sname))
-                            (string->symbol (string-append "make-" (add-namespace-prefix sname))))
+                            (string->symbol (string-append "make-" sname)))
                       (scm-list 'define 
                             (string->symbol (string-append "is_" sname))
-                            (string->symbol (add-namespace-prefix (string-append sname "?")))))))
+                            (string->symbol (string-append sname "?"))))))
       (if (null? members) (scm-reverse expr)
           (begin (loop (scm-cdr members) (scm-cdr preconds) (+ i 1)
                        (scm-append expr (member-accessor/modifier name (scm-car members) (scm-car preconds) i))))))))
@@ -1274,8 +1313,8 @@
 (define (member-accessor/modifier name mem precond index)
   (let ((sname (symbol->string name))
 	(smem (symbol->string mem)))
-    (let ((scm-accessor (string->symbol (add-namespace-prefix (string-append sname "-" smem))))
-	  (scm-modifier (string->symbol (add-namespace-prefix (string-append sname "-" smem "-set!"))))
+    (let ((scm-accessor (string->symbol (string-append sname "-" smem)))
+	  (scm-modifier (string->symbol (string-append sname "-" smem "-set!")))
 	  (slgn-accessor (string->symbol (string-append sname "_" smem)))
           (idx-accessor (string->symbol (string-append sname "-" (number->string index))))
 	  (slgn-modifier (string->symbol (string-append sname "_set_" smem))))
@@ -1322,8 +1361,7 @@
           args))))
 
 (define (check-if-reserved-name sym tokenizer)
-  (if (or (reserved-name? sym)
-	  (is_special_token sym))
+  (if (or (reserved-name? sym) (is_special_token sym))
       (parser-error tokenizer (string-append "Invalid use of keyword or operator: "
                                              (symbol->string sym) ".") sym)
       sym))
@@ -1361,7 +1399,7 @@
 				   #t))
                             ((scm-eq? (tokenizer 'peek) '*assignment*)
                              (tokenizer 'next)
-                             (let ((expr (intern-to-top-namespace (expression tokenizer) #t)))
+                             (let ((expr (expression tokenizer)))
                                (if directives-found
                                    (loop (scm-cons (scm-list sym expr) params)
 					 (scm-cons (func-param-type tokenizer) types)					 
@@ -1376,12 +1414,6 @@
                              (loop (scm-cons sym params)
 				   (scm-cons (func-param-type tokenizer) types)				   
 				   directives-found)))))
-                   ((scm-eq? '*unquote* token)
-                    (if (scm-not (tokenizer 'quote-mode?))
-                        (parser-error tokenizer "Not in quote more.")
-			(loop (scm-cons (expression tokenizer) params)
-			      (scm-cons (func-param-type tokenizer) types)				     
-			      directives-found)))
                    (else
                     (if (scm-eq? token '*close-paren*)
                         (begin (tokenizer 'next)
@@ -1455,10 +1487,10 @@
       (scm-list (scm-car expr) (scm-caddr expr) (scm-cadr expr))
       expr))
 
-(define *reserved-names* '(^ function method record true false
+(define *reserved-names* '(^ function module method record true false
 			     if else when let letseq letrec yield
 			     case match where try trycc catch finally
-			     macro namespace use declare assert))
+			     macro declare assert))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
