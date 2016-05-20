@@ -1,0 +1,22 @@
+let libname = string_append(slogan_root() "/packages/sqlite/slogan_sqlite3.so");
+if (not (file_exists(libname))) libname = "./slogan_sqlite3.so"; // in dev-mode
+
+declare ffi libname [
+    pointer c_sqlite_db_open [charstring]
+    void c_sqlite_db_close [pointer]
+    int c_sqlite_db_prepare [pointer, charstring, int]
+    int c_sqlite_db_step [pointer, int]
+    int c_sqlite_db_bind_int [pointer, int, int, int]
+    int c_sqlite_db_column_int [pointer, int, int]
+    int c_sqlite_db_reset [pointer, int]
+    int c_sqlite_db_finalize [pointer, int]
+];
+
+let sqlite_open = c_sqlite_db_open;
+let sqlite_close = c_sqlite_db_close;
+let sqlite_prepare = ^(db, sql) c_sqlite_db_prepare(db, sql, string_length(sql));
+let sqlite_step = c_sqlite_db_step;
+let sqlite_bind_int = c_sqlite_db_bind_int;
+let sqlite_column_int = c_sqlite_db_column_int;
+let sqlite_reset = c_sqlite_db_reset;
+let sqlite_finalize = c_sqlite_db_finalize;
