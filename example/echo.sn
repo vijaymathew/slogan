@@ -1,3 +1,0 @@
-// Prints the command-line arguments
-
-showln(strings_join(" ", tail(command_line())));

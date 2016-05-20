@@ -5,6 +5,10 @@ assert 1 + 2 <= 3;
 assert 1 + 2 <= 3 && 4 * 3 == 12;
 assert 1 + 2 > 3 || 4 * 3 == 12;
 
+let a,b = 10, a+20;
+assert a == 10;
+assert b == 30;
+
 function recur(a)
   if (a > 0) recur(a - 1)
   else a;

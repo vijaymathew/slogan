@@ -1,3 +1,0 @@
-namespace simple;
-function hello() "hello simple world!";
-namespace;

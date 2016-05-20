@@ -121,12 +121,12 @@
                                       (scm-cons #\} '*close-brace*)
                                       (scm-cons #\[ '*open-bracket*)
                                       (scm-cons #\] '*close-bracket*)
+                       		      (scm-cons #\^ '*fn*)                                      
+                                      (scm-cons #\; '*semicolon*)
                                       (scm-cons #\# '*hash*)
                                       (scm-cons #\! '*quote*)
                                       (scm-cons #\, '*comma*)
-                                      (scm-cons #\: '*colon*)
-				      (scm-cons #\^ '*fn*)
-                                      (scm-cons #\; '*semicolon*)))
+                                      (scm-cons #\: '*colon*)))
 
 (define *single-char-operators-strings* (scm-list (scm-cons "+" '*plus*)
                                               (scm-cons "/" '*backslash*)
@@ -371,8 +371,8 @@
            (char=? c #\_)
            (char=? c #\$)
            (char=? c #\?)
-           (char=? c #\%)
            (char=? c #\~)
+           (char=? c #\%)
            (char=? c #\@))))
 
 (define (char-valid-in-name? c)
@@ -380,11 +380,12 @@
        (or (char-valid-name-start? c)
            (char-numeric? c))))
 
+(define *scm-macros* '(define namespace quote unquote quasiquote))
+
 (define (transform-scm-macro-name name)
-  (cond ((or (eq? name 'namespace) (eq? name 'define))
+  (cond ((scm-memq name *scm-macros*)
          (let ((new-name (string-append "*-" (symbol->string name) "-*")))
            (string->symbol new-name)))
-        ((eq? name '%) 'quasiquote)
         (else name)))
   
 (define (read-name port)

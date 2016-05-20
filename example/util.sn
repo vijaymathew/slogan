@@ -1,8 +1,0 @@
-// A utility macro for testing.
-macro assert_eq(expr result) 
-    %let (r = %%expr, res = %%result)
-	if (not(r == res)) 
-	    error("assertion failed - " r res)
-        else true;
-
-	

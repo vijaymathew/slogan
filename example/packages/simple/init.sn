@@ -1,4 +1,0 @@
-let lpath = string_append(slogan_root() "/packages/simple");
-when (not(file_exists(lpath))) lpath = "."; // dev mode
-lpath = string_append(lpath, "/src/core");
-link(lpath);
