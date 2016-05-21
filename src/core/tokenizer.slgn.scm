@@ -380,7 +380,7 @@
        (or (char-valid-name-start? c)
            (char-numeric? c))))
 
-(define *scm-macros* '(define namespace quote unquote quasiquote))
+(define *scm-macros* '(define namespace lambda cond quote unquote quasiquote))
 
 (define (transform-scm-macro-name name)
   (cond ((scm-memq name *scm-macros*)
