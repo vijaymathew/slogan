@@ -126,6 +126,7 @@
                                       (scm-cons #\# '*hash*)
                                       (scm-cons #\! '*quote*)
                                       (scm-cons #\, '*comma*)
+                                      (scm-cons #\~ '*delay*)
                                       (scm-cons #\: '*colon*)))
 
 (define *single-char-operators-strings* (scm-list (scm-cons "+" '*plus*)
@@ -142,6 +143,7 @@
                                               (scm-cons "," '*comma*)
                                               (scm-cons ":" '*colon*)
 					      (scm-cons "^" '*fn*)
+                                              (scm-cons "~" '*delay*)
                                               (scm-cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (scm-list (scm-cons "==" '*equals*)
@@ -371,7 +373,6 @@
            (char=? c #\_)
            (char=? c #\$)
            (char=? c #\?)
-           (char=? c #\~)
            (char=? c #\%)
            (char=? c #\@))))
 
@@ -380,7 +381,7 @@
        (or (char-valid-name-start? c)
            (char-numeric? c))))
 
-(define *scm-macros* '(define namespace lambda cond quote unquote quasiquote))
+(define *scm-macros* '(define namespace lambda cond quote unquote quasiquote delay))
 
 (define (transform-scm-macro-name name)
   (cond ((scm-memq name *scm-macros*)

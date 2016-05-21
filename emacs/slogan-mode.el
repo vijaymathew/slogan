@@ -5,7 +5,7 @@
                        "case" "match" "where" "try" "trycc" "catch" "finally"
                        "module" "declare" "generic" "ffi" "assert"))
 
-(setq slogan-constants '("true" "false"))
+(setq slogan-constants '("true" "false" "and" "or"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))
 (setq slogan-constant-regexp (regexp-opt slogan-constants 'words))

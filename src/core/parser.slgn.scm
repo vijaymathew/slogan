@@ -748,6 +748,9 @@
                  (block-expr tokenizer #t))
                 ((scm-eq? token '*hash*)
                  (array-or-table-literal tokenizer))
+                ((scm-eq? token '*delay*)
+                 (tokenizer 'next)
+                 (scm-list 'delay (func-body-expr tokenizer #t)))
                 ((scm-eq? token '*quote*)
                  (tokenizer 'next)
                  (let ((sym (tokenizer 'peek)))
@@ -1109,10 +1112,6 @@
 
 (define (mk-func-call-expr tokenizer func-val)
   (let ((expr (func-args-expr tokenizer)))
-    (if (and (scm-not (null? expr)) (scm-eq? func-val 'task))
-        (if (or (scm-not (list? (scm-car expr))) 
-                (scm-not (scm-eq? (scm-caar expr) 'lambda)))
-            (set! expr (scm-cons (merge-lambda tokenizer '() (scm-car expr)) (scm-cdr expr)))))
     (scm-cons func-val expr)))
 
 (define (record-def-stmt tokenizer)
