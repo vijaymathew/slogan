@@ -1,0 +1,153 @@
+module tm (now, resolution
+           is_eq:time_is_eq
+           is_gt, is_lt, is_gteq, is_lteq)
+           
+{
+  // Types of time
+  let TIME_TAI = !time_tai;
+  let TIME_UTC = !time_utc;
+  let TIME_MONOTONIC = !time_monotonic;
+  let TIME_PROCESS = !time_process;
+  let TIME_DURATION = !time_duration;
+
+  let nano = expt(10 9);
+  let sid = 86400;    // seconds in a day
+  let sihd = 43200; // seconds in a half day
+  let tai_epoch_in_jd = 4881175/2; // julian day number for 'the epoch'
+
+  // Read and parse the file named `filename` into a table of leapseconds.
+  // ftp://maia.usno.navy.mil/ser7/tai-utc.dat can be a valid and uptodate input.
+  function read_tai_utc_data(filename)
+    let (convjd = ^(jd) (exact(jd) - tai_epoch_in_jd) * sid
+         convsec = ^(sec) exact(sec)
+         input = file_reader(filename))
+      let loop (line = read_line(input), table = [])
+       if (is_eof_object(line)) table
+       else let (data = read(string_reader(string_append("(" line ")"))))
+             let (year = first(data), jd = nth(4, data), secs = nth(6, data))
+               loop(read_line(input), if (year >= 1972) (convjd(jd):convsec(secs)):table
+                                      else table);
+
+  // each entry is ( utc seconds since epoch . # seconds to add for tai )
+  // note they go higher to lower, and end in 1972.
+  // updated from ftp://maia.usno.navy.mil/ser7/tai-utc.dat in May-2016.
+  let leap_second_table =
+  [1435708800:36
+   1341100800:35
+   1230768000:34
+   1136073600:33
+   915148800:32
+   867715200:31
+   820454400:30
+   773020800:29
+   741484800:28
+   709948800:27
+   662688000:26
+   631152000:25
+   567993600:24
+   489024000:23
+   425865600:22
+   394329600:21
+   362793600:20
+   315532800:19
+   283996800:18
+   252460800:17
+   220924800:16
+   189302400:15
+   157766400:14
+   126230400:13
+   94694400:12
+   78796800:11
+   63072000:10];
+
+  function update_leap_second_table(filename) leap_second_table = read_tai_utc_data(filename);
+
+  let lsmin = (1972 - 1970) * 365 * sid;
+
+  function leap_second_delta(utc_seconds)
+   if (utc_seconds < lsmin) 0
+   else tail(head(memp(^(lse) utc_seconds >= head(lse), leap_second_table)));
+
+  // going from tai seconds to utc seconds ... 
+  function leap_second_neg_delta(tai_seconds)
+   if (tai_seconds < lsmin) 0
+   else or(tail(head(memp(^(lse) (tail(lse) <= tai_seconds - head(lse)), leap_second_table))), 0);
+
+  record ttime(type nanosecond second);
+  let make_time = make_ttime;
+
+  function copy_time(t)
+   ttime(type = ttime_type(t)
+         nanosecond = ttime_nanosecond(t)
+         second = ttime_second(t));
+
+  // These functions are used to decode the current system time encoded as a real number.
+  function systime_nanosecs(t) floor((t - floor(t)) * nano);
+
+  // Get the current system time encoded as a real number with second and nanosecond parts.
+  // This value is retrieved by calling the  gambit functions `current-time` and `time->seconds`
+  // and represents the UTC time. Return a pair of seconds and nanoseconds.
+  function get_time_of_day()
+   letseq (t = `time->seconds`(`current-time`())
+           nsecs = systime_nanosecs(t))
+    floor(t):nsecs;
+
+  function get_process_time()
+   letseq (t = f64array_at(`process-times`(), 2)
+           nsecs = systime_nanosecs(t))
+    floor(t):nsecs;
+
+  function current_time_utc()
+   let (t = get_time_of_day())
+    make_time(TIME_UTC, cdr(t), car(t));
+
+  function current_time_tai()
+   letseq (t = get_time_of_day(), secs = car(t))
+    make_time(TIME_TAI, cdr(t), secs + leap_second_delta(secs));
+
+  // Uses `##get-monotonic-time!` from the gambit kernel to get the system specific
+  // monotonic time in nanoseconds. This usually represents the total duration for which the
+  // system was running. This value is converted to a ttime object and returned.
+  function current_time_monotonic()
+    let (v = #u64[0])
+    { `##get-monotonic-time!`(v, 0);
+      let (t = u64array_at(v, 0))
+       make_time(TIME_MONOTONIC, 0, floor(t/nano)) };
+
+  // Return the total time duration for which the current process was running.
+  function current_time_process()
+   let (t = f64array_at(`process-times`(), 2))
+    make_time(TIME_PROCESS, systime_nanosecs(t), floor(t));
+
+  function now(clock_type = TIME_UTC)
+   if (is_eq(clock_type, TIME_UTC)) current_time_utc()
+   else if (is_eq(clock_type, TIME_TAI)) current_time_tai()
+   else if (is_eq(clock_type, TIME_MONOTONIC)) current_time_monotonic()
+   else if (is_eq(clock_type, TIME_PROCESS)) current_time_process()
+   else error(!invalid_clock_type !current_time);
+
+  // Right now the gambit kernel supports only checking the resolution
+  // of the monotonic clock, we just return that.
+  function resolution(clock_type = TIME_UTC)
+   let (v = #u64[0])
+   { `##get-monotonic-time-frequency!`(v, 0);
+     u64array_at(v, 0) };
+
+  // Time comparisons
+  function check_time_compare(time1 time2 caller)
+   if (is_ttime(time1) && is_ttime(time2)
+       && is_eq(ttime_type(time1) ttime_type(time2))) true
+   else error(!incompatible_time_types caller);
+
+  function time_to_nanos(t) ttime_second(t) * nano + ttime_nanosecond(t);
+
+  function time_cmpr(time1 time2 predic caller)
+  { check_time_compare(time1 time2 caller);
+    predic(time_to_nanos(time1) time_to_nanos(time2)) };
+
+  function time_is_eq(time1 time2) time_cmpr(time1 time2 `==` !time_is_eq);
+  function is_gt(time1 time2) time_cmpr(time1 time2 `>` !time_is_gt);
+  function is_lt(time1 time2) time_cmpr(time1 time2 `<` !time_is_lt);
+  function is_gteq(time1 time2) time_cmpr(time1 time2 `>=` !time_is_gteq);
+  function is_lteq(time1 time2) time_cmpr(time1 time2 `<=` !time_is_lteq);
+};
