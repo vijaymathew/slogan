@@ -59,20 +59,78 @@
 
 (define (complement f) (lambda (#!rest args) (scm-not (scm-apply f args))))
 
+(define (vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (vector-length v)))
+      (vector-ref v k)
+      d))
+
+(define (string-safe-ref v k d)
+  (if (and (>= k 0) (< k (string-length v)))
+      (string-ref v k)
+      d))
+
+(define (u8vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (u8vector-length v)))
+      (u8vector-ref v k)
+      d))
+
+(define (s8vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (s8vector-length v)))
+      (s8vector-ref v k)
+      d))
+
+(define (u16vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (u16vector-length v)))
+      (u16vector-ref v k)
+      d))
+
+(define (s16vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (s16vector-length v)))
+      (s16vector-ref v k)
+      d))
+
+(define (u32vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (u32vector-length v)))
+      (u32vector-ref v k)
+      d))
+
+(define (s32vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (s32vector-length v)))
+      (s32vector-ref v k)
+      d))
+
+(define (u64vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (u64vector-length v)))
+      (u64vector-ref v k)
+      d))
+
+(define (s64vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (s64vector-length v)))
+      (s64vector-ref v k)
+      d))
+
+(define (f32vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (f32vector-length v)))
+      (f32vector-ref v k)
+      d))
+
+(define (f64vector-safe-ref v k d)
+  (if (and (>= k 0) (< k (f64vector-length v)))
+      (f64vector-ref v k)
+      d))
+
 (define (array-accessor&mutator tab)
   (cond
-    ((vector? tab) (scm-cons vector-ref vector-set!))
-    ((string? tab) (scm-cons string-ref string-set!))
-    ((u8vector? tab) (scm-cons u8vector-ref u8vector-set!))
-    ((s8vector? tab) (scm-cons s8vector-ref s8vector-set!))
-    ((u16vector? tab) (scm-cons u16vector-ref u16vector-set!))
-    ((s16vector? tab) (scm-cons s16vector-ref s16vector-set!))
-    ((u32vector? tab) (scm-cons u32vector-ref u32vector-set!))
-    ((s32vector? tab) (scm-cons s32vector-ref s32vector-set!))
-    ((u64vector? tab) (scm-cons u64vector-ref u64vector-set!))
-    ((s64vector? tab) (scm-cons s64vector-ref s64vector-set!))
-    ((f32vector? tab) (scm-cons f32vector-ref f32vector-set!))
-    ((f64vector? tab) (scm-cons f64vector-ref f64vector-set!))
+    ((u8vector? tab) (scm-cons u8vector-safe-ref u8vector-set!))
+    ((s8vector? tab) (scm-cons s8vector-safe-ref s8vector-set!))
+    ((u16vector? tab) (scm-cons u16vector-safe-ref u16vector-set!))
+    ((s16vector? tab) (scm-cons s16vector-safe-ref s16vector-set!))
+    ((u32vector? tab) (scm-cons u32vector-safe-ref u32vector-set!))
+    ((s32vector? tab) (scm-cons s32vector-safe-ref s32vector-set!))
+    ((u64vector? tab) (scm-cons u64vector-safe-ref u64vector-set!))
+    ((s64vector? tab) (scm-cons s64vector-safe-ref s64vector-set!))
+    ((f32vector? tab) (scm-cons f32vector-safe-ref f32vector-set!))
+    ((f64vector? tab) (scm-cons f64vector-safe-ref f64vector-set!))
     (else #f)))
 
 (define (list-set-at! xs n v)
@@ -88,45 +146,51 @@
 
 (define (map-mutate tab key val)
   (cond
-    ((list? tab)
-      (if (integer? key)
+   ((vector? tab)
+    (vector-set! tab key val))
+   ((string? tab)
+    (string-set! tab key val))
+   ((hashtable? tab)
+    (hashtable_set tab key val))   
+   ((list? tab)
+    (if (integer? key)
         (list-set-at! tab key val)
         (let ((entry (scm-assoc key tab)))
           (if entry
-            (set-cdr! entry val)
-            (set-cdr! tab (scm-cons (scm-cons key val) (scm-cdr tab)))))))
-    ((hashtable? tab)
-      (hashtable_set tab key val))
-    ((%bitvector? tab)
-      (if val
+              (set-cdr! entry val)
+              (set-cdr! tab (scm-cons (scm-cons key val) (scm-cdr tab)))))))
+   ((%bitvector? tab)
+    (if val
         (bitvector-set! tab key)
         (bitvector-clear! tab key)))
     (else
-      (let ((aam (array-accessor&mutator tab)))
-        (if aam
-          ((scm-cdr aam) tab key val)
-          (error "Mutator not found for object - " tab))))))
+     (let ((aam (array-accessor&mutator tab)))
+       (if aam
+           ((scm-cdr aam) tab key val)
+           (error "Mutator not found for object - " tab))))))
 
 (define (map-access tab key default)
   (cond
-    ((list? tab)
-      (if (integer? key)
+   ((vector? tab)
+    (vector-safe-ref tab key default))
+   ((string? tab)
+    (string-safe-ref tab key default))
+   ((hashtable? tab)
+    (hashtable_at tab key default))   
+   ((list? tab)
+    (if (integer? key)
         (with-exception-handler
           (lambda (e) default)
           (lambda () (list-ref tab key)))
         (get key tab default)))
-    ((hashtable? tab)
-      (hashtable_at tab key default))
-    ((%bitvector? tab)
-      (if (< key (bitvector-length tab))
+   ((%bitvector? tab)
+    (if (< key (bitvector-length tab))
         (bitvector-set? tab key)
         default))
-    (else
-      (let ((aam (array-accessor&mutator tab)))
-        (if aam
-          (with-exception-handler
-            (lambda (e) default)
-            (lambda () ((scm-car aam) tab key)))
+   (else
+    (let ((aam (array-accessor&mutator tab)))
+      (if aam
+          ((scm-car aam) tab key default)
           (error "Accessor not found for object - " tab))))))
 
 (define (@ tab key #!key (value *void*) (default #f))
