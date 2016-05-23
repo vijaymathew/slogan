@@ -22,7 +22,7 @@ function lappend(xs, ys)
         [] -> ys
         | x:xs -> x::lappend(xs, ys);
 
-let x = lappend([1 2 3] [4 5 6]);
+let x = lappend([1, 2, 3], [4, 5, 6]);
 assert nth(2, x) == 3;
 assert nth(4, x) == 5;
 
@@ -31,7 +31,7 @@ function lmap(xs, f)
         [] -> []
         | x:xs -> f(x)::lmap(xs, f);
 
-x = lmap([1 2 3 4 5], ^(x) x * 10);
+x = lmap([1, 2, 3, 4, 5], ^(x) x * 10);
 assert nth(3, x) == 40;
 
 function lflatten(xs) {
@@ -43,7 +43,7 @@ function lflatten(xs) {
     lflattend(xs, [])
 };
 
-x = lflatten([1 2 [3 4]]);
+x = lflatten([1, 2, [3, 4]]);
 assert nth(1, x) == 2;
 assert nth(2, x) == 3;
 
@@ -53,7 +53,7 @@ function lfilter(xs, f)
         | x:xr -> if (f(x)) x :: lfilter(xr, f)
                   else lfilter(xr, f);
 
-x = lfilter([1 2 3 4 5], is_odd);
+x = lfilter([1, 2, 3, 4, 5], is_odd);
 assert nth(1, x) == 3;
 assert nth(2, x) == 5;
 

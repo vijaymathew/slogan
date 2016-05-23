@@ -21,8 +21,8 @@ declare generic concat(a, b);
 method concat(a:list, b:list) append(a, b);
 method concat(a:string, b:string) string_append(a, b);
 
-assert concat([1 2 3], [4 5 6]) == [1 2 3 4 5 6];
-assert concat("hello " "world") == "hello world";
+assert concat([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6];
+assert concat("hello ", "world") == "hello world";
 
 let old_add = `+`;
 method `+`(a:string, b:string) concat(a, b);
@@ -82,14 +82,14 @@ function ints(n) n::ints(n+1);
 x = ints(0);
 assert nth(10, x) == 10;
 
-x = [1 2 3 4];
-assert (match(x) [10, a, 3, b] -> 1000 | [1 a 3 b] -> a + b) == 6;
-x = [10 2 3 4];
-assert (match(x) [10, a, 3, b] -> 1000 | [1 a 3 b] -> a + b) == 1000;
+x = [1, 2, 3, 4];
+assert (match(x) [10, a, 3, b] -> 1000 | [1, a, 3, b] -> a + b) == 6;
+x = [10, 2, 3, 4];
+assert (match(x) [10, a, 3, b] -> 1000 | [1, a, 3, b] -> a + b) == 1000;
 
-assert (case(x) [1 2 5 4] -> "ok") == false;
+assert (case(x) [1, 2, 5, 4] -> "ok") == false;
 x = 5;
-assert (case(x) [1 2 5 4] -> "ok") == "ok";
+assert (case(x) [1, 2, 5, 4] -> "ok") == "ok";
 
 record rec_a(x, y);
 record rec_b(x, y, z);
@@ -106,17 +106,17 @@ assert (match(y) rec_a(x, y) -> x * y | rec_b(x, y, z = 3) -> x + y | rec_b(x, y
 y = rec_b(x = 1, y = 3, z = 4);
 
 assert (match(y) rec_a(x, y) -> x * y | rec_b(x, y = 2, z) -> x + z | rec_b(x, y, z = 4) -> y * 2) == 6;
-assert (match([1 2 3]) rec_a(x, y) -> x * y | [x y z] -> x + y + z) == 6;
-assert (match(x) rec_a(x, y) -> x * y | [x y z] -> x + y + z) == 20000;
+assert (match([1, 2, 3]) rec_a(x, y) -> x * y | [x, y, z] -> x + y + z) == 6;
+assert (match(x) rec_a(x, y) -> x * y | [x, y, z] -> x + y + z) == 20000;
 
-x = #{!name:!nemo !age:3};
-assert (match(x) #{!name:n !age:a} -> [n a]) == [!nemo 3];
-assert (match(x) #{!age:a !name:n} -> [n a]) == [!nemo 3];
-x = [!name:!nemo !age:3];
-assert (match(x) [!name:n !age:a] -> [n a]) == [!nemo 3];
-assert (match(x) [!age:a !name:n] -> [n a] | _ -> false) == false;
-assert (match(#{1:2 3:[1 2 3 4 5]}) [1:a 3:[1 b 3 c 5]] -> a * b * c | #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 8;
-assert (match([1:2 3:[1 2 3 4 5]]) [1:a 3:[1 b 3 c 5]] -> a * b * c | #{1:a 3:[1 b 3 c 5]} -> a+b+c) == 16;
+x = #{!name:!nemo, !age:3};
+assert (match(x) #{!name:n, !age:a} -> [n, a]) == [!nemo, 3];
+assert (match(x) #{!age:a, !name:n} -> [n, a]) == [!nemo, 3];
+x = [!name:!nemo, !age:3];
+assert (match(x) [!name:n, !age:a] -> [n, a]) == [!nemo, 3];
+assert (match(x) [!age:a, !name:n] -> [n, a] | _ -> false) == false;
+assert (match(#{1:2, 3:[1, 2, 3, 4, 5]}) [1:a, 3:[1, b, 3, c, 5]] -> a * b * c | #{1:a, 3:[1, b, 3, c, 5]} -> a+b+c) == 8;
+assert (match([1:2, 3:[1, 2, 3, 4, 5]]) [1:a, 3:[1, b, 3, c, 5]] -> a * b * c | #{1:a, 3:[1, b, 3, c, 5]} -> a+b+c) == 16;
 
 function u(a, b) if (a) b() else false;
 x = false;
@@ -151,6 +151,6 @@ words = [[string_upcase(w), string_downcase(w), string_length(w)] | w <- words];
 assert words == [["THE", "the", 3], ["QUICK", "quick", 5], ["BROWN", "brown", 5], ["FOX", "fox", 3], ["JUMPS", "jumps", 5], ["OVER", "over", 4], ["THE", "the", 3], ["LAZY", "lazy", 4], ["DOG", "dog", 3]];
 
 // partial application
-function deriv(f dx x) (f(x+dx) - f(x))/dx;
-let pf = partial(deriv, cos 1.5);
+function deriv(f, dx, x) (f(x+dx) - f(x))/dx;
+let pf = partial(deriv, cos, 1.5);
 assert pf(1e-10) == deriv(cos, 1.5, 1e-10);

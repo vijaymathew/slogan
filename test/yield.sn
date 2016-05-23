@@ -32,7 +32,7 @@ function cycle(seq)
      else { yield first(s);
             loop2(rest(s)) };
 
-iter = cycle([1 2]);
+iter = cycle([1, 2]);
 assert first(iter) == 1;
 iter = rest(iter);
 assert first(iter) == 2;

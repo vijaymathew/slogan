@@ -119,7 +119,7 @@
       (f64vector-ref v k)
       d))
 
-(define (array-accessor&mutator tab)
+(define (array-safe-accessor&mutator tab)
   (cond
     ((u8vector? tab) (scm-cons u8vector-safe-ref u8vector-set!))
     ((s8vector? tab) (scm-cons s8vector-safe-ref s8vector-set!))
@@ -131,6 +131,20 @@
     ((s64vector? tab) (scm-cons s64vector-safe-ref s64vector-set!))
     ((f32vector? tab) (scm-cons f32vector-safe-ref f32vector-set!))
     ((f64vector? tab) (scm-cons f64vector-safe-ref f64vector-set!))
+    (else #f)))
+
+(define (array-accessor&mutator tab)
+  (cond
+    ((u8vector? tab) (scm-cons u8vector-ref u8vector-set!))
+    ((s8vector? tab) (scm-cons s8vector-ref s8vector-set!))
+    ((u16vector? tab) (scm-cons u16vector-ref u16vector-set!))
+    ((s16vector? tab) (scm-cons s16vector-ref s16vector-set!))
+    ((u32vector? tab) (scm-cons u32vector-ref u32vector-set!))
+    ((s32vector? tab) (scm-cons s32vector-ref s32vector-set!))
+    ((u64vector? tab) (scm-cons u64vector-ref u64vector-set!))
+    ((s64vector? tab) (scm-cons s64vector-ref s64vector-set!))
+    ((f32vector? tab) (scm-cons f32vector-ref f32vector-set!))
+    ((f64vector? tab) (scm-cons f64vector-ref f64vector-set!))
     (else #f)))
 
 (define (list-set-at! xs n v)
@@ -169,7 +183,7 @@
            ((scm-cdr aam) tab key val)
            (error "Mutator not found for object - " tab))))))
 
-(define (map-access tab key default)
+(define (map-safe-access tab key default)
   (cond
    ((vector? tab)
     (vector-safe-ref tab key default))
@@ -178,25 +192,46 @@
    ((hashtable? tab)
     (hashtable_at tab key default))   
    ((list? tab)
-    (if (integer? key)
-        (with-exception-handler
-          (lambda (e) default)
-          (lambda () (list-ref tab key)))
-        (get key tab default)))
+    (get key tab default))
    ((%bitvector? tab)
     (if (< key (bitvector-length tab))
         (bitvector-set? tab key)
         default))
    (else
-    (let ((aam (array-accessor&mutator tab)))
+    (let ((aam (array-safe-accessor&mutator tab)))
       (if aam
           ((scm-car aam) tab key default)
           (error "Accessor not found for object - " tab))))))
 
-(define (@ tab key #!key (value *void*) (default #f))
+(define (ref tab key #!key (value *void*) (default #f))
   (if (scm-not (scm-eq? value *void*))
     (map-mutate tab key value)
-    (map-access tab key default)))
+    (map-safe-access tab key default)))
+
+(define (map-access tab key)
+  (cond
+   ((vector? tab)
+    (vector-ref tab key))
+   ((string? tab)
+    (string-ref tab key))
+   ((hashtable? tab)
+    (hashtable_at tab key))   
+   ((list? tab)
+    (get key tab))
+   ((%bitvector? tab)
+    (if (< key (bitvector-length tab))
+        (bitvector-set? tab key)
+        #f))
+   (else
+    (let ((aam (array-accessor&mutator tab)))
+      (if aam
+          ((scm-car aam) tab key)
+          (error "Accessor not found for object - " tab))))))
+
+(define (*-@-* tab key #!optional (value *void*))
+  (if (scm-not (scm-eq? value *void*))
+      (map-mutate tab key value)
+      (map-access tab key)))
 
 (define (do_times n fn #!key (from 0) init)
   (call/cc

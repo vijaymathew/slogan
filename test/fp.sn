@@ -1,95 +1,95 @@
 // Examples of higher-order programming.
 
-function iter(n f)
+function iter(n, f)
  if (n == 0) identity
  else compose(f, iter(n-1, f));
 
 assert iter(4, ^(x) x*x)(2) == 65536;
 
-function loop(p f x)
+function loop(p, f, x)
  if (p(x)) x
- else loop(p f f(x));
+ else loop(p, f, f(x));
 
-function dicho(f a b epsilon)
+function dicho(f, a, b, epsilon)
  let (is_ok = ^(x) | a:b -> abs(a-b) < epsilon
       do_better = ^(x) | a:b -> let (c = (a + b)/2.0)
                                   if (f(a) * f(c) >  0.0) c:b
                                   else a:c)
   loop(is_ok, do_better, a:b);
 
-function deriv(f dx x) (f(x+dx) - f(x))/dx;
+function deriv(f, dx, x) (f(x+dx) - f(x))/dx;
 
-function newton(f start dx epsilon)
+function newton(f, start, dx, epsilon)
  let (is_ok = ^(x) abs(f(x)) < epsilon
       do_better = ^(x)
                    let (fp = partial(deriv, f, dx))
                     x - f(x)/fp(x))
-  loop(is_ok do_better start);
+  loop(is_ok, do_better, start);
 
 assert floor(newton(cos, 1.5, 1e-10, 1e-10) * 2) == 3.;
 
-function sigma(f a b)
+function sigma(f, a, b)
  if (a > b) 0
- else f(a) + sigma(f a + 1 b);
+ else f(a) + sigma(f, a + 1, b);
 
-function summation(incr test op e f a)
+function summation(incr, test, op, e, f, a)
  if (test(a)) e
- else op(f(a) summation(incr test op e f incr(a)));
+ else op(f(a), summation(incr, test, op, e, f, incr(a)));
 
-function sum(op e f a b dx) summation(^(x) x + dx, ^(x) x > b, op e f a);
+function sum(op, e, f, a, b, dx) summation(^(x) x + dx, ^(x) x > b, op, e, f, a);
 
-function integrate(f a b dx) sum(add 0, ^(x) f(x) * dx, a b dx);
+function integrate(f, a, b, dx) sum(add, 0, ^(x) f(x) * dx, a, b, dx);
 
-assert integrate(^(x) 1./x, 1. 2. .001) == .6938972430599593;
+assert integrate(^(x) 1./x, 1., 2., .001) == .6938972430599593;
 
-function summation_int(op e f a b) summation(^(x) x + 1, ^(x) x > b, op e f a);
+function summation_int(op, e, f, a, b) summation(^(x) x + 1, ^(x) x > b, op, e, f, a);
 
-sigma = partial(summation_int add 0);
-let pi = partial(summation_int mult 1);
+sigma = partial(summation_int, add, 0);
+let pi = partial(summation_int, mult, 1);
 
-let fact = partial(pi identity 1);
+let fact = partial(pi, identity, 1);
 
 assert fact(10) == 3628800;
 
-assert sigma(^(n) 1. / fact(n), 0 20) == 2.718281828459045;
+assert sigma(^(n) 1. / fact(n), 0, 20) == 2.718281828459045;
 
 record complex(re_part:real, img_part:real);
 
-function complex_add(c1 c2) |
+function complex_add(c1, c2) |
  [complex(a, b), complex(c, d)] -> complex(re_part = a + c, img_part = b + d);
 
-let c = complex_add(complex(re_part = 10, img_part = 100) complex(re_part = 20, img_part = 200));
+let c = complex_add(complex(re_part = 10, img_part = 100), complex(re_part = 20, img_part = 200));
 assert complex_re_part(c) == 30;
 assert complex_img_part(c) == 300;
 
 function len(xs) fold_left(^(_, n) n + 1, 0, xs);
-assert len([1 20 3 40]) == 4;
+assert len([1, 20, 3, 40]) == 4;
 
 function apnd(xs, ys) fold_right(pair, ys, xs);
-assert apnd([1 2 3], [4 5 6]) == [1 2 3 4 5 6];
+assert apnd([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6];
 
-function rev(xs) fold_right(^(x, xs) apnd(xs [x]), [], xs);
-assert rev([1 2 3 4 5]) == [5 4 3 2 1];
+function rev(xs) fold_right(^(x, xs) apnd(xs, [x]), [], xs);
+assert rev([1, 2, 3, 4, 5]) == [5, 4, 3, 2, 1];
 
 function qsort(xs, order)
  match (xs)
     [] -> []
   | [x] -> [x]
   | x:xs ->
-     match(partition(partial(order x) xs))
+     match(partition(partial(order, x), xs))
       xs:ys -> append(qsort(ys, order), [x], qsort(xs, order));
 
-assert qsort([10 4 200 1 78 2], `<`) == [1, 2, 4, 10, 78, 200];
+assert qsort([10, 4, 200, 1, 78, 2], `<`) == [1, 2, 4, 10, 78, 200];
 
-function insert(order e xs)
+function insert(order, e, xs)
  match (xs)
     [] -> [e]
   | x:xs -> if (order(e, x)) e:x:xs
-            else x:insert(order e xs);
+            else x:insert(order, e, xs);
 
-function inssort(xs, order) fold_right(partial(insert order), [], xs);
+function inssort(xs, order) fold_right(partial(insert, order), [], xs);
 
-assert inssort([1 10 4 20 14] `<`) == [1, 4, 10, 14, 20];
+assert inssort([1, 10, 4, 20, 14], `<`) == [1, 4, 10, 14, 20];
 
 // Sets by unorderd lists
 function make_set(xs) |
@@ -97,21 +97,21 @@ function make_set(xs) |
  | x:xs -> x:make_set(remove(x, xs));
 
 function remove_from_set(e, xs) |
- [_ []] -> []
- | [e x:xs] where e == x -> xs
- | [_ x:xs] -> x:remove_from_set(e, xs);
+ [_, []] -> []
+ | [e, x:xs] where e == x -> xs
+ | [_, x:xs] -> x:remove_from_set(e, xs);
 
 function add_to_set(e, xs)
  if (member(e, xs)) xs
  else e:xs;
 
-function union(xs ys) fold_left(add_to_set, xs ys);
-function intersect(xs ys) filter(^(x) member(x, ys), xs);
+function union(xs, ys) fold_left(add_to_set, xs, ys);
+function intersect(xs, ys) filter(^(x) member(x, ys), xs);
 
-let s = make_set([1 2 3 2 1]);
-let r = make_set([1 4 3 1 5]);
-assert union(s r) == [5, 4, 1, 2, 3];
-assert intersect(s r) == [1, 3];
+let s = make_set([1, 2, 3, 2, 1]);
+let r = make_set([1, 4, 3, 1, 5]);
+assert union(s, r) == [5, 4, 1, 2, 3];
+assert intersect(s, r) == [1, 3];
 
 // Sets by ordered lists
 function is_member(order, e, xs)
@@ -127,7 +127,7 @@ add_to_set = ^(order, e, xs)
   | x:xs ->
      if (order(e, x)) e:x:xs
      else if (e == x) x:xs
-     else x:add_to_set(order e xs);
+     else x:add_to_set(order, e, xs);
 
 intersect = ^(xs, ys, order = `<`)
  match (xs:ys)
@@ -143,15 +143,15 @@ union = ^(xs, ys, order = `<`)
   []:ys -> ys
   | xs:[] -> xs
   | (x:xs):(y:ys) ->
-     if (x == y) x:union(xs ys order)
-     else if (order(x, y)) x:union(xs y:ys order)
-     else y:union(x:xs ys order);
+     if (x == y) x:union(xs, ys, order)
+     else if (order(x, y)) x:union(xs, y:ys, order)
+     else y:union(x:xs, ys, order);
 
 s = sort(s);
 r = sort(r);
-assert union(s r) == [1, 2, 3, 4, 5];
-assert union(r s) == [1, 2, 3, 4, 5];
-assert intersect(s r) == [1, 3];
-assert intersect(r s) == [1, 3];
+assert union(s, r) == [1, 2, 3, 4, 5];
+assert union(r, s) == [1, 2, 3, 4, 5];
+assert intersect(s, r) == [1, 3];
+assert intersect(r, s) == [1, 3];
   
   

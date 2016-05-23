@@ -1,7 +1,7 @@
-module tm (now, resolution
-           is_eq:time_is_eq
-           is_gt, is_lt, is_gteq, is_lteq)
-           
+module tm (now, resolution,
+           is_eq:time_is_eq,
+           is_gt, is_lt, is_gteq, is_lteq,
+           difference)           
 {
   // Types of time
   let TIME_TAI = !time_tai;
@@ -10,7 +10,7 @@ module tm (now, resolution
   let TIME_PROCESS = !time_process;
   let TIME_DURATION = !time_duration;
 
-  let nano = expt(10 9);
+  let nano = expt(10, 9);
   let sid = 86400;    // seconds in a day
   let sihd = 43200; // seconds in a half day
   let tai_epoch_in_jd = 4881175/2; // julian day number for 'the epoch'
@@ -23,7 +23,7 @@ module tm (now, resolution
          input = file_reader(filename))
       let loop (line = read_line(input), table = [])
        if (is_eof_object(line)) table
-       else let (data = read(string_reader(string_append("(" line ")"))))
+       else let (data = read(string_reader(string_append("(", line, ")"))))
              let (year = first(data), jd = nth(4, data), secs = nth(6, data))
                loop(read_line(input), if (year >= 1972) (convjd(jd):convsec(secs)):table
                                       else table);
@@ -32,32 +32,32 @@ module tm (now, resolution
   // note they go higher to lower, and end in 1972.
   // updated from ftp://maia.usno.navy.mil/ser7/tai-utc.dat in May-2016.
   let leap_second_table =
-  [1435708800:36
-   1341100800:35
-   1230768000:34
-   1136073600:33
-   915148800:32
-   867715200:31
-   820454400:30
-   773020800:29
-   741484800:28
-   709948800:27
-   662688000:26
-   631152000:25
-   567993600:24
-   489024000:23
-   425865600:22
-   394329600:21
-   362793600:20
-   315532800:19
-   283996800:18
-   252460800:17
-   220924800:16
-   189302400:15
-   157766400:14
-   126230400:13
-   94694400:12
-   78796800:11
+  [1435708800:36,
+   1341100800:35,
+   1230768000:34,
+   1136073600:33,
+   915148800:32,
+   867715200:31,
+   820454400:30,
+   773020800:29,
+   741484800:28,
+   709948800:27,
+   662688000:26,
+   631152000:25,
+   567993600:24,
+   489024000:23,
+   425865600:22,
+   394329600:21,
+   362793600:20,
+   315532800:19,
+   283996800:18,
+   252460800:17,
+   220924800:16,
+   189302400:15,
+   157766400:14,
+   126230400:13,
+   94694400:12,
+   78796800:11,
    63072000:10];
 
   function update_leap_second_table(filename) leap_second_table = read_tai_utc_data(filename);
@@ -73,12 +73,12 @@ module tm (now, resolution
    if (tai_seconds < lsmin) 0
    else or(tail(head(memp(^(lse) (tail(lse) <= tai_seconds - head(lse)), leap_second_table))), 0);
 
-  record ttime(type nanosecond second);
+  record ttime(type, nanosecond, second);
   let make_time = make_ttime;
 
   function copy_time(t)
-   ttime(type = ttime_type(t)
-         nanosecond = ttime_nanosecond(t)
+   ttime(type = ttime_type(t),
+         nanosecond = ttime_nanosecond(t),
          second = ttime_second(t));
 
   // These functions are used to decode the current system time encoded as a real number.
@@ -124,7 +124,7 @@ module tm (now, resolution
    else if (is_eq(clock_type, TIME_TAI)) current_time_tai()
    else if (is_eq(clock_type, TIME_MONOTONIC)) current_time_monotonic()
    else if (is_eq(clock_type, TIME_PROCESS)) current_time_process()
-   else error(!invalid_clock_type !current_time);
+   else error(!invalid_clock_type, !current_time);
 
   // Right now the gambit kernel supports only checking the resolution
   // of the monotonic clock, we just return that.
@@ -134,20 +134,48 @@ module tm (now, resolution
      u64array_at(v, 0) };
 
   // Time comparisons
-  function check_time_compare(time1 time2 caller)
+  function check_time_compare(time1, time2, caller)
    if (is_ttime(time1) && is_ttime(time2)
-       && is_eq(ttime_type(time1) ttime_type(time2))) true
-   else error(!incompatible_time_types caller);
+       && is_eq(ttime_type(time1), ttime_type(time2))) true
+   else error(!incompatible_time_types, caller);
 
   function time_to_nanos(t) ttime_second(t) * nano + ttime_nanosecond(t);
+  function nanos_to_time(time_type, nanoseconds)
+   make_time(time_type, remainder(nanoseconds, nanos), quotient(nanoseconds, nano));
+   
+  function time_cmpr(time1, time2, predic, caller)
+  { check_time_compare(time1, time2, caller);
+    predic(time_to_nanos(time1), time_to_nanos(time2)) };
 
-  function time_cmpr(time1 time2 predic caller)
-  { check_time_compare(time1 time2 caller);
-    predic(time_to_nanos(time1) time_to_nanos(time2)) };
+  function time_is_eq(time1, time2) time_cmpr(time1, time2, `==`, !time_is_eq);
+  function is_gt(time1, time2) time_cmpr(time1, time2, `>`, !time_is_gt);
+  function is_lt(time1, time2) time_cmpr(time1, time2, `<`, !time_is_lt);
+  function is_gteq(time1, time2) time_cmpr(time1, time2, `>=`, !time_is_gteq);
+  function is_lteq(time1, time2) time_cmpr(time1, time2, `<=`, !time_is_lteq);
 
-  function time_is_eq(time1 time2) time_cmpr(time1 time2 `==` !time_is_eq);
-  function is_gt(time1 time2) time_cmpr(time1 time2 `>` !time_is_gt);
-  function is_lt(time1 time2) time_cmpr(time1 time2 `<` !time_is_lt);
-  function is_gteq(time1 time2) time_cmpr(time1 time2 `>=` !time_is_gteq);
-  function is_lteq(time1 time2) time_cmpr(time1 time2 `<=` !time_is_lteq);
+// time arithmetic
+  function difference(time1, time2)
+  { check_time_compare(time1, time2, !difference);
+    let (n1 = time_to_nanos(time1),
+         n2 = time_to_nanos(time2))
+     if (n1 == n2) make_time(TIME_DURATION, 0., 0.)    
+     else let (n3 = n1 - n2)
+           make_time(TIME_DURATION, remainder(n3, nano), quotient(n3, nano)) };
+
+  function add_duration(time1, time_duration)
+  { when (not(is_eq(ttime_type(time_duration), TIME_DURATION)))
+     error(!invalid_duration, !add_duration);
+    let (n1 = time_to_nanos(time1),
+         n2 = time_to_nanos(time_duration))
+     else let (n3 = n1 + n2)
+           make_ttime(ttime_type(time1), remainder(n3, nano), quotient(n3, nano)) };
+
+  function subtract_duration(time1, time_duration)
+  { when (not(is_eq(ttime_type(time_duration), TIME_DURATION)))
+     error(!invalid_duration, !add_duration);
+    let (n1 = time_to_nanos(time1),
+         n2 = time_to_nanos(time_duration))
+     else let (n3 = n1 - n2)
+           make_ttime(ttime_type(time1), remainder(n3, nano), quotient(n3, nano)) };
+  
 };

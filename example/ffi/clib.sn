@@ -1,50 +1,50 @@
 let clib = ffi_open("./clib.so");
 declare ffi clib [
-    int add_i[int, int]
-    uint add_ui[uint, uint]
-    long add_l[long, long]
-    ulong add_ul[ulong, ulong]
-    int64 add_ll[int64, int64]
-    float add_f[float, float]
-    double add_d[double, double]
-    longdouble add_ld[longdouble, longdouble]
-    char add_c[char, char]
-    charstring say_hello[charstring]
+    int add_i[int, int],
+    uint add_ui[uint, uint],
+    long add_l[long, long],
+    ulong add_ul[ulong, ulong],
+    int64 add_ll[int64, int64],
+    float add_f[float, float],
+    double add_d[double, double],
+    longdouble add_ld[longdouble, longdouble],
+    char add_c[char, char],
+    charstring say_hello[charstring],
     
-    pointer alloc_person[charstring, int]
-    int person_age[pointer]
-    charstring person_name[pointer]
-    void free_person[pointer]
-    pointer clone_person[pointer]
+    pointer alloc_person[charstring, int],
+    int person_age[pointer],
+    charstring person_name[pointer],
+    void free_person[pointer],
+    pointer clone_person[pointer],
 
     // Dealing with nested structures:
-    pointer alloc_employee[pointer, float]
-    pointer employee_person[pointer]
-    float employee_salary[pointer]
-    void free_employee[pointer]
+    pointer alloc_employee[pointer, float],
+    pointer employee_person[pointer],
+    float employee_salary[pointer],
+    void free_employee[pointer],
 
     // Directly mapping to C structures.
     // On a 64bit compiler, 12-byte padding is required.
-    struct person[int:age, int:pad1, int:pad2, int:pad3, charstring:name]
+    struct person[int:age, int:pad1, int:pad2, int:pad3, charstring:name],
     
-    struct point[int:x, int:y]
-    point make_point[int, int]
+    struct point[int:x, int:y],
+    point make_point[int, int],
     void print_point[point]
 ];
 
 say_hello("hello from slogan!");
-showln(add_i(10 20)); // => 30
+showln(add_i(10, 20)); // => 30
 showln(add_i(10, -20)); // => -10
-showln(add_ui(10 20)); // => 30
+showln(add_ui(10, 20)); // => 30
 showln(add_ui(10, -20)); // => xxxxxxx
-showln(add_l(10 20)); // => 30
-showln(add_ul(10 20)); // => 30
+showln(add_l(10, 20)); // => 30
+showln(add_ul(10, 20)); // => 30
 showln(add_ul(10, -20)); // => xxxxxxxx
-showln(add_ll(10 20)); // => 30
-showln(add_f(10.2 20.3)); // => 30.5
-showln(add_d(10.2 20.3)); // => 30.5
-showln(add_ld(10.2 20.3)); // => 30.5
-showln(add_c(60 65)); // => 125
+showln(add_ll(10, 20)); // => 30
+showln(add_f(10.2, 20.3)); // => 30.5
+showln(add_d(10.2, 20.3)); // => 30.5
+showln(add_ld(10.2, 20.3)); // => 30.5
+showln(add_c(60, 65)); // => 125
 
 // Functions that return and take pointers to structs:
 let p = alloc_person("tom", 30);
@@ -80,7 +80,7 @@ showln(c_struct_get(p, !x)); // => 100
 showln(c_struct_get(p, !y)); // => 340
 
 // Create a c_struct instance in Slogan and pass it to a C function:
-let pp = c_struct_instance(!point, [10 20]);
+let pp = c_struct_instance(!point, [10, 20]);
 print_point(pp); // => 10:20
 
 ffi_close(clib);

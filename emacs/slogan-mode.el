@@ -3,7 +3,7 @@
 (setq slogan-keywords '("^" "function" "method" "record"
                        "if" "else" "when" "let" "letseq" "letrec" "yield"
                        "case" "match" "where" "try" "trycc" "catch" "finally"
-                       "module" "declare" "generic" "ffi" "assert"))
+                       "module" "declare" "generic" "assert"))
 
 (setq slogan-constants '("true" "false" "and" "or"))
 
