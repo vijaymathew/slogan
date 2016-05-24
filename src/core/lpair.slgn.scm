@@ -32,6 +32,7 @@
       (scm-force (tail lpair))))
 
 (define first scm-first)
+
 (define rest scm-rest)
 
 (define (is_lpair obj)
@@ -43,24 +44,27 @@
       (scm-first lpair)
       (lpair-at (- i 1) (scm-rest lpair))))
 
-(define (nth n seq) 
+(define (scm-nth n seq) 
   (if (<= n 0)
       (scm-first seq)
-      (nth (- n 1) (scm-rest seq))))
+      (scm-nth (- n 1) (scm-rest seq))))
 
-(define (nth_tail n seq)
+(define (scm-nth_tail n seq)
   (if (<= n 0) (scm-force seq)
-      (nth_tail (- n 1) (scm-rest seq))))
+      (scm-nth_tail (- n 1) (scm-rest seq))))
       
-(define (second seq) (nth 1 seq))
-(define (third seq) (nth 2 seq))
-(define (fourth seq) (nth 3 seq))
-(define (fifth seq) (nth 4 seq))
-(define (sixth seq) (nth 5 seq))
-(define (seventh seq) (nth 6 seq))
-(define (eighth seq) (nth 7 seq))
-(define (ninth seq) (nth 8 seq))
-(define (tenth seq) (nth 9 seq))
+(define (second seq) (scm-nth 1 seq))
+(define (third seq) (scm-nth 2 seq))
+(define (fourth seq) (scm-nth 3 seq))
+(define (fifth seq) (scm-nth 4 seq))
+(define (sixth seq) (scm-nth 5 seq))
+(define (seventh seq) (scm-nth 6 seq))
+(define (eighth seq) (scm-nth 7 seq))
+(define (ninth seq) (scm-nth 8 seq))
+(define (tenth seq) (scm-nth 9 seq))
+
+(define nth scm-nth)
+(define nth_tail scm-nth_tail)
 
 (define old-map map)
 

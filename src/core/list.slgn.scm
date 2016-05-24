@@ -303,14 +303,14 @@
                 (scm-cons ,result-expr *comprehension-result*)))
         (scm-append 
          expr-acc 
-         `(let *comprehension-loop* ((*list* ,(first lists)))
+         `(let *comprehension-loop* ((*list* ,(scm-first lists)))
             (if (scm-not (null? *list*))
-                (let ((,(first vars) (first *list*)))
-                  (if ,(first filters)
+                (let ((,(scm-first vars) (scm-first *list*)))
+                  (if ,(scm-first filters)
                       ,(mk-comprehension-loop 
-                        (rest lists) (rest vars) 
-                        (rest filters) result-expr))
-                  (*comprehension-loop* (rest *list*)))))))))
+                        (scm-rest lists) (scm-rest vars) 
+                        (scm-rest filters) result-expr))
+                  (*comprehension-loop* (scm-rest *list*)))))))))
 
 (define (list-comprehension lists vars filters result-expr)
   `(let ((*comprehension-result* (list)))
