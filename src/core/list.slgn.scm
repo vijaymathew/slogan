@@ -18,8 +18,7 @@
       (scm-cdr seq)
       #f))
 
-(define (is_empty seq)
-  (null? seq))
+(define is_empty null?)
 
 (define (at i seq)
   (list-ref seq i))

@@ -92,3 +92,36 @@ assert join([1, 2, 3], 43) == [[1, 2, 3], 43];
 let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, ^(x) x+i)];
 let primes = [x | x <- range(2, 50) where not(memq(x, noprimes))];
 assert primes == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+
+// Slices
+let s = "hello world";
+assert s[1:5] == substring(s, 1, 5);
+assert s[:] == s;
+assert s[:5] == s[0:5];
+assert s[0:] == s[:];
+s = #b[1, 0, 0, 0, 1, 1, 1];
+assert s[0:3] == #b[1, 0, 0];
+assert s[:] == s;
+assert s[:5] == s[0:5];
+assert s[0:] == s[:];
+
+function test_array_slices(a, real = false)
+{ assert a[2:3][0] == if (real) 3. else 3;
+  assert a[0:3][1] == if (real) 2. else 2;
+  assert a[:] == a;
+  assert a[:2] == a[0:2];
+  assert a[0:] == a[:] };
+
+test_array_slices(#[1,2,3,4,5]);
+test_array_slices(#u8[1,2,3,4,5]);
+test_array_slices(#s8[1,2,3,4,5]);
+test_array_slices(#u16[1,2,3,4,5]);
+test_array_slices(#s16[1,2,3,4,5]);
+test_array_slices(#u32[1,2,3,4,5]);
+test_array_slices(#s32[1,2,3,4,5]);
+test_array_slices(#u64[1,2,3,4,5]);
+test_array_slices(#s64[1,2,3,4,5]);
+test_array_slices(#f32[1.,2.,3.,4.,5.], true);
+test_array_slices(#f64[1.,2.,3.,4.,5.], true);
+
+
