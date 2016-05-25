@@ -2,21 +2,28 @@
 
 (define is_list list?)
 (define is_pair pair?)
-(define (is_atom x) (and (scm-not (pair? x))
-                         (scm-not (null? x))))
+
+(define (atom? x)
+  (and (scm-not (pair? x))
+       (scm-not (null? x))))
+
+(define is_atom atom?)
 
 (define (pair a b)
   (scm-cons a b))
 
-(define (head seq)
+(define (scm-head seq)
   (if (pair? seq)
       (scm-car seq)
       #f))
 
-(define (tail seq) 
+(define (scm-tail seq) 
   (if (pair? seq)
       (scm-cdr seq)
       #f))
+
+(define head scm-head)
+(define tail scm-tail)
 
 (define is_empty null?)
 
@@ -27,6 +34,17 @@
   (let ((mapping (scm-assoc key seq)))
     (if mapping (scm-cdr mapping) deflaut)))        
 
+(define (set-at n v xs)
+  (if (or (null? xs) (< n 0))
+      xs
+      (let loop ((n n) (ys xs) (rs '()))
+        (cond
+         ((null? ys) xs)
+         ((= n 0)
+          (scm-append (scm-reverse (scm-cons v rs)) (if (null? ys) ys (scm-cdr ys))))
+         (else
+          (loop (- n 1) (scm-cdr ys) (scm-cons (scm-car ys) rs)))))))
+      
 (define set_head set-car!)
 (define set_tail set-cdr!)
 (define list_to_string list->string)
@@ -94,43 +112,44 @@
                          test))))
 
 (define (+merge+ xs ys test) 
-  (cond ((and (is_empty xs) 
-              (scm-not (is_empty ys)))
+  (cond ((and (null? xs) 
+              (scm-not (null? ys)))
          ys)
-        ((and (is_empty ys) 
-              (scm-not (is_empty xs)))
+        ((and (null? ys) 
+              (scm-not (null? xs)))
          xs) 
-        ((test (head xs) (head ys))
-         (scm-cons (head xs) 
-               (+merge+ (tail xs) ys test)))
+        ((test (scm-head xs) (scm-head ys))
+         (scm-cons (scm-head xs) 
+               (+merge+ (scm-tail xs) ys test)))
         (else 
-         (scm-cons (head ys) (+merge+ xs (tail ys) test)))))
+         (scm-cons (scm-head ys) (+merge+ xs (scm-tail ys) test)))))
 
 (define (+split+ xs)
   (letrec ((split_helper 
             (lambda (xs ys zs) 
-              (cond ((is_empty xs) 
+              (cond ((null? xs) 
                      (scm-cons ys zs))
                     ((eqv? (scm-length xs) 1) 
-                     (scm-cons (scm-cons (head xs) ys) zs))
+                     (scm-cons (scm-cons (scm-head xs) ys) zs))
                     (else (split_helper 
-                           (tail (tail xs)) 
-                           (scm-cons (head xs) ys) 
-                           (scm-cons (head (tail xs)) zs)))))))
+                           (scm-tail (scm-tail xs)) 
+                           (scm-cons (scm-head xs) ys) 
+                           (scm-cons (scm-head (scm-tail xs)) zs)))))))
     (split_helper xs '() '())))
 
 (define (mergesort xs #!optional (test <))
-  (if (or (is_empty xs) (eqv? (scm-length xs) 1)) xs 
+  (if (or (null? xs) (eqv? (scm-length xs) 1)) xs 
       (let ((parts (+split+ xs))) 
-        (+merge+ (mergesort (head parts) test) 
-                 (mergesort (tail parts) test) test))))
+        (+merge+ (mergesort (scm-head parts) test) 
+                 (mergesort (scm-tail parts) test) test))))
 
-(define (sort ls #!optional (test <) (type 'quick))
+(define (scm-sort ls #!optional (test <) (type 'quick))
   (case type
     ((quick) (quicksort ls test))
     ((merge) (mergesort ls test))
     (else (error "sorting algorithm not implemented. " type))))
 
+(define sort scm-sort)
 ;; 
 
 (define (copy_list lst)
@@ -140,7 +159,7 @@
       (scm-cons (scm-car lst) (scm-cdr lst))
       (let loop ((lst lst) (result '()))
         (cond ((null? lst) (scm-reverse result))
-              ((is_atom lst) (scm-reverse (scm-cons lst result)))
+              ((atom? lst) (scm-reverse (scm-cons lst result)))
               (else (loop (scm-cdr lst) (scm-cons (scm-car lst) result)))))))
 
 (define (list_of fill-with n)
@@ -174,7 +193,7 @@
 	  (else (loop (scm-cdr ls) 
 		      (+ pos 1))))))
 
-(define (sublist ls #!key (start 0) (end (scm-length ls)))
+(define (scm-sublist ls #!key (start 0) (end (scm-length ls)))
   (let loop ((ls ls)
 	     (i 0)
 	     (result '()))
@@ -187,6 +206,8 @@
 	  (else (loop (scm-cdr ls)
 		      (+ i 1)
 		      result)))))	  
+
+(define sublist scm-sublist)
 
 (define (assp predic ls #!key default)
   (let loop ((ls ls))
@@ -270,8 +291,7 @@
 	      (scm-apply f (%cars+ lists (recur cdrs))))))
       (let recur ((ls ls))
 	(if (null? ls) obj
-	    (let ((head (scm-car ls)))
-	      (f head (recur (scm-cdr ls))))))))
+            (f (scm-car ls) (recur (scm-cdr ls)))))))
 ;; :~
 
 (define (range start end #!optional (next inc) (cmpr <=))

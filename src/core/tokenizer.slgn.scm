@@ -274,7 +274,7 @@
                      (if n n
                          (tokenizer-error "read-number failed. invalid number format.")))))))
     (let ((c (port-pos-peek-char port)))
-      (if (char=? c #\i)
+      (if (and (char? c) (char=? c #\i))
           (begin (port-pos-read-char! port)
                  (make-rectangular 0 num))
           num))))

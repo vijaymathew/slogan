@@ -23,12 +23,12 @@ assert first(iter) == 15;
 function cycle(seq)
   let (saved = 
     let loop (seq = seq, saved = [])
-     if (is_empty(seq)) reverse(saved)
+     if (not(seq)) reverse(saved)
      else { yield first(seq);
             loop(rest(seq), first(seq):saved) })
    let loop()
     let loop2(s = saved)
-     if (is_empty(s)) loop()
+     if (not(s)) loop()
      else { yield first(s);
             loop2(rest(s)) };
 

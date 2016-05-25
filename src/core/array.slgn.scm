@@ -52,14 +52,6 @@
 (define subarray_move subvector-move!)
 (define array_shrink vector-shrink!)
 
-(define (array_sort arr #!optional (test <) (type 'quick))
-  (let ((s (sort (vector->list arr) test type))
-        (len (vector-length arr)))
-    (let loop ((s s) (i 0))
-      (if (null? s) arr
-          (begin (vector-set! arr i (scm-car s))
-                 (loop (scm-cdr s) (+ i 1)))))))
-
 (define (vector-map f vec . vectors)
   (if (scm-not (null? vectors))
       (assert-equal-lengths vec vectors vector-length))
@@ -262,6 +254,7 @@
 (define (generic-array-length tab)
   (cond ((string? tab) (string-length tab))
         ((vector? tab) (vector-length tab))
+        ((list? tab) (scm-length tab))
         ((%bitvector? tab) (%bitvector-size tab))
         ((u8vector? tab) (u8vector-length tab))
         ((s8vector? tab) (s8vector-length tab))

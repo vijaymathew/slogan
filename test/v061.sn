@@ -40,19 +40,9 @@ assert s[4] == 'x';
 assert s == "hallx world";
 
 s = [!a:1, !b:2];
-assert ref(s, !a) == 1;
-assert ref(s, !b) == 2;
-assert ref(s, !c, default = 100) == 100;
-ref(s, !c, value = 200);
-ref(s, !a, value = 1000);
-assert ref(s, !a) == 1000;
-assert ref(s, !b) == 2;
-assert ref(s, !c) == 200;
-ref(s, !b, value = 2000);
-assert ref(s, !b) == 2000;
-assert s[!b] == 2000;
-s[!b] = 10;
-assert s[!b] == 10;
+assert get(!a, s) == 1;
+assert get(!b, s) == 2;
+assert get(!c, s, 100) == 100;
 
 s = #{1:2, 3:4};
 assert ref(s, 1) == 2;

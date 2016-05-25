@@ -119,8 +119,14 @@
       (f64vector-ref v k)
       d))
 
+(define (sublist-helper xs start end)
+  (scm-sublist xs start: start end: end))
+
+(define (scm-nth-helper xs n) (scm-nth n xs))
+
 (define *array-accessors*
   (scm-list (scm-cons 'vector (scm-cons subvector vector-ref))
+            (scm-cons 'list (scm-cons sublist-helper scm-nth-helper))
             (scm-cons 'string (scm-cons substring string-ref))
             (scm-cons 'bitvector (scm-cons subbitarray bitvector-set?))
             (scm-cons 'u8vector (scm-cons subu8vector u8vector-ref))
@@ -154,10 +160,7 @@
    ((hashtable? tab)
     (hashtable_set tab key val))   
    ((list? tab)
-    (let ((entry (scm-assoc key tab)))
-      (if entry
-          (set-cdr! entry val)
-          (set-cdr! tab (scm-cons (scm-cons key val) (scm-cdr tab))))))
+    (set-at key val tab))
    ((%bitvector? tab)
     (if val
         (bitvector-set! tab key)
@@ -194,7 +197,9 @@
    ((hashtable? tab)
     (hashtable_at tab key default))   
    ((list? tab)
-    (get key tab default))
+    (if (< key (scm-length tab))
+        (scm-nth key tab)
+        default))
    ((%bitvector? tab)
     (if (< key (bitvector-length tab))
         (bitvector-set? tab key)
@@ -236,7 +241,7 @@
    ((hashtable? tab)
     (hashtable_at tab key))   
    ((list? tab)
-    (get key tab))
+    (array-accessor 'list tab key))
    ((%bitvector? tab)
     (array-accessor 'bitvector tab key))
    ((u8vector? tab)

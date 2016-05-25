@@ -154,3 +154,102 @@ assert words == [["THE", "the", 3], ["QUICK", "quick", 5], ["BROWN", "brown", 5]
 function deriv(f, dx, x) (f(x+dx) - f(x))/dx;
 let pf = partial(deriv, cos, 1.5);
 assert pf(1e-10) == deriv(cos, 1.5, 1e-10);
+
+// contracts for functions
+function precheck(x, y) is_integer(x) && x > 10 && is_integer(y) && y > 0;
+
+function a(x, y) where precheck(x, y) -> is_integer(%)
+ if (x == 20) "ok"
+ else x * y;
+ 
+assert (try a(1, 2) catch(e) error_message(e)) == !precondition_failed;
+assert a(11, 2) == 22;
+assert (try a(20, 2) catch(e) error_message(e)) == !postcondition_failed;
+
+disable_function_contracts();
+assert (try a(1, 2) catch(e) error_message(e)) == 2;
+assert a(11, 2) == 22;
+assert (try a(20, 2) catch(e) error_message(e)) == "ok";
+enable_function_contracts();
+
+disable_asserts();
+assert (try a(1, 2) catch(e) error_message(e)) <> !precondition_failed;
+assert a(11, 2) <> 22;
+assert (try a(20, 2) catch(e) error_message(e)) <> !postcondition_failed;
+enable_asserts();
+
+function b(x, y) where precheck(x, y)
+ if (x == 20) "ok"
+ else x * y;
+
+assert (try b(1, 2) catch(e) error_message(e)) == !precondition_failed;
+assert b(11, 2) == 22;
+assert (try b(20, 2) catch(e) e) == "ok";
+
+function is_palindrome(s)
+{ let chars = string_to_list("abcdefghijklmnopqrstuvwxyz");
+
+  function to_chars(s)
+   list_to_string(filter(^(c) member(c, chars),
+                  string_to_list(string_downcase(s))));
+
+  function is_pal(s)
+   let (len = string_length(s))
+    if (len <= 1) true
+    else s[0] == s[len-1] && is_pal(s[1:len-1]);
+
+   is_pal(to_chars(s)) };
+
+assert not(is_palindrome("abc"));
+assert is_palindrome("a");
+assert is_palindrome("aba");
+assert is_palindrome("malayalam");
+assert is_palindrome("");
+
+function is_palindrome2(s) where is_string(s)
+{ let chars = string_to_list("abcdefghijklmnopqrstuvwxyz");
+
+  function to_chars(s)
+   list_to_string(filter(^(c) member(c, chars),
+                  string_to_list(string_downcase(s))));
+
+  function is_pal(s)
+   let (len = string_length(s))
+    if (len <= 1) true
+    else s[0] == s[len-1] && is_pal(s[1:len-1]);
+
+   is_pal(to_chars(s)) };
+
+assert not(is_palindrome2("abc"));
+assert is_palindrome2("a");
+assert is_palindrome2("aba");
+assert is_palindrome2("malayalam");
+assert is_palindrome2("");
+assert try is_palindrome2(121) catch (e) error_message(e) == !precondition_failed;
+
+function is_palindrome3(s) where is_string(s) -> is_boolean(%)
+{ let chars = string_to_list("abcdefghijklmnopqrstuvwxyz");
+
+  function to_chars(s)
+   list_to_string(filter(^(c) member(c, chars),
+                  string_to_list(string_downcase(s))));
+
+  function is_pal(s)
+   let (len = string_length(s))
+    if (len <= 1) true
+    else s[0] == s[len-1] && is_pal(s[1:len-1]);
+
+   if (s == "") 1
+   else is_pal(to_chars(s)) };
+
+assert not(is_palindrome3("abc"));
+assert is_palindrome3("a");
+assert is_palindrome3("aba");
+assert is_palindrome3("malayalam");
+assert try is_palindrome3("") catch(e) error_message(e) == !postcondition_failed;
+assert try is_palindrome3(121) catch (e) error_message(e) == !precondition_failed;
+
+let t1 = [1, "two", 3];
+let t2 = [t1, 3.25];
+assert append(t1, t2)[3] == [1, "two", 3];
+assert append(t1, t2)[2:5] == [3, [1, "two", 3], 3.25];

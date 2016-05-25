@@ -24,16 +24,18 @@
 ;; Functions for working with sequences.
 ;; A sequence can be either a normal list or a lazy-pair.
 
-(define (scm-first lpair) (head lpair))
+(define (scm-first lpair) (scm-head lpair))
 
 (define (scm-rest lpair)
   (if (is_iterator lpair)
       (iter-next lpair)
-      (scm-force (tail lpair))))
+      (scm-force (scm-tail lpair))))
 
 (define first scm-first)
 
-(define rest scm-rest)
+(define (rest lpair)
+  (let ((r (scm-rest lpair)))
+    (if (null? r) #f r)))
 
 (define (is_lpair obj)
   (and (pair? obj)
