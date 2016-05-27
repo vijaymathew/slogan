@@ -155,7 +155,7 @@
     (let ((generic-expr
 	   `(define ,name 
 	      (lambda ,params
-	      (error "Method not defined.")))))
+	      (error 'method_not_defined)))))
       (if (scm-eq? (tokenizer 'peek) '*pipe*)
 	  `(begin ,generic-expr ,@(generic-cases-expr tokenizer name params))
 	  generic-expr))))
@@ -612,7 +612,7 @@
                            (*result* '*unbound*))
                        ,@(scm-reverse body)
                        (if (unbound? *result*)
-                           (error "No match found.")
+                           (error 'no_match_found)
                            *result*)))
         (let ((pattern (pattern-expression tokenizer))
               (guard #t))
