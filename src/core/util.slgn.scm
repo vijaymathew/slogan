@@ -187,18 +187,34 @@
   (scm-display prefix port)
   (slgn-display-list (tolist a) port))
 
+(define *special-chars* '(#\newline #\space #\tab #\return
+                          #\backspace #\alarm #\vtab #\esc
+                          #\delete #\nul))
+
 (define (slgn-display-char c port)
-  (scm-display "'" port)
+  (scm-display '! port)  
   (with-exception-catcher
    (lambda (ex)
-     (let ((s (with-output-to-string
+     (let* ((s (with-output-to-string
                 '()
-                (lambda () (scm-write c)))))
-       (if (char=? #\# (string-ref s 0))
-           (scm-display (substring s 1 (string-length s)) port)
+                (lambda () (scm-write c))))
+            (len (string-length s))
+            (subsi (if (> len 2)
+                       (if (char=? #\# (string-ref s 0))
+                           (if (char=? #\\ (string-ref s 1))
+                               2
+                               1)
+                           #f)
+                       #f)))
+       (if subsi
+           (scm-display (scm-substring s subsi len) port)
            (scm-display s port))))
-   (lambda () (scm-print port: port c)))
-  (scm-display "'" port))
+   (lambda ()
+     (if (scm-member c *special-chars*)
+         (scm-display (let ((s (with-output-to-string '() (lambda () (scm-write c)))))
+                        (scm-substring s 2 (string-length s)))
+                      port)
+         (scm-display (scm-string c) port)))))
 
 (define (slgn-display-task port)
   (slgn-display-special-obj "task" port))

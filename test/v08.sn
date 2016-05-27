@@ -49,7 +49,7 @@ assert is_subset(#(2, 5), #(1, 2, 3, 4)) == false;
 
 assert is_set(set([1, 2, 3, 4, 5]));
 assert is_set(set(#[1, 2, 3, 4, 5]));
-assert set_union(#('a', 'b'), set("cd")) == #('a', 'b', 'c', 'd');
+assert set_union(#(!a, !b), set("cd")) == #(!a, !b, !c, !d);
 assert set_intersection(set([1, 2, 3]), set(#[2, 3])) == #(2, 3);
 
 function cabs(a) sqrt(expt(real_part(a), 2) + expt(imag_part(a), 2));

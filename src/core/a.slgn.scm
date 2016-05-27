@@ -57,3 +57,6 @@
 (define scm-rvar #f)
 (define scm-rbind #f)
 (define scm-rget #f)
+
+(define scm-string string)
+(define scm-substring substring)

@@ -109,12 +109,12 @@ assert (match(y) rec_a(x, y) -> x * y | rec_b(x, y = 2, z) -> x + z | rec_b(x, y
 assert (match([1, 2, 3]) rec_a(x, y) -> x * y | [x, y, z] -> x + y + z) == 6;
 assert (match(x) rec_a(x, y) -> x * y | [x, y, z] -> x + y + z) == 20000;
 
-x = #{!name:!nemo, !age:3};
-assert (match(x) #{!name:n, !age:a} -> [n, a]) == [!nemo, 3];
-assert (match(x) #{!age:a, !name:n} -> [n, a]) == [!nemo, 3];
-x = [!name:!nemo, !age:3];
-assert (match(x) [!name:n, !age:a] -> [n, a]) == [!nemo, 3];
-assert (match(x) [!age:a, !name:n] -> [n, a] | _ -> false) == false;
+x = #{'name:'nemo, 'age:3};
+assert (match(x) #{'name:n, 'age:a} -> [n, a]) == ['nemo, 3];
+assert (match(x) #{'age:a, 'name:n} -> [n, a]) == ['nemo, 3];
+x = ['name:'nemo, 'age:3];
+assert (match(x) ['name:n, 'age:a] -> [n, a]) == ['nemo, 3];
+assert (match(x) ['age:a, 'name:n] -> [n, a] | _ -> false) == false;
 assert (match(#{1:2, 3:[1, 2, 3, 4, 5]}) [1:a, 3:[1, b, 3, c, 5]] -> a * b * c | #{1:a, 3:[1, b, 3, c, 5]} -> a+b+c) == 8;
 assert (match([1:2, 3:[1, 2, 3, 4, 5]]) [1:a, 3:[1, b, 3, c, 5]] -> a * b * c | #{1:a, 3:[1, b, 3, c, 5]} -> a+b+c) == 16;
 
@@ -162,9 +162,9 @@ function a(x, y) where precheck(x, y) -> is_integer(%)
  if (x == 20) "ok"
  else x * y;
  
-assert (try a(1, 2) catch(e) error_message(e)) == !precondition_failed;
+assert (try a(1, 2) catch(e) error_message(e)) == 'precondition_failed;
 assert a(11, 2) == 22;
-assert (try a(20, 2) catch(e) error_message(e)) == !postcondition_failed;
+assert (try a(20, 2) catch(e) error_message(e)) == 'postcondition_failed;
 
 disable_function_contracts();
 assert (try a(1, 2) catch(e) error_message(e)) == 2;
@@ -173,16 +173,16 @@ assert (try a(20, 2) catch(e) error_message(e)) == "ok";
 enable_function_contracts();
 
 disable_asserts();
-assert (try a(1, 2) catch(e) error_message(e)) <> !precondition_failed;
+assert (try a(1, 2) catch(e) error_message(e)) <> 'precondition_failed;
 assert a(11, 2) <> 22;
-assert (try a(20, 2) catch(e) error_message(e)) <> !postcondition_failed;
+assert (try a(20, 2) catch(e) error_message(e)) <> 'postcondition_failed;
 enable_asserts();
 
 function b(x, y) where precheck(x, y)
  if (x == 20) "ok"
  else x * y;
 
-assert (try b(1, 2) catch(e) error_message(e)) == !precondition_failed;
+assert (try b(1, 2) catch(e) error_message(e)) == 'precondition_failed;
 assert b(11, 2) == 22;
 assert (try b(20, 2) catch(e) e) == "ok";
 
@@ -225,7 +225,7 @@ assert is_palindrome2("a");
 assert is_palindrome2("aba");
 assert is_palindrome2("malayalam");
 assert is_palindrome2("");
-assert try is_palindrome2(121) catch (e) error_message(e) == !precondition_failed;
+assert try is_palindrome2(121) catch (e) error_message(e) == 'precondition_failed;
 
 function is_palindrome3(s) where is_string(s) -> is_boolean(%)
 { let chars = string_to_list("abcdefghijklmnopqrstuvwxyz");
@@ -246,8 +246,8 @@ assert not(is_palindrome3("abc"));
 assert is_palindrome3("a");
 assert is_palindrome3("aba");
 assert is_palindrome3("malayalam");
-assert try is_palindrome3("") catch(e) error_message(e) == !postcondition_failed;
-assert try is_palindrome3(121) catch (e) error_message(e) == !precondition_failed;
+assert try is_palindrome3("") catch(e) error_message(e) == 'postcondition_failed;
+assert try is_palindrome3(121) catch (e) error_message(e) == 'precondition_failed;
 
 let t1 = [1, "two", 3];
 let t2 = [t1, 3.25];

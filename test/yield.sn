@@ -1,14 +1,14 @@
 function f()
-{ yield 'a';
-  yield 'b';
-  yield 'c' };
+{ yield !a;
+  yield !b;
+  yield !c };
 
 let iter = f();
-assert first(iter) == 'a';
+assert first(iter) == !a;
 iter = rest(iter);
-assert first(iter) == 'b';
+assert first(iter) == !b;
 iter = rest(iter);
-assert first(iter) == 'c';
+assert first(iter) == !c;
 
 function count(start = 0, step = 1)
   let loop (n = start)
