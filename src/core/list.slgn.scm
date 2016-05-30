@@ -193,20 +193,7 @@
 	  (else (loop (scm-cdr ls) 
 		      (+ pos 1))))))
 
-(define (scm-sublist ls #!key (start 0) (end (scm-length ls)))
-  (let loop ((ls ls)
-	     (i 0)
-	     (result '()))
-    (cond ((or (null? ls) (= i end))
-	   (scm-reverse result))
-	  ((>= i start)
-	   (loop (scm-cdr ls)
-		 (+ i 1)
-		 (scm-cons (scm-car ls) result)))
-	  (else (loop (scm-cdr ls)
-		      (+ i 1)
-		      result)))))	  
-
+;; defined in extn.slgn.scm
 (define sublist scm-sublist)
 
 (define (assp predic ls #!key default)
@@ -240,7 +227,8 @@
 (define (for_all f ls . more)
   (if (scm-not (null? more)) 
       (assert-equal-lengths ls more))
-  (or (null? ls)
+  (if (null? ls)
+      #f
       (let for-all ((x (scm-car ls)) (ls (scm-cdr ls)) (more more))
         (if (null? ls)
             (scm-apply f x (scm-map scm-car more))

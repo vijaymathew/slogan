@@ -254,3 +254,15 @@
 
 (define (inc n) (+ n 1))
 (define (dec n) (- n 1))
+
+(define (safe-< a b)
+  (if (< a b) b #f))
+
+(define (safe-> a b)
+  (if (> a b) b #f))
+
+(define (safe-<= a b)
+  (if (<= a b) b #f))
+
+(define (safe->= a b)
+  (if (>= a b) b #f))

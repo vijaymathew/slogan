@@ -1481,16 +1481,16 @@
   (swap-operands (scm-cons '<> (scm-list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
-  (swap-operands (scm-cons '< (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'safe-< (scm-list (addsub-expr tokenizer)))))
 
 (define (lteq-expr tokenizer)
-  (swap-operands (scm-cons '<= (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'safe-<= (scm-list (addsub-expr tokenizer)))))
 
 (define (gt-expr tokenizer)
-  (swap-operands (scm-cons '> (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'safe-> (scm-list (addsub-expr tokenizer)))))
 
 (define (gteq-expr tokenizer)
-  (swap-operands (scm-cons '>= (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'safe->= (scm-list (addsub-expr tokenizer)))))
 
 (define (and-expr tokenizer)
   (swap-operands (scm-cons 'and (scm-list (logical-or-expr tokenizer)))))

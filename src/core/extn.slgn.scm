@@ -119,14 +119,25 @@
       (f64vector-ref v k)
       d))
 
-(define (sublist-helper xs start end)
-  (scm-sublist xs start: start end: end))
-
 (define (scm-nth-helper xs n) (scm-nth n xs))
+
+(define (scm-sublist ls #!optional (start 0) (end (scm-length ls)))
+  (let loop ((ls ls)
+             (i 0)
+             (result '()))
+    (cond ((or (null? ls) (= i end))
+           (scm-reverse result))
+          ((>= i start)
+           (loop (scm-cdr ls)
+                 (+ i 1)
+                 (scm-cons (scm-car ls) result)))
+          (else (loop (scm-cdr ls)
+                      (+ i 1)
+                      result)))))
 
 (define *array-accessors*
   (scm-list (scm-cons 'vector (scm-cons subvector vector-ref))
-            (scm-cons 'list (scm-cons sublist-helper scm-nth-helper))
+            (scm-cons 'list (scm-cons scm-sublist scm-nth-helper))
             (scm-cons 'string (scm-cons substring string-ref))
             (scm-cons 'bitvector (scm-cons subbitarray bitvector-set?))
             (scm-cons 'u8vector (scm-cons subu8vector u8vector-ref))
