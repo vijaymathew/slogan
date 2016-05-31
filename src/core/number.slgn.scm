@@ -254,34 +254,3 @@
 
 (define (inc n) (+ n 1))
 (define (dec n) (- n 1))
-
-(define (safe-cmpr opr a b more)
-  (if (and a (opr a b))
-      (if (null? more)
-          b
-          (if (null? (scm-cdr more))
-              (scm-car more)
-              (safe-< (scm-car more) (scm-cadr more) (scm-cddr more))))
-      #f))
-
-(define scm-< <)
-(define scm-> >)
-(define scm-<= <=)
-(define scm->= >=)
-
-(define (safe-< a b #!rest more)
-  (safe-cmpr scm-< a b more))
-
-(define (safe-> a b #!rest more)
-  (safe-cmpr scm-> a b more))
-
-(define (safe-<= a b #!rest more)
-  (safe-cmpr scm-<= a b more))
-
-(define (safe->= a b #!rest more)
-  (safe-cmpr scm->= a b more))
-
-(define < safe-<)
-(define > safe->)
-(define <= safe-<=)
-(define >= safe->=)

@@ -65,7 +65,7 @@ assert not(first(iter));
 assert not(rest(iter));
 
 // Most lazy-pair functions also work on iterators.
-function ln(n) if (n > 5) [] else n::ln(n + 1);
+function ln(n) if (n > 5) [] else n:~ln(n + 1);
 function in(n) let loop(n = n) when (n <= 5) { yield n; loop(n + 1) };
 
 assert nth(1, map(`+`, filter(is_even, ln(1)))) == nth(1, map(`+`, filter(is_even, in(1)))); // both return 4

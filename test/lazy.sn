@@ -3,12 +3,12 @@ function buffer(in, n)
     letrec (end = nth_tail(n, in),
             loop = ^(in, end) 
                      match(in) 
-                       i : in2 -> i :: loop(in2, nth_tail(1, end)))
+                       i : in2 -> i:~loop(in2, nth_tail(1, end)))
       loop(in, end);
 
 function ints(n) {
     task_sleep(.1);
-    n :: ints(n + 1)
+    n:~ints(n + 1)
 };
 
 let in = ints(1);
@@ -20,7 +20,7 @@ assert nth(10, out) == 11;
 function lappend(xs, ys) 
     match(xs) 
         [] -> ys
-        | x:xs -> x::lappend(xs, ys);
+        | x:xs -> x:~lappend(xs, ys);
 
 let x = lappend([1, 2, 3], [4, 5, 6]);
 assert nth(2, x) == 3;
@@ -29,7 +29,7 @@ assert nth(4, x) == 5;
 function lmap(xs, f) 
     match(xs) 
         [] -> []
-        | x:xs -> f(x)::lmap(xs, f);
+        | x:xs -> f(x):~lmap(xs, f);
 
 x = lmap([1, 2, 3, 4, 5], ^(x) x * 10);
 assert nth(3, x) == 40;
@@ -39,7 +39,7 @@ function lflatten(xs) {
         match(xs) 
             [] -> ys
             | x:xr -> lflattend(x, lflattend(xr, ys))
-            | x -> x :: ys;
+            | x -> x:~ys;
     lflattend(xs, [])
 };
 
@@ -50,7 +50,7 @@ assert nth(2, x) == 3;
 function lfilter(xs, f) 
     match(xs) 
         [] -> []
-        | x:xr -> if (f(x)) x :: lfilter(xr, f)
+        | x:xr -> if (f(x)) x:~lfilter(xr, f)
                   else lfilter(xr, f);
 
 x = lfilter([1, 2, 3, 4, 5], is_odd);
