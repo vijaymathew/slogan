@@ -12,7 +12,6 @@
 (define (is_false obj) (scm-eq? obj #f))
 
 (define (is_void obj) (void? obj))
-(define (is_object obj) (scm-not (void? obj)))
 
 (define (current_exception_handler) 
   (current-exception-handler))
