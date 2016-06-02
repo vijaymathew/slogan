@@ -104,7 +104,7 @@
                 (read-multi-char-operator port))
                ((char=? c #\")
                 (read-string port))
-               ((char=? c #\!)
+               ((char=? c #\\)
                 (read-char-literal port))
                ((char=? c #\.)
                 (port-pos-read-char! port)
@@ -224,10 +224,10 @@
   (error (with-output-to-string 
            '()
            (lambda ()
-             (slgn-display msg display-string: #t)
+             (scm-display msg)
              (let loop ((args args))
                (if (scm-not (null? args))
-                   (begin (slgn-display (scm-car args) display-string: #t)
+                   (begin (scm-display (scm-car args))
                           (scm-display " ")
                           (loop (scm-cdr args)))))))))
 
@@ -375,6 +375,7 @@
            (char=? c #\$)
            (char=? c #\?)
            (char=? c #\%)
+           (char=? c #\!)
            (char=? c #\@))))
 
 (define (char-valid-in-name? c)

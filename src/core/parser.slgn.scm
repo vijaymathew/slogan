@@ -55,12 +55,16 @@
            '()
            (lambda ()
              (if tokenizer
-                 (scm-println "at [line: "(tokenizer 'line) 
-                          ", column: " (tokenizer 'column) "] " 
-                          msg))
+                 (begin
+                   (display-all "at [line: " (tokenizer 'line)
+                                ", column: " (tokenizer 'column)
+                                "] " msg)
+                   (scm-newline)))
              (let ((hl (highlighted-error-line tokenizer token)))
-               (if hl (begin (scm-println (scm-car hl))
-                             (scm-println (scm-cdr hl)))))))))
+               (if hl (begin (scm-display (scm-car hl))
+                             (scm-newline)
+                             (scm-display (scm-cdr hl))
+                             (scm-newline))))))))
 
 (define (assert-semicolon tokenizer)
   (let ((token (tokenizer 'peek)))
@@ -1357,7 +1361,7 @@
                                       '()
                                       (lambda ()
                                         (scm-display "Missing comma or ") 
-                                        (slgn-display end-seq-char) 
+                                        (scm-display end-seq-char) 
                                         (scm-display "."))))))))
 
 (define (func-args-expr tokenizer)

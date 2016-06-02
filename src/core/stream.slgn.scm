@@ -397,13 +397,13 @@
 (define (show #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (scm-not (null? objs))
-	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
+	(begin (slgn-display (scm-car objs) port: stream)
 	       (loop (scm-cdr objs))))))
 
 (define (showln #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (scm-not (null? objs))
-	(begin (slgn-display (scm-car objs) display-string: #t port: stream)
+	(begin (slgn-display (scm-car objs) port: stream)
 	       (loop (scm-cdr objs)))))
   (scm-newline stream))
 

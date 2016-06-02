@@ -29,20 +29,20 @@ ref(ba, 3, value = 100);
 assert ref(ba, 3);
 
 let s = apply(string, string_to_list("hello world"));
-assert ref(s, 1) == !e;
-assert s[2] == !l;
+assert ref(s, 1) == \e;
+assert s[2] == \l;
 assert ref(s, 20) == false;
 assert ref(s, 20, default = 100) == 100;
-ref(s, 1, value = !a);
-assert ref(s, 1) == !a;
-s[4] = !x;
-assert s[4] == !x;
+ref(s, 1, value = \a);
+assert ref(s, 1) == \a;
+s[4] = \x;
+assert s[4] == \x;
 assert s == "hallx world";
 
-s = [!a:1, !b:2];
-assert get(!a, s) == 1;
-assert get(!b, s) == 2;
-assert get(!c, s, 100) == 100;
+s = [\a:1, \b:2];
+assert get(\a, s) == 1;
+assert get(\b, s) == 2;
+assert get(\c, s, 100) == 100;
 
 s = #{1:2, 3:4};
 assert ref(s, 1) == 2;
@@ -75,7 +75,7 @@ declare generic join(a, b)
   | else -> [a, b];
 
 assert join([1, 2, 3], #[10, 20, 30]) == [1, 2, 3, 10, 20, 30];
-assert join([1, 2, 3], "hello") == [1, 2, 3, !h, !e, !l, !l, !o];
+assert join([1, 2, 3], "hello") == [1, 2, 3, \h, \e, \l, \l, \o];
 assert join([1, 2, 3], 43) == [[1, 2, 3], 43];
 
 // issue #42 - parameter order of range changed

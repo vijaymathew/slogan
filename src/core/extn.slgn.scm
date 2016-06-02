@@ -27,11 +27,11 @@
 
 (define (show_exception e #!optional (port (current-output-port)))
   (if (error-exception? e)
-      (begin (slgn-display (error-exception-message e) display-string: #t port: port)
+      (begin (scm-display (error-exception-message e) port)
              (scm-display #\space port)
              (let loop ((args (error-exception-parameters e)))
                (if (scm-not (null? args))
-                   (begin (slgn-display (scm-car args) display-string: #t port: port)
+                   (begin (scm-display (scm-car args) port)
                           (scm-display #\space port)
                           (loop (scm-cdr args))))))
       (display-exception e port)))

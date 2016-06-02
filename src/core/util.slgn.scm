@@ -59,7 +59,7 @@
 
 (define (void? val) (scm-eq? *void* val))
 
-(define (slgn-display val #!key display-string (port (current-output-port)))
+(define (slgn-display val #!key (port (current-output-port)))
   (if (scm-not (void? val))
       (cond ((procedure? val)
              (slgn-display-function port))
@@ -70,9 +70,7 @@
             ((pair? val)
              (slgn-display-pair val port))
             ((string? val)
-             (if display-string
-                 (scm-display val port)
-                 (scm-write val port)))
+             (scm-write val port))
             ((char? val)
              (slgn-display-char val port))
             ((vector? val)
@@ -192,7 +190,7 @@
                           #\delete #\nul))
 
 (define (slgn-display-char c port)
-  (scm-display '! port)  
+  (scm-display #\\ port)  
   (with-exception-catcher
    (lambda (ex)
      (let* ((s (with-output-to-string
@@ -330,3 +328,11 @@
                (let ((e (if (symbol? (scm-cadr expr)) (scm-caddr expr) (scm-cadr expr))))
                  (scm-map (lambda (d) (check-for-? (scm-car d) tokenizer)) e))))))
   expr)
+
+(define (display-all x . xs)
+  (scm-display x)
+  (let loop ((xs xs))
+    (if (scm-not (null? xs))
+        (begin
+          (scm-display (scm-car xs))
+          (loop (scm-cdr xs))))))
