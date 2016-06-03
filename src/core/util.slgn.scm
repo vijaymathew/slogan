@@ -139,7 +139,7 @@
     (if (not (null? xs))
         (begin (slgn-display (scm-car xs) port: port)
                (if (not (null? (scm-cdr xs)))
-                   (scm-display #\space port))
+                   (scm-display #\, port))
                (loop (scm-cdr xs)))))
   (scm-display #\) port))
     

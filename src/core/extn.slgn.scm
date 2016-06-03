@@ -118,8 +118,6 @@
       (f64vector-ref v k)
       d))
 
-(define (scm-nth-helper xs n) (scm-nth n xs))
-
 (define (scm-sublist ls #!optional (start 0) (end (scm-length ls)))
   (let loop ((ls ls)
              (i 0)
@@ -136,7 +134,7 @@
 
 (define *array-accessors*
   (scm-list (scm-cons 'vector (scm-cons subvector vector-ref))
-            (scm-cons 'list (scm-cons scm-sublist scm-nth-helper))
+            (scm-cons 'list (scm-cons scm-sublist list-ref))
             (scm-cons 'string (scm-cons substring string-ref))
             (scm-cons 'bitvector (scm-cons subbitarray bitvector-set?))
             (scm-cons 'u8vector (scm-cons subu8vector u8vector-ref))
@@ -170,7 +168,7 @@
    ((hashtable? tab)
     (hashtable_set tab key val))   
    ((list? tab)
-    (set-at key val tab))
+    (list-set! tab key val))
    ((%bitvector? tab)
     (if val
         (bitvector-set! tab key)
@@ -196,7 +194,7 @@
    ((f64vector? tab)
     (f64vector-set! tab key val))
    (else
-    (error !not_indexed tab))))
+    (error 'not_indexed tab))))
 
 (define (map-safe-access tab key default)
   (cond
@@ -235,12 +233,12 @@
    ((f64vector? tab)
     (f64vector-safe-ref tab key default))   
    (else
-    (error !not_indexed tab))))
+    (error 'not_indexed tab))))
 
 (define (ref tab key #!key (value *void*) (default #f))
-  (if (scm-not (scm-eq? value *void*))
-    (map-mutate tab key value)
-    (map-safe-access tab key default)))
+  (if (scm-eq? value *void*)
+      (map-safe-access tab key default)      
+      (map-mutate tab key value)))
 
 (define (map-access tab key)
   (cond
@@ -275,12 +273,13 @@
    ((f64vector? tab)
     (array-accessor 'f64vector tab key))
    (else
-    (error !not_indexed tab))))
+    (error 'not_indexed tab))))
 
 (define (*-@-* tab key #!optional (value *void*))
-  (if (scm-not (scm-eq? value *void*))
-      (map-mutate tab key value)
-      (map-access tab key)))
+  (if (scm-eq? value *void*)
+      (map-access tab key)      
+      (begin (map-mutate tab key value)
+             *void*)))
 
 (define (do_times n fn #!key (from 0) init)
   (call/cc

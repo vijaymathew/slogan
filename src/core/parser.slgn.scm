@@ -357,7 +357,7 @@
           (tokenizer 'put sym)
           #f)
          ((scm-eq? (tokenizer 'peek) '*assignment*)
-          (set-stmt sym tokenizer))
+          (var-def-set sym tokenizer #f))
          ((scm-eq? (tokenizer 'peek) '*comma*)
           (tokenizer 'next)
           (let ((vars (scm-append (scm-list sym) (def-vars-list tokenizer))))
@@ -446,11 +446,6 @@
         (and (> (string-length s) 0)
              (char=? #\? (string-ref s 0))))
       #f))
-
-(define (set-stmt sym tokenizer)
-  `(begin
-     ,(var-def-set sym tokenizer #f)
-     ,(if (rvar? sym) (normalize-rvar sym) sym)))
 
 (define (var-def-set sym tokenizer def)
   (if (scm-eq? (tokenizer 'peek) '*assignment*)

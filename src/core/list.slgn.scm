@@ -34,9 +34,14 @@
   (let ((mapping (scm-assoc key seq)))
     (if mapping (scm-cdr mapping) deflaut)))        
 
-(define (set-at n v xs)
+(define (list-set! list k val)
+    (if (zero? k)
+        (set-car! list val)
+        (list-set! (cdr list) (- k 1) val)))
+
+(define (set-at! n v xs)
   (if (or (null? xs) (< n 0))
-      xs
+      *void*
       (let loop ((n n) (ys xs) (rs '()))
         (cond
          ((null? ys) xs)
