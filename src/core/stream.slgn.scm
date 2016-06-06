@@ -410,3 +410,8 @@
 (define reader_timeout input-port-timeout-set!)
 (define writer_timeout output-port-timeout-set!)
 
+(define (print #!key (stream (current-output-port)) #!rest objs)
+  (apply scm-print port: stream objs))
+
+(define (println #!key (stream (current-output-port)) #!rest objs)
+  (apply scm-println port: stream objs))

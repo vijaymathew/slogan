@@ -132,12 +132,9 @@
 
 (define (is_subset s1 s2) (is_superset s2 s1))
 
-(define list_to_set list->set)
-(define set_to_list set->list)
 (define is_set set?)
 (define make_set make-set)
 (define is_set_member set-contains?)
-(define hashtable_to_set hashtable->set)
 
 (define (set obj)
   (cond ((set? obj)

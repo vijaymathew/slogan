@@ -128,6 +128,7 @@
                                       (scm-cons #\' '*quote*)
                                       (scm-cons #\, '*comma*)
                                       (scm-cons #\~ '*delay*)
+                                      (scm-cons #\! '*task*)                                      
                                       (scm-cons #\: '*colon*)))
 
 (define *single-char-operators-strings* (scm-list (scm-cons "+" '*plus*)
@@ -145,6 +146,7 @@
                                               (scm-cons ":" '*colon*)
 					      (scm-cons "^" '*fn*)
                                               (scm-cons "~" '*delay*)
+                                              (scm-cons "!" '*task*)                                              
                                               (scm-cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (scm-list (scm-cons "==" '*equals*)
@@ -375,7 +377,6 @@
            (char=? c #\$)
            (char=? c #\?)
            (char=? c #\%)
-           (char=? c #\!)
            (char=? c #\@))))
 
 (define (char-valid-in-name? c)

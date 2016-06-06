@@ -806,6 +806,21 @@
           (string->number (string-append "-" (number->string token))))
       (scm-list '- token)))
 
+(define (task-expr tokenizer)
+  (let ((token (tokenizer 'peek)))
+    (cond
+     ((eq? token '*greater-than*)
+      (tokenizer 'next)
+      (let ((t (scm-expression tokenizer)))
+        (if (not (eq? '*comma* (tokenizer 'next)))
+            (parser-error tokenizer "Expected comma before message.")
+            `(thread-send ,t ,(scm-expression tokenizer)))))
+     ((eq? token '*less-than*)
+      (tokenizer 'next)
+      `(thread-receive))
+     (else
+      `(thread-start! (make-thread (lambda () ,(scm-expression tokenizer))))))))
+        
 (define (literal-expr tokenizer)
   (let ((expr (func-def-expr tokenizer)))
     (if expr
@@ -833,6 +848,9 @@
                  (block-expr tokenizer #t))
                 ((scm-eq? token '*hash*)
                  (array-or-table-literal tokenizer))
+                ((scm-eq? token '*task*)
+                 (tokenizer 'next)
+                 (task-expr tokenizer))
                 ((scm-eq? token '*delay*)
                  (tokenizer 'next)
                  (scm-list 'delay (func-body-expr tokenizer #t)))
@@ -1165,9 +1183,11 @@
       (scm-reverse res)
       (let ((p (scm-car params)))
         (cond
-          ((symbol? p) (loop (scm-cdr params) (scm-cons p res)))
-          ((pair? p) (loop (scm-cdr params) (scm-cons (scm-car p) res)))
-          (else (loop (scm-cdr params) res)))))))
+         ((or (eq? #!optional p) (eq? #!key p) (eq? #!rest p))
+          (loop (scm-cdr params) res))
+         ((symbol? p) (loop (scm-cdr params) (scm-cons p res)))
+         ((pair? p) (loop (scm-cdr params) (scm-cons (scm-car p) res)))
+         (else (loop (scm-cdr params) res)))))))
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
   (let ((implicit-match? #f))
@@ -1178,12 +1198,14 @@
           (set! implicit-match? #t))
         (parser-error tokenizer "Implicit match cannot be specified here.")))
     (let ((match-value (if implicit-match?
-                         (if (= (scm-length params) 1)
-                           (scm-car params)
-                           (append '(scm-list) (extract-param-names params))))))
+                           (let ((params (extract-param-names params)))
+                             (if (= (scm-length params) 1)
+                                 (scm-car params)
+                                 (append '(scm-list) (extract-param-names params))))
+                           #f)))
       (let ((old-yield-count (tokenizer 'yield-count)))
         (let ((body-expr
-                (let ((token (tokenizer 'peek)))
+               (let ((token (tokenizer 'peek)))
                   (if (or (scm-eq? token '*semicolon*) 
                         (eof-object? token))
                     '(begin (quote ()))
