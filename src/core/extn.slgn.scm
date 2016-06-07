@@ -298,3 +298,13 @@
 
 (define == equal?)
 (define <> not-equal?)
+
+;; time functions
+(define (now) (time->seconds (current-time)))
+(define current_time current-time)
+(define is_time time?)
+(define time_to_seconds time->seconds)
+(define seconds_to_time seconds->time)
+(define process_times process-times)
+(define cpu_time cpu-time)
+(define real_time real-time)
