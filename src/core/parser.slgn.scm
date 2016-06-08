@@ -129,7 +129,7 @@
             (begin (tokenizer 'next)
                    (scm-append expr (scm-reverse defs)))
             (let ((cdef (cdef-stmt tokenizer libname)))
-              (assert-comma-separator tokenizer '*close-bracket* *enforce-comma*)
+              (assert-comma-separator tokenizer '*close-bracket* *enforce-comma* 'def-ffi)
               (loop (scm-cons cdef defs)))))))
 
 (define *ffi-lib-count* 0)
@@ -358,13 +358,6 @@
           #f)
          ((scm-eq? (tokenizer 'peek) '*assignment*)
           (var-def-set sym tokenizer #f))
-         ((scm-eq? (tokenizer 'peek) '*comma*)
-          (tokenizer 'next)
-          (let ((vars (scm-append (scm-list sym) (def-vars-list tokenizer))))
-            (if (scm-eq? '*assignment* (tokenizer 'next))
-                (let ((exprs (def-exprs-list tokenizer)))
-                  (vars-defs-set vars exprs #f))
-                (parser-error tokenizer "Expected assignment."))))
          (else
           (tokenizer 'put sym) 
           #f))))
@@ -434,7 +427,7 @@
         (else
          (parser-error tokenizer "Invalid let expression."))))
       (else
-       (parser-error tokenizer "Invalid variable name.")))))
+       (parser-error tokenizer "Not a valid variable name.")))))
 
 (define (normalize-rvar sym)
   (let ((s (symbol->string sym)))
@@ -898,7 +891,7 @@
             (if (scm-eq? (tokenizer 'peek) '*pipe*)
                 (begin (tokenizer 'next)
                        (list-comprehension-expr tokenizer expr))
-                (begin (assert-comma-separator tokenizer '*close-bracket* *enforce-comma*)
+                (begin (assert-comma-separator tokenizer '*close-bracket* *enforce-comma* 'list-literal)
                        (loop (scm-cons expr result)))))))))
 
 (define (list-comprehension-expr tokenizer result-expr)
@@ -918,7 +911,7 @@
 							(scm-expression tokenizer))
 						 #t)
 					     filters)))
-			  (assert-comma-separator tokenizer '*close-bracket* *enforce-comma*)
+			  (assert-comma-separator tokenizer '*close-bracket* *enforce-comma* 'list-comprehension-expr)
 			  (loop vars lists filters)))
                  (begin (tokenizer 'put extractor)
                         (tokenizer 'put var)
@@ -975,7 +968,7 @@
                         (tokenizer 'next)
                         (scm-reverse expr))
                        (else (let ((e (scm-expression tokenizer)))
-                               (assert-comma-separator tokenizer '*close-bracket* *enforce-comma*)
+                               (assert-comma-separator tokenizer '*close-bracket* *enforce-comma* 'array-literal)
                                (loop (scm-cons e expr) (tokenizer 'peek)))))))
         (parser-error tokenizer "Invalid start of array literal."))))
 
@@ -996,7 +989,7 @@
                                  (pair? keyval)
                                  (scm-eq? (scm-car keyval) 'scm-cons))))
                   (parser-error tokenizer "Expected key-value pair."))
-              (assert-comma-separator tokenizer close-token *enforce-comma*)
+              (assert-comma-separator tokenizer close-token *enforce-comma* 'table-literal)
               (loop (scm-cons keyval args))))))))
     
 (define (array-or-table-literal tokenizer)
@@ -1009,6 +1002,50 @@
           (else
            (array-literal tokenizer)))))
 
+(define (for-bindings tokenizer)
+  (let loop ((token (tokenizer 'peek)) (bindings '()))
+    (cond ((or (scm-eq? token '*close-paren*)
+               (scm-eq? token '*semicolon*))
+	   bindings)
+	  ((symbol? token)
+           (check-if-reserved-name token tokenizer)
+           (tokenizer 'next)
+           (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
+               (parser-error tokenizer "Expected assignment."))
+           (let ((expr (scm-expression tokenizer)))
+             (let ((next (tokenizer 'peek)))
+               (if (scm-eq? next '*comma*) 
+                   (tokenizer 'next)))
+             (loop (tokenizer 'peek) (scm-append bindings (scm-list (scm-list token expr))))))
+          (else (parser-error tokenizer "Expected variable declaration.")))))
+
+(define (for-expr tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'for)
+         (tokenizer 'next)
+         (if (not (eq? (tokenizer 'next) '*open-paren*))
+             (parser-error tokenizer "Expected opening parenthesis here."))
+         (let ((bindings (for-bindings tokenizer)))
+           (if (not (eq? '*semicolon* (tokenizer 'next)))
+               (parser-error tokenizer "Expected semicolon here."))
+           (let ((cond-expr (if (eq? '*semicolon* (tokenizer 'peek)) #t (scm-expression tokenizer))))
+             (if (not (eq? '*semicolon* (tokenizer 'next)))
+                 (parser-error tokenizer "Expected semicolon here."))
+             (let ((nxt-expr (if (eq? '*close-paren* (tokenizer 'peek)) #f (scm-expression tokenizer))))
+               (if (not (eq? (tokenizer 'next) '*close-paren*))
+                   (parser-error tokenizer "Expected closing parenthesis here."))
+               (let ((counter (if (not (null? bindings)) (scm-caar bindings) #f)))
+                 `(let ,(scm-append '((*for-value* #f)) bindings)
+                    (let *for-loop* ()
+                      (if ,cond-expr
+                          (begin
+                            (set! *for-value* ,(func-body-expr tokenizer #f #f))
+                            ,(if counter
+                                 `(set! ,counter ,nxt-expr)
+                                 nxt-expr)
+                            (*for-loop*))
+                          *for-value*))))))))
+        (else  (func-call-expr (literal-expr tokenizer) tokenizer))))
+
 (define (let-expr tokenizer)
   (let ((expr (let ((letkw (letkw? (tokenizer 'peek))))
 		(if letkw
@@ -1016,7 +1053,7 @@
 			   (if (valid-identifier? (tokenizer 'peek))
 			       (named-let-expr letkw tokenizer)
 			       (normal-let-expr letkw tokenizer)))
-		    (func-call-expr (literal-expr tokenizer) tokenizer)))))
+		    (for-expr tokenizer)))))
     expr))
 
 (define (normal-let-expr letkw tokenizer)
@@ -1069,13 +1106,13 @@
                    (let ((expr (scm-expression tokenizer)))
                      (cond ((symbol? expr)
                             (check-if-reserved-name expr tokenizer)
-                            (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+                            (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'mod-exports-list)
                             (loop (scm-cons expr exports)))
                            ((and (pair? expr) (scm-eq? (scm-car expr) 'scm-cons))
                             (let ((expr (scm-cons (scm-cadr expr) (scm-caddr expr))))
                               (check-if-reserved-name (scm-car expr) tokenizer)
                               (check-if-reserved-name (scm-cdr expr) tokenizer)
-                              (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+                              (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'mod-exports-list-2)
                               (loop (scm-cons expr exports))))
                            (else
                             (parser-error tokenizer "Invalid name in exports."))))
@@ -1254,7 +1291,7 @@
 (define (rec-get-precond tokenizer)
   (tokenizer 'next)
   (let ((precond (scm-expression tokenizer)))
-    (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+    (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'rec-get-precond)
     precond))
 
 (define (mk-rec-type-check-expr field-name type-name)
@@ -1269,20 +1306,20 @@
         (let ((val (scm-expression tokenizer)))
           (if (scm-eq? (tokenizer 'peek) 'where)
             (scm-cons val (rec-get-precond tokenizer))
-            (begin (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+            (begin (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'rec-get-field-def)
               (scm-cons val #t)))))
       ((scm-eq? token '*colon*)
         (tokenizer 'next)
         (let ((type-name (tokenizer 'next)))
           (if (symbol? type-name)
             (let ((expr (scm-cons #f (mk-rec-type-check-expr field-name type-name))))
-              (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+              (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'rec-get-field-def-2)
               expr)
             (parser-error tokenizer "Expected a type name here."))))
       (else
         (if (scm-eq? token 'where)
           (scm-cons #f (rec-get-precond tokenizer))
-          (begin (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+          (begin (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'rec-get-field-def-3)
             (scm-cons #f #t)))))))
   
 (define (mk-record-expr name tokenizer)
@@ -1366,7 +1403,7 @@
                                                 (scm-append (if (scm-eq? #t precond) '() (scm-list (mk-record-precond-expr precond mem)))
                                                         (scm-list (scm-list scm-modifier '*s* mem)))))))))
 
-(define (assert-comma-separator tokenizer end-seq-char comma-required)
+(define (assert-comma-separator tokenizer end-seq-char comma-required caller)
   (let ((token (tokenizer 'peek)))
     (if (or (scm-eq? token '*comma*)
             (if (list? end-seq-char) 
@@ -1379,7 +1416,10 @@
                                       (lambda ()
                                         (scm-display "Missing comma or ") 
                                         (scm-display end-seq-char) 
-                                        (scm-display "."))))))))
+                                        (scm-display ".")
+                                        (scm-display "(")
+                                        (scm-display caller)
+                                        (scm-display ")"))))))))
 
 (define (func-args-expr tokenizer)
   (let loop ((args '()))
@@ -1390,15 +1430,15 @@
                    (if (scm-eq? (tokenizer 'peek) '*assignment*)
                        (begin (tokenizer 'next)
                               (let ((expr (scm-expression tokenizer)))
-                                (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+                                (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-args-expr)
                                 (loop (scm-append args (scm-list (slgn-variable->scm-keyword sym) expr)))))
                        (begin (tokenizer 'put sym)
                               (let ((expr (scm-expression tokenizer)))
-                                (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+                                (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-args-expr-2)
                                 (loop (scm-append args (scm-list expr))))))))
                 (else
                  (let ((expr (scm-expression tokenizer)))
-                   (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+                   (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-args-expr-3)
                    (loop (scm-append args (scm-list expr))))))
           args))))
 
@@ -1424,7 +1464,7 @@
 		     (let ((s (tokenizer 'next)))
 		       (if (symbol? s) s (parser-error tokenizer "Expected type name."))))
 		    (else '_))))
-    (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+    (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-param-type)
     type))
 
 (define (func-params-expr tokenizer params-required?)
@@ -1532,7 +1572,7 @@
 (define *reserved-names* '(^ function module method record true false
 			     if else when let letseq letrec yield
 			     case match where try trycc catch finally
-			     declare assert))
+			     declare assert for))
 
 (define (reserved-name? sym)
   (and (symbol? sym)
@@ -1545,7 +1585,7 @@
         (cond ((scm-eq? token '*close-paren*)
                (scm-reverse result))
               ((valid-identifier? token)
-               (assert-comma-separator tokenizer '*close-paren* *enforce-comma*)
+               (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'parened-names->list)
                (loop (tokenizer 'next) (scm-cons token result)))
               (else #f)))
       #f))

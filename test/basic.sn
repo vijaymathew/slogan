@@ -5,8 +5,8 @@ assert 1 + 2 <= 3;
 assert 1 + 2 <= 3 && 4 * 3 == 12;
 assert 1 + 2 > 3 || 4 * 3 == 12;
 
-let a,b = 10, a+20;
-assert a == 10;
+let af,b = ^(i) i, af(10)+20;
+assert af(10) == 10;
 assert b == 30;
 
 function recur(a)
@@ -41,7 +41,7 @@ assert x == 300;
 n.lf(false, ^x = 0);
 assert x == 300;
 
-let b = n;
+b = n;
 assert b.f(20) == 20;
 x = 10;
 b.lf(true, ^x = 1);
@@ -58,7 +58,7 @@ lf(false, ^x = 1);
 assert x == 1;
 
 record r(a, b where is_integer(b) && b > 100);
-let a = r(a = "hi", b = 200);
+a = r(a = "hi", b = 200);
 assert r_a(a) == "hi";
 assert r_b(a) == 200;
 let x = false;
@@ -138,7 +138,7 @@ assert do_times(10, ^(i, x, b) if (i == 5) b("ok") else i) == "ok";
 assert do_times(0, run_add, init = 0, from = 9) == 45;
 
 // harmonic series
-let a = fold_left(^(i, sum) sum + 1.0/i, 0, range(1,2));
+a = fold_left(^(i, sum) sum + 1.0/i, 0, range(1,2));
 assert a == 1.5;
 
 // list comprehensions
@@ -253,3 +253,21 @@ let t1 = [1, "two", 3];
 let t2 = [t1, 3.25];
 assert append(t1, t2)[3] == [1, "two", 3];
 assert append(t1, t2)[2:5] == [3, [1, "two", 3], 3.25];
+
+assert count("hello, world") == string_length("hello, world");
+assert count([1,2,3,4,15]) == 5;
+assert count(#[1,2,3,4,15]) == 5;
+assert count(#b[1,0,1]) == 3;
+assert count(#u8[1,2,3,4,15]) == 5;
+assert count(#s8[1,2,3,4,15]) == 5;
+assert count(#u16[1,2,3,4,15]) == 5;
+assert count(#s16[1,2,3,4,15]) == 5;
+assert count(#u32[1,2,3,4,15]) == 5;
+assert count(#s32[1,2,3,4,15]) == 5;
+assert count(#u64[1,2,3,4,15]) == 5;
+assert count(#s64[1,2,3,4,15]) == 5;
+assert count(#f32[1.,2.,3.,4.,1.5]) == 5;
+assert count(#f64[1.,2.,3.,4.,1.5]) == 5;
+
+t1 = for (i = 0; i < 10; inc(i)) i;
+assert t1 == 9;
