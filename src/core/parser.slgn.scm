@@ -1016,7 +1016,7 @@
              (let ((next (tokenizer 'peek)))
                (if (scm-eq? next '*comma*) 
                    (tokenizer 'next)))
-             (loop (tokenizer 'peek) (scm-append bindings (scm-list (scm-list token expr))))))
+             (loop (tokenizer 'peek) (scm-cons (scm-list token expr) bindings))))
           (else (parser-error tokenizer "Expected variable declaration.")))))
 
 (define (for-expr tokenizer)
@@ -1034,7 +1034,7 @@
                (if (not (eq? (tokenizer 'next) '*close-paren*))
                    (parser-error tokenizer "Expected closing parenthesis here."))
                (let ((counter (if (not (null? bindings)) (scm-caar bindings) #f)))
-                 `(let ,(scm-append '((*for-value* #f)) bindings)
+                 `(let* ,(scm-append '((*for-value* #f)) (scm-reverse bindings))
                     (let *for-loop* ()
                       (if ,cond-expr
                           (begin
