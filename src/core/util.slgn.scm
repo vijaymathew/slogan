@@ -305,10 +305,12 @@
 (define (link script)
   (with-exception-catcher
    (lambda (e)
-     (if (file-exists? (add-slgn-extn script))
-         (if (scm-not (compile script assemble: #t))
-             (error "failed to compile script" script)))
-     (scm-load script))
+     (cond ((no-such-file-or-directory-exception? e)
+            (if (file-exists? (add-slgn-extn script))
+                (if (scm-not (compile script assemble: #t))
+                    (error "failed to compile script" script)))
+            (scm-load script))
+           (else (raise e))))
    (lambda () (scm-load script))))
 
 (define (check-for-? name tokenizer)
