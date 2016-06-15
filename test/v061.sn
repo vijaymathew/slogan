@@ -1,117 +1,117 @@
 // issue #38 - `@` to work with strings and all kinds of arrays.
 function @tests(a, real = false)
-{ assert ref(a, 1) == if (real) 2. else 2;
-  assert a[1] == if (real) 2. else 2;
-  assert ref(a, 10, default = 100) == 100;
-  ref(a, 1, value = if (real) 100. else 100);
-  assert ref(a, 1) == if (real) 100. else 100;
-  a[2] = if (real) 20. else 20;
-  assert a[2] == if (real) 20. else 20 };
+{ assert ref(a, 1) == if (real) 2. else 2
+  assert a[1] == if (real) 2. else 2
+  assert ref(a, 10, default = 100) == 100
+  ref(a, 1, value = if (real) 100. else 100)
+  assert ref(a, 1) == if (real) 100. else 100
+  a[2] = if (real) 20. else 20
+  assert a[2] == if (real) 20. else 20 }
   
-@tests(#[1, 2, 3, 4, 5]);
-@tests(#u8[1, 2, 3, 4, 5]);
-@tests(#s8[1, 2, 3, 4, 5]);
-@tests(#u16[1, 2, 3, 4, 5]);
-@tests(#s16[1, 2, 3, 4, 5]);
-@tests(#u32[1, 2, 3, 4, 5]);
-@tests(#s32[1, 2, 3, 4, 5]);
-@tests(#u64[1, 2, 3, 4, 5]);
-@tests(#s64[1, 2, 3, 4, 5]);
+@tests(#[1, 2, 3, 4, 5])
+@tests(#u8[1, 2, 3, 4, 5])
+@tests(#s8[1, 2, 3, 4, 5])
+@tests(#u16[1, 2, 3, 4, 5])
+@tests(#s16[1, 2, 3, 4, 5])
+@tests(#u32[1, 2, 3, 4, 5])
+@tests(#s32[1, 2, 3, 4, 5])
+@tests(#u64[1, 2, 3, 4, 5])
+@tests(#s64[1, 2, 3, 4, 5])
 
-@tests(#f32[1., 2., 3., 4., 5.], true);
-@tests(#f64[1., 2., 3., 4., 5.], true);
+@tests(#f32[1., 2., 3., 4., 5.], true)
+@tests(#f64[1., 2., 3., 4., 5.], true)
 
-let ba = #b[0, 1, 1, 0, 1];
-assert ref(ba, 0) == false;
-assert ref(ba, 1);
-assert ref(ba, 10, default = 100) == 100;
-ref(ba, 3, value = 100);
-assert ref(ba, 3);
+let ba = #b[0, 1, 1, 0, 1]
+assert ref(ba, 0) == false
+assert ref(ba, 1)
+assert ref(ba, 10, default = 100) == 100
+ref(ba, 3, value = 100)
+assert ref(ba, 3)
 
-let s = apply(string, string_to_list("hello world"));
-assert ref(s, 1) == \e;
-assert s[2] == \l;
-assert ref(s, 20) == false;
-assert ref(s, 20, default = 100) == 100;
-ref(s, 1, value = \a);
-assert ref(s, 1) == \a;
-s[4] = \x;
-assert s[4] == \x;
-assert s == "hallx world";
+let s = apply(string, string_to_list("hello world"))
+assert ref(s, 1) == \e
+assert s[2] == \l
+assert ref(s, 20) == false
+assert ref(s, 20, default = 100) == 100
+ref(s, 1, value = \a)
+assert ref(s, 1) == \a
+s[4] = \x
+assert s[4] == \x
+assert s == "hallx world"
 
-s = [\a:1, \b:2];
-assert get(\a, s) == 1;
-assert get(\b, s) == 2;
-assert get(\c, s, 100) == 100;
+s = [\a:1, \b:2]
+assert get(\a, s) == 1
+assert get(\b, s) == 2
+assert get(\c, s, 100) == 100
 
-s = #{1:2, 3:4};
-assert ref(s, 1) == 2;
-assert ref(s, 3) == 4;
-assert ref(s, 10, default=100) == 100;
-ref(s, 10, value = 200);
-assert ref(s, 1) == 2;
-assert ref(s, 3) == 4;
-assert ref(s, 10, default=100) == 200;
-ref(s, 1, value = 300);
-assert ref(s, 1) == 300;
-assert ref(s, 3) == 4;
-assert ref(s, 10, default=100) == 200;
-assert s[10] == 200;
-s[100] = 2000;
-assert s[100] = 2000;
+s = #{1:2, 3:4}
+assert ref(s, 1) == 2
+assert ref(s, 3) == 4
+assert ref(s, 10, default=100) == 100
+ref(s, 10, value = 200)
+assert ref(s, 1) == 2
+assert ref(s, 3) == 4
+assert ref(s, 10, default=100) == 200
+ref(s, 1, value = 300)
+assert ref(s, 1) == 300
+assert ref(s, 3) == 4
+assert ref(s, 10, default=100) == 200
+assert s[10] == 200
+s[100] = 2000
+assert s[100] = 2000
 
 // issue #40 - implicit match for functions.
 function f(a, b) 
  | [x, 100] -> x * 100
- | [y, 1000] -> y * 1000;
+ | [y, 1000] -> y * 1000
 
-assert f(10, 100) == 1000;
-assert f(10, 1000) == 10000;
+assert f(10, 100) == 1000
+assert f(10, 1000) == 10000
 
 // issue #41 - `cases` replaced with `|`
 declare generic join(a, b) 
   | (list, array) -> append(a, array_to_list(b))
   | (list, string) -> append(a, string_to_list(b))
-  | else -> [a, b];
+  | else -> [a, b]
 
-assert join([1, 2, 3], #[10, 20, 30]) == [1, 2, 3, 10, 20, 30];
-assert join([1, 2, 3], "hello") == [1, 2, 3, \h, \e, \l, \l, \o];
-assert join([1, 2, 3], 43) == [[1, 2, 3], 43];
+assert join([1, 2, 3], #[10, 20, 30]) == [1, 2, 3, 10, 20, 30]
+assert join([1, 2, 3], "hello") == [1, 2, 3, \h, \e, \l, \l, \o]
+assert join([1, 2, 3], 43) == [[1, 2, 3], 43]
 
 // issue #42 - parameter order of range changed
-let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, ^(x) x+i)];
-let primes = [x | x <- range(2, 50) where not(memq(x, noprimes))];
-assert primes == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, ^(x) x+i)]
+let primes = [x | x <- range(2, 50) where not(memq(x, noprimes))]
+assert primes == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 
 // Slices
-let s = "hello world";
-assert s[1:5] == substring(s, 1, 5);
-assert s[:] == s;
-assert s[:5] == s[0:5];
-assert s[0:] == s[:];
-s = #b[1, 0, 0, 0, 1, 1, 1];
-assert s[0:3] == #b[1, 0, 0];
-assert s[:] == s;
-assert s[:5] == s[0:5];
-assert s[0:] == s[:];
+let s = "hello world"
+assert s[1:5] == substring(s, 1, 5)
+assert s[:] == s
+assert s[:5] == s[0:5]
+assert s[0:] == s[:]
+s = #b[1, 0, 0, 0, 1, 1, 1]
+assert s[0:3] == #b[1, 0, 0]
+assert s[:] == s
+assert s[:5] == s[0:5]
+assert s[0:] == s[:]
 
 function test_array_slices(a, real = false)
-{ assert a[2:3][0] == if (real) 3. else 3;
-  assert a[0:3][1] == if (real) 2. else 2;
-  assert a[:] == a;
-  assert a[:2] == a[0:2];
-  assert a[0:] == a[:] };
+{ assert a[2:3][0] == if (real) 3. else 3
+  assert a[0:3][1] == if (real) 2. else 2
+  assert a[:] == a
+  assert a[:2] == a[0:2]
+  assert a[0:] == a[:] }
 
-test_array_slices(#[1,2,3,4,5]);
-test_array_slices(#u8[1,2,3,4,5]);
-test_array_slices(#s8[1,2,3,4,5]);
-test_array_slices(#u16[1,2,3,4,5]);
-test_array_slices(#s16[1,2,3,4,5]);
-test_array_slices(#u32[1,2,3,4,5]);
-test_array_slices(#s32[1,2,3,4,5]);
-test_array_slices(#u64[1,2,3,4,5]);
-test_array_slices(#s64[1,2,3,4,5]);
-test_array_slices(#f32[1.,2.,3.,4.,5.], true);
-test_array_slices(#f64[1.,2.,3.,4.,5.], true);
+test_array_slices(#[1,2,3,4,5])
+test_array_slices(#u8[1,2,3,4,5])
+test_array_slices(#s8[1,2,3,4,5])
+test_array_slices(#u16[1,2,3,4,5])
+test_array_slices(#s16[1,2,3,4,5])
+test_array_slices(#u32[1,2,3,4,5])
+test_array_slices(#s32[1,2,3,4,5])
+test_array_slices(#u64[1,2,3,4,5])
+test_array_slices(#s64[1,2,3,4,5])
+test_array_slices(#f32[1.,2.,3.,4.,5.], true)
+test_array_slices(#f64[1.,2.,3.,4.,5.], true)
 
 

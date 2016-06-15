@@ -73,7 +73,7 @@
             (eof-object? token))
         (if (scm-eq? token '*semicolon*)
             (tokenizer 'next))
-        (parser-error tokenizer "Statement or expression not properly terminated."))))
+        #t)))
 
 (define (declare-stmt tokenizer)
   (if (scm-eq? (tokenizer 'peek) 'declare)

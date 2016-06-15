@@ -1,82 +1,82 @@
 function f()
-{ yield \a;
-  yield \b;
-  yield \c };
+{ yield \a
+  yield \b
+  yield \c }
 
-let iter = f();
-assert first(iter) == \a;
-iter = rest(iter);
-assert first(iter) == \b;
-iter = rest(iter);
-assert first(iter) == \c;
+let iter = f()
+assert first(iter) == \a
+iter = rest(iter)
+assert first(iter) == \b
+iter = rest(iter)
+assert first(iter) == \c
 
 function count(start = 0, step = 1)
   let loop (n = start)
-  { yield n;
-    loop(n + step) };
+  { yield n
+    loop(n + step) }
 
-iter = count(10, 5);
-assert first(iter) == 10;
-iter = rest(iter);
-assert first(iter) == 15;
+iter = count(10, 5)
+assert first(iter) == 10
+iter = rest(iter)
+assert first(iter) == 15
 
 function cycle(seq)
   let (saved = 
     let loop (seq = seq, saved = [])
      if (not(seq)) reverse(saved)
-     else { yield first(seq);
+     else { yield first(seq)
             loop(rest(seq), first(seq):saved) })
    let loop()
     let loop2(s = saved)
      if (not(s)) loop()
-     else { yield first(s);
-            loop2(rest(s)) };
+     else { yield first(s)
+            loop2(rest(s)) }
 
-iter = cycle([1, 2]);
-assert first(iter) == 1;
-iter = rest(iter);
-assert first(iter) == 2;
-iter = rest(iter);
-assert first(iter) == 1;
-iter = rest(iter);
-assert first(iter) == 2;
+iter = cycle([1, 2])
+assert first(iter) == 1
+iter = rest(iter)
+assert first(iter) == 2
+iter = rest(iter)
+assert first(iter) == 1
+iter = rest(iter)
+assert first(iter) == 2
 
 function repeat(object, times=false)
   if (not(times))
    let loop()
-   { yield object;
+   { yield object
      loop() }
   else let loop(i = 0)
         when (i < times)
-        { yield object;
-          loop(i + 1) };
+        { yield object
+          loop(i + 1) }
 
 let loop (i = 0, iter = repeat(10))
  when (i < 5)
- { assert first(iter) == 10;
-   loop(i + 1, rest(iter)) };
+ { assert first(iter) == 10
+   loop(i + 1, rest(iter)) }
 
-iter = repeat(1, 2);
-assert first(iter) == 1;
-iter = rest(iter);
-assert first(iter) == 1;
-iter = rest(iter);
-assert not(first(iter));
-assert not(rest(iter));
+iter = repeat(1, 2)
+assert first(iter) == 1
+iter = rest(iter)
+assert first(iter) == 1
+iter = rest(iter)
+assert not(first(iter))
+assert not(rest(iter))
 
 // Most lazy-pair functions also work on iterators.
-function ln(n) if (n > 5) [] else n:~ln(n + 1);
-function in(n) let loop(n = n) when (n <= 5) { yield n; loop(n + 1) };
+function ln(n) if (n > 5) [] else n:~ln(n + 1)
+function in(n) let loop(n = n) when (n <= 5) { yield n loop(n + 1) }
 
-assert nth(1, map(`+`, filter(is_even, ln(1)))) == nth(1, map(`+`, filter(is_even, in(1)))); // both return 4
-assert nth(4, map(`+`, accumulate(`+`, 1, ln(1)))) == nth(4, map(`+`, accumulate(`+`, 1, in(1)))); // both return 16
+assert nth(1, map(`+`, filter(is_even, ln(1)))) == nth(1, map(`+`, filter(is_even, in(1)))) // both return 4
+assert nth(4, map(`+`, accumulate(`+`, 1, ln(1)))) == nth(4, map(`+`, accumulate(`+`, 1, in(1)))) // both return 16
 
 function ints(a, b)
  let loop (a = a, b = b)
   if (is_zero(b)) []
-  else { yield a; loop(a+1, b - 1) };
+  else { yield a loop(a+1, b - 1) }
 
 // harmonic series
-let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)));
-assert first(a) == 1.5;
-assert not(rest(a));
+let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)))
+assert first(a) == 1.5
+assert not(rest(a))
