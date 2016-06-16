@@ -716,12 +716,6 @@
       (scm-cadr s)
       s))
 
-(define (expression-with-semicolon tokenizer)
-  (let ((expr (scm-expression tokenizer)))
-    (if (scm-eq? (tokenizer 'peek) '*semicolon*)
-        (tokenizer 'next))
-    expr))
-
 (define (block-expr tokenizer #!optional (use-let #f))
   (if (scm-not (scm-eq? (tokenizer 'peek) '*open-brace*))
       (parser-error tokenizer "Missing block start.")
