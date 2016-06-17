@@ -66,7 +66,7 @@
 
 (define (parse-exception ex)
   (cond
-   ((tagged-list? ex) ex)
+   ((or (pair? ex) (string? ex) (symbol? ex) (number? ex)) ex)
    ((error-exception? ex)
     (tagged-list 'error
                  (scm-cons 'message (error-exception-message ex))
