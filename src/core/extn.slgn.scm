@@ -19,12 +19,6 @@
 (define (set_current_exception_handler handler)
   (current-exception-handler handler))
 
-(define is_error error-exception?)
-(define error_message error-exception-message)
-(define error_args error-exception-parameters)
-(define is_noncontinuable_exception noncontinuable-exception?)
-(define noncontinuable_exception_reason noncontinuable-exception-reason)
-
 (define (show_exception e #!optional (port (current-output-port)))
   (if (error-exception? e)
       (begin (scm-display (error-exception-message e) port)
@@ -36,6 +30,155 @@
                           (loop (scm-cdr args))))))
       (display-exception e port)))
 
+(define (tagged-list tag #!rest elems)
+  (scm-cons tag elems))
+
+(define (tagged-list? obj)
+  (and (pair? obj) (symbol? (scm-car obj))))
+
+(define (tagged-assoc prop obj)
+  (scm-cdr (scm-assoc prop (scm-cdr obj))))
+
+(define (is_error obj)
+  (or (error-exception? obj)
+      (and (tagged-list? obj)
+           (eq? (scm-car obj) 'error))))
+
+(define (error_message obj)
+  (if (error-exception? obj)
+      (error-exception-message obj)
+      (tagged-assoc 'message obj)))
+
+(define (error_args obj)
+  (if (error-exception? obj)
+      (error-exception-parameters obj)
+      (tagged-assoc 'parameters obj)))
+
+(define (is_noncontinuable_exception obj)
+  (or (noncontinuable-exception? obj)
+      (and (tagged-list? obj)
+           (eq? (scm-car obj) 'noncontinuable))))
+
+(define (noncontinuable_exception_reason obj)
+  (if (noncontinuable-exception? obj)
+      (noncontinuable-exception-reason obj)
+      (tagged-assoc 'reason obj)))
+
+(define (parse-exception ex)
+  (cond
+   ((tagged-list? ex) ex)
+   ((error-exception? ex)
+    (tagged-list 'error
+                 (scm-cons 'message (error-exception-message ex))
+                 (scm-cons 'parameters (error-exception-parameters ex))))
+   ((unbound-global-exception? ex)
+    (tagged-list 'unbound_global
+                 (scm-cons 'variable (unbound-global-exception-variable ex))
+                 (scm-cons 'rte (unbound-global-exception-rte ex))))
+   ((range-exception? ex)
+    (tagged-list 'range_error
+                 (scm-cons 'function (range-exception-procedure ex))
+                 (scm-cons 'arguments (range-exception-arguments ex))
+                 (scm-cons 'arg_num (range-exception-arg-num ex))))
+   ((wrong-number-of-arguments-exception? ex)
+    (tagged-list 'wrong_number_of_arguments
+                 (scm-cons 'function (wrong-number-of-arguments-exception-procedure ex))
+                 (scm-cons 'arguments (wrong-number-of-arguments-exception-arguments ex))))
+   ((number-of-arguments-limit-exception? ex)
+    (tagged-list 'number_of_arguments_limit
+                 (scm-cons 'function (number-of-arguments-limit-exception-procedure ex))
+                 (scm-cons 'arguments (number-of-arguments-limit-exception-arguments ex))))
+   ((nonprocedure-operator-exception? ex)
+    (tagged-list 'not_a_function
+                 (scm-cons 'function (nonprocedure-operator-exception-operator ex))
+                 (scm-cons 'arguments (nonprocedure-operator-exception-arguments ex))
+                 (scm-cons 'rte (nonprocedure-operator-exception-rte ex))))
+   ((unknown-keyword-argument-exception? ex)
+    (tagged-list 'unknown_keyword_argument
+                 (scm-cons 'function (unknown-keyword-argument-exception-procedure ex))
+                 (scm-cons 'arguments (unknown-keyword-argument-exception-arguments ex))))
+   ((keyword-expected-exception? ex)
+    (tagged-list 'keyword_expected
+                 (scm-cons 'function (keyword-expected-exception-procedure ex))
+                 (scm-cons 'arguments (keyword-expected-exception-arguments ex))))
+   ((type-exception? ex)
+    (tagged-list 'wrong_type
+                 (scm-cons 'function (type-exception-procedure ex))
+                 (scm-cons 'arguments (type-exception-arguments ex))
+                 (scm-cons 'arg_num (type-exception-arg-num ex))
+                 (scm-cons 'type_id (type-exception-type-id ex))))
+   ((improper-length-list-exception? ex)
+    (tagged-list 'improper_length_list
+                 (scm-cons 'function (improper-length-list-exception-procedure ex))
+                 (scm-cons 'arguments (improper-length-list-exception-arguments ex))
+                 (scm-cons 'arg_num (improper-length-list-exception-arg-num ex))))
+   ((divide-by-zero-exception? ex)
+    (tagged-list 'divide_by_zero
+                 (scm-cons 'function (divide-by-zero-exception-procedure ex))
+                 (scm-cons 'arguments (divide-by-zero-exception-arguments ex))))
+   ((heap-overflow-exception? ex) (tagged-list 'heap_overflow))
+   ((stack-overflow-exception? ex) (tagged-list 'stack_overflow))
+   ((os-exception? ex)
+    (tagged-list 'system_error
+                 (scm-cons 'function (os-exception-procedure ex))
+                 (scm-cons 'arguments (os-exception-arguments ex))
+                 (scm-cons 'code (os-exception-code ex))
+                 (scm-cons 'message (os-exception-message ex))))
+   ((no-such-file-or-directory-exception? ex)
+    (tagged-list 'no_such_file_or_directory
+                 (scm-cons 'function (no-such-file-or-directory-exception-procedure ex))
+                 (scm-cons 'arguments (no-such-file-or-directory-exception-arguments ex))))
+   ((unbound-os-environment-variable-exception? ex)
+    (tagged-list 'unbound_environment_variable
+                 (scm-cons 'function (unbound-os-environment-variable-exception-procedure ex))
+                 (scm-cons 'arguments (unbound-os-environment-variable-exception-arguments ex))))
+   ((scheduler-exception? ex)
+    (tagged-list 'scheduler_error (scm-cons 'reason (scheduler-exception-reason ex))))
+   ((deadlock-exception? ex) (tagged-list 'deadlock))
+   ((abandoned-mutex-exception? ex) (tagged-list 'abandoned_mutex))
+   ((join-timeout-exception? ex)
+    (tagged-list 'join_timeout
+                 (scm-cons 'function (join-timeout-exception-procedure ex))
+                 (scm-cons 'arguments (join-timeout-exception-arguments ex))))
+   ((started-thread-exception? ex)
+    (tagged-list 'started_task
+                 (scm-cons 'function (started-thread-exception-procedure ex))
+                 (scm-cons 'arguments (started-thread-exception-arguments ex))))
+   ((terminated-thread-exception? ex)
+    (tagged-list 'terminated_task
+                 (scm-cons 'function (terminated-thread-exception-procedure ex))
+                 (scm-cons 'arguments (terminated-thread-exception-arguments ex))))
+   ((uncaught-exception? ex)
+    (tagged-list 'uncaught_error
+                 (scm-cons 'function (uncaught-exception-procedure ex))
+                 (scm-cons 'arguments (uncaught-exception-arguments ex))
+                 (scm-cons 'reason (uncaught-exception-reason ex))))
+   ((noncontinuable-exception? ex)
+    (tagged-list 'noncontinuable
+                 (scm-cons 'reason (noncontinuable-exception-reason ex))))
+   ((expression-parsing-exception? ex)
+    (tagged-list 'expression_parsing
+                 (scm-cons 'kind '(expression-parsing-exception-kind ex))
+                 (scm-cons 'parameters (expression-parsing-exception-parameters ex))
+                 (scm-cons 'source (expression-parsing-exception-source ex))))
+   ((datum-parsing-exception? ex)
+    (tagged-list 'datum_parsing
+                 (scm-cons 'kind (datum-parsing-exception-kind ex))
+                 (scm-cons 'parameters (datum-parsing-exception-parameters ex))
+                 (scm-cons 'readenv (datum-parsing-exception-readenv ex))))
+   ((cfun-conversion-exception? ex)
+    (tagged-list 'cfun_conversion
+                 (scm-cons 'function (cfun-conversion-exception-procedure ex))
+                 (scm-cons 'arguments (cfun-conversion-exception-arguments ex))
+                 (scm-cons 'message (cfun-conversion-exception-message ex))))
+   ((sfun-conversion-exception? ex)
+    (tagged-list 'sfun_conversion
+                 (scm-cons 'function (sfun-conversion-exception-procedure ex))
+                 (scm-cons 'arguments (sfun-conversion-exception-arguments ex))
+                 (scm-cons 'message (sfun-conversion-exception-message ex))))
+   ((multiple-c-return-exception? ex) (tagged-list 'multiple_c_return))
+   (else ex)))
+        
 (define callcc call/cc)
 (define dynamic_wind dynamic-wind)
 (define call_with_values call-with-values)
