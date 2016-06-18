@@ -1,5 +1,69 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+(c-declare #<<c-declare-end
+
+ #include <time.h>
+ #include <stdint.h>
+ #include "../include/slogan.h"
+
+ static void get_localtime(___SCMOBJ result)
+ {
+   time_t tt;
+   time(&tt);
+   struct tm *ltm = localtime(&tt);
+   ___slogan_obj ___temp;
+   ___U32VECTORSET(result, ___fix(0), ___fix(ltm->tm_sec));
+   ___U32VECTORSET(result, ___fix(1), ___fix(ltm->tm_min));
+   ___U32VECTORSET(result, ___fix(2), ___fix(ltm->tm_hour));
+   ___U32VECTORSET(result, ___fix(3), ___fix(ltm->tm_mday));
+   ___U32VECTORSET(result, ___fix(4), ___fix(ltm->tm_mon));
+   ___U32VECTORSET(result, ___fix(5), ___fix(ltm->tm_year));
+   ___U32VECTORSET(result, ___fix(6), ___fix(ltm->tm_wday));
+   ___U32VECTORSET(result, ___fix(7), ___fix(ltm->tm_yday));
+   ___U32VECTORSET(result, ___fix(8), ___fix(ltm->tm_isdst));
+ }
+
+ static void secs_to_tm(___SCMOBJ stt, ___SCMOBJ result)
+ {
+   float f;
+   int itt;
+   time_t tt;
+   struct tm *ltm;
+
+   ___slogan_obj_to_float(stt, &f);
+   itt = (int)f;
+   tt = (time_t)itt;
+   ltm = localtime(&tt);
+   ___slogan_obj ___temp;
+   ___U32VECTORSET(result, ___fix(0), ___fix(ltm->tm_sec));
+   ___U32VECTORSET(result, ___fix(1), ___fix(ltm->tm_min));
+   ___U32VECTORSET(result, ___fix(2), ___fix(ltm->tm_hour));
+   ___U32VECTORSET(result, ___fix(3), ___fix(ltm->tm_mday));
+   ___U32VECTORSET(result, ___fix(4), ___fix(ltm->tm_mon));
+   ___U32VECTORSET(result, ___fix(5), ___fix(ltm->tm_year));
+   ___U32VECTORSET(result, ___fix(6), ___fix(ltm->tm_wday));
+   ___U32VECTORSET(result, ___fix(7), ___fix(ltm->tm_yday));
+   ___U32VECTORSET(result, ___fix(8), ___fix(ltm->tm_isdst));
+ }
+ 
+ static int tm_to_secs(___SCMOBJ stm)
+ {
+   struct tm ltm;
+   ltm.tm_sec = ___int(___U32VECTORREF(stm, ___fix(0)));
+   ltm.tm_min = ___int(___U32VECTORREF(stm, ___fix(1)));
+   ltm.tm_hour = ___int(___U32VECTORREF(stm, ___fix(2)));
+   ltm.tm_mday = ___int(___U32VECTORREF(stm, ___fix(3)));
+   ltm.tm_mon = ___int(___U32VECTORREF(stm, ___fix(4)));
+   ltm.tm_year = ___int(___U32VECTORREF(stm, ___fix(5)));
+   ltm.tm_wday = ___int(___U32VECTORREF(stm, ___fix(6)));
+   ltm.tm_yday = ___int(___U32VECTORREF(stm, ___fix(7)));
+   ltm.tm_isdst = ___int(___U32VECTORREF(stm, ___fix(8)));
+   return mktime(&ltm);
+ }
+ 
+c-declare-end
+)
+
 (define is_eqv eqv?)
 (define is_eq eq?)
 (define is_equal equal?)
@@ -478,11 +542,46 @@
 (define <> not-equal?)
 
 ;; time functions
-(define (now) (time->seconds (current-time)))
-(define current_time current-time)
-(define is_time time?)
-(define time_to_seconds time->seconds)
-(define seconds_to_time seconds->time)
+(define get-localtime (c-lambda (scheme-object) void "get_localtime"))
+(define tm->secs (c-lambda (scheme-object) int "tm_to_secs"))
+(define secs->tm (c-lambda (scheme-object scheme-object) void "secs_to_tm"))
+
+(define (u32vector->tm vec)
+  `((seconds . ,(u32vector-ref vec 0))
+    (minute . ,(u32vector-ref vec 1))
+    (hour . ,(u32vector-ref vec 2))
+    (month_day . ,(u32vector-ref vec 3))
+    (month . ,(u32vector-ref vec 4))
+    (year . ,(+ 1900 (u32vector-ref vec 5)))
+    (week_day . ,(u32vector-ref vec 6))
+    (year_day . ,(u32vector-ref vec 7))
+    (is_dst . ,(not (zero? (u32vector-ref vec 8))))))
+
+(define (tm->u32vector tm)
+  (let ((vec (make-u32vector 9)))
+    (u32vector-set! vec 0 (scm-cdr (scm-assq 'seconds tm)))
+    (u32vector-set! vec 1 (scm-cdr (scm-assq 'minute tm)))
+    (u32vector-set! vec 2 (scm-cdr (scm-assq 'hour tm)))
+    (u32vector-set! vec 3 (scm-cdr (scm-assq 'month_day tm)))
+    (u32vector-set! vec 4 (scm-cdr (scm-assq 'month tm)))
+    (u32vector-set! vec 5 (- (scm-cdr (scm-assq 'year tm)) 1900))
+    (u32vector-set! vec 6 (scm-cdr (scm-assq 'week_day tm)))
+    (u32vector-set! vec 7 (scm-cdr (scm-assq 'year_day tm)))
+    (u32vector-set! vec 8 (if (scm-cdr (scm-assq 'is_dst tm)) 1 0))
+    vec))
+
+(define (now #!optional secs)
+  (let ((result (make-u32vector 9)))
+    (if secs
+        (secs->tm (scm-floor secs) result)
+        (get-localtime result))
+    (u32vector->tm result)))
+
+(define (now_millis #!optional tm)
+  (if (not tm)
+      (time->seconds (current-time))
+      (tm->secs (tm->u32vector tm))))
+
 (define process_times process-times)
 (define cpu_time cpu-time)
 (define real_time real-time)

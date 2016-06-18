@@ -60,3 +60,4 @@
 
 (define scm-string string)
 (define scm-substring substring)
+(define scm-floor floor)
