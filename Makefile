@@ -9,8 +9,8 @@ install:
 uninstall:
 	make -C ./src uninstall SLOGAN_ROOT=`pwd`
 
-test:
-	make -C ./src test
+test:   
+	make -C ./src test SLOGAN_ROOT=`pwd`
 
 clean:
 	make -C ./src clean SLOGAN_ROOT=`pwd`
