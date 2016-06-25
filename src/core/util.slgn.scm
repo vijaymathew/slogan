@@ -59,6 +59,24 @@
 
 (define (void? val) (scm-eq? *void* val))
 
+(define (unicode-literals->qmarks str)
+  (let ((len (string-length str)))
+    (let loop ((i 0) (start #f) (chars '()))
+      (if (>= i len)
+          (list->string (scm-reverse chars))
+          (let ((c (string-ref str i)))
+            (if (> (char->integer c) 255)
+                (loop (+ i 1) #t (scm-cons #\? chars))
+                (loop (+ i 1) start (if start (scm-cons c chars) chars))))))))
+
+(define (safe-display-string str port)
+  (with-exception-catcher
+   (lambda (e)
+     (if (os-exception? e)
+         (scm-display (unicode-literals->qmarks str) port)
+         (raise e)))
+   (lambda () (scm-display str port))))
+
 (define (slgn-display val #!key (port (current-output-port)))
   (if (scm-not (void? val))
       (cond ((procedure? val)
@@ -70,7 +88,7 @@
             ((pair? val)
              (slgn-display-pair val port))
             ((string? val)
-             (scm-write val port))
+             (safe-display-string val port))
             ((char? val)
              (slgn-display-char val port))
             ((vector? val)
