@@ -26,6 +26,46 @@
                        (error "Invalid command line option." (scm-car args))))
                (loop (scm-cdr args))))))
 
+(define (show-vm-usage)
+  (let ((msg "Usage: program [-:OPTION,OPTION...] ...
+where OPTION is one of:
+     mHEAPSIZE       set minimum heap size in kilobytes
+     hHEAPSIZE       set maximum heap size in kilobytes
+     lLIVEPERCENT    set heap live ratio after GC in percent
+     s|S             set standard Scheme mode (on|off)
+     d[OPT...]       set debugging options; OPT is one of:
+                         p|a       treat uncaught exceptions as errors
+                                   (primordial-thread only|all threads)
+                         r|s|q     error handling (create a new REPL|start in
+                                   single-step mode|quit with error status)
+                         R|D|Q     user interrupt handling (create a new REPL|
+                                   defer handling|quit with error status)
+                         i|c|-|@[HOST][:PORT]
+                                   select REPL interaction channel (ide|console|
+                                   standard input and output|remote debugger
+                                   (defaults: HOST=127.0.0.1, PORT=44555))
+                         0..9      verbosity level
+     @[INTF][:PORT]  set main RPC server configuration; defaults: INTF=127.0.0.1,
+                     PORT=44556; when INTF=* all interfaces accept connections
+     =DIRECTORY      override central Gambit installation directory
+     ~~DIR=DIRECTORY override Gambit installation directory ~~DIR (where DIR can
+                     be the special \"bin\" and \"lib\", or empty, or any identifier)
+     +ARGUMENT       add ARGUMENT to the command line before other arguments
+     f[OPT...]       set file options; see below for OPT
+     t[OPT...]       set terminal options; see below for OPT
+     -[OPT...]       set standard input and output options; see below for OPT
+                     where OPT is one of:
+                         A|1|2|4|6|8|U   character encoding (ASCII|ISO-8859-1|UCS-2/4|UTF-16/8|UTF)
+                         l|c|cl          end-of-line encoding (LF|CR|CR-LF)
+                         u|n|f           buffering (unbuffered|newline buffered|fully buffered)
+                         r|R             enable character encoding errors (on|off)
+                         e|E             [for terminals only] enable line-editing (on|off)"))
+    (scm-newline)
+    (scm-display "The options accepted by the Gambit VM:")
+    (scm-newline)
+    (scm-display msg)
+    (scm-newline)))
+    
 (define (show-usage)
   (scm-println "Usage: slogan [options]")
   (scm-println "             (to start the interactive REPL)")
@@ -42,7 +82,8 @@
   (scm-println "     -r            Launch REPL after performing other options.")
   (scm-println "     -v            Display version information and quit.")
   (scm-println "     -h            Print this help and quit.")
-  (scm-println))
+  (scm-println)
+  (show-vm-usage))   
 
 (define (show-version)
   (scm-println "slogan version \"" *major-version* "." *minor-version* "-" *release-name* "\"")
