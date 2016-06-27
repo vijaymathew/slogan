@@ -453,48 +453,52 @@
                  (scm-list (if def 'define 'set!) sym (scm-expression tokenizer))))
       (parser-error tokenizer "Expected assignment.")))
 
+(define (invoke-access-expression tokenizer expr)
+  (let loop ((expr expr))
+    (let ((tok (tokenizer 'peek)))
+      (cond ((scm-eq? tok '*open-paren*)
+             (loop (func-call-expr expr tokenizer)))
+            ((scm-eq? tok '*colon*)
+             (pair-literal tokenizer expr))
+            ((scm-eq? tok '*open-bracket*)
+             (array-access-expr tokenizer expr))
+            (else expr)))))
+
 (define (scm-expression tokenizer)
   (if (scm-eq? (tokenizer 'peek) '*semicolon*)
       *void*
       (sanitize-expression
        tokenizer
-       (let ((expr (logical-and-expr tokenizer)))
-         (let loop ((expr expr))
-           (let ((tok (tokenizer 'peek)))
-             (cond ((scm-eq? tok '*open-paren*)
-                    (loop (func-call-expr expr tokenizer)))
-                   ((scm-eq? tok '*colon*)
-                    (pair-literal tokenizer expr))
-                   ((scm-eq? tok '*open-bracket*)
-                    (array-access-expr tokenizer expr))
-                   (else expr))))))))
+       (invoke-access-expression tokenizer (logical-and-expr tokenizer)))))
 
 (define (array-access-expr tokenizer expr)
-  (let loop ((expr expr))
-    (cond ((scm-eq? (tokenizer 'peek) '*open-bracket*)
-           (tokenizer 'next)
-           (loop
-            (cond ((scm-eq? '*colon* (tokenizer 'peek))
-                   (tokenizer 'next)
-                   (cond ((scm-eq? (tokenizer 'peek) '*close-bracket*)
-                          (tokenizer 'next)
-                          `(let ((*expr* ,expr))
-                             (*-@-* *expr* (scm-cons 0 (generic-array-length *expr*)))))
-                         (else
-                          (let ((e `(*-@-* ,expr (scm-cons 0 ,(scm-expression tokenizer)))))
-                            (if (scm-eq? (tokenizer 'next) '*close-bracket*)
-                                e
-                                (parser-error tokenizer "Expected closing bracket here."))))))
-                  (else
-                   (let ((idx-expr (scm-expression tokenizer)))
-                     (if (scm-eq? (tokenizer 'next) '*close-bracket*)
-                         (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
-                                (tokenizer 'next)
-                                `(*-@-* ,expr ,idx-expr ,(scm-expression tokenizer)))
-                               (else
-                                `(*-@-* ,expr ,idx-expr)))
-                         (parser-error tokenizer "Missing closing bracket.")))))))
-          (else expr))))
+  (invoke-access-expression
+   tokenizer
+   (let loop ((expr expr))
+     (cond ((scm-eq? (tokenizer 'peek) '*open-bracket*)
+            (tokenizer 'next)
+            (loop
+             (cond ((scm-eq? '*colon* (tokenizer 'peek))
+                    (tokenizer 'next)
+                    (cond ((scm-eq? (tokenizer 'peek) '*close-bracket*)
+                           (tokenizer 'next)
+                           `(let ((*expr* ,expr))
+                              (*-@-* *expr* (scm-cons 0 (generic-array-length *expr*)))))
+                          (else
+                           (let ((e `(*-@-* ,expr (scm-cons 0 ,(scm-expression tokenizer)))))
+                             (if (scm-eq? (tokenizer 'next) '*close-bracket*)
+                                 e
+                                 (parser-error tokenizer "Expected closing bracket here."))))))
+                   (else
+                    (let ((idx-expr (scm-expression tokenizer)))
+                      (if (scm-eq? (tokenizer 'next) '*close-bracket*)
+                          (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
+                                 (tokenizer 'next)
+                                 `(*-@-* ,expr ,idx-expr ,(scm-expression tokenizer)))
+                                (else
+                                 `(*-@-* ,expr ,idx-expr)))
+                          (parser-error tokenizer "Missing closing bracket.")))))))
+           (else expr)))))
 
 (define (pair-literal tokenizer expr)
   (tokenizer 'next)
@@ -1263,13 +1267,17 @@
                (let ((s (symbol->string func-val)))
                  (set! func-val (string->symbol (string-append "+" s)))))
            (tokenizer 'next)
-           (let ((expr (mk-func-call-expr tokenizer func-val)))
-             (cond ((scm-eq? (tokenizer 'peek) '*close-paren*)
-                    (tokenizer 'next) 
-                    (if (scm-eq? (tokenizer 'peek) '*period*)
-                        (member-access/funcall-expr expr tokenizer)
-                        expr))
-                   (else (parser-error tokenizer "Missing closing parenthesis after function argument list.")))))
+           (invoke-access-expression
+            tokenizer
+            (let ((expr (mk-func-call-expr tokenizer func-val)))
+              (cond ((scm-eq? (tokenizer 'peek) '*close-paren*)
+                     (tokenizer 'next) 
+                     (if (scm-eq? (tokenizer 'peek) '*period*)
+                         (member-access/funcall-expr expr tokenizer)
+                         expr))
+                    (else (parser-error
+                           tokenizer
+                           "Missing closing parenthesis after function argument list."))))))
           ((scm-eq? token '*open-bracket*)
            (array-access-expr tokenizer func-val))
           (else func-val))))

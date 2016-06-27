@@ -2,9 +2,8 @@
 
 SLOGAN_ROOT ?= ../
 
-INSTALL_DIR ?= /usr/bin
+INSTALL_DIR ?= /usr/local/bin
 CONFIG_DIR ?= /etc/slogan
-INSTALL_LIB_DIR ?= /usr/lib
 
 GSC=${SLOGAN_ROOT}/platform/gsc/gsc/gsc
 

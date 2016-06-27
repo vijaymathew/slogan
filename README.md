@@ -4,12 +4,14 @@ Slogan is a general purpose programming language with facilities for concurrent 
 
     $ ./configure
     $ make
+    $ make test
     $ sudo make install
     $ slogan
 
 The last step will land you in the Slogan REPL.
-If you don't want to do a system-wide installation of Slogan,
-execute `./src/slogan` from this directory to launch the REPL.
+If you don't want to do a system-wide installation of Slogan, execute `./src/slogan` from this directory to launch the REPL.
+(As the folder where you extract and build Slogan will be treated as `SLOGAN_ROOT` by the packaging system,
+this folder should not be deleted after installation. So choose its location wisely!)
 
 Visit http://schemer.in/slogan/ for tutorials and detailed documentation on the language.
 
