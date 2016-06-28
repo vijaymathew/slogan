@@ -850,10 +850,13 @@
                 ((scm-eq? token '*quote*)
                  (tokenizer 'next)
                  (let ((sym (tokenizer 'peek)))
-                   (if (scm-not (symbol? sym))
-                       (parser-error tokenizer "Expected symbol."))
-                   (tokenizer 'next)
-                   (scm-list 'quote sym)))
+                   (cond ((scm-not (symbol? sym))
+                          (parser-error tokenizer "Expected symbol."))
+                         ((slgn-is_special_token sym)
+                          (parser-error tokenizer "Invalid symbol literal."))
+                         (else
+                          (tokenizer 'next)
+                          (scm-list 'quote sym)))))
 		((symbol? token) (handle-symbol token tokenizer))
                 (else (parser-error tokenizer "Invalid literal expression.")))))))
 
@@ -1450,7 +1453,7 @@
           args))))
 
 (define (check-if-reserved-name sym tokenizer)
-  (if (or (reserved-name? sym) (is_special_token sym))
+  (if (or (reserved-name? sym) (slgn-is_special_token sym))
       (parser-error tokenizer (string-append "Invalid use of keyword or operator: "
                                              (symbol->string sym) ".") sym)
       sym))
@@ -1458,7 +1461,7 @@
 (define (valid-identifier? sym)
   (and (symbol? sym)
        (scm-not (or (reserved-name? sym)
-		(is_special_token sym)))))
+		(slgn-is_special_token sym)))))
   
 (define (check-func-param tokenizer) 
   (check-if-reserved-name (tokenizer 'peek) tokenizer)

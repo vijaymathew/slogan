@@ -541,26 +541,30 @@
 
 (define is_keyword_token reserved-name?)
 
-(define (is_special_token token)
+(define (slgn-is_special_token token)
   (let ((cdr-eq? (lambda (p) (scm-eq? token (scm-cdr p)))))
     (or (scm-memp cdr-eq? *special-operators-strings*)
         (scm-memp cdr-eq? *single-char-operators*)
         (scm-memp cdr-eq? *multi-char-operators-strings*))))
 
-(define (special_token_to_string token)
+(define is_special_token slgn-is_special_token)
+
+(define (slgn-special_token_to_string token)
   (let ((cdr-eq? (lambda (p) (scm-eq? token (scm-cdr p)))))
     (find-and-call (lambda (xs) (scm-memp cdr-eq? xs)) 
                    (scm-list *special-operators-strings*
-                         *single-char-operators-strings* 
-                         *multi-char-operators-strings*)
+                             *single-char-operators-strings* 
+                             *multi-char-operators-strings*)
                    caar
                    (lambda () (error "Not a special token." token)))))
+
+(define special_token_to_string slgn-special_token_to_string)
 
 (define (current-token-length tokenizer)
   (let ((token (let ((token (tokenizer 'get)))
                  (cond ((symbol? token)
-                        (if (is_special_token token)
-                            (special_token_to_string token)
+                        (if (slgn-is_special_token token)
+                            (slgn-special_token_to_string token)
                             (symbol->string token)))
                        ((number? token)
                         (number->string token))

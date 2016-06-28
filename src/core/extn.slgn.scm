@@ -523,6 +523,72 @@ c-declare-end
    (else
     (error 'count_not_supported tab))))
 
+(define (char-compare x y)
+  (cond ((char>? x y) 1)
+          ((char<? x y) -1)
+          (else 0)))
+
+(define (lex-compare x y lenfn reffn cmprfn)
+  (let loop ((len1 (lenfn x))
+             (len2 (lenfn y))
+             (i 0) (last-cmpr 0))
+    (if (not (zero? last-cmpr))
+        last-cmpr
+        (cond
+         ((or (zero? len1) (zero? len2))
+          last-cmpr)
+         (else
+          (loop (- len1 1) (- len2 1)
+                (+ i 1) (cmprfn (reffn x i) (reffn y i))))))))
+
+(define (str-compare x y)
+  (lex-compare x y string-length string-ref char-compare))
+
+(define (num-compare x y)
+  (cond ((< y) -1)
+        ((> x y) 1)
+        (else 0)))
+
+(define (scm-compare x y)
+  (cond
+   ((number? x)
+    (num-compare x y))
+   ((string? x)
+    (str-compare x y))
+   ((char? x)
+    (char-compare x y))
+   ((symbol? x)
+    (str-compare (symbol->string x) (symbol->string y)))
+   ((list? x)
+    (lex-compare x y scm-length list-ref scm-compare))
+   ((vector? x)
+    (lex-compare x y vector-length vector-ref scm-compare))
+   ((%bitvector? tab)
+    (lex-compare x y bitvector-length bitvector-ref num-compare))
+   ((u8vector? tab)
+    (lex-compare x y u8vector-length u8vector-ref num-compare))
+   ((s8vector? tab)
+    (lex-compare x y s8vector-length s8vector-ref num-compare))    
+   ((u16vector? tab)
+    (lex-compare x y u16vector-length u16vector-ref num-compare))
+   ((s16vector? tab)
+    (lex-compare x y s16vector-length s16vector-ref num-compare))
+   ((u32vector? tab)
+    (lex-compare x y u32vector-length u32vector-ref num-compare))
+   ((s32vector? tab)
+    (lex-compare x y s32vector-length s32vector-ref num-compare))
+   ((u64vector? tab)
+    (lex-compare x y u64vector-length u64vector-ref num-compare))
+   ((s64vector? tab)
+    (lex-compare x y s64vector-length s64vector-ref num-compare))
+   ((f32vector? tab)
+    (lex-compare x y f32vector-length f32vector-ref num-compare))
+   ((f64vector? tab)
+    (lex-compare x y f64vector-length f64vector-ref num-compare))
+   (else (error 'compare_not_supported x y))))
+
+(define compare scm-compare)
+
 (define (do_times n fn #!key (from 0) init)
   (call/cc
     (lambda (break)

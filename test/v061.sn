@@ -40,9 +40,9 @@ assert s[4] == \x
 assert s == "hallx world"
 
 s = [\a:1, \b:2]
-assert get(\a, s) == 1
-assert get(\b, s) == 2
-assert get(\c, s, 100) == 100
+assert get(s, \a) == 1
+assert get(s, \b) == 2
+assert get(s, \c, 100) == 100
 
 s = #{1:2, 3:4}
 assert ref(s, 1) == 2

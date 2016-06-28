@@ -27,10 +27,9 @@
 
 (define is_empty null?)
 
-(define (at i seq)
-  (list-ref seq i))
+(define at list-ref)
 
-(define (get key seq #!optional deflaut)
+(define (get seq key #!optional deflaut)
   (let ((mapping (scm-assoc key seq)))
     (if mapping (scm-cdr mapping) deflaut)))        
 

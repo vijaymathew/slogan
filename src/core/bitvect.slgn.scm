@@ -248,3 +248,8 @@
                (u32vector-set! barr j (pack-u8->u32 u8arr i len))
                (loop (+ i 4) (+ j 1)))
               (else (make-bitvector (* len 8) barr)))))))
+
+(define (bitvector-ref a i)
+  (if (bitvector-set? a i) 1 0))
+
+(define bit_array_at bitvector-ref)
