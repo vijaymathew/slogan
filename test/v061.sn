@@ -68,16 +68,6 @@ function f(a, b)
 assert f(10, 100) == 1000
 assert f(10, 1000) == 10000
 
-// issue #41 - `cases` replaced with `|`
-declare generic join(a, b) 
-  | (list, array) -> append(a, array_to_list(b))
-  | (list, string) -> append(a, string_to_list(b))
-  | else -> [a, b]
-
-assert join([1, 2, 3], #[10, 20, 30]) == [1, 2, 3, 10, 20, 30]
-assert join([1, 2, 3], "hello") == [1, 2, 3, \h, \e, \l, \l, \o]
-assert join([1, 2, 3], 43) == [[1, 2, 3], 43]
-
 // issue #42 - parameter order of range changed
 let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, ^(x) x+i)]
 let primes = [x | x <- range(2, 50) where not(memq(x, noprimes))]

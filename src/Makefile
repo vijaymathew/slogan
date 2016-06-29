@@ -8,7 +8,7 @@ CONFIG_DIR ?= /etc/slogan
 GSC=${SLOGAN_ROOT}/platform/gsc/gsc/gsc
 
 LIBFFI_PATH=${SLOGAN_ROOT}/platform/libffi-3.2.1
-LIBFFI_LIB=${LIBFFI_PATH}/target/usr/local/lib
+LIBFFI_LIB=${LIBFFI_PATH}/target/usr/local/lib/libffi.a
 LIBFFI_INC=${LIBFFI_PATH}/target/usr/local/lib/libffi-3.2.1/include
 
 OPT_LIBS=-lffi
@@ -20,7 +20,7 @@ all:
 	${GSC} -obj -cc-options "-I${LIBFFI_INC}" ./core/*.c
 	${GSC} -cc-options "-D___LIBRARY" -obj -o ./core/_slogan.o ./core/_slogan.c
 	ar -rc libslogan.a ./core/*.o
-	${GSC} -o slogan -exe -l ./core/_slogan.c -ld-options "-L${LIBFFI_LIB} libslogan.a ${OPT_LIBS}" repl.scm
+	${GSC} -o slogan -exe -l ./core/_slogan.c -ld-options "${LIBFFI_LIB} libslogan.a" repl.scm
 
 
 install:

@@ -64,9 +64,17 @@
 c-declare-end
 )
 
+(define (is_equal x y)
+  (if (procedure? x)
+      (with-exception-catcher
+       (lambda (e)
+         (equal? x y))
+       (lambda ()
+         ((x 'is_equal) y)))
+      (equal? x y)))
+             
 (define is_eqv eqv?)
 (define is_eq eq?)
-(define is_equal equal?)
 (define is_boolean boolean?)
 (define is_function procedure?)
 (define is_symbol symbol?)
@@ -545,7 +553,7 @@ c-declare-end
   (lex-compare x y string-length string-ref char-compare))
 
 (define (num-compare x y)
-  (cond ((< y) -1)
+  (cond ((< x y) -1)
         ((> x y) 1)
         (else 0)))
 
@@ -587,7 +595,36 @@ c-declare-end
     (lex-compare x y f64vector-length f64vector-ref num-compare))
    (else (error 'compare_not_supported x y))))
 
-(define compare scm-compare)
+(define (compare x y)
+  (if (procedure? x)
+      ((x 'compare) y)
+      (scm-compare x y)))
+
+(define (lt-compare x y)
+  (= (compare x y) -1))
+
+(define (lteq-compare x y)
+  (let ((c (compare x y)))
+    (or (= c -1) (= c 0))))
+
+(define (gt-compare x y)
+  (= (compare x y) 1))
+
+(define (gteq-compare x y)
+  (let ((c (compare x y)))
+    (or (= c 1) (= c 0))))
+
+(define (scm-str obj)
+  (let ((s (open-output-string)))
+    (scm-show stream: s obj)
+    (let ((r (get-output-string s)))
+      (close-port s)
+      r)))
+
+(define (to_string obj)
+  (if (procedure? obj)
+      ((obj 'str))
+      (scm-str obj)))
 
 (define (do_times n fn #!key (from 0) init)
   (call/cc
@@ -602,9 +639,9 @@ c-declare-end
             res))))))
 
 (define (not-equal? a b)
-  (scm-not (equal? a b)))
+  (scm-not (is_equal a b)))
 
-(define == equal?)
+(define == is_equal)
 (define <> not-equal?)
 
 ;; time functions

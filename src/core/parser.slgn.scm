@@ -151,46 +151,25 @@
   (let ((name (tokenizer 'next)))
     (if (valid-identifier? name)
         (define-generic-method name tokenizer)
-        (parser-error tokenizer "Expected a valid generic method name."))))
+        (parser-error tokenizer "Expected a valid generic name."))))
 
 (define (define-generic-method name tokenizer)
   (check-if-reserved-name name tokenizer)
-  (let ((params (scm-car (func-params-expr tokenizer #t))))
-    (let ((generic-expr
-	   `(define ,name 
-	      (lambda ,params
-	      (error 'method_not_defined)))))
-      (if (scm-eq? (tokenizer 'peek) '*pipe*)
-	  `(begin ,generic-expr ,@(generic-cases-expr tokenizer name params))
-	  generic-expr))))
-
-(define (generic-cases-expr tokenizer name params)
-  (tokenizer 'next)
-  (let loop ((types (method-types-decl tokenizer))
-	     (method-defs '())
-	     (found-else #f))
-    (if (scm-not (scm-eq? (tokenizer 'next) '*inserter*))
-	(parser-error tokenizer "Missing -> after types expression."))
-    (let* ((body-expr (func-body-expr tokenizer params))
-           (mdef (scm-cons types (scm-list 'define name (merge-lambda 
-                                                          tokenizer params 
-                                                          body-expr)))))
-      (cond ((scm-eq? (tokenizer 'peek) '*pipe*)
-	     (tokenizer 'next)
-	     (cond ((scm-eq? (tokenizer 'peek) 'else)
-		    (tokenizer 'next)
-		    (loop
-		     '()
-		     (scm-cons (mk-method-def mdef) method-defs)
-		     #t))
-		   (else
-		    (loop (method-types-decl tokenizer)
-			  (scm-cons (mk-method-def mdef) method-defs) #f))))
-	    (found-else
-	     (scm-cons (mk-method-def mdef) (scm-reverse method-defs)))
-	    (else
-	     (scm-reverse (scm-cons (mk-method-def mdef) method-defs)))))))
-
+  (let ((params '(*self* #!rest *args*)))
+    `(define ,name
+       (let ((*old-name* ,name))              
+         (lambda ,params
+           (if (procedure? *self*)
+               (with-exception-catcher
+                (lambda (e)
+                  (if (or (wrong-number-of-arguments-exception? e)
+                          (nonprocedure-operator-exception? e))
+                      (apply *old-name* *self* *args*)
+                      (raise e)))
+                (lambda ()
+                  (apply (*self* ',name) *args*)))
+               (apply *old-name* *self* *args*)))))))                           
+                
 (define (func-contract-expr tokenizer)
   (let ((token (tokenizer 'peek)))
     (cond ((scm-eq? 'where token)
@@ -252,17 +231,27 @@
 	 (func-def-stmt-with-name tokenizer))
 	((scm-eq? '*fn* (tokenizer 'peek))
 	 (func-def-expr tokenizer))
-        (else (method-def-stmt tokenizer))))
+        (else (break-stmt tokenizer))))
 
-(define (method-types-decl tokenizer)
-  (if (scm-not (scm-eq? '*open-paren* (tokenizer 'next)))
-      (parser-error tokenizer "Types declaration must start with opening parenthesis."))
-  (let ((types-decl (func-args-expr tokenizer)))
-    (if (scm-not (scm-eq? '*close-paren* (tokenizer 'next)))
-        (parser-error tokenizer "Missing closing parenthesis after type declaration."))
-    (if (scm-not (for_all symbol? types-decl))
-        (parser-error tokenizer "Invalid type declaration."))
-    types-decl))
+(define (break-stmt tokenizer)
+  (cond ((eq? 'break (tokenizer 'peek))
+         (tokenizer 'next)
+         (cond ((eq? '*open-paren* (tokenizer 'peek))
+                (tokenizer 'next)
+                (let ((expr (if (eq? '*close-paren* (tokenizer 'peek))
+                                #f
+                                (scm-expression tokenizer))))
+                  (if (not (eq? '*close-paren* (tokenizer 'next)))
+                      (parser-error tokenizer "Expected closing parenthesis."))
+                  `(break ,expr)))
+               (else '(break #f))))
+        (else (continue-stmt tokenizer))))
+
+(define (continue-stmt tokenizer)
+  (cond ((eq? 'continue (tokenizer 'peek))
+         (tokenizer 'next)
+         '(continue))
+        (else (record-def-stmt tokenizer))))
 
 (define (mk-predic-name psym)
   (if (scm-eq? psym '_)
@@ -271,20 +260,6 @@
        (string-append 
         "is_" 
         (symbol->string psym)))))
-
-(define (mk-method-types-chk types args)
-  (let loop ((types types)
-             (args args)
-             (chk-expr '()))
-    (if (null? types) (scm-append (scm-list 'and) (scm-reverse chk-expr))
-        (let ((type-name (scm-car types)))
-          (if (scm-eq? type-name '@rest)
-              (loop (cddr types)
-                    (scm-cdr args)
-                    (scm-cons `(for_all ,(mk-predic-name (scm-cadr types)) ,(scm-car args)) chk-expr))
-              (loop (scm-cdr types) 
-                    (scm-cdr args) 
-                    (scm-cons `(,(mk-predic-name (scm-car types)) ,(scm-car args)) chk-expr)))))))
 
 (define (params->args params)
   (let loop ((params params)
@@ -297,49 +272,8 @@
                (loop (scm-cdr params) (scm-cons (scm-car params) args)))
               (else (loop (scm-cdr params) args))))))
 
-(define (method-def-stmt-from-name tokenizer)
-  (let ((name (tokenizer 'peek)))
-    (if (scm-not (valid-identifier? name))
-        (parser-error tokenizer "Method must have a valid name."))
-    (begin (tokenizer 'next)
-	   (let ((pts (func-params-expr tokenizer #t)))
-	     (let ((types (scm-cdr pts))
-		   (params (scm-car pts)))
-	       (let ((body-expr (func-body-expr tokenizer params)))
-		 (scm-cons types (scm-list 'define name (merge-lambda 
-							 tokenizer params 
-							 body-expr)))))))))
-
-(define (method-def-stmt tokenizer)
-  (cond ((scm-eq? (tokenizer 'peek) 'method)
-         (tokenizer 'next)
-         (mk-method-def (method-def-stmt-from-name tokenizer)))
-        (else (record-def-stmt tokenizer))))
-
 (define (types-has-rest? types)
   (member '@rest types))
-
-(define (mk-method-def method-def)
-  (let ((func-def (scm-cdr method-def))
-	(types (scm-car method-def)))
-    (let ((name (scm-cadr func-def))
-	  (params (scm-cadr (scm-caddr func-def)))
-	  (args (params->args (scm-cadr (scm-caddr func-def))))
-	  (body (scm-caddr (scm-caddr func-def))))
-      (let ((types-chk (mk-method-types-chk types args))
-	    (old-name (string->symbol 
-		       (string-append 
-			"*" 
-			(symbol->string name) 
-			"*"))))
-        (let ((parent-call (if (types-has-rest? types)
-                               `(scm-apply ,old-name ,@args)
-                               `(,old-name ,@args))))
-          `(set! ,name (let ((,old-name ,name))
-                         (lambda ,params 
-                           (if ,types-chk 
-                             ,body
-                             ,parent-call)))))))))
 
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))
@@ -1037,16 +971,19 @@
                (if (not (eq? (tokenizer 'next) '*close-paren*))
                    (parser-error tokenizer "Expected closing parenthesis here."))
                (let ((counter (if (not (null? bindings)) (scm-caar bindings) #f)))
-                 `(let* ,(scm-append '((*for-value* #f)) (scm-reverse bindings))
-                    (let *for-loop* ()
-                      (if ,cond-expr
-                          (begin
-                            (set! *for-value* ,(func-body-expr tokenizer #f #f))
-                            ,(if counter
-                                 `(set! ,counter ,nxt-expr)
-                                 nxt-expr)
-                            (*for-loop*))
-                          *for-value*))))))))
+                 `(call/cc (lambda (break)
+                             (let* ,(scm-append '((*for-value* #f)) (scm-reverse bindings))
+                               (let *for-loop* ()
+                                 (if ,cond-expr
+                                     (begin
+                                       (set! *for-value*
+                                             (call/cc (lambda (continue)
+                                                        ,(func-body-expr tokenizer #f #f))))
+                                       ,(if counter
+                                            `(set! ,counter ,nxt-expr)
+                                            nxt-expr)
+                                       (*for-loop*))
+                                     *for-value*))))))))))
         (else  (func-call-expr (literal-expr tokenizer) tokenizer))))
 
 (define (let-expr tokenizer)
@@ -1549,16 +1486,16 @@
   (swap-operands (scm-cons '<> (scm-list (addsub-expr tokenizer)))))
 
 (define (lt-expr tokenizer)
-  (swap-operands (scm-cons '< (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'lt-compare (scm-list (addsub-expr tokenizer)))))
 
 (define (lteq-expr tokenizer)
-  (swap-operands (scm-cons '<= (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'lteq-compare (scm-list (addsub-expr tokenizer)))))
 
 (define (gt-expr tokenizer)
-  (swap-operands (scm-cons '> (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'gt-compare (scm-list (addsub-expr tokenizer)))))
 
 (define (gteq-expr tokenizer)
-  (swap-operands (scm-cons '>= (scm-list (addsub-expr tokenizer)))))
+  (swap-operands (scm-cons 'gteq-compare (scm-list (addsub-expr tokenizer)))))
 
 (define (and-expr tokenizer)
   (swap-operands (scm-cons 'and (scm-list (logical-or-expr tokenizer)))))
@@ -1579,10 +1516,10 @@
       (scm-list (scm-car expr) (scm-caddr expr) (scm-cadr expr))
       expr))
 
-(define *reserved-names* '(^ function module method record true false
+(define *reserved-names* '(^ function module record true false
 			     if else when let letseq letrec yield
 			     case match where try trycc catch finally
-			     declare assert for))
+			     declare assert for break continue))
 
 (define (reserved-name? sym)
   (and (symbol? sym)

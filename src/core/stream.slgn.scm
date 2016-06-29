@@ -394,11 +394,13 @@
 (define (get_token tokenizer)
   (tokenizer 'next))
 
-(define (show #!key (stream (current-output-port)) #!rest objs)
+(define (scm-show #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))
     (if (scm-not (null? objs))
 	(begin (slgn-display (scm-car objs) port: stream)
 	       (loop (scm-cdr objs))))))
+
+(define show scm-show)
 
 (define (showln #!key (stream (current-output-port)) #!rest objs)
   (let loop ((objs objs))

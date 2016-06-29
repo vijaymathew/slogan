@@ -16,19 +16,13 @@ function recur(a)
 assert recur(10) == 0
 assert recur(-10) == -10
 
-declare generic concat(a, b)
+function concat(a, b);
+declare generic concat
 
-method concat(a:list, b:list) append(a, b)
-method concat(a:string, b:string) string_append(a, b)
-
-assert concat([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
-assert concat("hello ", "world") == "hello world"
-
-let old_add = `+`
-method `+`(a:string, b:string) concat(a, b)
-assert "hello " + "world" == "hello world"
-assert 1 + 2 == 3
-`+` = old_add
+function listc(a) ^(msg) | 'concat -> ^(b) append(a, b)
+function stringc(a) ^(msg) | 'concat -> ^(b) string_append(a, b)
+assert concat(listc([1, 2, 3]), [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
+assert concat(stringc("hello "), "world") == "hello world"
 
 module n(f, lf)
 { function f(a) a
@@ -271,3 +265,9 @@ assert count(#f64[1.,2.,3.,4.,1.5]) == 5
 
 t1 = for (i = 0; i < 10; inc(i)) i
 assert t1 == 9
+assert not(for (i = 0; i < 10; inc(i)) if (i == 5) break else i)
+assert not(for (i = 0; i < 10; inc(i)) if (i == 5) break() else i)
+assert for (i = 0; i < 10; inc(i)) if (i == 5) break(100) else i == 100
+t1 = 0
+for (i = 0; i < 10; inc(i)) if (mod(i, 2) == 0) continue else t1 = i + t1
+assert t1 == 25

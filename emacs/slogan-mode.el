@@ -1,9 +1,8 @@
 ;; Need lot of work here...
 
-(setq slogan-keywords '("^" "function" "method" "record"
-                       "if" "else" "when" "let" "letseq" "letrec" "yield"
-                       "case" "match" "where" "try" "trycc" "catch" "finally"
-                       "module" "declare" "generic" "assert" "for"))
+(setq slogan-keywords '("^" "function" "record" "if" "else" "when" "let" "letseq"
+                        "letrec" "yield" "case" "match" "where" "try" "trycc" "break" 
+                        "catch" "finally" "module" "declare" "generic" "assert" "for" "continue"))
 
 (setq slogan-constants '("true" "false" "and" "or"))
 

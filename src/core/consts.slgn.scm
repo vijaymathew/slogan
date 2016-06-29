@@ -30,13 +30,13 @@
 (define *gsc-compiler* (string-append *slogan-root* "/platform/gsc/gsc/gsc"))
 
 (define *libffi-path* (string-append *slogan-root* "/platform/libffi-3.2.1"))
-(define *libffi-lib* (string-append *libffi-path* "/target/usr/local/lib"))
+(define *libffi-lib* (string-append *libffi-path* "/target/usr/local/lib/libffi.a"))
 (define *libffi-inc* (string-append *libffi-path* "/target/usr/local/lib/libffi-3.2.1/include"))
 (define *default-cc-options* (string-append "-I" *libffi-inc*))
 
 (define *libslogan-path* (string-append *slogan-root* "/src/libslogan.a"))
 
-(define *default-ld-options* (string-append "-L" *libffi-lib* " " *libslogan-path* " -lffi "))
+(define *default-ld-options* (string-append "" *libffi-lib* " " *libslogan-path* " "))
 
 (define *default-eq* eqv?)
 
