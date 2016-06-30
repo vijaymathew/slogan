@@ -2,8 +2,6 @@ Slogan is a general purpose programming language with facilities for concurrent 
 
 ###Building and running Slogan
 
-Method 1: 
-
     $ sudo ./install
 
 This will build and install slogan with `/etc/slogan` as SLOGAN_ROOT where all runtime
@@ -12,7 +10,7 @@ command-line argument:
 
     $ sudo ./install /users/me/slogan
  
-Method 2:
+If you want to hack on Slogan itself, you may want to follow a more traditional approach:
     
     $ ./configure
     $ make
@@ -21,7 +19,7 @@ Method 2:
 
 If you follow this method, the current folder is treated as SLOGAN_ROOT. 
 
-Now you are ready to launch the Slogan REPL:
+After the installation is complete, you can start the REPL by typing:
     
     $ slogan
 
