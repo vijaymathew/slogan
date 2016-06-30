@@ -20,7 +20,7 @@ all:
 	${GSC} -obj -cc-options "-I${LIBFFI_INC}" ./core/*.c
 	${GSC} -cc-options "-D___LIBRARY" -obj -o ./core/_slogan.o ./core/_slogan.c
 	ar -rc libslogan.a ./core/*.o
-	${GSC} -o slogan -exe -l ./core/_slogan.c -ld-options "${LIBFFI_LIB} libslogan.a" repl.scm
+	${GSC} -o slogan -exe -l ./core/_slogan.c -ld-options "libslogan.a ${LIBFFI_LIB}" repl.scm
 
 
 install:
