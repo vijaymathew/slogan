@@ -6,9 +6,9 @@ Method 1:
 
     $ sudo ./install
 
-This will copy the slogan executable program to `/usr/local/bin`.
-`/etc/slogan` is the default SLOGAN_ROOT where all runtime dependencies and packages are installed.
-SLOGAN_ROOT can be customized through the command-line:
+This will build and install slogan with `/etc/slogan` as SLOGAN_ROOT where all runtime
+dependencies and packages are installed. SLOGAN_ROOT can be customized through a
+command-line argument:
 
     $ sudo ./install /users/me/slogan
  
