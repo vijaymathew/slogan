@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 SLOGAN_HOME=`pwd`
 
 cd ${SLOGAN_HOME}/platform/gsc

@@ -2,16 +2,31 @@ Slogan is a general purpose programming language with facilities for concurrent 
 
 ###Building and running Slogan
 
+Method 1: 
+
+    $ sudo ./install
+
+This will copy the slogan executable program to `/usr/local/bin`.
+`/etc/slogan` is the default SLOGAN_ROOT where all runtime dependencies and packages are installed.
+SLOGAN_ROOT can be customized through the command-line:
+
+    $ sudo ./install /users/me/slogan
+ 
+Method 2:
+    
     $ ./configure
     $ make
     $ make test
     $ sudo make install
+
+If you follow this method, the current folder is treated as SLOGAN_ROOT. 
+
+Now you are ready to launch the Slogan REPL:
+    
     $ slogan
 
-The last step will land you in the Slogan REPL.
-If you don't want to do a system-wide installation of Slogan, execute `./src/slogan` from this directory to launch the REPL.
-(As the folder where you extract and build Slogan will be treated as `SLOGAN_ROOT` by the packaging system,
-this folder should not be deleted after installation. So choose its location wisely!)
+(If you skipped system-wide installation, run `./src/slogan` instead.)
+
 
 Visit http://schemer.in/slogan/ for tutorials and detailed documentation on the language.
 

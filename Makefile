@@ -1,4 +1,5 @@
 .PHONY: test
+.PHONY: install
 
 all:
 	make -C ./src SLOGAN_ROOT=`pwd`

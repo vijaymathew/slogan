@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+SLOGAN_ROOT=/etc/slogan
+
+if [ -n "$1" ]; then SLOGAN_ROOT=$1; fi
+
+echo "$SLOGAN_ROOT"
+   
+mkdir -p ${SLOGAN_ROOT}
+cp -R ./* ${SLOGAN_ROOT}
+cd ${SLOGAN_ROOT};./configure;make;make install;cd -
