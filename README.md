@@ -4,12 +4,6 @@ Slogan is a general purpose programming language with facilities for concurrent 
 
     $ sudo ./install
 
-This will build and install slogan with `/etc/slogan` as SLOGAN_ROOT where all runtime
-dependencies and packages are installed. SLOGAN_ROOT can be customized through a
-command-line argument:
-
-    $ sudo ./install /users/me/slogan
- 
 If you want to hack on Slogan itself, you may want to follow a more traditional approach:
     
     $ ./configure
@@ -17,7 +11,6 @@ If you want to hack on Slogan itself, you may want to follow a more traditional 
     $ make test
     $ sudo make install
 
-If you follow this method, the current folder is treated as SLOGAN_ROOT. 
 
 After the installation is complete, you can start the REPL by typing:
     
