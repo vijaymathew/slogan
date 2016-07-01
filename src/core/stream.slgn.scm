@@ -129,8 +129,10 @@
 (define (string_reader str)
   (open-byte-stream-helper open-input-string str #f))
 
-(define (string_writer)
-  (open-byte-stream-helper open-output-string '() #f))
+(define (string_writer #!optional (s *void*))
+  (let ((stream (open-byte-stream-helper open-output-string '() #f)))
+    (if (not (void? s)) (scm-show stream: stream s))
+    stream))
 
 (define get_output_string get-output-string)
 (define get_output_bytes get-output-u8vector)
