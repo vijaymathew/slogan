@@ -139,6 +139,9 @@ assert a == 1.5
 let s =[expt(x,2) | x <- range(0, 10)]
 assert s == [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
 assert [x | x <- s where remainder(x, 2) == 0] == [0, 4, 16, 36, 64, 100]
+assert [x*y*z | [x,y,z] <- [[1,2,3], [4,5,6]]] == [6, 120]
+let buy = ['oranges:4, 'newspaper:1, 'apples:10, 'pears:6, 'milk:3];
+assert [name:2*number | name:number <- buy] == ['oranges:8, 'newspaper:2, 'apples:20, 'pears:12, 'milk:6]
 
 let words = string_split("The quick brown fox jumps over the lazy dog")
 words = [[string_upcase(w), string_downcase(w), string_length(w)] | w <- words]

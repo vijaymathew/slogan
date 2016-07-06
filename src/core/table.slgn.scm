@@ -67,6 +67,9 @@
           (hashtable_set ht (scm-car a) (scm-cdr a))
           (loop (scm-cdr args)))))))
 
+(define (hashtable->list ht)
+  (table->list (hashtable-table ht)))
+
 ;; The set datatype
 (define (list->set xs)
   (let ((ht (make-table test: equal?)))
