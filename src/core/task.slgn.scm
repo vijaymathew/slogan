@@ -43,7 +43,7 @@
           (make-root-thread fn))))
 
 (define is_task thread?)
-(define current_task current-thread)
+(define self current-thread)
 (define task_name thread-name)
 (define task_data thread-specific)
 (define task_set_data thread-specific-set!)
