@@ -1,0 +1,19 @@
+module area_server(start, area)
+{  function start()
+     !let loop (msg = !<)
+        | sender:['rectangle, width, height] -> { sender !> width*height; loop(!<) }
+        | sender:['square, side] -> { sender !> side*side; loop(!<) }
+        | sender:_ -> { sender !> 'invalid_message; loop(!<) }       
+        | _ -> { showln("Invalid message", msg); loop(!<) }
+
+   function rpc(pid, what)
+   { pid !> self():what
+     !< }
+
+   function area(pid, what) rpc(pid, what) }
+
+let pid = area_server.start()
+let me = self()
+assert area_server.area(pid, ['rectangle, 10, 20]) == 200
+assert area_server.area(pid, ['square, 10]) == 100
+assert area_server.area(pid, ['ellipse, 20, 30]) == 'invalid_message
