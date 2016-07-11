@@ -124,7 +124,6 @@
                                       (scm-cons #\' '*quote*)
                                       (scm-cons #\, '*comma*)
                                       (scm-cons #\~ '*delay*)
-                                      (scm-cons #\! '*task*)                                      
                                       (scm-cons #\: '*colon*)))
 
 (define *single-char-operators-strings* (scm-list (scm-cons "+" '*plus*)
@@ -142,7 +141,6 @@
                                               (scm-cons ":" '*colon*)
 					      (scm-cons "^" '*fn*)
                                               (scm-cons "~" '*delay*)
-                                              (scm-cons "!" '*task*)                                              
                                               (scm-cons ";" '*semicolon*)))
 
 (define *multi-char-operators-strings* (scm-list (scm-cons "==" '*equals*)
@@ -153,6 +151,9 @@
                                              (scm-cons "<=" '*less-than-equals*)
                                              (scm-cons "&&" '*and*)
                                              (scm-cons "||" '*or*)
+                                             (scm-cons "!" '*task*)
+                                             (scm-cons "!>" '*task-send*)
+                                             (scm-cons "!<" '*task-recv*)                                             
                                              (scm-cons "->" '*inserter*)
                                              (scm-cons "<-" '*extractor*)))
 
@@ -177,7 +178,8 @@
            (char=? c #\>)
            (char=? c #\&)
            (char=? c #\-)
-           (char=? c #\|))))
+           (char=? c #\|)
+           (char=? c #\!))))
 
 (define (fetch-operator-string token strs)
   (let loop ((oprs strs))
@@ -206,10 +208,7 @@
            '*extractor*)
           (else '*less-than*))))
 
-(define (fetch-operator port 
-                        suffix
-                        suffix-opr
-                        opr)
+(define (fetch-operator port suffix suffix-opr opr)
   (port-pos-read-char! port)
   (if (scm-eq? opr '*less-than*)
       (fetch-less-than-operator port)
@@ -255,6 +254,16 @@
                                              ((char=? c #\|) '*or*))))
           ((char=? c #\-)
            (fetch-operator port #\> '*inserter* '*minus*))
+          ((char=? c #\!)
+           (port-pos-read-char! port)
+           (let ((c (port-pos-peek-char port)))
+             (cond ((char=? c #\>)
+                    (port-pos-read-char! port)
+                    '*task-send*)
+                   ((char=? c #\<)
+                    (port-pos-read-char! port)
+                    '*task-recv*)
+                   (else '*task*))))
           (else
            (tokenizer-error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
 

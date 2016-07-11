@@ -593,7 +593,7 @@ c-declare-end
     (lex-compare x y f32vector-length f32vector-ref num-compare))
    ((f64vector? tab)
     (lex-compare x y f64vector-length f64vector-ref num-compare))
-   (else (error 'compare_not_supported x y))))
+   (else (error 'compare_not_supported))))
 
 (define (compare x y)
   (if (procedure? x)

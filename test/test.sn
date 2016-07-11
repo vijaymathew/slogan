@@ -1,6 +1,7 @@
-link("../test/basic");
-link("../test/fp");
-link("../test/yield");
-link("../test/lazy");
-link("../test/v061");
-link("../test/v08");
+link("../test/basic")
+link("../test/fp")
+link("../test/yield")
+link("../test/lazy")
+link("../test/v061")
+link("../test/v08")
+link("../test/v011_2")
