@@ -15,6 +15,7 @@
 
 (defvar slogan-mode-syntax-table
   (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?_ "w" st)
     (modify-syntax-entry ?/ ". 124b" st)
     (modify-syntax-entry ?* ". 23" st)
     (modify-syntax-entry ?\n "> b" st)

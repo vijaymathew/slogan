@@ -680,7 +680,7 @@ c-declare-end
         (get-localtime result))
     (u32vector->tm result)))
 
-(define (now_millis #!optional tm)
+(define (now_seconds #!optional tm)
   (if (not tm)
       (time->seconds (current-time))
       (tm->secs (tm->u32vector tm))))
