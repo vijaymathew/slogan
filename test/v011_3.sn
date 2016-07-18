@@ -1,0 +1,55 @@
+record point2d(x:real, y:real)
+
+function magnitude(p)
+| point2d(x, y) -> sqrt(expt(x, 2) + expt(y, 2))
+
+function distance(p1, p2)
+  magnitude(point2d(x = point2d_x(p1) - point2d_x(p2),
+                    y = point2d_y(p1) - point2d_y(p2)))
+
+record circle(center:point2d, radius:real)
+record rect(lower_left:point2d, width:real, height:real)
+record segment(endpoint1:point2d, endpoint2:point2d)
+
+function is_inside_scene_element(p, scene_element)
+  match(scene_element)
+    circle(center, radius)          -> distance(center, p) < radius
+  | rect(lower_left, width, height) -> and(point2d_x(p) > point2d_x(lower_left),
+                                           point2d_x(p) < point2d_x(lower_left) + width,
+                                           point2d_y(p) > point2d_y(lower_left),
+                                           point2d_y(p) < point2d_y(lower_left) + height)
+  | segment(endpoint1, endpoint2)   -> false                                                
+
+function is_inside_scene(point, scene)
+  exists(^(el) is_inside_scene_element(point, el), scene)
+
+let p = point2d(x = 3., y = 7.)
+let c = point2d(x = 4., y = 4.)
+assert not(is_inside_scene(p, [circle(center = c, radius = 0.5)]))
+assert is_inside_scene(p, [circle(center = c, radius = 5.)])
+
+record running_sum(sum:real = 0, sum_sq:real = 0, samples = 0 where is_real(samples))
+
+function mean(rsum) running_sum_sum(rsum) / running_sum_samples(rsum)
+
+function stdev(rsum) 
+  sqrt(running_sum_sum_sq(rsum) / running_sum_samples(rsum) 
+       - expt(running_sum_sum(rsum)/running_sum_samples(rsum), 2))
+
+function update(rsum, x)
+{ running_sum_set_samples(rsum, running_sum_samples(rsum) + 1)
+  running_sum_set_sum(rsum, running_sum_sum(rsum) + x)
+  running_sum_set_sum_sq(rsum, running_sum_sum_sq(rsum) + x * x) }
+
+let rsum = running_sum()
+assert is_zero(running_sum_sum(rsum))
+assert is_zero(running_sum_sum_sq(rsum))
+assert is_zero(running_sum_samples(rsum))
+
+for_each(^(x) update(rsum, x), [1., 3., 2., -7., 4., 5.])
+
+assert floor(mean(rsum)) == 1.
+assert ceiling(stdev(rsum)) == 4.
+
+try running_sum(sum = "hello") catch (e) assert e
+try running_sum(samples = "hi") catch (e) assert e
