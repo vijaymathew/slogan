@@ -125,7 +125,7 @@
   (scm-display "error: ")
   (let ((s (open-output-string)))
     (show_exception ex s)
-    (let loop ((lines (string_split (get-output-string s) #\newline)))
+    (let loop ((lines (string-split (get-output-string s) #\newline)))
       (if (scm-not (null? lines))
           (begin (scm-display (scm-car lines))
                  (scm-newline)

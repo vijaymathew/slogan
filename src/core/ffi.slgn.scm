@@ -227,7 +227,7 @@ c-declare-end
   (if (scm-not (file-exists? libname))
       (let ((ld-paths (getenv "LD_LIBRARY_PATH"))) ;; DYLD_LIBRARY_PATH in Darwin??
         (if ld-paths
-            (set! ld-paths (string_split ld-paths '(#\:))))
+            (set! ld-paths (string-split ld-paths '(#\:))))
         (let loop ((ld-paths ld-paths))
           (if (null? ld-paths) 
               #f

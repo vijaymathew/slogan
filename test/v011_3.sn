@@ -53,3 +53,111 @@ assert ceiling(stdev(rsum)) == 4.
 
 try running_sum(sum = "hello") catch (e) assert e
 try running_sum(samples = "hi") catch (e) assert e
+
+// unzip
+let xs = zip([1,2,3], ["one", "two", "three"])
+assert xs == [1:"one", 2:"two", 3:"three"]
+let ys = unzip(xs);
+assert ys == [[1, 2, 3], "one", "two", "three"]
+assert car(ys) == [1, 2, 3]
+assert cdr(ys) == ["one", "two", "three"]
+
+// parsing of match changed to take care of `or-patterns`.
+function color_code(c)
+    match (c)
+      "red" -> [255, 0, 0]
+    | "green" -> [0, 255, 0]
+    | "blue" -> [0, 0, 255]
+    | else -> 'unknown_color
+
+assert color_code("red") == [255, 0, 0]
+assert color_code("blu") == 'unknown_color
+assert color_code("blue") == [0, 0, 255]
+
+function f1(xs)
+  match (xs)
+    [2, x, y] -> x + y
+  | [3, x, y, z] -> x + y + z
+
+assert f1([2, 10, 20]) == 30
+assert f1([3, 10, 20, 30]) == 60
+
+function is_nmf(e) error_message(e) == 'no_match_found
+
+assert try f1([3, 10, 20]) catch (e) is_nmf(e)
+assert try f1([4, 10, 20, 30]) catch (e) is_nmf(e)
+
+function f2(msg)
+  case (msg)
+    hi -> 'hello
+  | bye -> 'see_you
+
+assert f2('hi) == 'hello
+assert f2('bye) == 'see_you
+
+function f3(msg)
+  match (msg)
+    'hi -> 'hello
+  | 'bye -> 'see_you;
+
+assert f3('hi) == 'hello
+assert f3('bye) == 'see_you
+
+function f4(msg)
+  | 'hi -> 'hello
+  | 'bye -> 'see_you;
+
+assert f4('hi) == 'hello
+assert f4('bye) == 'see_you
+
+function g(a, b)
+  | [1, x] -> x * 100
+  | [2, x] -> x + 100
+
+assert g(1, 10) == 1000
+
+assert
+match ([1, 2, 3])
+  [_, b, _] where b >= 10 -> 'hi
+| [_, b, _] where b >= 1 -> 'hello
+==  'hello
+
+assert
+try
+match([1, 2, 3])
+  [_, b, _] where b >= 10 -> 'hi
+| [_, b, _] where b >= 3 -> 'hello
+catch (e) is_nmf(e)
+
+assert
+match ([1, 20, 3])
+  [_, b, _] where b >= 10 -> 'hi
+| [_, b, _] where b >= 1 -> 'hello
+== 'hi
+
+assert
+match ([1, 2, 3])
+  [_, b, _] where b >= 10 -> 'hi
+| @ where b >= 1 -> 'hello
+== 'hello
+
+// or-pattern test:
+function find_first_stutter(xs)
+| [] | [_] -> 'none
+| x:y:xs -> if (x == y) x else find_first_stutter(y:xs)
+
+assert find_first_stutter([1,2,3,3,4]) == 3
+assert find_first_stutter([1,2,3,4]) == 'none
+
+// string split optimized
+assert string_split("hello, world") == ["hello,", "world"]
+assert string_split("hello, world", \,) == ["hello", " world"]
+assert string_split("hello,, world", \,) == ["hello", " world"]
+assert string_split("hello,, world", \,, true) == ["hello", "", " world"]
+
+assert string_split("1;2.3,4.5;6", [\;, \., \,]) == ["1", "2", "3", "4", "5", "6"]
+assert string_split("1;2.3,4.5;6", [\;, \,]) == ["1", "2.3", "4.5", "6"]
+
+assert string_split("hello world") == ["hello", "world"]
+assert string_split("hello world", ^(c) char_is_eq(c, \l)) == ["he", "o wor", "d"]
+assert string_split("hello world", ^(c) char_is_eq(c, \l), true) == ["he", "", "o wor", "d"]

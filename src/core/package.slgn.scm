@@ -19,7 +19,7 @@
       pkg-name)))
 
 (define (get-file-name-from-pkg-url url)
-  (let loop ((paths (string_split url #\/)))
+  (let loop ((paths (string-split url #\/)))
     (if (null? (scm-cdr paths))
         (scm-car paths)
         (loop (scm-cdr paths)))))

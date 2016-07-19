@@ -125,7 +125,7 @@ where OPTION is one of:
   (if (has-arg? "-c" args)
       (compile-script (get-arg-val "-c" args) args #f))
   (if (has-arg? "-i" args)
-      (install-pkg (string_split (get-arg-val "-i" args) #\,)))
+      (install-pkg (string-split (get-arg-val "-i" args) #\,)))
   (if (has-arg? "-u" args)
       (uninstall-pkg (get-arg-val "-u" args)))
   (if (has-arg? "-x" args)

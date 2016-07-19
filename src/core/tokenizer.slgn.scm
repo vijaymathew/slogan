@@ -17,7 +17,7 @@
                         #!key (compile-mode #f))
   (let ((current-token #f)
         (program-text (if (string? program-text)
-                          (string_split program-text #\newline #t)
+                          (string-split program-text #\newline #t)
                           '()))
         (port (make-port-pos port 1 0))
         (pattern-mode #f)

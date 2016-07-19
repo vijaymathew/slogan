@@ -190,6 +190,13 @@
         (scm-reverse result)
         (loop (scm-cdr a) (scm-cdr b) (scm-cons (scm-cons (scm-car a) (scm-car b)) result)))))
 
+(define (unzip list-of-pairs)
+  (let loop ((xs list-of-pairs) (as '()) (bs '()))
+    (if (null? xs)
+        (scm-cons (scm-reverse as) (scm-reverse bs))
+        (let ((x (scm-car xs)))
+          (loop (scm-cdr xs) (scm-cons (scm-car x) as) (scm-cons (scm-cdr x) bs))))))
+
 (define (zip_with f a b)
   (let loop ((a a) (b b) (result '()))
     (if (or (null? a) (null? b))
