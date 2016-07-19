@@ -118,11 +118,14 @@
 (define string_map string-map)
 (define string_for_each string-for-each)
 
+(define (delim-proxy c f) (f c))
+
 (define (string-split str #!optional (delim #\space) (include-empty-strings #f))
-  (let* ((char-delim? (char? delim))
-         (list-delim? (and (not char-delim?) (list? delim)))
-         (proc-delim? (and (not char-delim?) (not list-delim?) (procedure? delim))))
-    (if (scm-not (or char-delim? list-delim? proc-delim?))
+  (let ((delim? (cond ((char? delim) char=?)
+                      ((list? delim) scm-member)
+                      ((procedure? delim) delim-proxy)
+                      (else #f))))
+    (if (scm-not delim?)
         str
         (let ((len (string-length str)))
           (let loop ((result '()) (currstr '()) (i 0))
@@ -131,9 +134,7 @@
                     (scm-reverse result)
                     (scm-reverse (scm-cons (list->string (scm-reverse currstr)) result)))
                 (let ((c (string-ref str i)))
-                  (if (or (and char-delim? (char=? c delim))
-                          (and list-delim? (scm-member c delim))
-                          (and proc-delim? (delim c)))
+                  (if (delim? c delim)
                       (loop (if (and (null? currstr) (scm-not include-empty-strings))
                                 result
                                 (scm-cons (list->string (scm-reverse currstr)) result)) '()
