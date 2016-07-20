@@ -161,3 +161,10 @@ assert string_split("1;2.3,4.5;6", [\;, \,]) == ["1", "2.3", "4.5", "6"]
 assert string_split("hello world") == ["hello", "world"]
 assert string_split("hello world", ^(c) char_is_eq(c, \l)) == ["he", "o wor", "d"]
 assert string_split("hello world", ^(c) char_is_eq(c, \l), true) == ["he", "", "o wor", "d"]
+
+// string->time conversion
+let leap_date = ['seconds:25, 'minute:34, 'hour:2, 'month_day:5, 'month:3, 'year:2008, 'week_day:3, 'year_day:65, 'is_utc:false, 'is_dst:false];
+assert string_to_time(time_to_string(leap_date)) == leap_date;
+
+let non_leap_date = ['seconds:25, 'minute:34, 'hour:2, 'month_day:5, 'month:3, 'year:2009, 'week_day:4, 'year_day:64, 'is_utc:false, 'is_dst:false];
+string_to_time(time_to_string(non_leap_date)) == non_leap_date;

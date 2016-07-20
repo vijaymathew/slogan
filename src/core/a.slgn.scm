@@ -48,6 +48,7 @@
 (define scm-not not)
 (define scm-load load)
 (define scm-quotient quotient)
+(define scm-remainder remainder)
 
 (define (identity x) x)
 (define scm-identity identity)

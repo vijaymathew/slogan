@@ -6,12 +6,16 @@
  #include <stdint.h>
  #include "../include/slogan.h"
 
- static void get_localtime(___SCMOBJ result)
+ static void get_localtime(___SCMOBJ result, int utc)
  {
    time_t tt;
-   time(&tt);
-   struct tm *ltm = localtime(&tt);
+   struct tm *ltm;
    ___slogan_obj ___temp;
+
+   time(&tt);
+   if (utc) ltm = gmtime(&tt);
+   else ltm = localtime(&tt);
+
    ___U32VECTORSET(result, ___fix(0), ___fix(ltm->tm_sec));
    ___U32VECTORSET(result, ___fix(1), ___fix(ltm->tm_min));
    ___U32VECTORSET(result, ___fix(2), ___fix(ltm->tm_hour));
@@ -29,12 +33,13 @@
    int itt;
    time_t tt;
    struct tm *ltm;
+   ___slogan_obj ___temp;
 
-   ___slogan_obj_to_float(stt, &f);
+  ___slogan_obj_to_float(stt, &f);
    itt = (int)f;
    tt = (time_t)itt;
    ltm = localtime(&tt);
-   ___slogan_obj ___temp;
+
    ___U32VECTORSET(result, ___fix(0), ___fix(ltm->tm_sec));
    ___U32VECTORSET(result, ___fix(1), ___fix(ltm->tm_min));
    ___U32VECTORSET(result, ___fix(2), ___fix(ltm->tm_hour));
@@ -645,19 +650,20 @@ c-declare-end
 (define <> not-equal?)
 
 ;; time functions
-(define get-localtime (c-lambda (scheme-object) void "get_localtime"))
+(define get-localtime (c-lambda (scheme-object int) void "get_localtime"))
 (define tm->secs (c-lambda (scheme-object) int "tm_to_secs"))
 (define secs->tm (c-lambda (scheme-object scheme-object) void "secs_to_tm"))
 
-(define (u32vector->tm vec)
+(define (u32vector->tm vec utc?)
   `((seconds . ,(u32vector-ref vec 0))
     (minute . ,(u32vector-ref vec 1))
     (hour . ,(u32vector-ref vec 2))
     (month_day . ,(u32vector-ref vec 3))
-    (month . ,(u32vector-ref vec 4))
+    (month . ,(+ 1 (u32vector-ref vec 4)))
     (year . ,(+ 1900 (u32vector-ref vec 5)))
     (week_day . ,(u32vector-ref vec 6))
     (year_day . ,(u32vector-ref vec 7))
+    (is_utc . ,utc?)
     (is_dst . ,(not (zero? (u32vector-ref vec 8))))))
 
 (define (tm->u32vector tm)
@@ -666,7 +672,7 @@ c-declare-end
     (u32vector-set! vec 1 (scm-cdr (scm-assq 'minute tm)))
     (u32vector-set! vec 2 (scm-cdr (scm-assq 'hour tm)))
     (u32vector-set! vec 3 (scm-cdr (scm-assq 'month_day tm)))
-    (u32vector-set! vec 4 (scm-cdr (scm-assq 'month tm)))
+    (u32vector-set! vec 4 (- (scm-cdr (scm-assq 'month tm) 1)))
     (u32vector-set! vec 5 (- (scm-cdr (scm-assq 'year tm)) 1900))
     (u32vector-set! vec 6 (scm-cdr (scm-assq 'week_day tm)))
     (u32vector-set! vec 7 (scm-cdr (scm-assq 'year_day tm)))
@@ -677,13 +683,85 @@ c-declare-end
   (let ((result (make-u32vector 9)))
     (if secs
         (secs->tm (scm-floor secs) result)
-        (get-localtime result))
-    (u32vector->tm result)))
+        (get-localtime result 0))
+    (u32vector->tm result #f)))
+
+(define (now_utc)
+  (let ((result (make-u32vector 9)))
+    (get-localtime result 1)
+    (u32vector->tm result #t)))
 
 (define (now_seconds #!optional tm)
   (if (not tm)
       (time->seconds (current-time))
       (tm->secs (tm->u32vector tm))))
+
+(define (tm-comp tm comp)
+  (scm-cdr (scm-assq comp tm)))
+
+(define (pad-2 n)
+  (if (< n 10)
+      (let ((buf (open-output-string)))
+        (scm-print port: buf "0" n)
+        (get-output-string buf))
+      n))
+
+(define (time_to_string tm)
+  (let ((buf (open-output-string)))
+    (scm-print port: buf (tm-comp tm 'year) "-" (pad-2 (tm-comp tm 'month)) "-" (pad-2 (tm-comp tm 'month_day))
+           "T" (pad-2 (tm-comp tm 'hour)) ":" (pad-2 (tm-comp tm 'minute)) ":" (pad-2 (tm-comp tm 'seconds)))
+    (if (tm-comp tm 'is_utc)
+        (scm-print port: buf "Z"))
+    (get-output-string buf)))
+
+(define *mtab* (scm-vector 0 3 2 5 0 3 5 1 4 6 2 4))
+
+(define (day-of-week y m d)
+  (let ((y (if (< m 3) (- y 1) y)))
+    (scm-remainder (+ (+ (+ (- (+ y (scm-quotient y 4))
+                               (scm-quotient y 100))
+                            (scm-quotient y 400))
+                         (vector-ref *mtab* (- m 1))) d) 7)))
+
+(define (leap-year? y)
+  (and (>= y 1583)
+       (or (and (= 0 (scm-remainder y 4))
+                (not (= 0 (scm-remainder y 100))))
+           (= 0 (scm-remainder y 400)))))
+
+(define  *daytab* (scm-cons (scm-vector 0 31 28 31 30 31 30 31 31 30 31 30 31)
+                            (scm-vector 0 31 29 31 30 31 30 31 31 30 31 30 31)))
+
+(define (day-of-year y m d)
+  (let ((dt (if (leap-year? y)
+                (scm-cdr *daytab*)
+                (scm-car *daytab*))))
+    (let loop ((i 0) (d d))
+      (if (< i m)
+          (loop (+ i 1) (+ d (vector-ref dt i)))
+          d))))
+
+(define (string_to_time s)
+  (let* ((dt (string-split s #\T))
+         (ts (scm-cadr dt))
+         (len (string-length ts))
+         (utc? (char=? #\Z (string-ref ts (- len 1))))
+         (ts (if utc? (scm-substring ts 0 (- len 1)) ts))
+         (d (string-split (scm-car dt) #\-))
+         (t (string-split ts #\:)))
+    (let ((m (string->number (list-ref d 1)))
+          (y (string->number (list-ref d 0)))
+          (d (string->number (list-ref d 2))))
+      `((seconds . ,(string->number (list-ref t 2)))
+        (minute . ,(string->number (list-ref t 1)))
+        (hour . ,(string->number (list-ref t 0)))
+        (month_day . ,d)
+        (month . ,m)
+        (year . ,y)
+        (week_day . ,(day-of-week y m d))
+        (year_day . ,(day-of-year y m d))
+        (is_utc . ,utc?)
+        (is_dst . #f)))))
 
 (define process_times process-times)
 (define cpu_time cpu-time)
