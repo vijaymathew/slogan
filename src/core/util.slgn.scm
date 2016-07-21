@@ -73,14 +73,10 @@
   (with-exception-catcher
    (lambda (e)
      (if (os-exception? e)
-         (begin
-           (scm-display (unicode-literals->qmarks str) port)
-           (scm-display #\" port))
-         (raise e)))
+         (scm-display (unicode-literals->qmarks str) port))
+     (raise e))
    (lambda ()
-     (scm-display #\" port)
-     (scm-display str port)
-     (scm-display #\" port))))
+     (scm-display str port))))
 
 (define (slgn-display val #!key (port (current-output-port)))
   (if (scm-not (void? val))

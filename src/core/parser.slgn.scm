@@ -195,20 +195,22 @@
       `(let () ,@(scm-cdr body))
       body))
 
-(define (merge-func-contract body-expr contract-expr)
+(define (merge-func-contract name body-expr contract-expr)
   (if (not contract-expr)
       body-expr
-      (let ((body-expr (prepare-func-body-for-if body-expr)))
-        (if (scm-cdr contract-expr)
-            `(if (or *func-contracts-disabled* ,(scm-car contract-expr))
+      (let ((body-expr (prepare-func-body-for-if body-expr))
+            (pre-cond (scm-car contract-expr))
+            (post-cond (scm-cdr contract-expr)))
+        (if post-cond
+            `(if (or *func-contracts-disabled* ,pre-cond)
                  (let ((% ,body-expr))
-                   (if (or *func-contracts-disabled* ,(scm-cdr contract-expr))
+                   (if (or *func-contracts-disabled* ,post-cond)
                        %
-                       (error 'postcondition_failed)))
-                 (error 'precondition_failed))
-            `(if (or *func-contracts-disabled* ,(scm-car contract-expr))
+                       (error 'postcondition_failed ',name ',post-cond)))
+                 (error 'precondition_failed ',name ',pre-cond))
+            `(if (or *func-contracts-disabled* ,pre-cond)
                  ,body-expr
-                 (error 'precondition_failed))))))
+                 (error 'precondition_failed ',name ',pre-cond))))))
 
 (define (func-def-stmt-with-name tokenizer)
   (let ((name (tokenizer 'peek)))
@@ -219,7 +221,7 @@
             (tokenizer 'next)))
       (let* ((params (scm-car (func-params-expr tokenizer #t)))
              (contract-expr (func-contract-expr tokenizer))
-             (body-expr (merge-func-contract (func-body-expr tokenizer params) contract-expr))
+             (body-expr (merge-func-contract name (func-body-expr tokenizer params) contract-expr))
              (fexpr (merge-lambda tokenizer params body-expr)))
         (if has-name?
             (scm-list 'define name fexpr)
@@ -1331,7 +1333,7 @@
   (if (scm-eq? precond #t)
       precond
       `(if (scm-not ,precond)
-           (error 'precondition_failed)
+           (error 'precondition_failed ,mem)
            ,mem)))
 
 (define (mk-record-precond-exprs preconds mems)
