@@ -1,0 +1,15 @@
+// module export-all with excludes:
+module m(_, [h]) { function f(x) x * 10 function g(x) x + 10 function h(x) x }
+assert m.f(10) == 100
+assert m.g(10) == 20
+assert try m.h(10) catch (e) error_message(e) == 'name_not_found
+
+module m(_, [h, g]) { function f(x) x * 10 function g(x) x + 10 function h(x) x }
+assert m.f(10) == 100
+assert try m.g(10) catch (e) error_message(e) == 'name_not_found
+assert try m.h(10) catch (e) error_message(e) == 'name_not_found
+
+module m(_) { function f(x) x * 10 function g(x) x + 10 function h(x) x }
+assert m.f(10) == 100
+assert m.g(10) == 20
+assert m.h(10) == 10
