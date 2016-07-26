@@ -121,7 +121,7 @@
 
 (define (iter-for-each f xs more)
   (let loop ((xs xs) (more more))
-    (if (not (null? xs))
+    (if xs
         (if (null? more)
             (begin (f (scm-first xs))
                    (loop (scm-rest xs) '()))

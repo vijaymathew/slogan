@@ -13,3 +13,65 @@ module m(_) { function f(x) x * 10 function g(x) x + 10 function h(x) x }
 assert m.f(10) == 100
 assert m.g(10) == 20
 assert m.h(10) == 10
+
+// find substring function
+assert string_index_of("", "on") == -1
+assert string_index_of("slow motion", "on") == 9
+assert string_index_of("slow motion", "ion") == 8
+assert string_index_of("slow motion", "n") == 10
+assert string_index_of("slow motion", "slo") == 0
+assert string_index_of("slow motion", "slow motion") == 0
+assert string_index_of("slow motion", "slow motionn") == -1
+assert string_index_of("slow motion", "") == -1
+
+function find_all(s, subs)
+  let (slen = string_length(subs))
+    let loop (offset = 0)
+      let (i = string_index_of(s, subs, offset))
+        when (i >= 0)
+        { yield i
+          loop (i + slen) }
+
+let iter = find_all("to be or not to be", "be")
+assert first(iter) == 3
+iter = rest(iter);
+assert first(iter) == 16
+iter = rest(iter);
+assert not(first(iter))
+iter = find_all("to be or not to be", "to")
+assert first(iter) == 0
+iter = rest(iter)
+assert first(iter) == 13
+iter = rest(iter)
+assert not(first(iter))
+iter = find_all("to be or not to be", "to be")
+assert first(iter) == 0
+iter = rest(iter);
+assert first(iter) == 13
+iter = rest(iter);
+assert not(first(iter))
+iter = find_all("to be or not to be", "tobe")
+assert not(first(iter))
+
+// for_each fixed for iterators
+function to(i, j) let loop (i = i) when(i < j) { yield i; loop(inc(i)) }
+let x = 0
+for_each(^(y) x = x + y, to(1, 10))
+assert x == 45
+
+i = to(1, 10);
+assert take(5, i) == [1, 2, 3, 4, 5]
+
+i = to(1, 10)
+x = 0
+for_each(^(y) x = x + y, drop(5, i))
+assert x == 30
+
+i = filter(is_odd, to(1, 10))
+x = 0
+for_each(^(y) x = x + y, i)
+assert x == 25
+
+i = filter(is_odd, to(1, 10))
+i = map(sqrt, i)
+assert nth(2, i) == sqrt(5)

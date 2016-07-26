@@ -189,3 +189,26 @@
           (get-output-u8vector out)
           (begin (write-u8 (char->integer (string-ref s i)) out)
                  (loop (+ i 1)))))))
+
+(define (string_index_of s subs #!optional (offset 0))
+  (let ((len (string-length s))
+        (sublen (string-length subs)))
+    (if (or (zero? len) (zero? sublen) (< len sublen))
+        -1
+        (let loop0 ((i offset))
+          (if (>= i len)
+              -1
+              (let ((orig-i i)
+                    (found?
+                     (let loop1 ((j 0))
+                       (cond ((>= j sublen)
+                              #t)
+                             ((>= i len)
+                              #f)
+                             ((char=? (string-ref s i) (string-ref subs j))
+                              (begin (set! i (+ i 1))
+                                     (loop1 (+ j 1))))
+                             (else #f)))))
+                (if found?
+                    orig-i
+                    (loop0 (+ i 1)))))))))
