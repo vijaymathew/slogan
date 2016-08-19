@@ -1,0 +1,59 @@
+// Support for relational, non-deterministic programming.
+
+let paths = []
+
+function choose(choices)
+  if (not(choices)) fail()
+  else callcc(^(k)
+              { paths = (^k(choose(rest(choices)))):paths;
+                first(choices) })
+
+// Does a breadth-first search.
+function bf_choose(choices)
+  callcc(^(k) { paths = append(paths, map(^(c) ^k(c), choices));
+                fail() })
+                
+function fail()
+  if (not(paths)) false
+  else let (p1 = first(paths))
+       { paths = rest(paths)
+         p1() }
+
+// examples:
+function two_numbers() 
+  [choose([0,1,2,3,4,5]),
+   choose([0,1,2,3,4,5])]
+
+function parlor_trick(sum)
+  let (nums = two_numbers())
+    if (apply(add, nums) == sum) nums
+    else fail()
+
+assert parlor_trick(6) == [1,5]
+
+function bf_two_numbers() 
+  [bf_choose([0,1,2,3,4,5]),
+   bf_choose([0,1,2,3,4,5])]
+
+function bf_parlor_trick(sum)
+  let (nums = bf_two_numbers())
+    if (apply(add, nums) == sum) nums
+    else fail()
+
+paths = []
+assert bf_parlor_trick(6) == [1,5]
+
+// Clothing design example (from "concepts models and techniques of computer programming")
+function soft() choose(['beige, 'coral])
+function hard() choose(['mauve, 'ochre])
+
+function contrast() choose([soft():hard(), hard():soft()])
+
+function suit()
+  match (contrast())
+    shirt:pants ->
+      match(contrast())
+        p2:socks ->
+          if (p2 <> pants) fail()
+          else if (shirt == socks) fail()
+          else [shirt, pants, socks]
