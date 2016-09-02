@@ -1,0 +1,12 @@
+let libname = string_append(slogan_root(), "/packages/sdl/slogan_gui.so")
+if (not (file_exists(libname))) libname = "./slogan_gui.so" // in dev-mode
+
+declare ffi libname [
+  int gui_init[],
+  void gui_quit[],
+  pointer gui_open_window[charstring, int, int, int, int],
+  void gui_close_window[pointer],
+  pointer gui_open_bmp[pointer, charstring],
+  void gui_close_bmp[pointer]
+]  
+  
