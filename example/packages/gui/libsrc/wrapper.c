@@ -26,13 +26,21 @@ void gui_quit()
   SDL_Quit();
 }
 
-window *gui_open_window(___slogan_obj s_title, ___slogan_obj s_x, ___slogan_obj s_y,
-			___slogan_obj s_w, ___slogan_obj s_h)
+window *gui_open_window(___slogan_obj *args)
 {
   window *gui_w = NULL;
   SDL_Renderer *ren;
-  SDL_Window *win = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_SHOWN);
+  SDL_Window *win;
+  char *title;
+  int x, y, w, h;
 
+  ___slogan_obj_to_charstring(args[0], &title);
+  ___slogan_obj_to_int(args[1], &x);
+  ___slogan_obj_to_int(args[2], &y);
+  ___slogan_obj_to_int(args[3], &w);
+  ___slogan_obj_to_int(args[4], &h);
+
+  win = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_SHOWN);
   if (win == NULL) {
     report_error("SDL_CreateWindow");
     SDL_Quit();
@@ -64,7 +72,7 @@ void gui_render(window *w)
   SDL_RenderPresent(ren);
 }
 
-int gui_event_loop(___slogan_obj *args)
+___slogan_obj gui_event(___slogan_obj *args)
 {
   int error = 0;
   ___slogan_obj result;
@@ -72,23 +80,20 @@ int gui_event_loop(___slogan_obj *args)
   SDL_Event event;
   int etype = 0;
 
-  while (1) {
-    while (SDL_PollEvent(&event)) {
-      switch (event.type) {
-      case SDL_QUIT:
-	etype = 0;
-	break;
-      default:
-	etype = event.type;
-      }
-      ___ON_THROW(result = ___call_fn(f, ___pair(___fix(etype), ___NUL)), error = 1);
-      if (error == 1)
-	return -1;
-      if (result == 0)
-	return 0;
+  if (SDL_PollEvent(&event)) {
+    switch (event.type) {
+    case SDL_QUIT:
+      etype = 0;
+      break;
+    default:
+      etype = event.type;
     }
+    ___ON_THROW(result = ___call_fn(f, ___pair(___fix(etype), ___NUL)), error = 1);
+    if (error == 1)
+      return ___FAL;
+    return result;
   }
-  return 0;
+  return ___FAL;
 }
 
 void gui_close_window(window *w)
@@ -98,12 +103,16 @@ void gui_close_window(window *w)
   free(w);
 }
 
-SDL_Texture *gui_open_bmp(window *w, const char *file_name)
+SDL_Texture *gui_open_bmp(window *w, ___slogan_obj *args)
 {
   SDL_Texture *tex;
-  SDL_Surface *bmp = SDL_LoadBMP(file_name);
+  SDL_Surface *bmp;
   SDL_Renderer *ren = w->ren;
-  
+  char *file_name;
+
+  ___slogan_obj_to_charstring(args[0], &file_name);
+
+  bmp = SDL_LoadBMP(file_name);
   if (bmp == NULL) {
     report_error("SDL_LoadBMP");
     return NULL;

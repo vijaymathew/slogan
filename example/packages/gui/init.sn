@@ -6,22 +6,15 @@ let _gui_init = ffi_fn(lib, "gui_init")
 let _gui_quit = ffi_fn(lib, "gui_quit")
 let _gui_open_window = ffi_fn(lib, "gui_open_window")
 let _gui_close_window = ffi_fn(lib, "gui_close_window")
-let _gui_event_loop = ffi_fn(lib, "gui_event_loop")
+let _gui_event = ffi_fn(lib, "gui_event")
 let _gui_open_bmp = ffi_fn(lib, "gui_open_bmp")
 let _gui_close_bmp = ffi_fn(lib, "gui_close_bmp")
 
 function gui_init() ffi_call_int(_gui_init, false)
 function gui_quit() { ffi_call_void(_gui_quit, false); ffi_close(lib) }
 function gui_open_window(title, x, y, w, h)
-  
-// declare ffi libname [
-//   int gui_init[],
-//   void gui_quit[],
-//   pointer gui_open_window[charstring, int, int, int, int],
-//   void gui_close_window[pointer],
-//   int gui_event_loop[pointer],
-//   void gui_render[pointer],
-//   pointer gui_open_bmp[pointer, charstring],
-//   void gui_close_bmp[pointer]
-// ]  
-  
+  ffi_call_void_pointer(_gui_open_window, #[title, x, y, w, h])
+function gui_close_window(w) ffi_call_void_with_void_pointer(_gui_close_window, w, false)
+function gui_event(f) ffi_call_obj(_gui_event, #[f])
+function gui_open_bmp(w, fname) ffi_call_void_pointer_with_void_pointer(_gui_open_bmp, w, #[fname])
+function gui_close_bmp(bmp) ffi_call_void_with_void_pointer(_gui_close_bmp, bmp, false)
