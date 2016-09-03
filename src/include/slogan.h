@@ -157,7 +157,8 @@ extern ___slogan_obj ___pair(___slogan_obj, ___slogan_obj);
 #define ___release_slogan_obj ___release_scmobj
 
 extern  void ___setup_fn_call();
- 
+extern ___SCMOBJ ___call_fn(___SCMOBJ, ___SCMOBJ);
+
 /* Allocates space for arrays whose pointer is not relocated by the GC. */
 extern ___slogan_obj ___alloc_u8array(size_t size);
 extern ___slogan_obj ___alloc_array(size_t size);

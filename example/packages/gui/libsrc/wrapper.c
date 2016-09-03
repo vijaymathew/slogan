@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <stdio.h>
+#include "slogan.h"
 
 typedef struct window_ {
   SDL_Window *win;
@@ -13,7 +14,7 @@ static void report_error(const char *prefix)
 
 int gui_init()
 {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     report_error("SDL_Init");
     return 0;
   }
@@ -25,7 +26,8 @@ void gui_quit()
   SDL_Quit();
 }
 
-window *gui_open_window(const char *title, int x, int y, int w, int h)
+window *gui_open_window(___slogan_obj s_title, ___slogan_obj s_x, ___slogan_obj s_y,
+			___slogan_obj s_w, ___slogan_obj s_h)
 {
   window *gui_w = NULL;
   SDL_Renderer *ren;
@@ -53,6 +55,40 @@ window *gui_open_window(const char *title, int x, int y, int w, int h)
   gui_w->win = win;
   gui_w->ren = ren;
   return gui_w;
+}
+
+void gui_render(window *w)
+{
+  SDL_Renderer *ren = w->ren;
+  SDL_RenderClear(ren);
+  SDL_RenderPresent(ren);
+}
+
+int gui_event_loop(___slogan_obj *args)
+{
+  int error = 0;
+  ___slogan_obj result;
+  ___slogan_obj f = args[0];
+  SDL_Event event;
+  int etype = 0;
+
+  while (1) {
+    while (SDL_PollEvent(&event)) {
+      switch (event.type) {
+      case SDL_QUIT:
+	etype = 0;
+	break;
+      default:
+	etype = event.type;
+      }
+      ___ON_THROW(result = ___call_fn(f, ___pair(___fix(etype), ___NUL)), error = 1);
+      if (error == 1)
+	return -1;
+      if (result == 0)
+	return 0;
+    }
+  }
+  return 0;
 }
 
 void gui_close_window(window *w)

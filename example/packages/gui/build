@@ -9,12 +9,13 @@ rm -f *.o*
 
 osname=`uname`
 src="libsrc/wrapper.c"
+inc="-I ${slogan_root}/src/include/ -I ${slogan_root}/platform/gsc/include"
 
 # build the shared library
 if [[ "$osname" == 'Linux' ]]; then
-    gcc -Wall -shared -fPIC -o $out $src `sdl2-config --cflags --libs`
+    gcc -Wall -shared -fPIC -o $out $inc $src `sdl2-config --cflags --libs`
 else # Darwin??
-    gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o $out $src `sdl2-config --cflags --libs`
+    gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o $out $inc $src `sdl2-config --cflags --libs`
 fi
 
 # compile slogan source files to object code.
