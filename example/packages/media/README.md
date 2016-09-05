@@ -26,9 +26,15 @@ let loop()
 This package has a dependency on SDL2.
 Install the dependencies:
 
-### Ubuntu:
+### Ubuntu
+
+```
 sudo apt-get install libsdl2-dev libsdl2-image-dev \
 libsdl2-mixer-dev libsdl2-ttf-dev libjpeg-dev libpng12-dev
+```
 
-### Mac OS X:
+### Mac OS X
+
+```
 brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_ttf
+```
