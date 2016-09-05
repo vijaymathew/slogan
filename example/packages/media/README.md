@@ -23,8 +23,7 @@ let loop()
   else quit() }
 ```
 
-This package has a dependency on SDL2.
-Install the dependencies:
+Remember to install the SDL2 dependencies before building the package:
 
 ### Ubuntu
 
