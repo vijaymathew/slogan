@@ -1,20 +1,22 @@
-let libname = string_append(slogan_root(), "/packages/sdl/slogan_gui.so")
-if (not (file_exists(libname))) libname = "./slogan_gui.so" // in dev-mode
-
+let libname = string_append(slogan_root(), "/packages/sdl/slogan_media.so")
+if (not (file_exists(libname))) libname = "./slogan_media.so" // in dev-mode
 let lib = ffi_open(libname)
-let _gui_init = ffi_fn(lib, "gui_init")
-let _gui_quit = ffi_fn(lib, "gui_quit")
-let _gui_open_window = ffi_fn(lib, "gui_open_window")
-let _gui_close_window = ffi_fn(lib, "gui_close_window")
-let _gui_event = ffi_fn(lib, "gui_event")
-let _gui_open_bmp = ffi_fn(lib, "gui_open_bmp")
-let _gui_close_bmp = ffi_fn(lib, "gui_close_bmp")
 
-function gui_init() ffi_call_int(_gui_init, false)
-function gui_quit() { ffi_call_void(_gui_quit, false); ffi_close(lib) }
-function gui_open_window(title, x, y, w, h)
-  ffi_call_void_pointer(_gui_open_window, #[title, x, y, w, h])
-function gui_close_window(w) ffi_call_void_with_void_pointer(_gui_close_window, w, false)
-function gui_event(f) ffi_call_obj(_gui_event, #[f])
-function gui_open_bmp(w, fname) ffi_call_void_pointer_with_void_pointer(_gui_open_bmp, w, #[fname])
-function gui_close_bmp(bmp) ffi_call_void_with_void_pointer(_gui_close_bmp, bmp, false)
+module media (init, quit, open_window, close_window, event, open_bmp, close_bmp) {
+  let __init = ffi_fn(lib, "media_init")
+  let __quit = ffi_fn(lib, "media_quit")
+  let __open_window = ffi_fn(lib, "media_open_window")
+  let __close_window = ffi_fn(lib, "media_close_window")
+  let __event = ffi_fn(lib, "media_event")
+  let __open_bmp = ffi_fn(lib, "media_open_bmp")
+  let __close_bmp = ffi_fn(lib, "media_close_bmp")
+
+  function init() ffi_call_int(__init, false)
+  function quit() { ffi_call_void(__quit, false); ffi_close(lib) }
+  function open_window(title, x, y, w, h)
+    ffi_call_void_pointer(__open_window, #[title, x, y, w, h])
+  function close_window(w) ffi_call_void_with_void_pointer(__close_window, w, false)
+  function event(f) ffi_call_obj(__event, #[f])
+  function open_bmp(w, fname) ffi_call_void_pointer_with_void_pointer(__open_bmp, w, #[fname])
+  function close_bmp(bmp) ffi_call_void_with_void_pointer(__close_bmp, bmp, false)
+}

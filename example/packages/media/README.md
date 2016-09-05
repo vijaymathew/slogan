@@ -1,14 +1,15 @@
 A simple package for graphics programming.
 
 ````
-gui_init()
-let w = gui_open_window("hello, world", 100, 100, 650, 650)
-let i = gui_open_bmp(w, "./images/hello.bmp")
+let m = media
+m.init()
+let w = m.open_window("hello, world", 100, 100, 650, 650)
+let i = m.open_bmp(w, "./images/hello.bmp")
 
 function quit()
-{ gui_close_bmp(i)
-  gui_close_window(w)
-  gui_quit() }
+{ m.close_bmp(i)
+  m.close_window(w)
+  m.quit() }
 
 let running = true;
 
@@ -17,7 +18,7 @@ function handler(event)
   else true
 
 let loop()
-{ gui_event(handler)
+{ m.event(handler)
   if (running) loop()
   else quit() }
 ```

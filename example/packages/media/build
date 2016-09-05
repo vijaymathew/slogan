@@ -1,7 +1,7 @@
 #!/bin/bash
 
 slogan_root=`cat /etc/slogan/root`
-out=slogan_gui.so
+out=slogan_media.so
 
 # clean up artifacts from the previous build
 rm -f $out

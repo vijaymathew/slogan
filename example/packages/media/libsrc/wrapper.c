@@ -12,7 +12,7 @@ static void report_error(const char *prefix)
   printf("%s: %s\n", prefix, SDL_GetError());
 }
 
-int gui_init()
+int media_init()
 {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     report_error("SDL_Init");
@@ -21,14 +21,14 @@ int gui_init()
   return 1;
 }
 
-void gui_quit()
+void media_quit()
 {
   SDL_Quit();
 }
 
-window *gui_open_window(___slogan_obj *args)
+window *media_open_window(___slogan_obj *args)
 {
-  window *gui_w = NULL;
+  window *media_w = NULL;
   SDL_Renderer *ren;
   SDL_Window *win;
   char *title;
@@ -55,24 +55,24 @@ window *gui_open_window(___slogan_obj *args)
     return NULL;
   }
  
-  gui_w = (window *) malloc(sizeof(window));
-  if (gui_w == NULL) {
+  media_w = (window *) malloc(sizeof(window));
+  if (media_w == NULL) {
     printf("Failed to allocate window.\n");
     return NULL;
   }
-  gui_w->win = win;
-  gui_w->ren = ren;
-  return gui_w;
+  media_w->win = win;
+  media_w->ren = ren;
+  return media_w;
 }
 
-void gui_render(window *w)
+void media_render(window *w)
 {
   SDL_Renderer *ren = w->ren;
   SDL_RenderClear(ren);
   SDL_RenderPresent(ren);
 }
 
-___slogan_obj gui_event(___slogan_obj *args)
+___slogan_obj media_event(___slogan_obj *args)
 {
   int error = 0;
   ___slogan_obj result;
@@ -96,14 +96,14 @@ ___slogan_obj gui_event(___slogan_obj *args)
   return ___FAL;
 }
 
-void gui_close_window(window *w)
+void media_close_window(window *w)
 {
   SDL_DestroyRenderer(w->ren);
   SDL_DestroyWindow(w->win);
   free(w);
 }
 
-SDL_Texture *gui_open_bmp(window *w, ___slogan_obj *args)
+SDL_Texture *media_open_bmp(window *w, ___slogan_obj *args)
 {
   SDL_Texture *tex;
   SDL_Surface *bmp;
@@ -132,7 +132,7 @@ SDL_Texture *gui_open_bmp(window *w, ___slogan_obj *args)
   return tex;
 }
 
-void gui_close_bmp(SDL_Texture *tex)
+void media_close_bmp(SDL_Texture *tex)
 {
   SDL_DestroyTexture(tex);
 }
