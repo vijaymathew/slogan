@@ -761,9 +761,7 @@
 
 (define (token->neg-number token)
   (if (number? token)
-      (if (complex? token)
-          (scm-list '* token -1)
-          (string->number (string-append "-" (number->string token))))
+      (- token)
       (scm-list '- token)))
 
 (define (task-send-expr task-expr tokenizer)
