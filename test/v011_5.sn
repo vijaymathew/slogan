@@ -1,0 +1,14 @@
+// optimized handling of negative numbers
+assert 1 --2 == 3
+assert -1-(+2.3) == -3.3
+
+let x = 10
+assert x - 5 == 5
+assert -x-5 == -15
+
+// modules to export automatically generated functions
+module m(s, s_i, s_set_i) record s(i)
+let x = m.s(i = 100)
+assert m.s_i(x) == 100
+m.s_set_i(x, 200)
+assert m.s_i(x) == 200
