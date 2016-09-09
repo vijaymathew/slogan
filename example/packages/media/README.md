@@ -29,7 +29,7 @@ Remember to install the SDL2 dependencies before building the package:
 
 ```
 sudo apt-get install libsdl2-dev libsdl2-image-dev \
-libsdl2-mixer-dev libsdl2-ttf-dev libjpeg-dev libpng12-dev
+libsdl2-mixer-dev libsdl2-ttf-dev libjpeg-dev libpng12-dev libsdl2-gfx-dev
 ```
 
 ### Mac OS X
