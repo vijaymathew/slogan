@@ -3,7 +3,7 @@ A simple package for graphics programming.
 ````
 let m = media
 m.init()
-let w = m.open_window("hello, world", 100, 100, 650, 650)
+let w = m.open_window("hello, world", x = 100, y = 100, w = 650, h = 650)
 let i = m.open_bmp(w, "./images/hello.bmp")
 
 function quit()

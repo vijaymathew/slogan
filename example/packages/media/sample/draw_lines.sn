@@ -1,0 +1,15 @@
+let m = media
+
+function draw(canvas)
+{ m.bg(canvas, 255, 0, 0, 255)
+  m.fg(canvas, 255, 255, 255, 255)
+  diagonals(canvas, 40, 90)
+  diagonals(canvas, 60, 62)
+  diagonals(canvas, 20, 40) }
+
+function diagonals(canvas, x, y)
+{ m.line(canvas, x, y, x+20, y-40)
+  m.line(canvas, x+10, y, x+30, y-40)
+  m.line(canvas, x+20, y, x+40, y-40) }
+
+m.display(draw, title = "lines", w = 100, h = 100, bg_color = false, fg_color = false)

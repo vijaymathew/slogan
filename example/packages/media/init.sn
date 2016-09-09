@@ -2,21 +2,69 @@ let libname = string_append(slogan_root(), "/packages/sdl/slogan_media.so")
 if (not (file_exists(libname))) libname = "./slogan_media.so" // in dev-mode
 let lib = ffi_open(libname)
 
-module media (init, quit, open_window, close_window, event, open_bmp, close_bmp) {
+module media (init, quit, open_window, close_window, event, window_canvas,
+              bg, fg, line, point, rectangle, rounded_rectangle, triangle, filled_triangle,
+              clear, render, event_loop, display, open_bmp, close_bmp) {
   let __init = ffi_fn(lib, "media_init")
   let __quit = ffi_fn(lib, "media_quit")
   let __open_window = ffi_fn(lib, "media_open_window")
   let __close_window = ffi_fn(lib, "media_close_window")
   let __event = ffi_fn(lib, "media_event")
+  let __clear = ffi_fn(lib, "media_canvas_clear")
+  let __render = ffi_fn(lib, "media_canvas_render")
+  let __window_canvas = ffi_fn(lib, "media_window_canvas")
+  let __fg = ffi_fn(lib, "media_canvas_fg")
+  let __bg = ffi_fn(lib, "media_canvas_bg")
+  let __line = ffi_fn(lib, "media_canvas_draw_line")
+  let __point = ffi_fn(lib, "media_canvas_draw_point")
+  let __rect = ffi_fn(lib, "media_canvas_draw_rect")
+  let __rrect = ffi_fn(lib, "media_canvas_draw_rrect")
+  let __tria = ffi_fn(lib, "media_canvas_draw_triangle")
+  let __ftria = ffi_fn(lib, "media_canvas_draw_filled_triangle")
   let __open_bmp = ffi_fn(lib, "media_open_bmp")
   let __close_bmp = ffi_fn(lib, "media_close_bmp")
 
-  function init() ffi_call_int(__init, false)
-  function quit() { ffi_call_void(__quit, false); ffi_close(lib) }
-  function open_window(title, x, y, w, h)
+  let inited = false;
+
+  function init() { ffi_call_int(__init, false); inited = true }
+  function quit() { ffi_call_void(__quit, false); ffi_close(lib); inited = false }
+  function open_window(title, @key x = -1, y = -1, w, h)
     ffi_call_void_pointer(__open_window, #[title, x, y, w, h])
   function close_window(w) ffi_call_void_with_void_pointer(__close_window, w, false)
   function event(f) ffi_call_obj(__event, #[f])
+  function clear(c) ffi_call_void_with_void_pointer(__clear, c, false)
+  function render(c) ffi_call_void_with_void_pointer(__render, c, false)
+  function window_canvas(w) ffi_call_void_pointer_with_void_pointer(__window_canvas, w, false)
+  function fg(c, r, g, b, a) ffi_call_void_with_void_pointer(__fg, c, #[r, g, b, a]) == 0
+  function bg(c, r, g, b, a) ffi_call_int_with_void_pointer(__bg, c, #[r, g, b, a]) == 0
+  function line(c, x1, y1, x2, y2) ffi_call_int_with_void_pointer(__line, c, #[x1, y1, x2, y2]) == 0
+  function point(c, x, y) ffi_call_int_with_void_pointer(__point, c, #[x, y]) == 0
+  function rectangle(c, x1, y1, x2, y2) ffi_call_int_with_void_pointer(__rect, c, #[x1, y1, x2, y2]) == 0
+  function rounded_rectangle(c, x1, y1, x2, y2, rad) ffi_call_int_with_void_pointer(__rrect, c, #[x1, y1, x2, y2, rad]) == 0
+  function triangle(c, x1, y1, x2, y2, x3, y3) ffi_call_int_with_void_pointer(__tria, c, #[x1, y1, x2, y2, x3, y3]) == 0
+  function filled_triangle(c, x1, y1, x2, y2, x3, y3, rgba)
+    ffi_call_int_with_void_pointer(__ftria, c, #[x1, y1, x2, y2, x3, y3, rgba[0], rgba[1], rgba[2], rgba[3]]) == 0
   function open_bmp(w, fname) ffi_call_void_pointer_with_void_pointer(__open_bmp, w, #[fname])
   function close_bmp(bmp) ffi_call_void_with_void_pointer(__close_bmp, bmp, false)
+
+  function event_loop(w, user_handler)
+  { let running = true;
+
+    function handler(e)
+     if (e == 0) running = false
+     else running = user_handler(e)
+
+    let loop()
+    { if (running) { event(handler); loop() }
+      else close_window(w) } }
+
+  function display(draw, @key title = "window", w = 300, h = 300,
+                   bg_color = #[255, 255, 255, 255],
+                   fg_color = #[0, 0, 0, 255])
+  { when (not(inited)) init()
+    letseq (w = open_window(title, w = w, h = h),
+            c = window_canvas(w))
+    event_loop(w, ^(_) { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
+                         when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
+                         try { draw(c); render(c); true } catch (e) { showln(e); false }})}
 }
