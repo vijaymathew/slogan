@@ -1,0 +1,20 @@
+let m = media
+
+function make_walker(x, y)
+{ function display(canvas) m.point(canvas, x, y)
+
+  function step()
+    let (choice = random_integer(4))
+      if (choice == 0) x = inc(x)
+      else if (choice == 1) x = dec(x)
+      else if (choice == 2) y = inc(y)
+      else y = dec(y)
+      
+  ^(msg) case (msg)
+           display -> display
+         | step -> step }
+
+let width, height = 640, 360
+let w = make_walker(width/2, height/2)
+m.display(^(c) { w.display(c); w.step() },
+          w = width, h = height)

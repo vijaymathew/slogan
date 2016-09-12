@@ -4,6 +4,7 @@ let lib = ffi_open(libname)
 
 module media (init, quit, open_window, close_window, event, window_canvas,
               bg, fg, line, point, rectangle, rounded_rectangle, triangle, filled_triangle,
+              polygon, filled_polygon, ellipse, filled_ellipse,
               clear, render, event_loop, display, open_bmp, close_bmp) {
   let __init = ffi_fn(lib, "media_init")
   let __quit = ffi_fn(lib, "media_quit")
@@ -21,6 +22,10 @@ module media (init, quit, open_window, close_window, event, window_canvas,
   let __rrect = ffi_fn(lib, "media_canvas_draw_rrect")
   let __tria = ffi_fn(lib, "media_canvas_draw_triangle")
   let __ftria = ffi_fn(lib, "media_canvas_draw_filled_triangle")
+  let __poly = ffi_fn(lib, "media_canvas_draw_polygon")
+  let __fpoly = ffi_fn(lib, "media_canvas_draw_filled_polygon")
+  let __ellipse = ffi_fn(lib, "media_canvas_draw_ellipse")
+  let __fellipse = ffi_fn(lib, "media_canvas_draw_filled_ellipse")
   let __open_bmp = ffi_fn(lib, "media_open_bmp")
   let __close_bmp = ffi_fn(lib, "media_close_bmp")
 
@@ -43,7 +48,11 @@ module media (init, quit, open_window, close_window, event, window_canvas,
   function rounded_rectangle(c, x1, y1, x2, y2, rad) ffi_call_int_with_void_pointer(__rrect, c, #[x1, y1, x2, y2, rad]) == 0
   function triangle(c, x1, y1, x2, y2, x3, y3) ffi_call_int_with_void_pointer(__tria, c, #[x1, y1, x2, y2, x3, y3]) == 0
   function filled_triangle(c, x1, y1, x2, y2, x3, y3, rgba)
-    ffi_call_int_with_void_pointer(__ftria, c, #[x1, y1, x2, y2, x3, y3, rgba[0], rgba[1], rgba[2], rgba[3]]) == 0
+    ffi_call_int_with_void_pointer(__ftria, c, #[x1, y1, x2, y2, x3, y3, rgba]) == 0
+  function polygon(c, xs, ys) ffi_call_int_with_void_pointer(__poly, c, #[xs, ys]) == 0
+  function filled_polygon(c, xs, ys, rgba) ffi_call_int_with_void_pointer(__fpoly, c, #[xs, ys, rgba]) == 0
+  function ellipse(c, x, y, xr, yr) ffi_call_int_with_void_pointer(__ellipse, c, #[x, y, xr, yr]) == 0
+  function filled_ellipse(c, x, y, xr, yr, rgba) ffi_call_int_with_void_pointer(__fellipse, #[x, y, xr, yr, rgba]) == 0
   function open_bmp(w, fname) ffi_call_void_pointer_with_void_pointer(__open_bmp, w, #[fname])
   function close_bmp(bmp) ffi_call_void_with_void_pointer(__close_bmp, bmp, false)
 
@@ -62,9 +71,10 @@ module media (init, quit, open_window, close_window, event, window_canvas,
                    bg_color = #[255, 255, 255, 255],
                    fg_color = #[0, 0, 0, 255])
   { when (not(inited)) init()
-    letseq (w = open_window(title, w = w, h = h),
-            c = window_canvas(w))
-    event_loop(w, ^(_) { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
-                         when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
-                         try { draw(c); render(c); true } catch (e) { showln(e); false }})}
+    letseq (win = open_window(title, w = w, h = h),
+            c = window_canvas(win))
+    event_loop(win, ^(_) try { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
+                               when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
+                               draw(c); render(c); true }
+                          catch (e) { showln(e); false }) }
 }

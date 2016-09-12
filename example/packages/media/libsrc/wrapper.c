@@ -228,7 +228,8 @@ int media_canvas_draw_triangle(canvas *c, ___slogan_obj *args)
 
 int media_canvas_draw_filled_triangle(canvas *c, ___slogan_obj *args)
 {
-  int x1, y1, x2, y2, x3, y3, r, g, b, a, ret;
+  int x1, y1, x2, y2, x3, y3, ret;
+  Uint8 *rgba = (Uint8 *)___body(args[6]);
 
   ___slogan_obj_to_int(args[0], &x1);
   ___slogan_obj_to_int(args[1], &y1);
@@ -236,13 +237,81 @@ int media_canvas_draw_filled_triangle(canvas *c, ___slogan_obj *args)
   ___slogan_obj_to_int(args[3], &y2);
   ___slogan_obj_to_int(args[4], &x3);
   ___slogan_obj_to_int(args[5], &y3);
-  ___slogan_obj_to_int(args[6], &r);
-  ___slogan_obj_to_int(args[7], &g);
-  ___slogan_obj_to_int(args[8], &b);
-  ___slogan_obj_to_int(args[9], &a);
   
-  ret = filledTrigonRGBA(c->ren, x1, y1, x2, y2, x3, y3, r, g, b, a);
+  ret = filledTrigonRGBA(c->ren, x1, y1, x2, y2, x3, y3,
+                         rgba[0], rgba[1], rgba[2], rgba[3]);
   if (ret) report_error("filledTrigonRGBA");
+  return ret;
+}
+
+int media_canvas_draw_polygon(canvas *c, ___slogan_obj *args)
+{
+  Sint16 *xs, *ys;
+  int ret, len;
+
+  xs = (Sint16 *)___body(args[0]);
+  ys = (Sint16 *)___body(args[1]);
+  len = ___s16array_length(args[0]);
+  ret = polygonColor(c->ren, xs, ys, len, c->fg_color);
+  if (ret) report_error("polygonColor");
+  return ret;
+}
+
+int media_canvas_draw_filled_polygon(canvas *c, ___slogan_obj *args)
+{
+  Sint16 *xs, *ys;
+  Uint8 *rgba;
+  int ret, len;
+
+  xs = (Sint16 *)___body(args[0]);
+  ys = (Sint16 *)___body(args[1]);
+  rgba = (Uint8 *)___body(args[3]);
+  len = ___s16array_length(args[0]);
+  ret = filledPolygonRGBA(c->ren, xs, ys, len, rgba[0], rgba[1], rgba[2], rgba[3]);
+  if (ret) report_error("filledPolygonRGBA");
+  return ret;
+}
+
+int media_canvas_draw_ellipse(canvas *c, ___slogan_obj *args)
+{
+  int x, y, xr, yr, ret;
+
+  ___slogan_obj_to_int(args[0], &x);
+  ___slogan_obj_to_int(args[1], &y);
+  ___slogan_obj_to_int(args[2], &xr);
+  ___slogan_obj_to_int(args[3], &yr);
+  ret = ellipseColor(c->ren, x, y, xr, yr, c->fg_color);
+  if (ret) report_error("ellipseColor");
+  return ret;
+}
+
+int media_canvas_draw_filled_ellipse(canvas *c, ___slogan_obj *args)
+{
+  int x, y, xr, yr, ret;
+  Uint8 *rgba;
+
+  ___slogan_obj_to_int(args[0], &x);
+  ___slogan_obj_to_int(args[1], &y);
+  ___slogan_obj_to_int(args[2], &xr);
+  ___slogan_obj_to_int(args[3], &yr);
+  rgba = (Uint8 *)___body(args[4]);
+  ret = filledEllipseRGBA(c->ren, x, y, xr, yr,
+                          rgba[0], rgba[1], rgba[2], rgba[3]);
+  if (ret) report_error("filledEllipseRGBA");
+  return ret;
+}
+
+int media_canvas_draw_arc(canvas *c, ___slogan_obj *args)
+{
+  int x, y, rad, start, end, ret;
+
+  ___slogan_obj_to_int(args[0], &x);
+  ___slogan_obj_to_int(args[1], &y);
+  ___slogan_obj_to_int(args[2], &rad);
+  ___slogan_obj_to_int(args[3], &start);
+  ___slogan_obj_to_int(args[4], &end);
+  ret = arcColor(c->ren, x, y, rad, start, end, c->fg_color);
+  if (ret) report_error("arcColor");
   return ret;
 }
 
