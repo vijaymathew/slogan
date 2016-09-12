@@ -145,7 +145,6 @@ int media_canvas_bg(canvas *c, ___slogan_obj *args)
 
 void media_canvas_fg(canvas *c, ___slogan_obj *args)
 {
-  int ret;
   Uint8 rgba[4];
   
   ___slogan_obj_to_int(args[0], (int *)&rgba[0]);
