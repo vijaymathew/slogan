@@ -58,6 +58,8 @@ window *media_open_window(___slogan_obj *args)
   }
 
   ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+  if (ren == NULL)
+    ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
   if (ren == NULL) {
     SDL_DestroyWindow(win);
     report_error("SDL_CreateRenderer");
@@ -89,18 +91,23 @@ void media_canvas_render(canvas *c)
   SDL_RenderPresent(c->ren);
 }
 
+enum media_event {
+  MEDIA_EVENT_NONE = -1,
+  MEDIA_EVENT_QUIT = 0
+};
+
 ___slogan_obj media_event(___slogan_obj *args)
 {
   int error = 0;
   ___slogan_obj result;
   ___slogan_obj f = args[0];
   SDL_Event event;
-  int etype = 0;
+  int etype = MEDIA_EVENT_NONE;
 
   if (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_QUIT:
-      etype = 0;
+      etype = MEDIA_EVENT_QUIT;
       break;
     default:
       etype = event.type;
@@ -188,7 +195,7 @@ int media_canvas_draw_rect(canvas *c, ___slogan_obj *args)
   ___slogan_obj_to_int(args[1], &y1);
   ___slogan_obj_to_int(args[2], &x2);
   ___slogan_obj_to_int(args[3], &y2);
-  
+
   ret = rectangleColor(c->ren, x1, y1, x2, y2, c->fg_color);
   if (ret) report_error("rectangleColor");
   return ret;
@@ -206,6 +213,38 @@ int media_canvas_draw_rrect(canvas *c, ___slogan_obj *args)
   
   ret = roundedRectangleColor(c->ren, x1, y1, x2, y2, rad, c->fg_color);
   if (ret) report_error("roundedRectangleColor");
+  return ret;
+}
+
+int media_canvas_draw_filled_rect(canvas *c, ___slogan_obj *args)
+{
+  int x1, y1, x2, y2, ret;
+  Uint8 *rgba = (Uint8 *)___body(args[4]);
+  
+  ___slogan_obj_to_int(args[0], &x1);
+  ___slogan_obj_to_int(args[1], &y1);
+  ___slogan_obj_to_int(args[2], &x2);
+  ___slogan_obj_to_int(args[3], &y2);
+  
+  ret = boxRGBA(c->ren, x1, y1, x2, y2, rgba[0], rgba[1], rgba[2], rgba[3]);
+  if (ret) report_error("boxRGBA");
+  return ret;
+}
+
+int media_canvas_draw_filled_rrect(canvas *c, ___slogan_obj *args)
+{
+  int x1, y1, x2, y2, rad, ret;
+  Uint8 *rgba = (Uint8 *)___body(args[5]);
+  
+  ___slogan_obj_to_int(args[0], &x1);
+  ___slogan_obj_to_int(args[1], &y1);
+  ___slogan_obj_to_int(args[2], &x2);
+  ___slogan_obj_to_int(args[3], &y2);
+  ___slogan_obj_to_int(args[4], &rad);
+  
+  ret = roundedBoxRGBA(c->ren, x1, y1, x2, y2, rad,
+                       rgba[0], rgba[1], rgba[2], rgba[3]);
+  if (ret) report_error("roundedBoxRGBA");
   return ret;
 }
 

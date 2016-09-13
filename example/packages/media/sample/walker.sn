@@ -17,4 +17,4 @@ function make_walker(x, y)
 let width, height = 640, 360
 let w = make_walker(width/2, height/2)
 m.display(^(c) { w.display(c); w.step() },
-          w = width, h = height)
+          bg_color = false, w = width, h = height)

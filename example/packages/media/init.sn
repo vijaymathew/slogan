@@ -4,7 +4,8 @@ let lib = ffi_open(libname)
 
 module media (init, quit, open_window, close_window, event, window_canvas,
               bg, fg, line, point, rectangle, rounded_rectangle, triangle, filled_triangle,
-              polygon, filled_polygon, ellipse, filled_ellipse,
+              polygon, filled_polygon, ellipse, filled_ellipse, filled_rectangle,
+              filled_rounded_rectangle,
               clear, render, event_loop, display, open_bmp, close_bmp) {
   let __init = ffi_fn(lib, "media_init")
   let __quit = ffi_fn(lib, "media_quit")
@@ -20,6 +21,8 @@ module media (init, quit, open_window, close_window, event, window_canvas,
   let __point = ffi_fn(lib, "media_canvas_draw_point")
   let __rect = ffi_fn(lib, "media_canvas_draw_rect")
   let __rrect = ffi_fn(lib, "media_canvas_draw_rrect")
+  let __frect = ffi_fn(lib, "media_canvas_draw_filled_rect")
+  let __frrect = ffi_fn(lib, "media_canvas_draw_filled_rrect")
   let __tria = ffi_fn(lib, "media_canvas_draw_triangle")
   let __ftria = ffi_fn(lib, "media_canvas_draw_filled_triangle")
   let __poly = ffi_fn(lib, "media_canvas_draw_polygon")
@@ -31,8 +34,8 @@ module media (init, quit, open_window, close_window, event, window_canvas,
 
   let inited = false;
 
-  function init() { ffi_call_int(__init, false); inited = true }
-  function quit() { ffi_call_void(__quit, false); ffi_close(lib); inited = false }
+  function init() when (not(inited)) { ffi_call_int(__init, false); inited = true }
+  function quit() when (inited) { ffi_call_void(__quit, false); ffi_close(lib); inited = false }
   function open_window(title, @key x = -1, y = -1, w, h)
     ffi_call_void_pointer(__open_window, #[title, x, y, w, h])
   function close_window(w) ffi_call_void_with_void_pointer(__close_window, w, false)
@@ -46,35 +49,43 @@ module media (init, quit, open_window, close_window, event, window_canvas,
   function point(c, x, y) ffi_call_int_with_void_pointer(__point, c, #[x, y]) == 0
   function rectangle(c, x1, y1, x2, y2) ffi_call_int_with_void_pointer(__rect, c, #[x1, y1, x2, y2]) == 0
   function rounded_rectangle(c, x1, y1, x2, y2, rad) ffi_call_int_with_void_pointer(__rrect, c, #[x1, y1, x2, y2, rad]) == 0
+  function filled_rectangle(c, x1, y1, x2, y2, rgba) ffi_call_int_with_void_pointer(__frect, c, #[x1, y1, x2, y2, rgba]) == 0
+  function filled_rounded_rectangle(c, x1, y1, x2, y2, rad, rgba)
+    ffi_call_int_with_void_pointer(__frrect, c, #[x1, y1, x2, y2, rad, rgba]) == 0  
   function triangle(c, x1, y1, x2, y2, x3, y3) ffi_call_int_with_void_pointer(__tria, c, #[x1, y1, x2, y2, x3, y3]) == 0
   function filled_triangle(c, x1, y1, x2, y2, x3, y3, rgba)
     ffi_call_int_with_void_pointer(__ftria, c, #[x1, y1, x2, y2, x3, y3, rgba]) == 0
   function polygon(c, xs, ys) ffi_call_int_with_void_pointer(__poly, c, #[xs, ys]) == 0
   function filled_polygon(c, xs, ys, rgba) ffi_call_int_with_void_pointer(__fpoly, c, #[xs, ys, rgba]) == 0
   function ellipse(c, x, y, xr, yr) ffi_call_int_with_void_pointer(__ellipse, c, #[x, y, xr, yr]) == 0
-  function filled_ellipse(c, x, y, xr, yr, rgba) ffi_call_int_with_void_pointer(__fellipse, #[x, y, xr, yr, rgba]) == 0
+  function filled_ellipse(c, x, y, xr, yr, rgba) ffi_call_int_with_void_pointer(__fellipse, c, #[x, y, xr, yr, rgba]) == 0
   function open_bmp(w, fname) ffi_call_void_pointer_with_void_pointer(__open_bmp, w, #[fname])
   function close_bmp(bmp) ffi_call_void_with_void_pointer(__close_bmp, bmp, false)
 
-  function event_loop(w, user_handler)
+  function event_loop(w, user_handler, draw)
   { let running = true;
 
     function handler(e)
      if (e == 0) running = false
-     else running = user_handler(e)
+     else running = if (user_handler) user_handler(e) else true
 
     let loop()
-    { if (running) { event(handler); loop() }
+    { if (running) { event(handler); when (draw) draw(); loop() }
       else close_window(w) } }
 
   function display(draw, @key title = "window", w = 300, h = 300,
                    bg_color = #[255, 255, 255, 255],
                    fg_color = #[0, 0, 0, 255])
-  { when (not(inited)) init()
+  { init()
     letseq (win = open_window(title, w = w, h = h),
-            c = window_canvas(win))
-    event_loop(win, ^(_) try { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
-                               when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
-                               draw(c); render(c); true }
-                          catch (e) { showln(e); false }) }
+            c = when (win)
+                 let (c = window_canvas(win))
+                 { when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
+                   c })
+      { when (not(win)) error("Failed to create window.")
+        when (not(c)) error("Failed to create canvas.")
+        let (draw_fn = ^() try { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
+                                draw(c); render(c); true }
+                           catch (e) { showln(e); false })
+         event_loop(win, false, draw_fn) }}
 }
