@@ -1,0 +1,17 @@
+// Random number distribution
+let m = media
+
+let width, height = 640, 240
+let counts = 20
+let random_counts = make_array(counts, 0)
+
+function draw(c)
+  let (index = random_integer(counts), w = width/counts)
+  { random_counts[index] = inc(random_counts[index])
+    m.bg(c, 255, 255, 255, 255)
+    for (x = 0; x < counts; inc(x))
+      m.filled_rectangle(c, x*w, height - random_counts[x],
+                         w - 1, random_counts[x], #u8[175, 0, 0, 255]) }
+
+m.display(draw, bg_color = false, w = width, h = height)
+      
