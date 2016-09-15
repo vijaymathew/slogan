@@ -1,0 +1,43 @@
+function vector(x, y)
+{ function add(v)
+  { x = x + v.x
+    y = y + v. y }
+
+  function sub(v)
+  { x = x - v.x
+    y = y - v.y }
+
+  function mult(n)
+  { x = x * n
+    y = y * n }
+
+  function div(n)
+  { x = x / n
+    y = y / n }
+
+  function mag() sqrt(x*x + y*y)
+
+  function normalize()
+    let (m = mag())
+      when (not(is_zero(m))) div(m)
+      
+  function neg_x() x = -x
+  function neg_y() y = -y
+
+  function set_x(nx) x = nx
+  function set_y(ny) y = ny
+  
+  ^(msg)
+  | 'x -> ceiling(x)
+  | 'y -> ceiling(y)
+  | 'set_x -> set_x
+  | 'set_y -> set_y  
+  | 'add -> add
+  | 'sub -> sub
+  | 'mult -> mult
+  | 'div -> div
+  | 'mag -> mag
+  | 'normalize -> normalize
+  | 'neg_x -> neg_x
+  | 'neg_y -> neg_y }
+  

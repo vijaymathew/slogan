@@ -1,3 +1,6 @@
+link("event")
+let evt = event;
+
 let libname = string_append(slogan_root(), "/packages/sdl/slogan_media.so")
 if (not (file_exists(libname))) libname = "./slogan_media.so" // in dev-mode
 let lib = ffi_open(libname)
@@ -66,8 +69,9 @@ module media (init, quit, open_window, close_window, event, window_canvas,
   { let running = true;
 
     function handler(e)
-     if (e == 0) running = false
-     else running = if (user_handler) user_handler(e) else true
+     let (e = evt.translate(e))
+       if (e == 'quit) running = false
+       else running = if (user_handler) user_handler(e) else true
 
     let loop()
     { if (running) { event(handler); when (draw) draw(); loop() }
@@ -75,7 +79,8 @@ module media (init, quit, open_window, close_window, event, window_canvas,
 
   function display(draw, @key title = "window", w = 300, h = 300,
                    bg_color = #[255, 255, 255, 255],
-                   fg_color = #[0, 0, 0, 255])
+                   fg_color = #[0, 0, 0, 255],
+                   handler)
   { init()
     letseq (win = open_window(title, w = w, h = h),
             c = when (win)
@@ -85,7 +90,8 @@ module media (init, quit, open_window, close_window, event, window_canvas,
       { when (not(win)) error("Failed to create window.")
         when (not(c)) error("Failed to create canvas.")
         let (draw_fn = ^() try { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
-                                draw(c); render(c); true }
-                           catch (e) { showln(e); false })
-         event_loop(win, false, draw_fn) }}
+                                 when (draw) { draw(c); render(c); } true }
+                           catch (e) { showln(e); false }
+             e_handler = when (handler) ^(e) handler(e, c))
+         event_loop(win, e_handler, draw_fn) }}
 }

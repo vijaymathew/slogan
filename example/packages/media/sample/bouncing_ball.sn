@@ -1,17 +1,18 @@
+reload("./sample/vector")
+
 let m = media
 
-let x, y, xspeed, yspeed = 100, 100, 1, 3
+let location, velocity = vector(100, 100), vector(1, 3)
 let width, height = 640, 360
 let fg = #u8[175, 0, 0, 255]
 
 function draw(c)
-{ x = x + xspeed
-  y = y + yspeed
+{ location.add(velocity)
 
-  when ((x > width) || (x < 0)) xspeed = -xspeed
-  when ((y > height) || (y < 0)) yspeed = -yspeed
+  when ((location.x > width) || (location.x < 0)) velocity.neg_x()
+  when ((location.y > height) || (location.y < 0)) velocity.neg_y()
   task_sleep(.005)
-  m.filled_ellipse(c, x, y, 16, 16, fg) }
+  m.filled_ellipse(c, location.x, location.y, 16, 16, fg) }
 
 m.display(draw, w = width, h = height)
   

@@ -1,0 +1,22 @@
+reload("./sample/vector")
+
+let m = media
+let e = event
+let width, height = 640, 360
+let w, h = width/2, height/2
+let mouse, center = vector(0, 0), vector(w, h)
+
+function draw(canvas)
+{ mouse.normalize()
+  mouse.mult(50)
+  showln(mouse.x:mouse.y)
+  m.line(canvas, w, h, mouse.x, mouse.y)
+  m.render(canvas) }
+
+function handle(event, canvas) 
+{ when (e.type(event) == 'mouse_move)
+    let (data = e.data(event))
+    { mouse.set_x(data['x]); mouse.set_y(data['y]); draw(canvas) }
+  true }
+      
+m.display(false, w = width, h = height, handler = handle)

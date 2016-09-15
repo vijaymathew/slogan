@@ -8,8 +8,8 @@ rm -f $out
 rm -f *.o*
 
 osname=`uname`
-src="libsrc/wrapper.c"
-inc="-I ${slogan_root}/src/include/ -I ${slogan_root}/platform/gsc/include"
+src="libsrc/event.c libsrc/wrapper.c"
+inc="-I ${slogan_root}/src/include/ -I ${slogan_root}/platform/gsc/include -I./libsrc"
 
 # build the shared library
 if [[ "$osname" == 'Linux' ]]; then
@@ -19,5 +19,5 @@ else # Darwin??
 fi
 
 # compile slogan source files to object code.
-# all files loaded by "init.sn" will be compiled too.
+slogan -c "event"
 slogan -c "init"

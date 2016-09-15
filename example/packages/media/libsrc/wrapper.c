@@ -1,7 +1,6 @@
-#include <SDL.h>
 #include <SDL2_gfxPrimitives.h>
 #include <stdio.h>
-#include "slogan.h"
+#include "event.h"
 
 typedef struct canvas_ {
   SDL_Renderer *ren;
@@ -91,11 +90,6 @@ void media_canvas_render(canvas *c)
   SDL_RenderPresent(c->ren);
 }
 
-enum media_event {
-  MEDIA_EVENT_NONE = -1,
-  MEDIA_EVENT_QUIT = 0
-};
-
 ___slogan_obj media_event(___slogan_obj *args)
 {
   int error = 0;
@@ -103,16 +97,29 @@ ___slogan_obj media_event(___slogan_obj *args)
   ___slogan_obj f = args[0];
   SDL_Event event;
   int etype = MEDIA_EVENT_NONE;
-
+  ___slogan_obj event_info = ___NUL;
+  
   if (SDL_PollEvent(&event)) {
     switch (event.type) {
+    case SDL_MOUSEMOTION:
+      etype = MEDIA_EVENT_MOUSE_MOTION;
+      event_info = mouse_motion_event(&event);
+      break;
+    case SDL_MOUSEBUTTONDOWN:
+      etype = MEDIA_EVENT_MOUSE_BUTTON_DOWN;
+      event_info = mouse_button_event(&event);
+      break;
+    case SDL_MOUSEBUTTONUP:
+      etype = MEDIA_EVENT_MOUSE_BUTTON_UP;
+      event_info = mouse_button_event(&event);
+      break;      
     case SDL_QUIT:
       etype = MEDIA_EVENT_QUIT;
       break;
     default:
       etype = event.type;
     }
-    ___ON_THROW(result = ___call_fn(f, ___pair(___fix(etype), ___NUL)), error = 1);
+    ___ON_THROW(result = ___call_fn(f, ___pair(___pair(___fix(etype), event_info), ___NUL)), error = 1);
     if (error == 1)
       return ___FAL;
     return result;
@@ -163,13 +170,14 @@ void media_canvas_fg(canvas *c, ___slogan_obj *args)
 
 int media_canvas_draw_line(canvas *c, ___slogan_obj *args)
 {
-  int x1, y1, x2, y2, ret;
+  int x1, y1, x2, y2;
+  int ret;
 
   ___slogan_obj_to_int(args[0], &x1);
   ___slogan_obj_to_int(args[1], &y1);
   ___slogan_obj_to_int(args[2], &x2);
   ___slogan_obj_to_int(args[3], &y2);
-  
+
   ret = lineColor(c->ren, x1, y1, x2, y2, c->fg_color);
   if (ret) report_error("lineColor");
   return ret;
@@ -386,3 +394,4 @@ void media_close_bmp(SDL_Texture *tex)
 {
   SDL_DestroyTexture(tex);
 }
+

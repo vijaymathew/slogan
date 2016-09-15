@@ -1,0 +1,38 @@
+module event(translate, type, data) {
+
+  function mouse_move(e)
+    let (pos = first(e), rel_pos = second(e))
+      #{'x:head(pos), 'y:tail(pos),
+        'xrel:head(rel_pos), 'yrel:tail(rel_pos)}
+
+  function button_name(i)
+    case (i)
+      0 -> 'left
+    | 1 -> 'middle
+    | 2 -> 'right
+    | 3 -> 'x1
+    | 4 -> 'x2
+
+  function button_state(i)
+    case (i)
+      0 -> 'pressed
+    | 1 -> 'released
+    
+  function mouse_button(e)
+    #{'x:first(e), 'y:second(e), 'button:button_name(third(e)),
+      'state:button_state(fourth(e))}
+
+  function type(event) if (is_pair(event)) first(event) else event
+  function data(event) when (is_pair(event)) first(rest(event))
+  
+  function translate(e)
+    if (is_pair(e))
+     case (first(e))
+       0 -> 'quit
+     | 1 -> ['mouse_move, mouse_move(rest(e))]
+     | 2 -> ['mouse_button_down, mouse_button(rest(e))]
+     | 3 -> ['mouse_button_up, mouse_button(rest(e))]
+     | else -> e
+    else e
+}
+     
