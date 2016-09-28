@@ -1,4 +1,4 @@
-// Support for relational, non-deterministic programming.
+// Relational, non-deterministic programming.
 
 let paths = []
 

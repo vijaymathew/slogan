@@ -1,0 +1,12 @@
+// prime number filtering over an infinitie sequnce of integers.
+function sieve(xs)
+  | p:xs -> p:~sieve(filter(^(x) remainder(x, p) <> 0, xs))
+
+function int_seq(start)
+  start:~int_seq(start+1)
+
+let primes = sieve(int_seq(2))
+
+assert first(primes) == 2
+assert fifth(primes) == 11
+assert nth(99, primes)  == 541
