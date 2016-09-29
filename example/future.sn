@@ -1,7 +1,7 @@
 // A `future` abstraction on top of `spawn`.
 
 // Evaluates the zero-argument function `fn` parallely.
-// Returns a function that can be called to result of
+// Returns a function that can be called to return the result of
 // calling `fn`, at some point in the future.
 function future(fn)
   let (p = spawn(^(msg) | 'run -> fn()),
