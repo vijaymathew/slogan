@@ -1,0 +1,47 @@
+// A `future` abstraction on top of `spawn`.
+
+// Evaluates the zero-argument function `fn` parallely.
+// Returns a function that can be called to result of
+// calling `fn`, at some point in the future.
+function future(fn)
+  let (p = spawn(^(msg) | 'run -> fn()),
+       r = false)
+    let (f = p('run))
+      ^() if (r) r else { r = f(); p.quit; r }
+
+// The following examples show how to parallelize and speed up
+// computations using `future`. (Sample code adapted
+// from https://docs.racket-lang.org/guide/parallelism.html).
+function is_any_double(xs)
+  let (len = length(xs))
+    for (i = 0; i < len; inc(i))
+      when (for (j = i+1; j < len; inc(j))
+             when (xs[j] == xs[i] * 2)
+              break(true))
+        break(true)
+
+let l1 = [2 * x + 1 | x <- range(1, 500)];
+let l2 = [2 * x - 1 | x <- range(1, 500)];
+
+time(is_any_double(l1) || is_any_double(l2))
+
+// Execute `is_any_double(l2)` on a separate process
+// and measure the speedup:
+let f = future(^() is_any_double(l2))
+time(is_any_double(l1) || f())
+
+function mandelbrot(iterations, x, y, n)
+  let (ci = ((2.0 * y) / n) - 1.0,
+       cr = ((2.0 * x) / n) - 1.5)
+   for (zr = 0.0, zi = 0.0, i = 0; i <= iterations; inc(i))
+     let (zrq = zr * zr, ziq = zi * zi)
+       if (zrq + ziq > 4) break(i+1)
+       else { zr = (zrq - ziq) + cr
+              zi = (2 * zr * zi) + ci
+              i }
+
+time([mandelbrot(10000000, 62, 500, 1000), mandelbrot(10000000, 62, 501, 1000)]);
+
+// Now a faster version with `future`:
+f = future(^() mandelbrot(10000000, 62, 501, 1000))
+time([mandelbrot(10000000, 62, 500, 1000), f()])
