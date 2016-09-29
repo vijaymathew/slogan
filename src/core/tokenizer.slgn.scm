@@ -396,7 +396,7 @@
            (or (char-alphabetic? c)
                (char-numeric? c)))))
 
-(define *scm-macros* '(begin define namespace lambda cond quote unquote quasiquote delay))
+(define *scm-macros* '(begin define namespace lambda cond quote unquote quasiquote delay future))
 
 (define (transform-scm-macro-name name)
   (cond ((scm-memq name *scm-macros*)
