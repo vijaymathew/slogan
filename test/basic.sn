@@ -274,3 +274,20 @@ assert for (i = 0; i < 10; inc(i)) if (i == 5) break(100) else i == 100
 t1 = 0
 for (i = 0; i < 10; inc(i)) if (mod(i, 2) == 0) continue else t1 = i + t1
 assert t1 == 25
+
+// issue - 103
+let j = 0
+for (i = 0; i < 10;) { j = i; i = i + 5 }
+assert j == 5
+j = 0
+for(;;) { j = j + 1; when (j > 10) break }
+assert j == 11
+j = 0
+for (i = 0;;) { i = i + 1; j = i; when(i > 10) break }
+assert j == 11
+j = 0
+for (i = 0; i < 10;) { i = i + 1; j = i }
+assert j == 10
+j = 0
+for (i = 0; i < 10; inc(i)) j = i
+assert j == 9

@@ -977,6 +977,8 @@
              (loop (tokenizer 'peek) (scm-cons (scm-list token expr) bindings))))
           (else (parser-error tokenizer "Expected variable declaration.")))))
 
+(define *no-nxt-expr* '*no-nxt-expr*)
+
 (define (for-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'for)
          (tokenizer 'next)
@@ -988,7 +990,7 @@
            (let ((cond-expr (if (eq? '*semicolon* (tokenizer 'peek)) #t (scm-expression tokenizer))))
              (if (not (eq? '*semicolon* (tokenizer 'next)))
                  (parser-error tokenizer "Expected semicolon here."))
-             (let ((nxt-expr (if (eq? '*close-paren* (tokenizer 'peek)) #f (scm-expression tokenizer))))
+             (let ((nxt-expr (if (eq? '*close-paren* (tokenizer 'peek)) *no-nxt-expr* (scm-expression tokenizer))))
                (if (not (eq? (tokenizer 'next) '*close-paren*))
                    (parser-error tokenizer "Expected closing parenthesis here."))
                (let ((counter (if (not (null? bindings)) (scm-caar bindings) #f)))
@@ -1001,7 +1003,8 @@
                                              (call/cc (lambda (continue)
                                                         ,(func-body-expr tokenizer #f #f))))
                                        ,(if counter
-                                            `(set! ,counter ,nxt-expr)
+                                            (if (not (eq? nxt-expr *no-nxt-expr*))
+                                                `(set! ,counter ,nxt-expr))
                                             nxt-expr)
                                        (*for-loop*))
                                      *for-value*))))))))))
