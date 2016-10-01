@@ -81,17 +81,23 @@
 
 ;; sorting
 
+(define (qs-partition xs m test)
+  (let loop ((xs xs) (as '()) (bs '()))
+    (if (null? xs)
+        (scm-cons as bs)
+        (let ((x (scm-car xs)))
+          (if (test x m)
+              (loop (scm-cdr xs) (scm-cons x as) bs)
+              (loop (scm-cdr xs) as (scm-cons x bs)))))))
+
+;; TODO: a more efficient, tail-recursive implementation.
 (define (quicksort l #!optional (test <))
   (if (null? l) '()
-      (scm-append (quicksort (filter 
-                          (lambda (x) (scm-not (test (scm-car l) x)))
-                          (scm-cdr l)) 
-                         test)
-              (scm-list (scm-car l))
-              (quicksort (filter 
-                          (lambda (x) (test (scm-car l) x))
-                          (scm-cdr l))
-                         test))))
+      (let* ((x (scm-car l))
+             (parts (qs-partition (scm-cdr l) x test)))
+        (scm-append (quicksort (scm-car parts) test)
+                    (scm-list x)
+                    (quicksort (scm-cdr parts) test)))))
 
 (define (+merge+ xs ys test) 
   (cond ((and (null? xs) 

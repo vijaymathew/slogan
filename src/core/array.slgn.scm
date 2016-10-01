@@ -267,4 +267,3 @@
         ((f32vector? tab) (f32vector-length tab))
         ((f64vector? tab) (f64vector-length tab))
         (else (error !not_indexed tab))))
-      
