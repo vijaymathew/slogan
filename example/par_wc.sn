@@ -1,0 +1,37 @@
+let stop_words = ["the", "by", "you", "we", "to", "of", "in", "was", "a", "an", "is",
+                  "and", "are", "has", "have", "had", "he", "his", "her", "she", "when",
+		  "how", "why", "what", "that", "then", "now", "i", "be", "it", "as",
+		  "with", "for", "but", "on", "my", "him", "so", "were", "which", "could",
+		  "should", "would", "can", "shall", "will", "me", "at", "not", "they", "all",
+		  "been", "from", "very", "much", "no", "yes", "their", "this", "your", "said",
+		  "or", "them", "mr", "mrs"]
+		  
+function word_count(str)
+  let (count_table = #{},
+       delims = [\space, \newline, \,, \;, \:, \., \{, \}, \(, \), \[, \]])
+   let (add_word_count =
+        ^(word)
+	 when (not(member(word, stop_words))) 
+	   let (c = count_table[word])
+	     if (c) count_table[word] = inc(c)
+	     else count_table[word] = 1)
+   { for_each(^(w) add_word_count(string_trim(w)), string_split(string_downcase(str), delims))
+     count_table }
+
+function count_words_in_file(file_name)
+  let (ct = word_count(call_with_stream(file_reader(file_name), read_all_chars)),
+       xs = [])
+  { hashtable_for_each(^(k, v) xs = (k:v):xs, ct)
+    sort(xs, ^(x, y) tail(x) > tail(y)) }
+
+function count_words_in_files(file_names)
+  let (counts = map(count_words_in_file, file_names),
+       count_tables = #{})
+  { for_each(^(fn, c) count_tables[fn] = c, file_names, counts)
+    count_tables }
+    
+function frequent_words(count_table, n) take(n, count_table)
+
+// sample usage:
+let xs = count_words_in_files(["~/Downloads/01.txt", "~/Downloads/02.txt"]);
+frequent_words(xs["~/Downloads/02.txt"], 20);
