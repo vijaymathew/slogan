@@ -1,0 +1,43 @@
+let p = spawn(^(msg)
+              | 'pair -> 1:2
+              | 'list -> [1,2,3]
+              | 'long_list -> range(0, 10000)
+              | 'array -> #[1,2,3]
+              | 'u8array -> #u8[1,2,3]
+              | 's8array -> #s8[1,-2,3]
+              | 'u16array -> #u16[1,2,3]
+              | 's16array -> #s16[1,-2,3]
+              | 'u32array -> #u32[1,2,3]
+              | 's32array -> #s32[1,-2,3]              
+              | 'u64array -> #u64[1,2,3]
+              | 's64array -> #s64[1,-2,3]
+              | 'f64array -> #f64[1.,-2.,3.]
+              | 'f32array -> #f32[1.,-2.,3.]
+              | 'bitarray -> #b[0,2,3]              
+              | 'set -> #(1,2,3)
+              | 'table -> #{"hi":2, 'hello:4}
+              | 'number -> 3.14
+              | 'string -> "hello world"
+              | _ -> ['exit])
+
+assert p.pair() == 1:2
+assert p.list() == [1,2,3]
+assert p.long_list() == range(0, 10000)
+assert p.array() == #[1,2,3]
+assert p.u8array() == #u8[1,2,3]
+assert p.s8array() == #s8[1,-2,3]
+assert p.u16array() == #u16[1,2,3]
+assert p.s16array() == #s16[1,-2,3]
+assert p.u32array() == #u32[1,2,3]
+assert p.s32array() == #s32[1,-2,3]
+assert p.u64array() == #u64[1,2,3]
+assert p.s64array() == #s64[1,-2,3]
+assert p.f32array() == #f32[1.,-2.,3.]
+assert p.f64array() == #f64[1.,-2.,3.]
+assert p.bitarray() == #b[0,1,1]
+assert p.set() == #(1,2,3)
+assert p.table() == #{"hi":2, 'hello:4}
+assert p.number() == 3.14
+assert p.string() == "hello world"
+assert p.some() == ['exit]
+p.quit
