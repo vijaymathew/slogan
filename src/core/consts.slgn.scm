@@ -1,7 +1,7 @@
 ;; Copyright (C) 2013-2016 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
 
 (define *major-version* 0)
-(define *minor-version* 11.6)
+(define *minor-version* 11.7)
 (define *release-name* 'beta)
 
 (define *scm-extn* ".scm")
@@ -44,3 +44,5 @@
 (define *scheme-reprs* '((#t . true) (#f . false)))
 
 (define *void* '#!void)
+
+(define *max-list-literal-length* 5000)

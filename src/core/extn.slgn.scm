@@ -146,6 +146,12 @@ c-declare-end
       (noncontinuable-exception-reason obj)
       (tagged-assoc 'reason obj)))
 
+(define (trim-args args)
+  (let loop ((n 0) (args args) (result '()))
+    (if (or (> n 10) (null? args))
+        (scm-reverse (scm-cons '... result))
+        (loop (+ n 1) (scm-cdr args) (scm-cons (scm-car args) result)))))
+
 (define (parse-exception ex)
   (cond
    ((or (pair? ex) (string? ex) (symbol? ex) (number? ex)) ex)
@@ -169,7 +175,7 @@ c-declare-end
    ((number-of-arguments-limit-exception? ex)
     (tagged-list 'number_of_arguments_limit
                  (scm-cons 'function (number-of-arguments-limit-exception-procedure ex))
-                 (scm-cons 'arguments (number-of-arguments-limit-exception-arguments ex))))
+                 (scm-cons 'arguments (trim-args (number-of-arguments-limit-exception-arguments ex)))))
    ((nonprocedure-operator-exception? ex)
     (tagged-list 'not_a_function
                  (scm-cons 'function (nonprocedure-operator-exception-operator ex))

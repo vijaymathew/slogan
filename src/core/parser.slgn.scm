@@ -841,13 +841,28 @@
          (func-call-expr expr tokenizer))
         (else expr)))
 
+(define scm-long-list scm-append)
+
+(define (mk-list-literal xs)
+  (let ((len (scm-length xs)))
+    (if (> len *max-list-literal-length*)
+        (let loop ((xs xs) (n 0) (ys '()) (result '()))
+          (cond ((null? xs)
+                 (let ((r (if (null? ys) result (scm-cons `(scm-list ,@ys) result))))
+                   `(scm-long-list ,@r)))
+                ((> n *max-list-literal-length*)
+                 (loop (scm-cdr xs) 0 '() (scm-cons `(scm-list ,@(scm-cons (scm-car xs) ys)) result)))
+                (else
+                 (loop (scm-cdr xs) (+ n 1) (scm-cons (scm-car xs) ys) result))))
+        `(scm-list ,@(scm-reverse xs)))))
+
 (define (list-literal tokenizer)
   (tokenizer 'next)
-  (let loop ((result (scm-list 'scm-list)))
+  (let loop ((result '()))
     (let ((token (tokenizer 'peek)))
       (if (scm-eq? token '*close-bracket*)
           (begin (tokenizer 'next)
-                 (scm-reverse result))
+                 (mk-list-literal result))
           (let ((expr (scm-expression tokenizer)))
             (if (scm-eq? (tokenizer 'peek) '*pipe*)
                 (begin (tokenizer 'next)
@@ -1066,6 +1081,9 @@
             (else sym))
       #f))
 
+(define (list-literal? s)
+  (or (eq? s 'scm-list) (eq? s 'scm-long-list)))
+
 (define (mod-exports-list tokenizer)
   (let ((token (tokenizer 'peek)))
     (cond ((not (scm-eq? '*open-paren* token))
@@ -1087,7 +1105,7 @@
                                      (check-if-reserved-name (scm-cdr expr) tokenizer)
                                      (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'mod-exports-list-2)
                                      (loop (scm-cons expr exports))))
-                                  ((scm-eq? (scm-car expr) 'scm-list)
+                                  ((list-literal? (scm-car expr))
                                    (loop (scm-cons (scm-cdr expr) exports)))
                                   (else
                                    (parser-error tokenizer "Invalid export description."))))

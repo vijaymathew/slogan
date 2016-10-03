@@ -396,20 +396,22 @@
 (define (get_token tokenizer)
   (tokenizer 'next))
 
-(define (scm-show #!key (stream (current-output-port)) #!rest objs)
+(define (scm-show #!key (stream (current-output-port)) (quotes #f) #!rest objs)
   (let loop ((objs objs))
     (if (scm-not (null? objs))
-	(begin (slgn-display (scm-car objs) port: stream)
+	(begin (slgn-display (scm-car objs) port: stream quotes: quotes)
 	       (loop (scm-cdr objs))))))
 
 (define show scm-show)
 
-(define (showln #!key (stream (current-output-port)) #!rest objs)
+(define (scm-showln #!key (stream (current-output-port)) (quotes #f) #!rest objs)
   (let loop ((objs objs))
     (if (scm-not (null? objs))
-	(begin (slgn-display (scm-car objs) port: stream)
+	(begin (slgn-display (scm-car objs) port: stream quotes: quotes)
 	       (loop (scm-cdr objs)))))
   (scm-newline stream))
+
+(define showln scm-showln)
 
 (define reader_timeout input-port-timeout-set!)
 (define writer_timeout output-port-timeout-set!)

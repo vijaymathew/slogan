@@ -53,7 +53,8 @@
   (with-exception-catcher
    (lambda (e)
      (close-port sock)
-     (scm-println "child process exiting on exception - " e)
+     (scm-println "child process exiting on exception:")
+     (show_exception e)
      (scm-exit 1))
    (lambda ()
      (cb (make-process-info 0 sock #f))
@@ -94,9 +95,13 @@
         (if (scm-not (> timeout 0))
             (error "process-send - timeout must be a positive number.")
             (output-port-timeout-set! out timeout)))
-    (scm-write object out)
-    (newline out)
+    (scm-showln stream: out quotes: #t object)
     (force-output out)))
+
+(define (normalize-msg msg)
+  (if (and (pair? msg) (eq? (scm-car msg) 'quote))
+      (scm-cadr msg)
+      msg))
 
 (define (process_receive pinfo #!optional timeout default)
   (let ((in (process-info-socket pinfo)))
@@ -109,10 +114,19 @@
              (if timeout default r))
             (else
              (let ((buf (open-input-string r)))
-               (let ((r (scm-read buf)))
-                 (close-input-port buf)
-                 r)))))))
-         
+               (let ((t (make-tokenizer buf '())))
+                 (let ((r (normalize-msg (scm-slogan t))))
+                   (close-input-port buf)
+                   r))))))))
+
+(define *eval-prefixes* (scm-append '(scm-cons scm-list scm-long-list make-equal-hashtable)
+                                    *vector-patterns*)) ;; see match.slgn.scm
+
+(define (needs-eval? v)
+  (if (pair? v)
+      (scm-member (scm-car v) *eval-prefixes*)
+      #f))
+
 (define (spawn child-callback #!optional timeout default)
   (define (cb pinfo)
     (let ((message (process_receive pinfo timeout default)))
@@ -131,6 +145,9 @@
              (let ((value *void*))
                (lambda (#!key timeout default)
                  (if (scm-eq? value *void*)
-                     (set! value (process_receive pinfo timeout default)))
+                     (set! value (let ((v (process_receive pinfo timeout default)))
+                                   (if (needs-eval? v)
+                                       (scm-eval v)
+                                       v))))
                  value)))))))
 
