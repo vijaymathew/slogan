@@ -7,14 +7,14 @@
          (build-cmd (string-append "cd " pkg-path "; ./build; cd " currdir)))
     (let ((r (shell-command build-cmd)))
       (if (scm-not (zero? r))
-          (error "build-package - build failed -" build-cmd ", " r)
+          (scm-error "build-package - build failed -" build-cmd ", " r)
           #t))))
 
 (define (install-git-package pkg-name pkg-url pkg-path)
   (let ((cmd (string-append "git clone " pkg-url " " pkg-path)))
     (let ((r (shell-command cmd)))
       (if (scm-not (zero? r))
-          (error "install-git-package - clone failed -" cmd ", " r)
+          (scm-error "install-git-package - clone failed -" cmd ", " r)
           (build-package pkg-path))
       pkg-name)))
 
@@ -36,7 +36,7 @@
                                      " -d " " -C ")
                                  *pkg-root*)
                   in-file))
-          (error "cannot decompress package - " file-name)))))
+          (scm-error "cannot decompress package - " file-name)))))
 
 (define (untar&build-package pkg-name pkg-url pkg-path)
   (let ((file-name (get-file-name-from-pkg-url pkg-url)))
@@ -45,14 +45,14 @@
         (delete_file (scm-cdr cmd&infile))
         (if (zero? r)
             (build-package pkg-path)
-            (error "failed to decompress package - " (scm-car cmd&infile) ", " r)))))
+            (scm-error "failed to decompress package - " (scm-car cmd&infile) ", " r)))))
   pkg-name)
           
 (define (install-remote-package pkg-name pkg-url pkg-path)
   (let ((cmd (string-append "curl " pkg-url " -o " (string-append *pkg-root* (get-file-name-from-pkg-url pkg-url)))))
     (let ((r (shell-command cmd)))
       (if (scm-not (zero? r))
-          (error "install-remote-package failed -" cmd ", " r)
+          (scm-error "install-remote-package failed -" cmd ", " r)
           (untar&build-package pkg-name pkg-url pkg-path))))
   pkg-name)
 
@@ -60,7 +60,7 @@
   (let ((cmd (string-append "cp -R " src " " dest)))
     (let ((r (shell-command cmd)))
       (if (scm-not (zero? r))
-          (error "copy-dir - failed - " cmd ", " r)
+          (scm-error "copy-dir - failed - " cmd ", " r)
           #t))))
 
 (define (install-local-package pkg-name pkg-url pkg-path)
@@ -70,7 +70,7 @@
                  (build-package pkg-path))
           (begin (copy-file pkg-url (string-append *pkg-root* (get-file-name-from-pkg-url pkg-url)))
                  (untar&build-package pkg-name pkg-url pkg-path)))
-      (error "install-local-package - file not found - " pkg-url))
+      (scm-error "install-local-package - file not found - " pkg-url))
   pkg-name)
 
 (define (load_package pkg-name)
@@ -78,7 +78,7 @@
     (with-exception-catcher
      (lambda (e)
        (if (no-such-file-or-directory-exception? e)
-           (raise e)
+           (scm-raise e)
            (show_exception e)))
      (lambda () (load pkg-init-path)))
     pkg-name))
@@ -93,7 +93,7 @@
   (let ((r (shell-command (string-append "rm -rf " path))))
     (if (zero? r)
         #t
-        (error "failed to remove directory - " path ", " r))))
+        (scm-error "failed to remove directory - " path ", " r))))
 
 (define (install_package pkg-name pkg-type pkg-url #!optional force)
   (if (scm-not (file-exists? *pkg-root*))
@@ -102,13 +102,13 @@
          (pkg-path-old (string-append pkg-path ".bck")))
     (if (file-exists? pkg-path)
         (if (scm-not force)
-            (error "package already installed - " pkg-path)
+            (scm-error "package already installed - " pkg-path)
             (rename-file pkg-path pkg-path-old)))
     (case pkg-type
       ((git) (install-git-package pkg-name pkg-url pkg-path))
       ((remote) (install-remote-package pkg-name pkg-url pkg-path))
       ((local) (install-local-package pkg-name pkg-url pkg-path))
-      (else (error "install_package - type not supported -" pkg-type)))
+      (else (scm-error "install_package - type not supported -" pkg-type)))
     (if (file-exists? pkg-path-old)
         (force-rm-dir pkg-path-old))
     (load_package pkg-name)))

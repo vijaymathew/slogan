@@ -425,7 +425,7 @@ c-declare-end
    ((f64vector? tab)
     (f64vector-set! tab key val))
    (else
-    (error 'not_indexed tab))))
+    (scm-error 'not_indexed tab))))
 
 (define (map-safe-access tab key default)
   (cond
@@ -464,7 +464,7 @@ c-declare-end
    ((f64vector? tab)
     (f64vector-safe-ref tab key default))   
    (else
-    (error 'not_indexed tab))))
+    (scm-error 'not_indexed tab))))
 
 (define (ref tab key #!key (value *void*) (default #f))
   (if (scm-eq? value *void*)
@@ -504,7 +504,7 @@ c-declare-end
    ((f64vector? tab)
     (array-accessor 'f64vector tab key))
    (else
-    (error 'not_indexed tab))))
+    (scm-error 'not_indexed tab))))
 
 (define (*-@-* tab key #!optional (value *void*))
   (if (scm-eq? value *void*)
@@ -545,7 +545,7 @@ c-declare-end
    ((f64vector? tab)
     (f64vector-length tab))
    (else
-    (error 'count_not_supported tab))))
+    (scm-error 'count_not_supported tab))))
 
 (define (char-compare x y)
   (cond ((char>? x y) 1)
@@ -609,7 +609,7 @@ c-declare-end
     (lex-compare x y f32vector-length f32vector-ref num-compare))
    ((f64vector? tab)
     (lex-compare x y f64vector-length f64vector-ref num-compare))
-   (else (error 'compare_not_supported))))
+   (else (scm-error 'compare_not_supported))))
 
 (define (compare x y)
   (if (procedure? x)
@@ -646,7 +646,7 @@ c-declare-end
   (call/cc
     (lambda (break)
       (if (not (procedure? fn))
-        (error "expected procedure instead of " fn))
+        (scm-error "expected procedure instead of " fn))
       (let ((cmpr (if (> n from) < >))
             (trans (if (> n from) + -)))
         (let loop ((i from) (res init))

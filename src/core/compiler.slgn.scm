@@ -57,7 +57,7 @@
                  out-file-name))
 
 (define (compile-exception-handler ex)
-  (raise ex))
+  (scm-raise ex))
 
 (define (compile script-name #!key assemble exe
 		 ld_options cc_options output
@@ -114,9 +114,9 @@
                  ((char=? c #\])
                   (set! scount (- scount 1)))))
          s))
-    (if (< bcount 0) (error "misplaced closing brace."))
-    (if (< pcount 0) (error "misplaced closing parenthesis."))
-    (if (< scount 0) (error "misplaced closing bracket."))    
+    (if (< bcount 0) (scm-error "misplaced closing brace."))
+    (if (< pcount 0) (scm-error "misplaced closing parenthesis."))
+    (if (< scount 0) (scm-error "misplaced closing bracket."))
     (and (zero? bcount)
          (zero? pcount)
          (zero? scount))))

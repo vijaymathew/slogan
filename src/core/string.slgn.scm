@@ -156,8 +156,8 @@
                (port-pos-read-char! port)
                (if (char-numeric? (port-pos-peek-char port))
                    (read-number port #\. radix)
-                   (error "Invalid number format." s)))
-              (else (error "Failed to parse numeric string." s)))))))
+                   (scm-error "Invalid number format." s)))
+              (else (scm-error "Failed to parse numeric string." s)))))))
               
 (define (strings_join infix slist)
   (let loop ((slist slist) (result #f))

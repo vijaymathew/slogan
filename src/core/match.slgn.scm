@@ -79,7 +79,7 @@
     ((scm-s64vector) 's64vector?)
     ((scm-f32vector) 'f32vector?)
     ((scm-f64vector) 'f64vector?)
-    (else (error "Invalid vector constructor." fname))))
+    (else (scm-error "Invalid vector constructor." fname))))
 
 (define (vector-len-fn fname)
   (case fname
@@ -96,7 +96,7 @@
     ((scm-s64vector) 's64vector-length)
     ((scm-f32vector) 'f32vector-length)
     ((scm-f64vector) 'f64vector-length)
-    (else (error "Invalid vector constructor." fname))))
+    (else (scm-error "Invalid vector constructor." fname))))
 
 (define (vector-to-list-fn fname)
     (case fname
@@ -113,7 +113,7 @@
     ((scm-s64vector) 's64vector->list)
     ((scm-f32vector) 'f32vector->list)
     ((scm-f64vector) 'f64vector->list)
-    (else (error "Invalid vector constructor." fname))))
+    (else (scm-error "Invalid vector constructor." fname))))
 
 (define (hashtable-pattern? p)
   (eq? (scm-car p) 'make-equal-hashtable))
@@ -197,7 +197,7 @@
                                                               "-" (scm-caar members)))))
                  (loop (scm-cdr members) (scm-cons `(equal? ,(scm-cdar members) (,accessor *value*)) conds))))
               (else
-               (error "Invalid record pattern: " pattern)))))))
+               (scm-error "Invalid record pattern: " pattern)))))))
 
 (define (match-pattern-helper pattern bindings)
   (set! pattern (normalize-list-for-matching pattern))

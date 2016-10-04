@@ -1,3 +1,22 @@
+let x = ?
+task(^{task_sleep(2) ?x = 100})
+assert ?x == 100
+
+x = ?
+let y = ?
+!{?x = ?y * 10}
+?y = 100
+assert ?x == 1000
+
+x = ?
+let p = act(^(message) | [x, y] -> x + y,
+            ^(message) | result -> ?x = result)
+p([10, 20])
+assert ?x == 30
+x = ?
+p([10, 200])
+assert ?x == 210
+
 let p = spawn(^(msg)
               | 'pair -> 1:2
               | 'list -> [1,2,3]
@@ -18,6 +37,7 @@ let p = spawn(^(msg)
               | 'table -> #{"hi":2, 'hello:4}
               | 'number -> 3.14
               | 'string -> "hello world"
+              | ['add, x, y] -> x + y
               | _ -> ['exit])
 
 assert p.pair() == 1:2
@@ -40,4 +60,13 @@ assert p.table() == #{"hi":2, 'hello:4}
 assert p.number() == 3.14
 assert p.string() == "hello world"
 assert p.some() == ['exit]
+assert p(['add, 10, 20])() == 30
 p.quit
+
+p = spawn(^(msg) | 'hi -> 'hello)
+let x = 0;
+let f = p.hi;
+try p.hi() catch(e) x = 1
+assert x == 1
+assert f() == 'hello
+assert p.hi() == 'hello

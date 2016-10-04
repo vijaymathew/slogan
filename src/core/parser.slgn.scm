@@ -51,7 +51,7 @@
           #f))))
 
 (define (parser-error tokenizer msg #!optional token)
-  (error (with-output-to-string 
+  (scm-error (with-output-to-string 
            '()
            (lambda ()
              (if tokenizer
@@ -165,7 +165,7 @@
                   (if (or (wrong-number-of-arguments-exception? e)
                           (nonprocedure-operator-exception? e))
                       (apply *old-name* *self* *args*)
-                      (raise e)))
+                      (scm-raise e)))
                 (lambda ()
                   (apply (*self* ',name) *args*)))
                (apply *old-name* *self* *args*)))))))                           
@@ -206,11 +206,11 @@
                  (let ((% ,body-expr))
                    (if (or *func-contracts-disabled* ,post-cond)
                        %
-                       (error 'postcondition_failed ',name ',post-cond)))
-                 (error 'precondition_failed ',name ',pre-cond))
+                       (scm-error 'postcondition_failed ',name ',post-cond)))
+                 (scm-error 'precondition_failed ',name ',pre-cond))
             `(if (or *func-contracts-disabled* ,pre-cond)
                  ,body-expr
-                 (error 'precondition_failed ',name ',pre-cond))))))
+                 (scm-error 'precondition_failed ',name ',pre-cond))))))
 
 (define (func-def-stmt-with-name tokenizer)
   (let ((name (tokenizer 'peek)))
@@ -301,7 +301,7 @@
 
 (define (vars-defs-set syms exprs def)
   (if (not (= (scm-length syms) (scm-length exprs)))
-      (error "Not enough values or variables." syms exprs))
+      (scm-error "Not enough values or variables." syms exprs))
   (let loop ((syms syms) (exprs exprs) (defexprs '()))
     (if (not (null? syms))
         (let ((sym (scm-car syms)))
@@ -582,7 +582,7 @@
                            (*result* '*unbound*))
                        ,@(scm-reverse body)
                        (if (unbound? *result*)
-                           (error 'no_match_found)
+                           (scm-error 'no_match_found)
                            *result*)))
         (let* ((patterns&guards (match-patterns&guards tokenizer))
                (pattern (last-pattern patterns&guards))
@@ -610,7 +610,7 @@
                                        `(let ((,ex (parse-exception ,ex))) ,(func-body-expr tokenizer args))
                                        (finally-expr tokenizer))))
                ((finally)
-                (make-try-catch-expr token try-expr '(*e*) '(raise *e*)
+                (make-try-catch-expr token try-expr '(*e*) '(scm-raise *e*)
                                      (finally-expr tokenizer)))
                (else (parser-error tokenizer "Expected catch or finally clauses.")))))
           (else (yield-expr tokenizer)))))
@@ -645,7 +645,7 @@
     (if (void? finally-expr) try-expr
 	(scm-list 'let (scm-list (scm-list '*finally* (scm-list 'lambda (scm-list) finally-expr)))
             (scm-list (get-exception-handler-fnname try-token)
-                  (scm-list 'lambda '(*e*) '(begin (*finally*) (raise *e*)))
+                  (scm-list 'lambda '(*e*) '(begin (*finally*) (scm-raise *e*)))
                   (scm-list 'lambda '() try-expr))
 	    '(*finally*)))))
 
@@ -678,8 +678,8 @@
                `(if *assertions-enabled*
                     (if (not ,expr)
                         (if ,msg
-                            (error ,msg)
-                            (error (quote assertion_failed)
+                            (scm-error ,msg)
+                            (scm-error (quote assertion_failed)
                                    ,(string-append "line: " (number->string line)))))
                     #t))))
           (else #f))))
@@ -1156,7 +1156,7 @@
               (let ((e (scm-car exps)))
                 (if (scm-memq (if (symbol? e) e (scm-cdr e)) defs-in-body)
                     (loop (scm-cdr exps))
-                    (error "Exported name not found in definitions." e))))))))
+                    (scm-error "Exported name not found in definitions." e))))))))
 
 (define (merge-module name exports body)
   (let ((exports (check-if-body-has-exported-names body exports)))
@@ -1165,7 +1165,7 @@
                       (dispatcher `(case *name*)))
              (if (null? es)
                  `(if *name*
-                      ,(scm-append dispatcher '((else (error (quote name_not_found) *name*))))
+                      ,(scm-append dispatcher '((else (scm-error (quote name_not_found) *name*))))
                       ',exports)
                  (let ((n (scm-car es)))
                    (if (symbol? n)
@@ -1375,7 +1375,7 @@
   (if (scm-eq? precond #t)
       precond
       `(if (scm-not ,precond)
-           (error 'precondition_failed ,mem)
+           (scm-error 'precondition_failed ,mem)
            ,mem)))
 
 (define (mk-record-precond-exprs preconds mems)

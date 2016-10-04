@@ -68,10 +68,6 @@ finally x = false
 assert r_b(a) == 200
 assert x == false
 
-let x = ?
-task(^{task_sleep(2) ?x = 100})
-assert ?x == 100
-
 function ints(n) n:~ints(n+1)
 x = ints(0)
 assert nth(10, x) == 10

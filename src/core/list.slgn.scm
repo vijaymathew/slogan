@@ -135,14 +135,14 @@
   (case type
     ((quick) (quicksort ls test))
     ((merge) (mergesort ls test))
-    (else (error "sorting algorithm not implemented. " type))))
+    (else (scm-error "sorting algorithm not implemented. " type))))
 
 (define sort scm-sort)
 ;; 
 
 (define (copy_list lst)
   (if (scm-not (pair? lst))
-      (error "(Argument 1) PAIR expected\n" lst))
+      (scm-error "(Argument 1) PAIR expected\n" lst))
   (if (scm-not (list? lst))
       (scm-cons (scm-car lst) (scm-cdr lst))
       (let loop ((lst lst) (result '()))
@@ -330,7 +330,7 @@
          (f32vector->list obj))
         ((f64vector? obj)
          (f64vector->list obj))
-        (else (error "Cannot convert object to list." obj))))
+        (else (scm-error "Cannot convert object to list." obj))))
 
 (define (expand-multiple-comprehension-bindings vars expr)
   (let loop ((vars vars) (bindings '()))
@@ -351,8 +351,8 @@
                ((eq? 'scm-list (scm-car var))
                 `(let ((*list-val* (object->list (scm-car *list*))))
                    ,(expand-multiple-comprehension-bindings (scm-cdr var) expr)))
-               (error "Invalid binding pattern.")))
-        (else (error "Invalid variable syntax."))))
+               (scm-error "Invalid binding pattern.")))
+        (else (scm-error "Invalid variable syntax."))))
 
 (define (mk-comprehension-loop lists vars filters result-expr)
   (let ((expr-acc '()))

@@ -77,7 +77,7 @@
            (if quotes (scm-display #\" port))
            (scm-display (unicode-literals->qmarks str) port)
            (if quotes (scm-display #\" port)))
-         (raise e)))
+         (scm-raise e)))
    (lambda ()
      (if quotes (scm-display #\" port))
      (scm-display str port)
@@ -269,9 +269,9 @@
     (let loop ((rest rest))
       (if (scm-not (null? rest))
           (begin (if (scm-not (scm-eq? (lenf (scm-car rest)) len))
-                     (error (with-output-to-string 
-                              "Object is not of proper length: " 
-                              (lambda () (slgn-display (scm-car rest))))))
+                     (scm-error (with-output-to-string 
+                                  "Object is not of proper length: " 
+                                  (lambda () (slgn-display (scm-car rest))))))
                  (loop (scm-cdr rest)))))))
 
 (define (has-envvars? path)
@@ -319,7 +319,7 @@
       (with-exception-catcher
        (lambda (e)
          (if (scm-not (no-such-file-or-directory-exception? e))
-             (raise e)))
+             (scm-raise e)))
        (lambda ()
          (delete-file (string-append script *scm-extn*)))))
   (with-exception-catcher
@@ -327,8 +327,8 @@
      (if (file-exists? (add-slgn-extn script))
          (if (compile script assemble: #f)
              (scm-load (string-append script *scm-extn*))
-             (error "failed to compile script" script))
-         (error "file not found " script)))
+             (scm-error "failed to compile script" script))
+         (scm-error "file not found " script)))
    (lambda () (scm-load script))))
 
 (define (reload script) (load script #t))
@@ -339,9 +339,9 @@
      (cond ((no-such-file-or-directory-exception? e)
             (if (file-exists? (add-slgn-extn script))
                 (if (scm-not (compile script assemble: #t))
-                    (error "failed to compile script" script)))
+                    (scm-error "failed to compile script" script)))
             (scm-load script))
-           (else (raise e))))
+           (else (scm-raise e))))
    (lambda () (scm-load script))))
 
 (define (check-for-? name tokenizer)
