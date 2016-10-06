@@ -12,17 +12,16 @@ let stop_words = ["the", "by", "you", "we", "to", "of", "in", "was", "a", "an", 
                   "those", "than", "still", "about", "here", "thou", "thy", "thee", "most", "must",
                   "may"]
 
-let delims = [\space, \newline, \,, \;, \:, \., \{, \}, \(, \), \[, \], \', \", \?, \!]
+let delims = [\space, \newline, \,, \;, \:, \., \_, \-, \{, \}, \(, \), \[, \], \', \", \?, \!]
 
 function word_count(str)
   let (count_table = #{})
    let (add_word_count =
         ^(word)
-	 when (string_length(word) > 1 && not(member(word, stop_words))) 
-	   let (c = count_table[word])
-	     if (c) count_table[word] = inc(c)
-	     else count_table[word] = 1)
-   { for_each(^(w) add_word_count(string_trim(w)), string_split(string_downcase(str), delims))
+	 when (string_length(word) > 1 && not(member(word, stop_words)))
+           count_table[word] = inc(hashtable_at(count_table, word, 0)))
+   { for_each(^(w) add_word_count(string_trim(w)),
+                   string_split(string_downcase(str), delims))
      count_table }
 
 function count_words_in_file(file_name)
@@ -60,7 +59,16 @@ function parallel_count_words_in_files(file_names)
           ct01 = count_words_in_files(tail(parts)),
           ct02 = pcount(timeout = 25, default = #{}))
     { pc.quit; merge_tables(ct01, ct02) }
-   
+
+function parallel_count_words_in_files_even_faster(file_names)
+  letseq (pcs = map(^(fn) par_counter([fn]), file_names),
+          pcounts = map(^(pc) pc.start, pcs),
+          to_secs = 15,
+          ct = first(pcounts)(timeout = to_secs, default = #{}))
+  { for_each(^(pcount) merge_tables(ct, pcount(timeout = to_secs, default = #{})), rest(pcounts))
+    for_each(^(pc) pc.quit, pcs)
+    ct }
+
 function frequent_words(count_table, n) take(n, count_table)
 
 function par_counter_2(file_names)
@@ -80,8 +88,7 @@ function count_words_in_files_2(file_names)
 
 // An updated version of `parallel_count_words_in_files`.
 // Instead of returning the complete word_count tables return only
-// sub-tables of `n` words. This reduced size in inter-process
-// communication results in a remarkable speedup!
+// sub-tables of `n` words.
 function parallel_count_words_in_files_2(file_names)
   letseq (parts = split(file_names),
           pc = let (pc = par_counter_2(head(parts)))
@@ -101,27 +108,30 @@ function parallel_count_words_in_files_2(file_names)
 let corpus = ["./corpus/war&peace.txt", "./corpus/mobydick.txt",
               "./corpus/kjbible.txt", "./corpus/pride&prejudice.txt"]
 
+function frequent_words(count_table, n) take(n, count_table)
+
 // First we compare the original sequential and parallel implementations.
 function show_most_frequent_words(corpus, n, count_fn)
   let (start_secs = now_seconds(),
        xs = count_fn(corpus))
-  { showln(now_seconds() - start_secs, " secs")
-    for (i = 0; i < count(corpus); inc(i))
+  { for (i = 0; i < count(corpus); inc(i))
       let (fname = corpus[i])
-        showln(fname, ": ", frequent_words(xs[fname], n)) }
+        showln(fname, ": ", frequent_words(xs[fname], n))
+    showln(now_seconds() - start_secs, " secs") }
 
 show_most_frequent_words(corpus, 20, count_words_in_files)
 show_most_frequent_words(corpus, 20, parallel_count_words_in_files)
+show_most_frequent_words(corpus, 20, parallel_count_words_in_files_even_faster)
 
 // Next, we compare the sequential and parallel implementations based on
 // pure message passing.
 function show_most_frequent_words_2(corpus, n, count_fn)
   let (start_secs = now_seconds(),
        xs = count_fn(corpus))
-  { showln(now_seconds() - start_secs, " secs")
-    for (i = 0; i < count(corpus); inc(i))
+  { for (i = 0; i < count(corpus); inc(i))
       let (fname = corpus[i])
         showln(fname, ": ", xs(['get, fname, n]))
+    showln(now_seconds() - start_secs, " secs")
     xs.quit }
 
 show_most_frequent_words_2(corpus, 20, count_words_in_files_2)
