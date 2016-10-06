@@ -140,7 +140,7 @@
              (child-msg-handler pinfo)))))
   child-msg-handler)
 
-(define (spawn child-callback #!optional timeout default)
+(define (act child-callback #!optional timeout default)
   (let ((pinfo (scm-process (mk-child-msg-handler child-callback timeout default) timeout))
         (sent? #f))
     (lambda (message)
@@ -162,7 +162,7 @@
                        (set! sent? #f)))
                  value)))))))
 
-(define (act child-callback parent-callback #!optional timeout default)
+(define (react child-callback parent-callback #!optional timeout default)
   (let ((pinfo (scm-process (mk-child-msg-handler child-callback timeout default) timeout))
         (p-thread #f))
     (define (parent-msg-handler)

@@ -9,15 +9,15 @@ let y = ?
 assert ?x == 1000
 
 x = ?
-let p = act(^(message) | [x, y] -> x + y,
-            ^(message) | result -> ?x = result)
+let p = react(^(message) | [x, y] -> x + y,
+              ^(message) | result -> ?x = result)
 p([10, 20])
 assert ?x == 30
 x = ?
 p([10, 200])
 assert ?x == 210
 
-let p = spawn(^(msg)
+let p = act(^(msg)
               | 'pair -> 1:2
               | 'list -> [1,2,3]
               | 'long_list -> range(0, 10000)
@@ -63,7 +63,7 @@ assert p.some() == ['exit]
 assert p(['add, 10, 20])() == 30
 p.quit
 
-p = spawn(^(msg) | 'hi -> 'hello)
+p = act(^(msg) | 'hi -> 'hello)
 let x = 0;
 let f = p.hi;
 try p.hi() catch(e) x = 1

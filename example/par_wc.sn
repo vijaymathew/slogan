@@ -40,7 +40,7 @@ function count_words_in_files(file_names)
     count_tables }
 
 function par_counter(file_names)
-  spawn(^(message) | 'start -> count_words_in_files(file_names))
+  act(^(message) | 'start -> count_words_in_files(file_names))
 
 function split(xs)
   letseq (ln = length(xs),
@@ -65,11 +65,11 @@ function frequent_words(count_table, n) take(n, count_table)
 
 function par_counter_2(file_names)
   let (counts_table = false)
-    spawn(^(message)
-          | 'start -> {!{counts_table = count_words_in_files(file_names)}; true}
-          | ['get, fname, n] -> let loop ()
-                                  if (counts_table) frequent_words(counts_table[fname], n)
-                                  else { task_sleep(1); loop() })
+    act(^(message)
+        | 'start -> {!{counts_table = count_words_in_files(file_names)}; true}
+        | ['get, fname, n] -> let loop ()
+                                if (counts_table) frequent_words(counts_table[fname], n)
+                                else { task_sleep(1); loop() })
 
 function count_words_in_files_2(file_names)
   let (counts = map(count_words_in_file, file_names),
