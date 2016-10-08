@@ -71,12 +71,20 @@
                  (scm-error "failed to establish connection."))
           ch))))
 
+(define (open-server-connection port-number tries)
+  (with-exception-catcher
+   (lambda (e)
+     (if (>= tries 3)
+	 (scm-raise e)
+	 (begin	(thread-sleep! .5)
+		(open-server-connection port-number (+ tries 1)))))
+   (lambda () (open-tcp-client (list port-number: port-number keep-alive: #t)))))
+
 (define (scm-process child-callback #!optional timeout)
   (let ((port-number (next-free-port)))
     (let ((pid (call-fork)))
       (cond ((zero? pid)
-             (let ((sock (open-tcp-client (list port-number: port-number
-                                                keep-alive: #t))))
+             (let ((sock (open-server-connection port-number 0)))
                (invoke-child-callback child-callback sock)))
             ((> pid 0)
              (let ((sock (open-tcp-server (list port-number: port-number
