@@ -4,6 +4,14 @@
 ;; These functions are specific to this implementation of Slogan.
 ;; Right now we have some of the most useful Gambit "Host environment" functions here.
 
+(c-declare #<<c-declare-end
+
+#include <unistd.h>
+#include <signal.h>
+
+c-declare-end
+)
+
 (define scm-getpid (c-lambda () int "getpid"))
 (define scm-getppid (c-lambda () int "getppid"))
 (define scm-kill (c-lambda (int int) int "kill")) 

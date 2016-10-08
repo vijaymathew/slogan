@@ -1,7 +1,16 @@
 ;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
 ;; Multi-core programming support.
 
+(c-declare #<<c-declare-end
+
+#include <unistd.h>
+#include <sched.h>
+
+c-declare-end
+)
+
 (define call-fork (c-lambda () int "fork"))
+(define call-sched_yield (c-lambda () int "sched_yield"))
 
 ;; Here we do a best effort to find a free port.
 (define (next-free-port)
@@ -76,7 +85,7 @@
    (lambda (e)
      (if (>= tries 3)
 	 (scm-raise e)
-	 (begin	(thread-sleep! .5)
+	 (begin	(call-sched_yield)
 		(open-server-connection port-number (+ tries 1)))))
    (lambda () (open-tcp-client (list port-number: port-number keep-alive: #t)))))
 

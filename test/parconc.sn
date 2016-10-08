@@ -16,6 +16,7 @@ assert ?x == 30
 x = ?
 p([10, 200])
 assert ?x == 210
+p.quit
 
 let p = act(^(msg)
               | 'pair -> 1:2
@@ -70,3 +71,4 @@ try p.hi() catch(e) x = 1
 assert x == 1
 assert f() == 'hello
 assert p.hi() == 'hello
+p.quit
