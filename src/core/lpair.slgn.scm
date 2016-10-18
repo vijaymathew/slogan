@@ -4,9 +4,11 @@
 
 (define-macro (lpair-cons a b) `(scm-cons ,a (delay ,b)))
 
-(define (is_iterator obj)
+(define (iterator? obj)
   (and (pair? obj)
        (s-yield? (scm-cdr obj))))
+
+(define is_iterator iterator?)
 
 ;; Move an iterator to the next element.
 (define (iter-next iter)
@@ -22,14 +24,21 @@
         r)))
 
 ;; Functions for working with sequences.
-;; A sequence can be either a normal list or a lazy-pair.
+;; A sequence can be either a normal list or a lazy-pair,
+;; or any other object that implements the `first` and `rest`
+;; generic procedures.
 
-(define (scm-first lpair) (scm-head lpair))
+(define (scm-first obj)
+  (if (procedure? obj)
+      (obj 'first)
+      (scm-head obj)))
 
-(define (scm-rest lpair)
-  (if (is_iterator lpair)
-      (iter-next lpair)
-      (scm-force (scm-tail lpair))))
+(define (scm-rest obj)
+  (if (iterator? obj)
+      (iter-next obj)
+      (if (procedure? obj)
+          (obj 'rest)
+          (scm-force (scm-tail obj)))))
 
 (define first scm-first)
 
@@ -37,9 +46,11 @@
   (let ((r (scm-rest lpair)))
     (if (null? r) #f r)))
 
-(define (is_lpair obj)
+(define (lpair? obj)
   (and (pair? obj)
        (is_promise (scm-cdr obj))))
+
+(define is_lpair lpair?)
 
 (define (lpair-at i lpair)
   (if (= i 0)
@@ -76,7 +87,7 @@
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (let loop ((xs xs) (more more))
          (let ((*r* (s-yield-k *yield-obj*)))
-           (cond ((null? xs)
+           (cond ((or (not xs) (null? xs))
                   (s-yield-fn-set! *yield-obj* #f)
                   (*r* *yield-obj*))
                  (else
@@ -112,9 +123,9 @@
               (scm-cons a b))))))
 
 (define (map f ls . more)
-  (cond ((is_lpair ls)
+  (cond ((or (lpair? ls) (procedure? ls))
          (lpair-map f ls more))
-        ((is_iterator ls)
+        ((iterator? ls)
          (iter-map f ls more))
         (else
          (generic-map f ls more))))
@@ -129,13 +140,13 @@
                    (loop (scm-rest xs) (old-map rest more)))))))
 
 (define (generic-for-each f ls . more)
-  (if (is_iterator ls)
+  (if (iterator? ls)
       (iter-for-each f ls more)
-      (let ((lpair? (is_lpair ls)))
+      (let ((lpair? (or (lpair? ls) (procedure? ls))))
         (let ((scm-car (if lpair? first car))
               (scm-cdr (if lpair? rest cdr)))
           (do ((ls ls (scm-cdr ls)) (more more (scm-map scm-cdr more)))
-              ((null? ls))
+              ((or (not ls) (null? ls)))
             (scm-apply f (scm-car ls) (scm-map scm-car more)))))))
 
 (define for_each generic-for-each)
@@ -174,7 +185,7 @@
 (define (lpair-filter fn lpair #!key drill)
   (cond ((null? lpair) 
 	 '())
-	((and (is_lpair (scm-first lpair)) drill)
+	((and (lpair? (scm-first lpair)) drill)
 	 (lpair-cons
 	  (lpair-filter fn (scm-first lpair) drill: drill)
 	  (lpair-filter fn (scm-rest lpair) drill: drill)))
@@ -186,9 +197,9 @@
 	 (lpair-filter fn (scm-rest lpair) drill: drill))))      
 
 (define (filter fn ls #!key drill)
-  (cond ((is_lpair ls)
+  (cond ((lpair? ls)
          (lpair-filter fn ls drill: drill))
-        ((is_iterator ls)
+        ((iterator? ls)
          (iter-filter fn ls))
         (else
          (let loop ((ls ls)
@@ -234,9 +245,9 @@
         (lpair-cons r (lpair-accumulate fn r (scm-rest lpair))))))
 
 (define (accumulate fn initial seq)
-  (cond ((is_lpair seq)
+  (cond ((lpair? seq)
          (lpair-accumulate fn initial seq))
-        ((is_iterator seq)
+        ((iterator? seq)
          (iter-accumulate fn initial seq))
         (else
          (fold_left fn initial seq))))

@@ -10,12 +10,12 @@ assert first(iter) == \b
 iter = rest(iter)
 assert first(iter) == \c
 
-function count(start = 0, step = 1)
+function icount(start = 0, step = 1)
   let loop (n = start)
   { yield n
     loop(n + step) }
 
-iter = count(10, 5)
+iter = icount(10, 5)
 assert first(iter) == 10
 iter = rest(iter)
 assert first(iter) == 15

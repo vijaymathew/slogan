@@ -96,7 +96,7 @@
         (safe-display-string val quotes port))
        ((char? val)
         (slgn-display-char val port))
-       ((set? val)
+       ((set-type? val)
         (slgn-display-set val quotes port))
        ((list? val)
         (slgn-display-list val quotes port))

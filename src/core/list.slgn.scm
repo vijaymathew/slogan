@@ -304,7 +304,7 @@
          (vector->list obj))
         ((hashtable? obj)
          (hashtable->list obj))
-        ((set? obj)
+        ((set-type? obj)
          (set->list obj))
         ((%bitvector? obj)
          (bitvector->list obj))

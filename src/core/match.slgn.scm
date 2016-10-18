@@ -70,7 +70,7 @@
     ((scm-u8vector) 'u8vector?)
     ((scm-s8vector) 's8vector?)
     ((bit_array) 'is_bit_array)
-    ((make-set) 'set?)    
+    ((make-set) 'set-type?)
     ((scm-u16vector) 'u16vector?)
     ((scm-s16vector) 's16vector?)
     ((scm-u32vector) 'u32vector?)

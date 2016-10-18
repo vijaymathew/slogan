@@ -522,6 +522,8 @@ c-declare-end
     (hashtable_size tab))
    ((list? tab)
     (scm-length tab))
+   ((set-type? tab)
+    (set-length tab))
    ((%bitvector? tab)
     (bitvector-length tab))
    ((u8vector? tab)

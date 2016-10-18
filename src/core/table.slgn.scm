@@ -71,28 +71,28 @@
   (table->list (hashtable-table ht)))
 
 ;; The set datatype
+(define-structure set-type ht)
+
 (define (list->set xs)
   (let ((ht (make-table test: equal?)))
     (let loop ((xs xs))
       (if (null? xs)
-          (scm-cons '*set* ht)
+          (make-set-type ht)
           (begin (table-set! ht (scm-car xs) #t)
                  (loop (scm-cdr xs)))))))
 
 (define (set->list s)
-  (scm-map scm-car (table->list (scm-cdr s))))
+  (scm-map scm-car (table->list (set-type-ht s))))
 
 (define (set->rlist s) (scm-reverse (set->list s)))
+
+(define set_to_list set->list)
 
 (define (make-set #!rest xs)
   (list->set xs))
 
-(define (set? obj)
-  (and (pair? obj) (eq? (scm-car obj) '*set*)
-       (table? (scm-cdr obj))))
-
 (define (set-contains? s x)
-  (table-ref (scm-cdr s) x #f))
+  (table-ref (set-type-ht s) x #f))
 
 (define (set-merge predic s1 ss)
   (if (null? ss)
@@ -110,7 +110,9 @@
 (define (hashtable->set ht)
   (list->set (table->list (hashtable-table ht))))
 
-(define (set-length s) (table-length (scm-cdr s)))
+(define (set-length s) (table-length (set-type-ht s)))
+
+(define set_length set-length)
 
 (define (set_difference s1 #!rest ss)
   (set-merge is_false s1 ss))
@@ -135,12 +137,12 @@
 
 (define (is_subset s1 s2) (is_superset s2 s1))
 
-(define is_set set?)
+(define is_set set-type?)
 (define make_set make-set)
 (define is_set_member set-contains?)
 
 (define (set obj)
-  (cond ((set? obj)
+  (cond ((set-type? obj)
          obj)
         ((hashtable? obj)
          (hashtable->set obj))
@@ -152,4 +154,3 @@
          (list->set (string->list obj)))
         (else
          (error "Cannot convert object to set."))))
-
