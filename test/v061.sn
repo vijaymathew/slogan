@@ -2,8 +2,8 @@
 function @tests(a, real = false)
 { assert ref(a, 1) == if (real) 2. else 2
   assert a[1] == if (real) 2. else 2
-  assert ref(a, 10, default = 100) == 100
-  ref(a, 1, value = if (real) 100. else 100)
+  assert ref(a, 10, 100) == 100
+  ref_set(a, 1, if (real) 100. else 100)
   assert ref(a, 1) == if (real) 100. else 100
   a[2] = if (real) 20. else 20
   assert a[2] == if (real) 20. else 20 }
@@ -24,16 +24,16 @@ function @tests(a, real = false)
 let ba = #b[0, 1, 1, 0, 1]
 assert ref(ba, 0) == false
 assert ref(ba, 1)
-assert ref(ba, 10, default = 100) == 100
-ref(ba, 3, value = 100)
+assert ref(ba, 10, 100) == 100
+ref_set(ba, 3, 100)
 assert ref(ba, 3)
 
 let s = apply(string, string_to_list("hello world"))
 assert ref(s, 1) == \e
 assert s[2] == \l
 assert ref(s, 20) == false
-assert ref(s, 20, default = 100) == 100
-ref(s, 1, value = \a)
+assert ref(s, 20, 100) == 100
+ref_set(s, 1, \a)
 assert ref(s, 1) == \a
 s[4] = \x
 assert s[4] == \x
@@ -47,15 +47,15 @@ assert get(s, \c, 100) == 100
 s = #{1:2, 3:4}
 assert ref(s, 1) == 2
 assert ref(s, 3) == 4
-assert ref(s, 10, default=100) == 100
-ref(s, 10, value = 200)
+assert ref(s, 10, 100) == 100
+ref_set(s, 10, 200)
 assert ref(s, 1) == 2
 assert ref(s, 3) == 4
-assert ref(s, 10, default=100) == 200
-ref(s, 1, value = 300)
+assert ref(s, 10, 100) == 200
+ref_set(s, 1, 300)
 assert ref(s, 1) == 300
 assert ref(s, 3) == 4
-assert ref(s, 10, default=100) == 200
+assert ref(s, 10, 100) == 200
 assert s[10] == 200
 s[100] = 2000
 assert s[100] = 2000

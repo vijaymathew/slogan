@@ -466,10 +466,15 @@ c-declare-end
    (else
     (scm-error 'not_indexed tab))))
 
-(define (ref tab key #!key (value *void*) (default #f))
-  (if (scm-eq? value *void*)
-      (map-safe-access tab key default)      
-      (map-mutate tab key value)))
+(define (ref obj key #!optional (default #f))
+  (if (procedure? obj)
+      ((obj 'ref) key)
+      (map-safe-access obj key default)))
+
+(define (ref_set obj key value)
+  (if (procedure? obj)
+      ((obj 'ref_set) key value)
+      (map-mutate obj key value)))
 
 (define (map-access tab key)
   (cond
@@ -507,12 +512,17 @@ c-declare-end
     (scm-error 'not_indexed tab))))
 
 (define (*-@-* tab key #!optional (value *void*))
-  (if (scm-eq? value *void*)
-      (map-access tab key)      
-      (begin (map-mutate tab key value)
-             *void*)))
+  (let ((proc? (procedure? tab)))
+    (if (scm-eq? value *void*)
+        (if proc?
+            ((tab 'ref) key)
+            (map-access tab key))
+        (begin (if proc?
+                   ((tab 'ref_set) key value)
+                   (map-mutate tab key value))
+               *void*))))
 
-(define (count tab)
+(define (scm-count tab)
   (cond
    ((vector? tab)
     (vector-length tab))
@@ -548,6 +558,11 @@ c-declare-end
     (f64vector-length tab))
    (else
     (scm-error 'count_not_supported tab))))
+
+(define (count obj)
+  (if (procedure? obj)
+      (obj 'count)
+      (scm-count obj)))
 
 (define (char-compare x y)
   (cond ((char>? x y) 1)
