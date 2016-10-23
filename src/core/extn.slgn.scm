@@ -656,7 +656,7 @@ c-declare-end
 
 (define (to_string obj)
   (if (procedure? obj)
-      ((obj 'str))
+      ((obj 'to_string))
       (scm-str obj)))
 
 (define (do_times n fn #!key (from 0) init)

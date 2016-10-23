@@ -98,3 +98,44 @@ assert_refs(#[10, 20, 30])
 assert_refs(#u32[10, 20, 30])
 assert_refs(#{1:20, 0:10, 2:30})
 assert_refs(make_bag(#[10, 20, 30]))
+
+// issue #108
+assert to_string(100) == "100"
+assert to_string([1,2,3]) == "[1, 2, 3]"
+assert to_string(#(1,2,3)) == "#(1, 2, 3)"
+assert to_string(#{1:2, 3:4}) == "#{1: 2, 3: 4}"
+
+function make_employee(name, salary)
+  let (str = ^()
+             let (s = string_writer())
+             { show(stream = s, "name: ", name, ", salary: ", salary)
+               get_output_string(s) })
+    ^(msg)
+    case (msg)
+      name -> name
+    | salary -> salary
+    | to_string -> str
+    | is_equal -> ^(e) name == e.name && salary == e.salary
+
+let e1, e2 = make_employee("sam", 1000), make_employee("sally", 1340)
+assert e1.name == "sam"
+assert e2.salary == 1340
+assert to_string(e1) == "name: sam, salary: 1000"
+assert to_string(e2) == "name: sally, salary: 1340"
+assert e1 <> e2
+let e3 = make_employee(e1.name, e1.salary)
+assert e1 == e3
+assert not(e1 <> e3)
+
+// issue #109
+let xs = #[1,100,200,300]
+assert array_at(xs, 2) == 200
+array_set(xs, 1, 300)
+assert array_at(xs, 1) == 300
+assert array_ref(xs, 2) == array_at(xs, 2)
+array_ref_set(xs, 2, 100)
+assert array_ref(xs, 2) == 100
+xs = #[#[1,2], #[3,4]]
+assert array_ref(xs, [0, 1]) == 2
+array_ref_set(xs, [1, 1], 20)
+assert array_ref(xs, [1,1]) == 20
