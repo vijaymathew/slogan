@@ -1,0 +1,72 @@
+reload("sort")
+
+let sort_fns = [insertion, shell, merge, merge_bu, quick]
+
+let xs = #[10, 1, 0, 100, -2, 2]
+let xss = #[-2, 0, 1, 2, 10, 100]
+let ys = #[1, 2, 3, 4, 5]
+let zs = #[1, 2, 4, 3, 5]
+
+function test_sort(f)
+{ assert f(array_copy(xs)) == xss
+  assert f(array_copy(ys)) == ys
+  assert f(array_copy(zs)) == ys
+  assert f(#[]) == #[] }
+
+for_each(test_sort, sort_fns)
+
+function bag(xs)
+  ^(msg)
+  | 'xs -> xs
+  | 'count -> array_length(xs)
+  | 'ref -> ^(i) array_at(xs, i)
+  | 'ref_set -> ^(i, v) array_set(xs, i, v)
+  | 'is_equal -> ^(b) xs == b.xs
+
+ys = #[0,1,10,100]
+
+function test_bag_sort(f)
+  let (xs = bag(#[10, 1, 0, 100]))
+  { f(xs)
+    assert xs.xs == ys }
+
+for_each(test_bag_sort, sort_fns)
+
+function rints(n) list_to_array(map(^(_) random_integer(n), range(1, n)));
+
+xs = rints(expt(10, 4))
+let xs2 = array_copy(xs)
+time({ys = quick(xs2); true})
+xs2 = array_copy(xs)
+let array_quick = make_quick(array_at, array_set)
+time({ys = array_quick(xs2); true})
+
+let h = make_heap(3)
+assert h.is_empty
+assert h.size == 0
+h.insert(10)
+h.insert(3)
+h.insert(12)
+assert h.size == 3
+assert h.del() == 12
+h.insert(1)
+h.insert(2)
+h.insert(4)
+h.insert(5)
+assert h.del() == 10
+assert h.del() == 5
+assert h.del() == 4
+assert h.size == 3
+assert h.del() == 3
+assert h.del() == 2
+assert h.size == 1
+assert h.del() == 1
+assert h.size == 0
+
+h = make_heap(3, `>`)
+h.insert(10)
+h.insert(3)
+h.insert(12)
+assert h.del() == 3
+assert h.del() == 10
+assert h.del() == 12

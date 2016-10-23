@@ -1,0 +1,127 @@
+function is_sorted(xs)
+  let (len = count(xs))
+    for (i = 1; i < len; inc(i))
+      if (xs[i] < xs[i-1]) break(false)
+      else true
+
+function exch(xs, a, b)
+  let (tmp = xs[b])
+  { xs[b] = xs[a]
+    xs[a] = tmp }
+    
+function insertion(xs)
+  let (len = count(xs))
+  { for (i = 1; i < len; inc(i))
+      for (j = i; j > 0 && xs[j] < xs[j-1]; dec(j))
+        exch(xs, j, j-1)
+     xs }
+
+function shell(xs)
+  let (len = count(xs), h = 1)
+  { for (; h < len/3; ) h = 3*h + 1
+    for (h = h; h >= 1; quotient(h, 3))
+      for (i = h; i < len; inc(i))
+        for (j = i; j >= h && xs[j] < xs[j - h]; j-h)
+          exch(xs, j, j-h) 
+    xs }
+
+function merge_parts(xs, aux, lo, mid, hi)
+  let (i = lo, j = inc(mid))
+  { for (k = lo; k <= hi; inc(k))
+     aux[k] = xs[k]
+    for (k = lo; k <= hi; inc(k))
+      if      (i > mid)         { xs[k] = aux[j]; j = inc(j) }
+      else if (j > hi)          { xs[k] = aux[i]; i = inc(i) }
+      else if (aux[j] < aux[i]) { xs[k] = aux[j]; j = inc(j) }
+      else                      { xs[k] = aux[i]; i = inc(i) }
+    xs }
+
+function merge_helper(xs, aux, lo, hi)
+  if (hi <= lo) xs
+  else let (mid = lo + quotient(hi - lo, 2))
+  { merge_helper(xs, aux, lo, mid)
+    merge_helper(xs, aux, inc(mid), hi)
+    merge_parts(xs, aux, lo, mid, hi) }
+
+function merge(xs)
+  let (n = count(xs))      
+    merge_helper(xs, make_array(n), 0, dec(n))
+
+function merge_bu(xs)
+  letseq (len = count(xs), aux = make_array(len))
+    if (len == 0) xs
+    else
+      for (sz = 1; sz < len; sz+sz)
+        for (lo = 0; lo < len-sz; lo+sz+sz)
+          merge_parts(xs, aux, lo, lo+dec(sz), min(dec(lo+sz+sz), dec(len)))
+
+function exch_2(xs, a, b, accessor, mutator)
+  let (tmp = accessor(xs, b))
+  { mutator(xs, b, accessor(xs, a))
+    mutator(xs, a, tmp) }
+    
+function partition(xs, lo, hi, accessor, mutator)
+  let (i = lo, j = inc(hi), v = accessor(xs, lo))
+  { let loop ()
+    { let iloop () { i = inc(i); when (accessor(xs, i) < v) when (i <> hi) iloop() }
+      let iloop () { j = dec(j); when (v < accessor(xs, j)) when (j <> lo) iloop() }
+      when (not(i >= j)) { exch_2(xs, i, j, accessor, mutator); loop() } }
+    exch_2(xs, lo, j, accessor, mutator)
+    j }
+
+function quick_helper(xs, lo, hi, accessor, mutator)
+  if (hi <= lo) xs
+  else let (j = partition(xs, lo, hi, accessor, mutator))
+  { quick_helper(xs, lo, dec(j), accessor, mutator)
+    quick_helper(xs, inc(j), hi, accessor, mutator) }
+
+function make_quick(accessor, mutator)
+  ^(xs) quick_helper(xs, 0, dec(count(xs)), accessor, mutator)
+  
+let quick = make_quick(ref, ref_set)
+
+function make_heap(size, cmpr = `<`)
+  let (pq = make_array(size), n = 0, growth_factor = size)
+  { function insert(v)
+    { n = n+1
+      when (n >= size)
+      { pq = array_append(pq, make_array(growth_factor))
+        size = size + growth_factor }
+      array_set(pq, n, v); swim(n) }
+
+    function del()
+      let (max = array_at(pq, 1))
+      { exch(1, n); n = n - 1;
+        array_set(pq, n+1, false);
+        sink(1);
+        max }
+
+    function exch(i, j)
+      let (t = array_at(pq, i))
+      { array_set(pq, i, array_at(pq, j));
+        array_set(pq, j, t) }
+
+    function less(i, j)
+      cmpr(array_at(pq, i), array_at(pq, j))
+      
+    function swim(k)
+      when (k > 1)
+        let (h = quotient(k, 2))
+          when (less(h, k))
+          { exch(h, k)
+            swim(h) }
+
+    function sink(k)
+      let (d = k * 2)
+        when (d <= n)
+        { when (d < n && less(d, d+1))
+            d = d+1
+          when (less(k, d))
+          { exch(k, d)
+            sink(d) }}
+
+     ^(msg)
+     | 'is_empty -> n == 0
+     | 'size -> n
+     | 'insert -> insert
+     | 'del -> del }
