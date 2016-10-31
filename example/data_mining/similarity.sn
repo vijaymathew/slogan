@@ -1,0 +1,53 @@
+module similarity(jaccard, jaccard_bag, shingles)
+{ function jaccard(set1, set2)
+    set_length(set_intersection(set1, set2))/set_length(set_union(set1, set2))
+
+  function count_x(x, xs, counts)
+    let loop (xs = xs, count = 0)
+      if (is_empty(xs)) { counts[x] = count; counts }
+      else if (head(xs) == x) loop(tail(xs), inc(count))
+      else loop(tail(xs), count)
+
+  function count_instances(xs)
+    let loop (ys = xs, counts = #{})
+      if (is_empty(ys)) counts
+      else loop (tail(ys), count_x(head(ys), xs, counts))
+
+  function min_tab_entries(tab1, tab2)
+    let (mins = hashtable_copy(tab1))
+    { hashtable_for_each(
+      ^(k, v) let (ov = hashtable_at(mins, k))
+              { when (not(ov)) { mins[k] = 1; ov = 1 }
+                when (v < ov) mins[k] = v },
+              tab2)
+      mins }
+                         
+  function jaccard_bag(xs, ys)
+    letseq (mins = min_tab_entries(count_instances(xs),
+                                   count_instances(ys))
+            clen = hashtable_size(mins)
+            tlen = length(xs) + length(ys))
+      clen/tlen
+
+  function remove_white_spaces(str)
+    list_to_string(filter(complement(char_is_whitespace), string_to_list(str)))
+    
+  function shingles(str, size, remove_ws = true)
+    letseq (s = if (remove_ws) remove_white_spaces(str) else str,
+            slen = string_length(s))
+      let loop (i = 0, j = size, words = [])
+        if (j > slen) set(reverse(words))
+        else loop(inc(i), inc(j), s[i:j]:words)
+}
+
+// tests
+let s = similarity
+assert s.jaccard_bag(['a,'a,'a,'b], ['a,'a,'b,'b,'c]) == 1/3
+assert s.jaccard(#(1,2,3,4,5), #(2,3,4,6,7,8)) == 3/8
+assert s.jaccard(#(1,2,3,4), #(2,3,5,7)) == 1/3
+assert s.jaccard(#(2,3,5,7), #(2,4,6)) == 1/6
+assert s.jaccard_bag([1,1,1,2], [1,1,2,2,3]) == 1/3
+assert s.jaccard_bag([1,1,2,2,3], [1,2,3,4]) == 4/9
+
+let str = "abcdabd"
+assert s.shingles(str, 2) == #("cd", "bd", "da", "ab", "bc")
