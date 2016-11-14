@@ -1,0 +1,10 @@
+// generate proper placeholder names for ignored parameters
+function f(_) 1
+function g(_, _) 2
+function h(_, a, _) a
+function i(_, a, _, b) a + b
+
+assert f(100) == 1
+assert g(100, 200) == 2
+assert h(100, 200, 300) == 200
+assert i(100, 200, 300, 400) == 600
