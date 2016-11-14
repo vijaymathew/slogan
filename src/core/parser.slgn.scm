@@ -1479,11 +1479,19 @@
   (and (symbol? sym)
        (scm-not (or (reserved-name? sym)
 		(slgn-is_special_token sym)))))
-  
+
+(define *local-sym-count* 0)
+(define (local-gensym)
+  (let ((s (string-append
+            "**--g" (number->string *local-sym-count*)
+            "--**")))
+    (set! *local-sym-count* (+ 1 *local-sym-count*))
+    (string->symbol s)))
+
 (define (check-func-param tokenizer) 
   (check-if-reserved-name (tokenizer 'peek) tokenizer)
   (let ((sym (tokenizer 'next)))
-    (if (scm-eq? sym '_) (gensym) sym)))
+    (if (scm-eq? sym '_) (local-gensym) sym)))
 
 (define (func-param-type tokenizer)
   (let ((type (cond ((scm-eq? (tokenizer 'peek) '*colon*)

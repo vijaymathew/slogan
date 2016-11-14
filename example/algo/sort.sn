@@ -77,7 +77,7 @@ function quick_helper(xs, lo, hi, accessor, mutator)
 
 function make_quick(accessor, mutator)
   ^(xs) quick_helper(xs, 0, dec(count(xs)), accessor, mutator)
-  
+
 let quick = make_quick(ref, ref_set)
 
 function make_heap(size, cmpr = `<`)
