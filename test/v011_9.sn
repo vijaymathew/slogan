@@ -19,3 +19,79 @@ assert balance('b, #['r, #['r, 10, 20, 30], 40, 50], 60, 70) == #['r, 10, 30, 50
 assert balance('b, #['r, 10, 20, #['r, 30, 40, 50]], 60, 70) == #['g, 10, 30, 50, 70, 20, 40, 60]
 assert balance('b, 10, 20, #['r, #['r, 30, 40, 50], 60, 70]) == #['b, 10, 30, 50, 70, 20, 40, 60]
 assert balance('b, 10, 20, #['r, 30, 40, #['r, 50, 60, 70]]) == #['a, 10, 30, 50, 70, 20, 40, 60]
+
+// issue 110 - methods
+// not polluting the `+` in the global namespace.
+{ function `+`(a, b) add(a, b)
+  function `+`(a:string, b:string) string_append(a, b)
+  function `+`(a:list, b:list) append(a, b)
+
+  assert  1 + 2 == 3
+  assert "hello " + "world" == "hello world"
+  assert [1,2,3] + [4,5] == [1, 2, 3, 4, 5] }
+
+function collide_with(x, y) false
+
+record asteroid()
+record spaceship()
+function collide_with(x:asteroid, y:asteroid) 'asteroid:'asteroid
+function collide_with(x:asteroid, y:spaceship) 'asteroid:'spaceship
+function collide_with(x:spaceship, y:asteroid) 'spaceship:'asteroid
+function collide_with(x:spaceship, y:spaceship) 'spaceship:'spaceship
+let a = asteroid()
+let s = spaceship()
+
+assert collide_with(a, a) == 'asteroid:'asteroid
+assert collide_with(s, s) == 'spaceship:'spaceship
+assert collide_with(s, a) == 'spaceship:'asteroid
+assert collide_with(a, s) == 'asteroid:'spaceship
+
+// fixes for optional/key arguments with type information
+function f0(a = 10, b = 20) a + b
+assert f0() == 30
+assert f0(100) == 120
+assert f0(100, 200) == 300
+
+function f1(a, @rest b) a:b
+assert f1(100) == 100:[]
+assert f1(100, 200) == 100:[200]
+assert f1(100, 200, 300) == 100:[200, 300]
+
+function f2(a, @key b) a + b
+assert f2(10, b = 100) == 110
+
+function f3(a, @key b=20) a + b
+assert f3(10) == 30
+assert f3(10, b = 100) == 110
+
+function f4(a = 10, @key b=20) a + b
+assert f4() == 30
+assert f4(100) == 120
+assert f4(100, b = 200) == 300
+
+function g0(a, b) false
+function g0(a:number = 10, b:number = 20) a + b
+function g0(a:string = "ok", b:string = "bye") string_append(a, b)
+
+assert g0() == "okbye"
+assert g0("hello ") == "hello bye"
+assert g0("hello ", "world") == "hello world"
+assert g0(100, 200) == 300
+
+function h0(a, @key b) false
+function h0(a:number = 10, @key b:number = 20) a + b
+function h0(a:string = "ok",@key  b:string = "bye") string_append(a, b)
+
+assert h0() == "okbye"
+assert h0("hello ") == "hello bye"
+assert h0("hello ", b = "world") == "hello world"
+assert h0(100, b = 200) == 300
+
+function i0(@key a, b) false
+function i0(@key a:number = 10, b:number = 20) a + b
+function i0(@key a:string = "ok",  b:string = "bye") string_append(a, b)
+
+assert i0() == "okbye"
+assert i0(a = "hello ") == "hello bye"
+assert i0(a = "hello ", b = "world") == "hello world"
+assert i0(a = 100, b = 200) == 300

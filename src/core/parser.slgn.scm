@@ -212,6 +212,68 @@
                  ,body-expr
                  (scm-error 'precondition_failed ',name ',pre-cond))))))
 
+(define (types->typepredics types)
+  (if (null? types) #f
+      (let loop ((types types) (predics '()))
+        (if (null? types)
+            (scm-reverse predics)
+            (let ((t (scm-car types)))
+              (if (scm-eq? t '_) #f
+                  (loop (scm-cdr types)
+                        (scm-cons (string->symbol
+                                   (string-append "is_" (symbol->string t)))
+                                  predics))))))))
+
+(define (insert-kw-param-names params offset)
+  (if (not offset)
+      params
+      (let loop ((params params) (i 0)
+                 (insert? #f) (nparams '()))
+        (cond ((null? params)
+               (scm-reverse nparams))
+              (insert?
+               (let ((p (scm-car params)))
+                 (loop (scm-cdr params) i insert?
+                       (scm-cons p (scm-cons (string->keyword (symbol->string p)) nparams)))))
+              (else
+               (if (= i offset)
+                   (loop params i #t nparams)
+                   (loop (scm-cdr params) (+ i 1) insert?
+                         (scm-cons (scm-car params) nparams))))))))
+
+(define *scm-directives* '(#!optional #!key #!rest))
+
+(define (normalize-params params args?)
+  (let loop ((params params) (key-seen-at #f)
+             (idx 0) (norms '()))
+    (if (null? params)
+        (insert-kw-param-names (scm-reverse norms) key-seen-at)
+        (let ((p (scm-car params)))
+          (cond ((scm-memq p *scm-directives*)
+                 (if (and args? (eq? p '#!key))
+                     (loop (scm-cdr params) idx idx norms)
+                     (loop (scm-cdr params) key-seen-at idx  norms)))
+                ((pair? p)
+                 (loop (scm-cdr params) key-seen-at (+ idx 1) (scm-cons (scm-car p) norms)))
+                (else
+                 (loop (scm-cdr params) key-seen-at (+ idx 1) (scm-cons p norms))))))))
+
+(define (typepredics-check predics params)
+  (let loop ((predics predics) (params (normalize-params params #f))
+             (checks '()))
+    (if (null? predics)
+        `(and ,@(scm-reverse checks))
+        (loop (scm-cdr predics) (scm-cdr params)
+              (scm-cons (list (scm-car predics) (scm-car params))
+                        checks)))))
+
+(define (merge-method-prefix predics params-types func-body)
+  (if predics
+      `(if ,(typepredics-check predics (scm-car params-types))
+           ,func-body
+           ,(scm-append (scm-list '*old-func*) (normalize-params (scm-car params-types) #t)))
+      func-body))
+
 (define (func-def-stmt-with-name tokenizer)
   (let ((name (tokenizer 'peek)))
     (let ((has-name? (not (scm-eq? name '*open-paren*))))
@@ -219,12 +281,19 @@
           (begin
             (check-if-reserved-name name tokenizer)
             (tokenizer 'next)))
-      (let* ((params (scm-car (func-params-expr tokenizer #t)))
+      (let* ((params-types (func-params-expr tokenizer #t))
+             (params (scm-car params-types))
              (contract-expr (func-contract-expr tokenizer))
-             (body-expr (merge-func-contract name (func-body-expr tokenizer params) contract-expr))
+             (predics (types->typepredics (scm-cdr params-types)))
+             (body-expr (merge-method-prefix
+                         predics params-types
+                         (merge-func-contract
+                          name (func-body-expr tokenizer params) contract-expr)))
              (fexpr (merge-lambda tokenizer params body-expr)))
         (if has-name?
-            (scm-list 'define name fexpr)
+            (if predics
+                (scm-list 'set! name `(let ((*old-func* ,name)) ,fexpr))
+                (scm-list 'define name fexpr))
             fexpr)))))
 
 (define (func-def-stmt tokenizer)
@@ -1494,11 +1563,12 @@
 
 (define (func-param-type tokenizer)
   (let ((type (cond ((scm-eq? (tokenizer 'peek) '*colon*)
-		     (tokenizer 'next)
-		     (let ((s (tokenizer 'next)))
-		       (if (symbol? s) s (parser-error tokenizer "Expected type name."))))
-		    (else '_))))
-    (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-param-type)
+                     (tokenizer 'next)
+                     (let ((s (tokenizer 'next)))
+                       (if (symbol? s) s (parser-error tokenizer "Expected type name."))))
+                    (else '_))))
+    (if (not (scm-eq? (tokenizer 'peek) '*assignment*))
+        (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-param-type))
     type))
 
 (define (func-params-expr tokenizer params-required?)
@@ -1520,16 +1590,33 @@
                                    (loop (scm-cons (scm-list sym expr) params)
 					 (scm-cons (func-param-type tokenizer) types)					 
 					 directives-found)
-				   (loop (scm-cons 
+				   (loop (scm-cons
 					  (scm-list sym expr) 
 					  (scm-cons 
 					   (slgn-directive->scm-directive '@optional) params))
 					 (scm-cons (func-param-type tokenizer) types)					 
 					 #t))))
-                            (else 
-                             (loop (scm-cons sym params)
-				   (scm-cons (func-param-type tokenizer) types)				   
-				   directives-found)))))
+                            (else
+                             (let ((type (func-param-type tokenizer)))
+                               (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
+                                      (tokenizer 'next)
+                                      (let ((expr (scm-expression tokenizer)))
+                                        (if (scm-eq? (tokenizer 'peek) '*comma*)
+                                            (tokenizer 'next))
+                                        (if directives-found
+                                            (loop (scm-cons (scm-list sym expr) params)
+                                                  (scm-cons type types)
+                                                  directives-found)
+                                            (loop (scm-cons
+                                                   (scm-list sym expr)
+                                                   (scm-cons
+                                                    (slgn-directive->scm-directive '@optional) params))
+                                                  (scm-cons type types)
+                                                  #t))))
+                                     (else
+                                      (loop (scm-cons sym params)
+                                            (scm-cons type types)
+                                            directives-found))))))))
                    (else
                     (if (scm-eq? token '*close-paren*)
                         (begin (tokenizer 'next)
