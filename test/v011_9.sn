@@ -106,3 +106,146 @@ assert match([1, [2, 3, #(4,5)]]) [a, [b,c,#(d,e)]] -> a-b-c-d-e | #[a,[b,c,#(d,
 record a(x,y)
 assert match([a(x=10, y=20), 30]) [a(x,y)] -> x*y | [a(x,y), z] -> x+y+z == 10+20+30
 assert match([50, a(x=10, y=20)]) [z, a(x,y)] -> x*y*z | [a(x,y), z] -> x+y+z == 10*20*50
+
+// extended pattern matching tests
+module leftist_heap(is_empty, insert, find_min, delete_min)
+{ function rank(h)
+  | [] -> 0
+  | r:_:_:_ -> r
+
+  function make_t(x, a, b)
+    if (rank(a) > rank(b)) rank(b)+1:x:a:b
+    else rank(a)+1:x:b:a
+
+  function is_empty(h) | [] -> true | _ -> false
+
+  function merge(h1, h2)
+  | [_, []] -> h1
+  | [[], _] -> h2
+  | [_:x:a1:b1, _:y:a2:b2] ->
+    if (x <= y) make_t(x, a1, merge(b1, h2))
+    else make_t(y, a2, merge(h1, b2))
+
+  function insert(x, h) merge(1:x:[]:[], h)
+
+  function find_min(h)
+  | [] -> raise('empty)
+  | _:x:a:b -> x
+
+  function delete_min(h)
+  | [] -> raise('empty)
+  | _:_:a:b -> merge(a, b) }
+
+module binomial_heap(is_empty, insert, find_min, delete_min)
+{ function is_empty(_) | [] -> true | _ -> false
+  function rank(_) | r:_:_ -> r
+  function root(_) | _:x:_ -> x
+
+  function link(t1, t2)
+  | [r:x1:c1, _:x2:c2] ->
+    if (x1 < x2) r+1:x1:(t2:c1)
+    else r+1:x2:(t1:c2)
+
+  function ins_tree(t, ts)
+  | [t, []] -> [t]
+  | [t, t1:ts1] ->
+    if (rank(t) < rank(t1)) t:ts
+    else ins_tree(link(t, t1), ts1)
+
+  function insert(x, ts) ins_tree(0:x:[], ts)
+
+  function merge(ts1, ts2)
+  | [_, []] -> ts1
+  | [[], _] -> ts2
+  | [x:xs, y:ys] ->
+    if (rank(x) < rank(y)) x:merge(xs, ts2)
+    else if (rank(y) < rank(x)) y:merge(ts1, ys)
+    else ins_tree(link(x, y), merge(xs, ys))
+
+  function remove_min_tree(ts)
+  | [] -> raise('empty)
+  | [t] -> t:[]
+  | t:ts ->
+    match(remove_min_tree(ts))
+      x:xs ->
+        if (root(t) < root(x)) t:ts
+        else x:(t:xs)
+
+  function find_min(ts) root(first(remove_min_tree(ts)))
+
+  function delete_min(ts)
+    match(remove_min_tree(ts))
+      (_:x:ts1):ts2 -> merge(reverse(ts1), ts2) }
+  
+
+module red_black_set(is_member, insert)
+{ function is_member(x, t)
+  | [_, 'e] -> false
+  | [x, #[_,a,y,b]] ->
+    if (x < y) is_member(x, a)
+    else if (y < x) is_member(x, b)
+    else true
+
+  function balance(color, t, z, d) 
+  | ['b, #['r,#['r,a,x,b],y,c], z, d] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
+  | ['b, #['r,a,x,#['r,b,y,c]], z, d] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
+  | ['b, a, x, #['r,#['r,b,y,c],z,d]] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
+  | ['b, a, x, #['r,b,y,#['r,c,z,d]]] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
+  | _ -> #[color, t, z, d]
+
+  function insert(x, s)
+  { function ins(rs)
+    | 'e -> #['r,'e,x,'e]
+    | #[color,a,y,b] ->
+      if (x < y) balance(color, ins(a), y, b)
+      else if (y < x) balance(color, a, y, ins(b))
+      else s;
+     match(ins(s)) #[_,a,y,b] -> #['b,a,y,b] }}
+  
+// tests
+
+let lh = leftist_heap
+let h = lh.insert(10, [])
+h = lh.insert(20, h)
+h = lh.insert(5, h)
+h = lh.insert(3, h)
+h = lh.insert(30, h)
+assert lh.find_min(h) == 3
+h = lh.delete_min(h)
+assert lh.find_min(h) == 5
+h = lh.delete_min(h)
+assert lh.find_min(h) == 10
+h = lh.delete_min(h)
+assert lh.find_min(h) == 20
+h = lh.delete_min(h);
+assert lh.find_min(h) == 30
+h = lh.delete_min(h)
+assert try lh.find_min(h) catch (e) e == 'empty
+
+let bh = binomial_heap
+h = bh.insert(10, [])
+h = bh.insert(1, h)
+h = bh.insert(20, h)
+h = bh.insert(2, h)
+assert bh.find_min(h) == 1
+h = bh.delete_min(h)
+assert bh.find_min(h) == 2
+h = bh.delete_min(h)
+assert bh.find_min(h) == 10
+h = bh.delete_min(h)
+assert bh.find_min(h) == 20
+h = bh.delete_min(h)
+assert try bh.find_min(h) catch (e) e == 'empty
+assert try bh.delete_min(h) catch (e) e == 'empty
+
+let rbs = red_black_set;
+let s = rbs.insert(10, 'e);
+s = rbs.insert(3, s);
+s = rbs.insert(2, s);
+s = rbs.insert(15, s);
+assert rbs.is_member(2, s)
+assert rbs.is_member(20, s) == false
+assert rbs.is_member(10, s)
+assert rbs.is_member(15, s)
+assert rbs.is_member(3, s)
+assert rbs.is_member(0, s) == false
