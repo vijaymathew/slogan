@@ -132,21 +132,23 @@
 (define (set-pattern? p)
   (eq? (scm-car p) 'make-set))
 
-(define (match-list-pattern pattern bindings)
+(define (match-list-pattern pattern bindings length-test?)
   (let ((pattern-length (scm-length pattern)))
-    `(if (and (list? *value*)
-              (= ,pattern-length (scm-length *value*)))
+    `(if ,(if length-test?
+              `(and (list? *value*)
+                    (= ,pattern-length (scm-length *value*)))
+              #t)
          (begin (let ((*value* (scm-first *value*)))
-                  ,(match-pattern-helper (scm-car pattern) bindings))
+                  ,(match-pattern-helper (scm-car pattern) bindings #t))
                 (if *match-found*
                     (let ((*value* (scm-rest *value*)))
-                      ,(match-pattern-helper (scm-cdr pattern) bindings))))
+                      ,(match-pattern-helper (scm-cdr pattern) bindings #f))))
          (set! *match-found* #f))))
 
 (define (match-vector-pattern fname pattern bindings)
   `(if (,(vector-test-fn fname) *value*)
        (let ((*value* (,(vector-to-list-fn fname) *value*)))
-         ,(match-list-pattern pattern bindings))
+         ,(match-list-pattern pattern bindings #t))
        (set! *match-found* #f)))
 
 (define (match-record-pattern pattern bindings)
@@ -175,7 +177,7 @@
               (else
                (scm-error "Invalid record pattern: " pattern)))))))
 
-(define (match-pattern-helper pattern bindings)
+(define (match-pattern-helper pattern bindings #!optional (length-test? #t))
   (set! pattern (normalize-list-for-matching pattern))
   (cond ((null? pattern)
          `(if (null? *value*)
@@ -201,7 +203,7 @@
             ((hashtable-pattern? pattern)
              (match-hashtable-pattern pattern bindings))
             (else
-             (match-list-pattern pattern bindings))))
+             (match-list-pattern pattern bindings length-test?))))
         ((record-pattern? pattern)
          (match-record-pattern pattern bindings))
         ((symbol? pattern)

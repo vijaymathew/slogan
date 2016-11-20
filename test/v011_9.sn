@@ -95,3 +95,14 @@ assert i0() == "okbye"
 assert i0(a = "hello ") == "hello bye"
 assert i0(a = "hello ", b = "world") == "hello world"
 assert i0(a = 100, b = 200) == 300
+
+// optimized list match
+assert match([1,2,[3,4,[5]]]) [a,b] -> a+b | [a,_,[b,_,[c]]] -> a+b+c == 9
+assert match([1,2]) [a,b] -> a+b | [a,_,[b,_,[c]]] -> a+b+c == 3
+assert match([1,#[2, [3, 4]]]) [a, #[b]] -> a+b | [a, #[b, [c, d]]] -> a+b+c+d == (1+2+3+4)
+assert match([1,#[2]]) [a, #[b]] -> a+b | [a, #[b, [c, d]]] -> a+b+c+d == (1+2)
+assert match(#[1, [2, 3, #(4,5)]]) [a, [b,c,#(d,e)]] -> a-b-c-d-e | #[a,[b,c,#(d,e)]] -> a+b+c+d+e == (1+2+3+4+5)
+assert match([1, [2, 3, #(4,5)]]) [a, [b,c,#(d,e)]] -> a-b-c-d-e | #[a,[b,c,#(d,e)]] -> a+b+c+d+e == (1-2-3-4-5)
+record a(x,y)
+assert match([a(x=10, y=20), 30]) [a(x,y)] -> x*y | [a(x,y), z] -> x+y+z == 10+20+30
+assert match([50, a(x=10, y=20)]) [z, a(x,y)] -> x*y*z | [a(x,y), z] -> x+y+z == 10*20*50
