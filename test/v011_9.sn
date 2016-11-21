@@ -106,6 +106,10 @@ assert match([1, [2, 3, #(4,5)]]) [a, [b,c,#(d,e)]] -> a-b-c-d-e | #[a,[b,c,#(d,
 record a(x,y)
 assert match([a(x=10, y=20), 30]) [a(x,y)] -> x*y | [a(x,y), z] -> x+y+z == 10+20+30
 assert match([50, a(x=10, y=20)]) [z, a(x,y)] -> x*y*z | [a(x,y), z] -> x+y+z == 10*20*50
+assert match([10, #[20, [30, 40, #[50, 60, [70]]]]]) [a, b, c, d, e, f, g] -> a+b+c+d+e+f+g | [a, #[b, c, d, [e, f, g]]] -> a-b-c-d-e-f-g | [a, #[b, [c, d, #[e, f, [g]]]]] -> a*b*c*d*e*f*g | #[a, [b, #[c, d, [e, f, #[g]]]]] -> a/b/c/d/e/f/g == 50400000000
+assert match(#[10, [20, #[30, 40, [50, 60, #[70]]]]]) [a, b, c, d, e, f, g] -> a+b+c+d+e+f+g | [a, #[b, c, d, [e, f, g]]] -> a-b-c-d-e-f-g | [a, #[b, [c, d, #[e, f, [g]]]]] -> a*b*c*d*e*f*g | #[a, [b, #[c, d, [e, f, #[g]]]]] -> a/b/c/d/e/f/g == 1/504000000
+assert match([10,#[20, 30, 40, [50, 60, 70]]]) [a, b, c, d, e, f, g] -> a+b+c+d+e+f+g | [a, #[b, c, d, [e, f, g]]] -> a-b-c-d-e-f-g | [a, #[b, [c, d, #[e, f, [g]]]]] -> a*b*c*d*e*f*g | #[a, [b, #[c, d, [e, f, #[g]]]]] -> a/b/c/d/e/f/g == -260
+assert match([10,20,30,40,50,60,70]) [a, b, c, d, e, f, g] -> a+b+c+d+e+f+g | [a, #[b, c, d, [e, f, g]]] -> a-b-c-d-e-f-g | [a, #[b, [c, d, #[e, f, [g]]]]] -> a*b*c*d*e*f*g | #[a, [b, #[c, d, [e, f, #[g]]]]] -> a/b/c/d/e/f/g == 280
 
 // extended pattern matching tests
 module leftist_heap(is_empty, insert, find_min, delete_min)
@@ -187,9 +191,9 @@ module red_black_set(is_member, insert)
     else true
 
   function balance(color, t, z, d) 
-  | ['b, #['r,#['r,a,x,b],y,c], z, d] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
-  | ['b, #['r,a,x,#['r,b,y,c]], z, d] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
-  | ['b, a, x, #['r,#['r,b,y,c],z,d]] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
+  | ['b, #['r,#['r,a,x,b],y,c], z, d] 
+  | ['b, #['r,a,x,#['r,b,y,c]], z, d] 
+  | ['b, a, x, #['r,#['r,b,y,c],z,d]] 
   | ['b, a, x, #['r,b,y,#['r,c,z,d]]] -> #['r,#['b,a,x,b],y,#['b,c,z,d]]
   | _ -> #[color, t, z, d]
 
