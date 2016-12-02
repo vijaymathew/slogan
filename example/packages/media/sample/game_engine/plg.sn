@@ -1,0 +1,59 @@
+module plg(read)
+{ function read_lines(file_name)
+    call_with_stream(file_reader(file_name),
+      ^(s) read_all(s, read_line))
+
+  function is_comment(line)
+    let (s = string_ltrim(line))
+      or(string_length(s) == 0,
+         string_starts_with(s, ";"),
+         string_starts_with(s, "#"))
+
+  let is_not_comment = complement(is_comment)
+  
+  function filter_comments(lines)
+    filter(is_not_comment, lines)
+
+  record plg(name, vertices, polygons)
+
+  function parse_part(contents, num, parser)
+    let loop (contents = contents, i = 0, r = [])
+      if (i < num)
+        loop(tail(contents), i+1, parser(head(contents)):r)
+      else reverse(r):contents
+
+  function parse_vertex(v)
+    let (r = map(string_to_number, string_split(v)))
+      if (length(r) <> 3) error("Invalid vertex definition", r)
+      else r
+      
+  function parse_polygon(v) map(string_to_number, string_split(v))
+  
+  function parse_vertices(contents, num)
+    parse_part(contents, num, parse_vertex)
+
+  function parse_polygons(contents, num)
+    parse_part(contents, num, parse_polygon)
+
+  function parse_contents(contents, num_vertices,
+                          num_polygons, result)
+    letseq (pv = parse_vertices(contents, num_vertices)
+            pp = parse_polygons(tail(pv), num_polygons))
+    { plg_set_vertices(result, head(pv))
+      plg_set_polygons(result, head(pp))
+      result }
+
+  function parse_header(contents)
+    let (parts = string_split(contents))
+     append([first(parts)], map(string_to_number, rest(parts)))
+      
+  function read(file_name)
+    letseq (contents = filter_comments(read_lines(file_name))
+            result = make_plg(false, false, false))
+      match(parse_header(first(contents)))
+        [name, num_vertices, num_polygons] ->
+        { plg_set_name(result, name);
+          parse_contents(rest(contents), num_vertices,
+                         num_polygons, result) }
+}
+             

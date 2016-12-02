@@ -1,0 +1,69 @@
+record point_3d(x, y, z)
+record polygon(vertices, color, shade, shading, is_two_sided,
+               is_visible, is_active, is_clipped, normal_length)
+record facet(points, color, shade, shading, is_two_sided,
+             is_visible, is_active, is_clipped, normal_length)               
+record object(id, vertices_local, vertices_world, vertices_camera,
+              polys, radius, state, world_pos)
+record vector_3d(x, y, z, w)
+record dir_3d(ang_x, ang_y, ang_z)
+
+function make_vector_3d(init, term)
+  vector_3d(x = point_3d_x(term) - point_3d_x(init),
+            y = point_3d_y(term) - point_3d_y(init),
+            z = point_3d_z(term) - point_3d_z(init))
+
+function sqr(x) x * x
+
+function vector_mag_3d(v)
+  sqrt(add(sqr(vector_3d_x(v)),
+           sqr(vector_3d_y(v)),
+           sqr(vector_3d_z(v))))
+
+function dot_product_3d(u, v)
+  add(vector_3d_x(u) * vector_3d_x(v),
+      vector_3d_y(u) * vector_3d_y(v),
+      vector_3d_z(u) * vector_3d_z(v))
+
+function cross_product_3d(u, v)
+  let (ux = vector_3d_x(u), uy = vector_3d_y(u),
+       uz = vector_3d_z(u), vx = vector_3d_x(v),
+       vy = vector_3d_y(v), vz = vector_3d_z(v))
+  vector_3d(x = uy*vz - uz*vy,
+            y = -(ux*vz - uz*vx),
+            z = ux*vy - uy*vx)
+
+function mat_identity_4x4()
+  #[#[1, 0, 0, 0],
+    #[0, 1, 0, 0],
+    #[0, 0, 1, 0],
+    #[0, 0, 0, 1]]
+
+function mat_zero_4x4() make_array([4,4], 0)
+
+function mat_1x4() #[#[0, 0, 0, 0]]
+
+function mat_copy_4x4(s)
+  let (d = make_array([4,4]))
+    let loop (i = 0)
+      if (i < 4)
+      { d[i] = array_copy(s[i])
+        loop(i+1) }
+      else d
+
+function mat_mul_4x4_4x4(a, b)
+  let (result = mat_zero_4x4())
+  { for (i = 0; i<4; inc(i))
+      for (sum = 0, j = 0; j<4; { sum = 0; inc(j) })
+      { for (k = 0; k<4; inc(k))
+          sum = sum + (a[i][k] * b[k][j])
+        result[i][j] = sum }
+     result }
+
+function mat_mul_1x4_4x4(a, b)
+  let (result = mat_1x4())
+  { for (sum = 0, j = 0; j<4; {sum = 0; j+1})
+    { for (k = 0; k<4; k+1)
+        sum = sum + (a[k]*b[k][j])
+      result[j] = sum }
+    result }
