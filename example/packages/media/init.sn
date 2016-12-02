@@ -1,7 +1,8 @@
-link("event")
-let evt = event;
+let pckg_root = string_append(slogan_root(), "/packages/media")
+link(string_append(pckg_root, "/event"))
+let evt = event
 
-let libname = string_append(slogan_root(), "/packages/sdl/slogan_media.so")
+let libname = string_append(pckg_root, "/slogan_media.so")
 if (not (file_exists(libname))) libname = "./slogan_media.so" // in dev-mode
 let lib = ffi_open(libname)
 

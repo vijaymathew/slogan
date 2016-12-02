@@ -253,3 +253,40 @@ assert rbs.is_member(10, s)
 assert rbs.is_member(15, s)
 assert rbs.is_member(3, s)
 assert rbs.is_member(0, s) == false
+
+// definitions before expressions in module
+module m(a, b, c, b_x, b_set_x, d, e)
+{ function a() 100
+  record b(x)
+  function c() 200
+  let d = 300
+  let e = b(x=1) }
+
+assert m.a() == 100
+assert m.c() == 200
+assert m.d == 300
+assert m.b_x(m.e) == 1
+let dd = m.b(x = 1000)
+assert m.b_x(dd) == 1000
+assert m.b_set_x(dd, 2000)
+assert m.b_x(dd) == 2000
+
+// Fix for string_to_number for sign prefixed numbers.
+assert string_to_number("10") == 10
+assert string_to_number("+10") == 10
+assert string_to_number("-10") == -10
+assert string_to_number(".10") == .1
+assert string_to_number("+.10") == .1
+assert string_to_number("-.1012") == -.1012
+assert string_to_number("+.1012") == .1012
+assert string_to_number(".1012") == .1012
+assert string_to_number("10e8") == 1000000000.
+assert string_to_number("+10e8") == 1000000000.
+assert string_to_number("-10e8") == -1000000000.
+assert string_to_number("0o7") == 7
+assert string_to_number("0xff") == 255
+assert string_to_number("0b10") == 2
+assert string_to_number("0d10") == 10
+assert string_to_number("-10.2") == -10.2
+assert string_to_number("+10.2") == 10.2
+assert string_to_number("10.2") == 10.2

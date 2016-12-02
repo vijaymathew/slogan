@@ -767,11 +767,13 @@
                    (exprs? #f))
           (if (null? body) #t
               (let ((e (scm-car body)))
-                (if (and (pair? e) (eq? (scm-car e) 'define))
-                    (if exprs?
-                        (parser-error tokenizer "Ill-placed definition, must come before expressions in the block.")
-                        (loop (scm-cdr body) #f))
-                    (loop (scm-cdr body) #t))))))))
+                (if (pair? e)
+                    (let ((h (scm-car e)))
+                      (if (or (eq? h 'define) (eq? h 'begin))
+                          (if exprs?
+                              (parser-error tokenizer "Ill-placed definition, must come before expressions in the block.")
+                              (loop (scm-cdr body) #f))
+                          (loop (scm-cdr body) #t))))))))))
 
 (define (block-expr tokenizer #!optional (use-let #f))
   (let ((expr

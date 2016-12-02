@@ -143,6 +143,8 @@
 
 (define string_split string-split)
 
+(define (sign-prefix? c) (or (char=? c #\-) (char=? c #\+)))
+
 (define (string_to_number s #!optional (radix 10))
   (let ((tokenizer (make-tokenizer (open-input-string s) s)))
     (let ((port (tokenizer 'port-pos)))
@@ -154,10 +156,17 @@
                    (read-number port #f radix)))
               ((char=? c #\.)
                (port-pos-read-char! port)
-               (if (char-numeric? (port-pos-peek-char port))
-                   (read-number port #\. radix)
-                   (scm-error "Invalid number format." s)))
-              (else (scm-error "Failed to parse numeric string." s)))))))
+               (read-number port #\. radix))
+              ((sign-prefix? c)
+               (let ((neg? (char=? c #\-)))
+                 (port-pos-read-char! port)
+                 (let ((n (if (char=? (port-pos-peek-char port) #\.)
+                              (begin
+                                (port-pos-read-char! port)
+                                (read-number port #\. radix))
+                              (read-number port #f radix))))
+                   (if neg? (- n) n))))
+              (else (scm-error "Failed to parse numeric string" s)))))))
               
 (define (strings_join infix slist)
   (let loop ((slist slist) (result #f))
