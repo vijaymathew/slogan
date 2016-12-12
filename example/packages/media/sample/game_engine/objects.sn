@@ -67,3 +67,4 @@ function mat_mul_1x4_4x4(a, b)
         sum = sum + (a[k]*b[k][j])
       result[j] = sum }
     result }
+    

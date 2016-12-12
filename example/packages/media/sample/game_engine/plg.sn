@@ -1,4 +1,6 @@
-module plg(read)
+reload("objects")
+
+module plg(load_object)
 { function read_lines(file_name)
     call_with_stream(file_reader(file_name),
       ^(s) read_all(s, read_line))
@@ -55,5 +57,59 @@ module plg(read)
         { plg_set_name(result, name);
           parse_contents(rest(contents), num_vertices,
                          num_polygons, result) }
+
+  let id_number = 0
+
+function list_to_points(ps)
+  map(^(p) point_3d(x = first(p), y = second(p), z = third(p)), ps)
+
+function list_to_polygons(ps, obj)
+    map(^(p)
+        let (color_des = first(p), vs = rest(rest(p)))
+          polygon(color = band(color_des, 0x00ff),
+                  shading = bshift(color_des, -12),
+                  is_two_sided = false,
+                  is_visible = true,
+                  is_clipped = false,
+                  is_active = true,
+                  vertices = vs,
+                  normal_length =
+                  letseq (v0 = first(vs),
+                          v1 = second(vs),
+                          v2 = third(vs),
+                          vl = object_vertices_local(obj),
+                          u = make_vector_3d(nth(v0, vl), nth(v1, vl)),
+                          v = make_vector_3d(nth(v0, vl), nth(v2, vl)),
+                          normal = cross_product_3d(u, v))
+                          vector_mag_3d(normal)),
+        ps)
+
+  function compute_object_radius(obj)
+  { object_set_radius(obj, 0)
+    let loop (new_radius = 0, vertices = object_vertices_local(obj))
+      when (vertices)
+        letseq (v = first(vertices),
+                x = point_3d_x(v),
+                y = point_3d_y(v),
+                z = point_3d_z(v))
+          loop (let (nr = sqrt(x*x + y*y + z*z))
+                { when (nr > object_radius(obj))
+                    object_set_radius(obj, nr)
+                  nr }, rest(vertices)) }
+  
+  function plg_to_object(plg)
+    let (obj = object(id = {id_number = id_number+1; id_number},
+                      world_pos = point_3d(x = 0, y = 0, z = 0),
+                      vertices_local = list_to_points(plg_vertices(plg)),
+                      vertices_world = false,
+                      vertices_camera = false,
+                      polys = false,
+                      radius = false,
+                      state = false))
+     { object_set_polys(obj, list_to_polygons(plg_polygons(plg), obj))
+       compute_object_radius(obj)
+       obj }
+       
+  function load_object(file_name)
+    plg_to_object(read(file_name))
 }
-             

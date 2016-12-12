@@ -1,9 +1,14 @@
-module matrix(make, is_matrix,
+// original implementation in Scheme: http://www.scheme.com/tspl4/examples.html#./examples:h1
+module matrix(make, makea, is_matrix,
               rows, columns,
 	      at, set, mult)
 { function make(rows, columns)
     make_array([rows, columns])
 
+  function makea(a)
+    if (is_matrix(a)) a
+    else error("A matrix can be built only from arrays.")
+    
   function is_matrix(obj)
     and(is_array(obj), array_length(obj) > 0,
         is_array(obj[0]))
@@ -21,5 +26,41 @@ module matrix(make, is_matrix,
         for (j = 0; j < nc; j+1)
 	  result[i][j] = x * m[i][j]
       result }
-      
-  function mult(x, y) scal_mult(x, y) }
+
+  function mat_mult(m1, m2)
+    let (nr1 = rows(m1),
+         nr2 = rows(m2),
+         nc1 = columns(m1),
+         nc2 = columns(m2))
+     if (nc1 <> nr2)
+       error("Incompatible operands")
+     else
+       let (r = make(nr1, nc2))
+       { for (i = 0; i < nr1; i+1)
+           for (a = 0, j = 0; j < nc2; { a = 0; j+1 })
+           { for (k = 0; k < nr2; k + 1)
+               a = a + at(m1, i, k) * at(m2, k, j)
+             set(r, i, j, a) }
+          r }
+
+  function mult(x, y)
+    if (is_number(x))
+      if (is_number(y)) x * y
+      else if (is_matrix(y)) scal_mult(y, x)
+      else type_error(y)
+    else if (is_matrix(x))
+      if (is_number(y)) scal_mult(x, y)
+      else if (is_matrix(y)) mat_mult(x, y)
+      else type_error(y)
+    else type_error(x) }
+    
+let m = matrix
+let x = m.makea(#[#[1,2], #[3,4]])
+assert m.mult(x, 10) == #[#[10, 20], #[30, 40]]
+x = m.makea(#[#[1,2,3], #[4,5,6]]);
+let y = m.makea(#[#[7, 8], #[9,10], #[11, 12]]);
+assert m.mult(x, y) == #[#[58, 64], #[139, 154]]
+assert m.mult(10, 20) == 200
+assert (try m.mult(x, "hello") catch(e) 'no) == 'no
+assert (try m.mult("hello", y) catch(e) 'no) == 'no
+assert (try m.mult('abc, "hello") catch(e) 'no) == 'no
