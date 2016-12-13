@@ -14,4 +14,3 @@ src/*.o
 src/*.a
 src/core/*.c
 src/core/*.o
-

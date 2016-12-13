@@ -1,0 +1,36 @@
+function ix(x) exact(ceiling(x))
+function iy(y, maxy) exact(maxy - ceiling(y))
+function fx(x) inexact(x)
+function fy(y, maxy) inexact(maxy - y)
+
+let width, height = 600, 500
+let maxx, maxy, min_maxxy = width-1, height-1, min(maxx, maxy)
+let x_center, y_center = quotient(maxx, 2), quotient(maxy, 2)
+
+let m = media
+
+function draw(c)
+{ m.bg(c, 0, 0, 0, 255)
+  m.fg(c, 255, 255, 255, 255)
+  letseq (side = 0.95 * min_maxxy, side_half = 0.5 * side,
+          h = side_half * sqrt(3), q = 0.05, p = 1 - q,
+          xa = x_center - side_half,
+          ya = y_center - 0.5 * h,
+          xb = x_center + side_half,
+          yb = ya, xc = x_center,
+          yc = y_center + 0.5 * h)
+     for (i = 0; i < 50; i+1)
+     { m.line(c, ix(xa), iy(ya, maxy), ix(xb), iy(yb, maxy))
+       m.line(c, ix(xb), iy(yb, maxy), ix(xc), iy(yc, maxy))
+       m.line(c, ix(xc), iy(yc, maxy), ix(xa), iy(ya, maxy))
+       let (xa1 = p * xa + q * xb,
+            ya1 = p * ya + q * yb,
+            xb1 = p * xb + q * xc,
+            yb1 = p * yb + q * yc,
+            xc1 = p * xc + q * xa,
+            yc1 = p * yc + q * ya)
+       { xa = xa1; xb = xb1; xc = xc1;
+         ya = ya1; yb = yb1; yc = yc1 }}}
+
+m.display(draw, title = "triangles", w = width, h = height, bg_color = false, fg_color = false)
+
