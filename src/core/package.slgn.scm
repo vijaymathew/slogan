@@ -2,12 +2,27 @@
 
 ;; A package system for Slogan.
 
+(define *build-script* "build")
+(define *build-slogan-script* "build.sn")
+
 (define (build-package pkg-path)
-  (let* ((currdir (current-directory))
-         (build-cmd (string-append "cd " pkg-path "; ./build; cd " currdir)))
-    (let ((r (shell-command build-cmd)))
-      (if (scm-not (zero? r))
-          (scm-error "build-package - build failed -" build-cmd ", " r)
+  (let ((build? (file-exists? (string-append pkg-path "/" *build-script*)))
+        (build-slogan? (file-exists? (string-append pkg-path "/" *build-slogan-script*))))
+    (if (or build? build-slogan?)
+        (let* ((currdir (current-directory))
+               (c1 (string-append "cd " pkg-path "; "))
+               (c2 (if build?
+                       (string-append "./" *build-script*)
+                       (string-append "slogan -e ./" *build-slogan-script*)))
+               (build-cmd (string-append c1 c2)))
+          (let ((r (shell-command build-cmd)))
+            (shell-command (string-append "cd " currdir))
+            (if (scm-not (zero? r))
+                (scm-error "build-package - build failed -" build-cmd ", " r)
+                #t)))
+        (begin
+          (scm-display "Skipping build step as no build script found...")
+          (scm-newline)
           #t))))
 
 (define (install-git-package pkg-name pkg-url pkg-path)
@@ -104,11 +119,17 @@
         (if (scm-not force)
             (scm-error "package already installed - " pkg-path)
             (rename-file pkg-path pkg-path-old)))
-    (case pkg-type
-      ((git) (install-git-package pkg-name pkg-url pkg-path))
-      ((remote) (install-remote-package pkg-name pkg-url pkg-path))
-      ((local) (install-local-package pkg-name pkg-url pkg-path))
-      (else (scm-error "install_package - type not supported -" pkg-type)))
+    (with-exception-catcher
+     (lambda (e)
+       (force-rm-dir pkg-path-old)
+       (force-rm-dir pkg-path)
+       (scm-raise e))
+     (lambda ()
+       (case pkg-type
+         ((git) (install-git-package pkg-name pkg-url pkg-path))
+         ((remote) (install-remote-package pkg-name pkg-url pkg-path))
+         ((local) (install-local-package pkg-name pkg-url pkg-path))
+         (else (scm-error "install_package - type not supported -" pkg-type)))))
     (if (file-exists? pkg-path-old)
         (force-rm-dir pkg-path-old))
     (load_package pkg-name)))
