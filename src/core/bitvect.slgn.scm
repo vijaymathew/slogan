@@ -1,4 +1,4 @@
-;; Copyright (C) 2013-2016 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
+;; Copyright (C) 2013-2017 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
 
 (define-structure %bitvector size vector)
 

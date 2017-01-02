@@ -23,4 +23,4 @@ Visit http://schemer.in/slogan/ for tutorials and detailed documentation on the 
 
 You can help improve Slogan by reporting/fixing bugs and commenting on the enhancement proposals - https://github.com/vijaymathew/slogan/issues
 
-Copyright (c) 2013, 2014, 2015, 2016 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
+Copyright (c) 2013, 2014, 2015, 2016, 2017 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
