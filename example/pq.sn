@@ -1,0 +1,79 @@
+// A priority queue.
+
+module pq(make, insert, pop) {
+
+  function make(size, cmpr = `>`)
+    letseq (q = make_array(size), n = 0,
+            ref = ^(i) array_at(q, i-1),
+            ref_set = ^(i, x) array_set(q, i-1, x))
+      ^(_)
+      | 'n -> n
+      | 'ref -> ref
+      | 'ref_set -> ref_set
+      | 'inc -> n = n + 1
+      | 'dec -> n = n - 1
+      | 'cmpr -> cmpr
+      | 'size -> size
+
+  function swap(q, a, b)
+    letseq (t = q[b])
+    { q[b] = q[a]; q[a] = t }
+
+  function parent(n)
+    if (n == 1) -1
+    else floor(n/2)
+
+  function young_child(n) 2 * n
+
+  function insert(q, x)
+    if (is_pair(x))
+    { insert(q, head(x));
+      insert(q, tail(x)) }
+    else if (is_empty(x)) x
+    else let (n = q.n)
+     if (n >= q.size)
+       error("priority queue overflow.")
+     else let (n = {q.inc; q.n})
+     { q[n] = x;
+       bubble_up(q, n); x }
+
+  function bubble_up(q, p)
+    let (pp = parent(p))
+      when (pp <> -1)
+        when (q.cmpr(q[pp], q[p]))
+        { swap(q, p, pp);
+          bubble_up(q, pp) }
+
+  function pop(q)
+    let (n = q.n)
+      if (n <= 0) error("empty priority queue.")
+      else let (min = q[1])
+      { q[1] = q[n]; q.dec;
+        bubble_down(q, 1); min }
+
+  function bubble_down(q, p)
+    let (c = young_child(p), min_index = p,
+         n = q.n, cmpr = q.cmpr)
+    { for (i=0; i<=1; i+1)
+        when ((c+i) <= n)
+          when (cmpr(q[min_index], q[c+i]))
+            min_index = c+i
+
+       when (min_index <> p)
+       { swap(q, p, min_index)
+         bubble_down(q, min_index) }}
+}
+
+
+// test
+function heapsort(xs, cmpr)
+  letseq (len = length(xs),
+          q = pq.make(length(xs), cmpr))
+  { pq.insert(q, xs);
+    let loop (i = 0, ys = [])
+      if (i < len) loop(i+1, pq.pop(q):ys)
+      else ys }
+
+let sorted = [1, 2, 3, 4, 5, 10, 20]
+assert heapsort([20, 3, 4, 2, 10, 1, 5], `<`) == sorted
+assert heapsort([20, 3, 4, 2, 10, 1, 5], `>`) == reverse(sorted)
