@@ -49,6 +49,7 @@ c-declare-end
 
 (define shell_command shell-command)
 (define command_line command-line)
+(define (command_line_user_args) *user-args*)
 
 (define file_exists file-exists?)
 (define file_info file-info)
