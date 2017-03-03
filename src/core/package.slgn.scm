@@ -100,7 +100,7 @@
 
 (define (init_package pkg-name)
   (let ((load-path (string-append (slogan_root) "/packages/" pkg-name)))
-    (begin (if (not (file-exists? load-path))
+    (begin (if (scm-not (file-exists? load-path))
                (set! load-path "."))
            (link (string-append load-path "/src/core")))))
 

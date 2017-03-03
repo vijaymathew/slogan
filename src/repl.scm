@@ -15,13 +15,13 @@
 (define *valid-command-line-options* '("-e" "-c" "-x" "-ld-options" "-cc-options" "-v" "-h" "-r" "-i" "-u"))
 
 (define (valid-command-line-option? opt)
-  (member opt *valid-command-line-options*))
+  (scm-member opt *valid-command-line-options*))
 
 (define (assert-command-line-options args)
   (let loop ((args args))
     (if (null? args) #t
         (begin (if (char=? (string-ref (scm-car args) 0) #\-)
-                   (if (not (valid-command-line-option? (scm-car args)))
+                   (if (scm-not (valid-command-line-option? (scm-car args)))
                        (error "Invalid command line option." (scm-car args))))
                (loop (scm-cdr args))))))
 
@@ -100,7 +100,7 @@ where OPTION is one of:
                  cc_options: cc-options))))
 
 (define (install-pkg args)
-  (if (not (>= (length args) 3))
+  (if (scm-not (>= (length args) 3))
       (error "-i \"package-name,type,location\"")
       (install_package (nth 0 args) (string->symbol (nth 1 args))
                        (nth 2 args) (if (> (length args) 3)
@@ -119,14 +119,14 @@ where OPTION is one of:
   (let recur ((args args))
     (if (null? args)
         '()
-        (let ((a (car args)))
+        (let ((a (scm-car args)))
           (if (valid-command-line-option? a)
-              (if (not (or (string=? a "-h")
+              (if (scm-not (or (string=? a "-h")
                            (string=? a "-r")
                            (string=? a "-v")))
-                  (recur (cddr args))
-                  (recur (cdr args)))
-              (cons a (recur (cdr args))))))))
+                  (recur (scm-cddr args))
+                  (recur (scm-cdr args)))
+              (scm-cons a (recur (scm-cdr args))))))))
 
 (define (process-args args)
   (assert-command-line-options args)

@@ -196,7 +196,7 @@
       body))
 
 (define (merge-func-contract name body-expr contract-expr)
-  (if (not contract-expr)
+  (if (scm-not contract-expr)
       body-expr
       (let ((body-expr (prepare-func-body-for-if body-expr))
             (pre-cond (scm-car contract-expr))
@@ -225,7 +225,7 @@
                                   predics))))))))
 
 (define (insert-kw-param-names params offset)
-  (if (not offset)
+  (if (scm-not offset)
       params
       (let loop ((params params) (i 0)
                  (insert? #f) (nparams '()))
@@ -264,7 +264,7 @@
     (if (null? predics)
         `(and ,@(scm-reverse checks))
         (loop (scm-cdr predics) (scm-cdr params)
-              (scm-cons (list (scm-car predics) (scm-car params))
+              (scm-cons (scm-list (scm-car predics) (scm-car params))
                         checks)))))
 
 (define (merge-method-prefix predics params-types func-body)
@@ -276,7 +276,7 @@
 
 (define (func-def-stmt-with-name tokenizer)
   (let ((name (tokenizer 'peek)))
-    (let ((has-name? (not (scm-eq? name '*open-paren*))))
+    (let ((has-name? (scm-not (scm-eq? name '*open-paren*))))
       (if has-name?
           (begin
             (check-if-reserved-name name tokenizer)
@@ -312,7 +312,7 @@
                 (let ((expr (if (eq? '*close-paren* (tokenizer 'peek))
                                 #f
                                 (scm-expression tokenizer))))
-                  (if (not (eq? '*close-paren* (tokenizer 'next)))
+                  (if (scm-not (eq? '*close-paren* (tokenizer 'next)))
                       (parser-error tokenizer "Expected closing parenthesis."))
                   `(break ,expr)))
                (else '(break #f))))
@@ -344,7 +344,7 @@
               (else (loop (scm-cdr params) args))))))
 
 (define (types-has-rest? types)
-  (member '@rest types))
+  (scm-member '@rest types))
 
 (define (assignment-stmt tokenizer)
   (if (symbol? (tokenizer 'peek))
@@ -369,10 +369,10 @@
     #f))
 
 (define (vars-defs-set syms exprs def)
-  (if (not (= (scm-length syms) (scm-length exprs)))
+  (if (scm-not (= (scm-length syms) (scm-length exprs)))
       (scm-error "Not enough values or variables." syms exprs))
   (let loop ((syms syms) (exprs exprs) (defexprs '()))
-    (if (not (null? syms))
+    (if (scm-not (null? syms))
         (let ((sym (scm-car syms)))
           (let ((defexpr
                   (if (rvar? sym)
@@ -744,7 +744,7 @@
                                    (scm-expression tokenizer))
                             #f)))
                `(if *assertions-enabled*
-                    (if (not ,expr)
+                    (if (scm-not ,expr)
                         (if ,msg
                             (scm-error ,msg)
                             (scm-error (quote assertion_failed)
@@ -1046,7 +1046,7 @@
                 `(make-equal-hashtable (scm-list ,@args))))
           (let ((keyval (scm-expression tokenizer)))
             (begin
-              (if (and (not mkset?)
+              (if (and (scm-not mkset?)
                        (scm-not (and
                                  (pair? keyval)
                                  (scm-eq? (scm-car keyval) 'scm-cons))))
@@ -1086,18 +1086,18 @@
 (define (for-expr tokenizer)
   (cond ((eq? (tokenizer 'peek) 'for)
          (tokenizer 'next)
-         (if (not (eq? (tokenizer 'next) '*open-paren*))
+         (if (scm-not (eq? (tokenizer 'next) '*open-paren*))
              (parser-error tokenizer "Expected opening parenthesis here."))
          (let ((bindings (for-bindings tokenizer)))
-           (if (not (eq? '*semicolon* (tokenizer 'next)))
+           (if (scm-not (eq? '*semicolon* (tokenizer 'next)))
                (parser-error tokenizer "Expected semicolon here."))
            (let ((cond-expr (if (eq? '*semicolon* (tokenizer 'peek)) #t (scm-expression tokenizer))))
-             (if (not (eq? '*semicolon* (tokenizer 'next)))
+             (if (scm-not (eq? '*semicolon* (tokenizer 'next)))
                  (parser-error tokenizer "Expected semicolon here."))
              (let ((nxt-expr (if (eq? '*close-paren* (tokenizer 'peek)) *no-nxt-expr* (scm-expression tokenizer))))
-               (if (not (eq? (tokenizer 'next) '*close-paren*))
+               (if (scm-not (eq? (tokenizer 'next) '*close-paren*))
                    (parser-error tokenizer "Expected closing parenthesis here."))
-               (let ((counter (if (not (null? bindings)) (scm-caar bindings) #f)))
+               (let ((counter (if (scm-not (null? bindings)) (scm-caar bindings) #f)))
                  `(call/cc (lambda (break)
                              (let* ,(scm-append '((*for-value* #f)) (scm-reverse bindings))
                                (let *for-loop* ()
@@ -1107,7 +1107,7 @@
                                              (call/cc (lambda (continue)
                                                         ,(func-body-expr tokenizer #f #f))))
                                        ,(if counter
-                                            (if (not (eq? nxt-expr *no-nxt-expr*))
+                                            (if (scm-not (eq? nxt-expr *no-nxt-expr*))
                                                 `(set! ,counter ,nxt-expr))
                                             nxt-expr)
                                        (*for-loop*))
@@ -1175,7 +1175,7 @@
 
 (define (mod-exports-list tokenizer)
   (let ((token (tokenizer 'peek)))
-    (cond ((not (scm-eq? '*open-paren* token))
+    (cond ((scm-not (scm-eq? '*open-paren* token))
            '())
           (else
            (tokenizer 'next)
@@ -1236,7 +1236,7 @@
 (define (check-if-body-has-exported-names body exports)
   (let ((defs-in-body (extract-module-defs body '())))
     (if (eq? (scm-car exports) '_)
-        (diff-exports defs-in-body (if (not (null? (scm-cdr exports)))
+        (diff-exports defs-in-body (if (scm-not (null? (scm-cdr exports)))
                                        (scm-cadr exports)
                                        '()))
         (let loop ((exps exports))
@@ -1267,7 +1267,7 @@
   (cond ((scm-eq? 'module (tokenizer 'peek))
          (tokenizer 'next)
          (let ((mod-name (tokenizer 'peek)))
-           (if (not (symbol? mod-name))
+           (if (scm-not (symbol? mod-name))
                (parser-error tokenizer "Expected module name.")
                (if (eq? mod-name '*open-paren*)
                    (set! mod-name #f)
@@ -1358,7 +1358,7 @@
                            (if (scm-eq? (tokenizer 'peek) '*open-brace*)
                                (block-expr tokenizer use-let)
                                (stmt-or-expr tokenizer)))))))
-            (if (and (not let-expr?) params (> (tokenizer 'yield-count) old-yield-count))
+            (if (and (scm-not let-expr?) params (> (tokenizer 'yield-count) old-yield-count))
                 (wrap-in-return-cont body-expr)
                 body-expr)))))))
 
@@ -1588,7 +1588,7 @@
                      (let ((s (tokenizer 'next)))
                        (if (symbol? s) s (parser-error tokenizer "Expected type name."))))
                     (else '_))))
-    (if (not (scm-eq? (tokenizer 'peek) '*assignment*))
+    (if (scm-not (scm-eq? (tokenizer 'peek) '*assignment*))
         (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'func-param-type))
     type))
 

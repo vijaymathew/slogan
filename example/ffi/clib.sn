@@ -57,9 +57,9 @@ free_person(copy);
 
 // If the struct prototype is declared, a pointer can be converted to
 // a Slogan object that represents that structure.
-let np = pointer_to_c_struct(!person, p);
-showln(c_struct_get(np, !age)); // => 30
-showln(c_struct_get(np, !name)); // => tom
+let np = pointer_to_c_struct('person, p);
+showln(c_struct_get(np, 'age)); // => 30
+showln(c_struct_get(np, 'name)); // => tom
 
 // Nested structures:
 let e = alloc_employee(p, 1000.23);
@@ -76,11 +76,11 @@ print_point(p);
 showln();
 
 showln(c_struct_name(p)); // => point
-showln(c_struct_get(p, !x)); // => 100
-showln(c_struct_get(p, !y)); // => 340
+showln(c_struct_get(p, 'x)); // => 100
+showln(c_struct_get(p, 'y)); // => 340
 
 // Create a c_struct instance in Slogan and pass it to a C function:
-let pp = c_struct_instance(!point, [10, 20]);
+let pp = c_struct_instance('point, [10, 20]);
 print_point(pp); // => 10:20
 
 ffi_close(clib);

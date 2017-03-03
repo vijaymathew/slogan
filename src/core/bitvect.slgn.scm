@@ -224,7 +224,7 @@
 
 (define (pad-u8array u8arr len)
   (let loop ((u8arr u8arr) (len len))
-    (if (not (zero? (mod len 4)))
+    (if (scm-not (zero? (scm-mod len 4)))
         (loop (u8vector-append u8arr *u8array-pad*)
               (+ len 1))
         u8arr)))

@@ -573,7 +573,7 @@ c-declare-end
   (let loop ((len1 (lenfn x))
              (len2 (lenfn y))
              (i 0) (last-cmpr 0))
-    (if (not (zero? last-cmpr))
+    (if (scm-not (zero? last-cmpr))
         last-cmpr
         (cond
          ((or (zero? len1) (zero? len2))
@@ -662,7 +662,7 @@ c-declare-end
 (define (do_times n fn #!key (from 0) init)
   (call/cc
     (lambda (break)
-      (if (not (procedure? fn))
+      (if (scm-not (procedure? fn))
         (scm-error "expected procedure instead of " fn))
       (let ((cmpr (if (> n from) < >))
             (trans (if (> n from) + -)))
@@ -692,7 +692,7 @@ c-declare-end
     (week_day . ,(u32vector-ref vec 6))
     (year_day . ,(u32vector-ref vec 7))
     (is_utc . ,utc?)
-    (is_dst . ,(not (zero? (u32vector-ref vec 8))))))
+    (is_dst . ,(scm-not (zero? (u32vector-ref vec 8))))))
 
 (define (tm->u32vector tm)
   (let ((vec (make-u32vector 9)))
@@ -720,7 +720,7 @@ c-declare-end
     (u32vector->tm result #t)))
 
 (define (now_seconds #!optional tm)
-  (if (not tm)
+  (if (scm-not tm)
       (time->seconds (current-time))
       (tm->secs (tm->u32vector tm))))
 
@@ -754,7 +754,7 @@ c-declare-end
 (define (leap-year? y)
   (and (>= y 1583)
        (or (and (= 0 (scm-remainder y 4))
-                (not (= 0 (scm-remainder y 100))))
+                (scm-not (= 0 (scm-remainder y 100))))
            (= 0 (scm-remainder y 400)))))
 
 (define  *daytab* (scm-cons (scm-vector 0 31 28 31 30 31 30 31 31 30 31 30 31)

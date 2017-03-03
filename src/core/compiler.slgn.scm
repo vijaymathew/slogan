@@ -102,10 +102,10 @@
         (let ((in-str? #f) (prev-c #\nul))
           (string-for-each
            (lambda (c)
-             (if (and (char=? c #\") (not (char=? prev-c #\\)))
-                 (set! in-str? (not in-str?)))
+             (if (and (char=? c #\") (scm-not (char=? prev-c #\\)))
+                 (set! in-str? (scm-not in-str?)))
              (set! prev-c c)
-             (if (not in-str?)
+             (if (scm-not in-str?)
                  (cond ((char=? c #\{)
                         (set! bcount (+ bcount 1)))
                        ((char=? c #\})

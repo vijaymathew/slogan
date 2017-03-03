@@ -52,6 +52,8 @@
 (define (rem x1 x2) (- x1 (* x2 (quo x1 x2))))
 (define (mod x1 x2) (- x1 (* x2 (floor (/ x1 x2)))))
 
+(define scm-mod mod)
+
 (define (sub1 n) (- n 1))
 (define (add1 n) (+ n 1))
 
@@ -121,7 +123,7 @@
       (scm-error "(Argument 1) FLONUM expected"))
   (if (scm-not (flonum? fl2))
       (scm-error "(Argument 2) FLONUM expected"))
-  (mod fl1 fl2))
+  (scm-mod fl1 fl2))
 
 (define is_flonum flonum?)
 (define fl_is_finite flfinite?)

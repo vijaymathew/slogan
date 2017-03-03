@@ -17,9 +17,9 @@
                         (s-yield-k-set! yield-obj caller-return)
                         (let ((fn (s-yield-fn yield-obj)))
                           (if fn (fn) '())))))))
-    (if (and (not (pair? r))
+    (if (and (scm-not (pair? r))
              (s-yield? r)
-             (not (s-yield-fn r)))
+             (scm-not (s-yield-fn r)))
         #f
         r)))
 
@@ -87,7 +87,7 @@
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (let loop ((xs xs) (more more))
          (let ((*r* (s-yield-k *yield-obj*)))
-           (cond ((or (not xs) (null? xs))
+           (cond ((or (scm-not xs) (null? xs))
                   (s-yield-fn-set! *yield-obj* #f)
                   (*r* *yield-obj*))
                  (else
@@ -146,7 +146,7 @@
         (let ((scm-car (if lpair? first car))
               (scm-cdr (if lpair? rest cdr)))
           (do ((ls ls (scm-cdr ls)) (more more (scm-map scm-cdr more)))
-              ((or (not ls) (null? ls)))
+              ((or (scm-not ls) (null? ls)))
             (scm-apply f (scm-car ls) (scm-map scm-car more)))))))
 
 (define for_each generic-for-each)
@@ -168,7 +168,7 @@
    (lambda (*return*)
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (begin (let loop ((xs xs))
-                (if (not xs)
+                (if (scm-not xs)
                     xs
                     (if (f (scm-first xs))
                         (begin (call/cc
@@ -228,7 +228,7 @@
    (lambda (*return*)
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (begin (let loop ((initial initial) (xs xs))
-                (if (not xs)
+                (if (scm-not xs)
                     xs
                     (let ((r (f (scm-first xs) initial)))
                       (begin (call/cc (lambda (*yield*)

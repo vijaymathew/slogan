@@ -391,8 +391,8 @@
 
 (define (char-valid-in-char-literal? c long-c)
   (and (char? c)
-       (if (not long-c)
-           (not (char-whitespace? c))
+       (if (scm-not long-c)
+           (scm-not (char-whitespace? c))
            (or (char-alphabetic? c)
                (char-numeric? c)))))
 
@@ -429,7 +429,7 @@
      (let ((c (let loop ((c (port-pos-peek-char port))
                          (long-c #f)
                          (result '()))
-                (if (not (char-valid-in-char-literal? c long-c))
+                (if (scm-not (char-valid-in-char-literal? c long-c))
                     (list->string (scm-reverse result))
                     (begin (port-pos-read-char! port)
                            (loop (port-pos-peek-char port) #t

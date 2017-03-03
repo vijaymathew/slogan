@@ -157,7 +157,7 @@
                         (scm-display ": " port)
                         (slgn-display v port: port quotes: quotes)
                         (set! i (+ 1 i))
-                        (if (not (> i len))
+                        (if (scm-not (> i len))
                             (begin
                               (if *sep-char* (scm-display *sep-char* port))
                               (scm-display #\space port))))
@@ -167,9 +167,9 @@
 (define (slgn-display-set s quotes port)
   (scm-display "#(" port)
   (let loop ((xs (scm-reverse (set->list s))))
-    (if (not (null? xs))
+    (if (scm-not (null? xs))
         (begin (slgn-display (scm-car xs) port: port quotes: quotes)
-               (if (not (null? (scm-cdr xs)))
+               (if (scm-not (null? (scm-cdr xs)))
                    (scm-display ", " port))
                (loop (scm-cdr xs)))))
   (scm-display #\) port))
@@ -345,7 +345,7 @@
    (lambda () (scm-load script))))
 
 (define (check-for-? name tokenizer)
-  (let ((name (if (pair? name) (cadr name) name)))
+  (let ((name (if (pair? name) (scm-cadr name) name)))
     (if (>= (string-indexof (symbol->string name) #\?) 0)
         (parser-error tokenizer "Invalid character `?` in variable name."))))
 

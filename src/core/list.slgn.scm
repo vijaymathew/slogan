@@ -36,7 +36,7 @@
 (define (list-set! list k val)
     (if (zero? k)
         (set-car! list val)
-        (list-set! (cdr list) (- k 1) val)))
+        (list-set! (scm-cdr list) (- k 1) val)))
 
 (define (set-at! n v xs)
   (if (or (null? xs) (< n 0))
@@ -244,7 +244,7 @@
       (assert-equal-lengths ls more))
   (let fold-left ((obj obj) (ls ls) (more more))
     (if (null? ls) obj
-        (fold-left (scm-apply f (scm-car ls) (scm-append (scm-map scm-car more) (list obj)))
+        (fold-left (scm-apply f (scm-car ls) (scm-append (scm-map scm-car more) (scm-list obj)))
                    (scm-cdr ls) 
                    (scm-map scm-cdr more)))))
 

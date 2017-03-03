@@ -14,7 +14,7 @@ c-declare-end
 
 ;; Here we do a best effort to find a free port.
 (define (next-free-port)
-  (let ((port (open-tcp-server (list server-address: "" port-number: 0))))
+  (let ((port (open-tcp-server (scm-list server-address: "" port-number: 0))))
     (let ((port-number (socket-info-port-number (tcp-server-socket-info port))))
       (close-port port)
       port-number)))
@@ -71,11 +71,11 @@ c-declare-end
      (scm-exit))))
 
 (define (process_connect channel)
-  (let ((child (open-tcp-client (list server-address: (scm-car channel)
+  (let ((child (open-tcp-client (scm-list server-address: (scm-car channel)
                                       port-number: (scm-cdr channel)
                                       keep-alive: #t))))
     (let ((ch (make-process-info #f child #f)))
-      (if (not (eq? (scm-process_receive ch) 'hi))
+      (if (scm-not (eq? (scm-process_receive ch) 'hi))
           (begin (close-port child)
                  (scm-error "failed to establish connection."))
           ch))))
@@ -87,7 +87,7 @@ c-declare-end
 	 (scm-raise e)
 	 (begin	(call-sched_yield)
 		(open-server-connection port-number (+ tries 1)))))
-   (lambda () (open-tcp-client (list port-number: port-number keep-alive: #t)))))
+   (lambda () (open-tcp-client (scm-list port-number: port-number keep-alive: #t)))))
 
 (define (scm-process child-callback #!optional timeout)
   (let ((port-number (next-free-port)))
@@ -96,7 +96,7 @@ c-declare-end
              (let ((sock (open-server-connection port-number 0)))
                (invoke-child-callback child-callback sock)))
             ((> pid 0)
-             (let ((sock (open-tcp-server (list port-number: port-number
+             (let ((sock (open-tcp-server (scm-list port-number: port-number
                                                 coalesce: #f))))
                (if timeout
                    (input-port-timeout-set! sock timeout))
@@ -152,7 +152,7 @@ c-declare-end
 (define (mk-child-msg-handler child-callback timeout default)
   (define (child-msg-handler pinfo)
     (let ((message (eval-message (scm-process_receive pinfo timeout default))))
-      (cond ((not (eq? message 'quit))
+      (cond ((scm-not (eq? message 'quit))
              (scm-process_send pinfo (child-callback message) timeout)
              (child-msg-handler pinfo)))))
   child-msg-handler)
@@ -199,7 +199,7 @@ c-declare-end
              (scm-process_close pinfo))
             (else
              (scm-process_send pinfo message timeout)
-             (if (not p-thread)
+             (if (scm-not p-thread)
                  (begin
                    (set! p-thread (make-thread parent-msg-handler))
                    (if (thread-start! p-thread) #t #f))))))))
