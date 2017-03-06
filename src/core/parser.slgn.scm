@@ -411,11 +411,26 @@
                    (scm-cons e exprs)))
             (else (scm-reverse (scm-cons e exprs)))))))
 
+(define (core-name-warn! name)
+  (cond
+   ((eq? name 'core)
+    (scm-display "WARNING: definition will shadow core module.")
+    (scm-newline))
+   ((core-name? name)
+    (scm-display "WARNING: redefining ")
+    (scm-display name)
+    (scm-display " from core module.")
+    (scm-newline)
+    (scm-display "(The original definition should be still available as core.")
+    (scm-display name) (scm-display ")")
+    (scm-newline))))
+
 (define (define-stmt tokenizer)
   (let ((token (tokenizer 'next)))
     (cond
       ((symbol? token)
        (check-if-reserved-name token tokenizer)
+       (core-name-warn! token)
        (cond
         ((scm-eq? '*assignment* (tokenizer 'peek))
          (var-def-set token tokenizer #t))

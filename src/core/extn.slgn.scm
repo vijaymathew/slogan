@@ -700,7 +700,7 @@ c-declare-end
     (u32vector-set! vec 1 (scm-cdr (scm-assq 'minute tm)))
     (u32vector-set! vec 2 (scm-cdr (scm-assq 'hour tm)))
     (u32vector-set! vec 3 (scm-cdr (scm-assq 'month_day tm)))
-    (u32vector-set! vec 4 (- (scm-cdr (scm-assq 'month tm) 1)))
+    (u32vector-set! vec 4 (- (scm-cdr (scm-assq 'month tm)) 1))
     (u32vector-set! vec 5 (- (scm-cdr (scm-assq 'year tm)) 1900))
     (u32vector-set! vec 6 (scm-cdr (scm-assq 'week_day tm)))
     (u32vector-set! vec 7 (scm-cdr (scm-assq 'year_day tm)))

@@ -1,7 +1,8 @@
-;; Copyright (c) 2013-2016 by Vijay Mathew Pandyalakal, All Rights Reserved.
+;; Copyright (c) 2013-2017 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define core-compose compose)
 (define core-identity identity)
+(define core-compare compare)
 (define core-mapfn mapfn)
 (define core-partial partial)
 (define core-complement complement)
@@ -43,12 +44,15 @@
 (define core-pair pair)
 (define core-head head)
 (define core-tail tail)
+(define core-car car)
+(define core-cdr cdr)
 (define core-set_head set_head)
 (define core-set_tail set_tail)
 (define core-list list)
 (define core-list_of list_of)
 (define core-is_list is_list)
 (define core-length length)
+(define core-count count)
 (define core-at at)
 (define core-list_tail list_tail)
 (define core-drop drop)
@@ -78,6 +82,7 @@
 (define core-get get)
 (define core-copy_list copy_list)
 (define core-zip zip)
+(define core-unzip unzip)
 (define core-zip_with zip_with)
 (define core-sort sort)
 (define core-quicksort quicksort)
@@ -156,21 +161,21 @@
 (define core-asin asin)
 (define core-acos acos)
 (define core-atan atan)
-(define core-bitwise_not bitwise_not)
-(define core-bitwise_and bitwise_and)
-(define core-bitwise_ior bitwise_ior)
-(define core-bitwise_xor bitwise_xor)
-(define core-bitwise_if bitwise_if)
-(define core-bitwise_bit_count bitwise_bit_count)
-(define core-bitwise_length bitwise_length)
-(define core-bitwise_first_bit_set bitwise_first_bit_set)
-(define core-bitwise_is_bit_set bitwise_is_bit_set)
-(define core-bitwise_is_any_bits_set bitwise_is_any_bits_set)
-(define core-bitwise_is_all_bits_set bitwise_is_all_bits_set)
-(define core-bitwise_copy_bit_field bitwise_copy_bit_field)
-(define core-bitwise_arithmetic_shift bitwise_arithmetic_shift)
-(define core-bitwise_rotate_bit_field bitwise_rotate_bit_field)
-(define core-bitwise_reverse_bit_field bitwise_reverse_bit_field)
+(define core-bnot bnot)
+(define core-band band)
+(define core-bior bior)
+(define core-bxor bxor)
+(define core-bif bif)
+(define core-bit_count bit_count)
+(define core-blength blength)
+(define core-first_bit_set first_bit_set)
+(define core-is_bit_set is_bit_set)
+(define core-is_any_bits_set is_any_bits_set)
+(define core-is_all_bits_set is_all_bits_set)
+(define core-copy_bit_field copy_bit_field)
+(define core-bshift bshift)
+(define core-rotate_bit_field rotate_bit_field)
+(define core-reverse_bit_field reverse_bit_field)
 (define core-string_to_number string_to_number)
 (define core-number_to_string number_to_string)
 (define core-is_fixnum is_fixnum)
@@ -206,13 +211,13 @@
 (define core-fxlength fxlength)
 (define core-fxfirst_bit_set fxfirst_bit_set)
 (define core-fxbit_is_set fxbit_is_set)
-(define core-fxarithmetic_shift fxarithmetic_shift)
-(define core-fxarithmetic_shift_left fxarithmetic_shift_left)
-(define core-fxarithmetic_shift_right fxarithmetic_shift_right)
-(define core-fxarithmetic_shift_wrap fxarithmetic_shift_wrap)
-(define core-fxarithmetic_shift_left_wrap fxarithmetic_shift_left_wrap)
-(define core-fxarithmetic_shift_right_wrap fxarithmetic_shift_right_wrap)
-(define core-fxlogical_shift_right_wrap fxlogical_shift_right_wrap)
+(define core-fxshift fxshift)
+(define core-fxshift_left fxshift_left)
+(define core-fxshift_right fxshift_right)
+(define core-fxshift_wrap fxshift_wrap)
+(define core-fxshift_left_wrap fxshift_left_wrap)
+(define core-fxshift_right_wrap fxshift_right_wrap)
+(define core-fxlshift_right_wrap fxlshift_right_wrap)
 (define core-is_flonum is_flonum)
 (define core-fl_is_eq fl_is_eq)
 (define core-fl_is_lt fl_is_lt)
@@ -330,6 +335,7 @@
 (define core-string_to_list string_to_list)
 (define core-list_to_string list_to_string)
 (define core-string_to_u8array string_to_u8array)
+(define core-to_string to_string)
 (define core-u8array_to_string u8array_to_string)
 (define core-u8array_to_bit_array u8array_to_bit_array)
 (define core-string_to_symbol string_to_symbol)
@@ -344,6 +350,8 @@
 (define core-make_array make_array)
 (define core-array_length array_length)
 (define core-array_at array_at)
+(define core-array_ref array_ref)
+(define core-array_ref_set array_ref_set)
 (define core-arrays_at arrays_at)
 (define core-array_set array_set)
 (define core-array_fill array_fill)
@@ -522,6 +530,7 @@
 (define core-make_bit_array make_bit_array)
 (define core-bit_array_length bit_array_length)
 (define core-bit_array_set bit_array_set)
+(define core-bit_array_at bit_array_at)
 (define core-bit_array_is_set bit_array_is_set)
 (define core-bit_array_is_all_set bit_array_is_all_set)
 (define core-bit_array_is_any_set bit_array_is_any_set)
@@ -537,8 +546,8 @@
 (define core-bit_arrays_concat bit_arrays_concat)
 (define core-subbitarray subbitarray)
 (define core-make_hashtable make_hashtable)
-(define core-@ @)
 (define core-make_eq_hashtable make_eq_hashtable)
+(define core-make_eqv_hashtable make_eqv_hashtable)
 (define core-make_equal_hashtable make_equal_hashtable)
 (define core-is_hashtable is_hashtable)
 (define core-eq_hash eq_hash)
@@ -603,12 +612,16 @@
 (define core-read_all read_all)
 (define core-read read)
 (define core-write_byte write_byte)
+(define core-write_bytes write_bytes)
 (define core-write_n_bytes write_n_bytes)
 (define core-write_char write_char)
 (define core-write_chars write_chars)
 (define core-write_n_chars write_n_chars)
 (define core-show show)
 (define core-showln showln)
+(define core-display display)
+(define core-print print)
+(define core-println println)
 (define core-newline newline)
 (define core-write write)
 (define core-flush_writer flush_writer)
@@ -627,6 +640,7 @@
 (define core-is_task is_task)
 (define core-task task)
 (define core-root_task root_task)
+(define core-self self)
 (define core-task_run task_run)
 (define core-task_yield task_yield)
 (define core-task_sleep task_sleep)
@@ -752,31 +766,17 @@
 (define core-reload reload)
 (define core-link link)
 (define core-now now)
-(define core-is_time is_time)
-(define core-time_to_seconds time_to_seconds)
-(define core-seconds_to_time seconds_to_time)
-(define core-time_second time_second)
-(define core-time_minute time_minute)
-(define core-time_hour time_hour)
-(define core-time_day_of_month time_day_of_month)
-(define core-time_month time_month)
-(define core-time_day_of_week time_day_of_week)
-(define core-time_day_of_year time_day_of_year)
-(define core-time_set_second time_set_second)
-(define core-time_set_minute time_set_minute)
-(define core-time_set_hour time_set_hour)
-(define core-time_set_day_of_month time_set_day_of_month)
-(define core-time_set_month time_set_month)
-(define core-time_set_day_of_week time_set_day_of_week)
-(define core-time_set_day_of_year time_set_day_of_year)
-(define core-time_is_dst time_is_dst)
-(define core-time_set_is_dst time_set_is_dst)
+(define core-now_utc now_utc)
+(define core-now_seconds now_seconds)
+(define core-string_to_time string_to_time)
+(define core-time_to_string time_to_string)
 (define core-process_times process_times)
 (define core-real_time real_time)
 (define core-cpu_time cpu_time)
 (define core-current_exception_handler current_exception_handler)
 (define core-set_current_exception_handler set_current_exception_handler)
 (define core-raise raise)
+(define core-abort abort)
 (define core-is_noncontinuable_exception is_noncontinuable_exception)
 (define core-noncontinuable_exception_reason noncontinuable_exception_reason)
 (define core-show_exception show_exception)
@@ -812,13 +812,16 @@
 (define core-install_package install_package)
 (define core-uninstall_package uninstall_package)
 (define core-load_package load_package)
+(define core-init_package init_package)
 
 (define core-is_iterator is_iterator)
 (define core-is_lpair is_lpair)
 (define core-do_times do_times)
 (define core-enable_asserts enable_asserts)
+(define core-disable_asserts disable_asserts)
 
 ;; set functions
+(define core-set_length set_length)
 (define core-set_difference set_difference)
 (define core-set_intersection set_intersection)
 (define core-set_union set_union)
@@ -832,14 +835,21 @@
 (define core-hashtable_to_set hashtable_to_set)
 (define core-set set)
 
+(define core-ref ref)
+(define core-ref_set ref_set)
+(define core-command_line_user_args command_line_user_args)
+
 (define (core *name*)
   (case *name*
     ((compose) core-compose)
     ((identity) core-identity)
+    ((compare) core-compare)
     ((mapfn) core-mapfn)
     ((partial) core-partial)
     ((complement) core-complement)
     ((apply) core-apply)
+    ((ref) core-ref)
+    ((ref_set) core-ref_set)
     ((until) core-until)
     ((map) core-map)
     ((for_each) core-for_each)
@@ -877,12 +887,15 @@
     ((pair) core-pair)
     ((head) core-head)
     ((tail) core-tail)
+    ((car) core-car)
+    ((cdr) core-cdr)
     ((set_head) core-set_head)
     ((set_tail) core-set_tail)
     ((list) core-list)
     ((list_of) core-list_of)
     ((is_list) core-is_list)
     ((length) core-length)
+    ((count) core-count)
     ((at) core-at)
     ((list_tail) core-list_tail)
     ((drop) core-drop)
@@ -912,6 +925,7 @@
     ((get) core-get)
     ((copy_list) core-copy_list)
     ((zip) core-zip)
+    ((unzip) core-unzip)
     ((zip_with) core-zip_with)
     ((sort) core-sort)
     ((quicksort) core-quicksort)
@@ -990,21 +1004,21 @@
     ((asin) core-asin)
     ((acos) core-acos)
     ((atan) core-atan)
-    ((bitwise_not) core-bitwise_not)
-    ((bitwise_and) core-bitwise_and)
-    ((bitwise_ior) core-bitwise_ior)
-    ((bitwise_xor) core-bitwise_xor)
-    ((bitwise_if) core-bitwise_if)
-    ((bitwise_bit_count) core-bitwise_bit_count)
-    ((bitwise_length) core-bitwise_length)
-    ((bitwise_first_bit_set) core-bitwise_first_bit_set)
-    ((bitwise_is_bit_set) core-bitwise_is_bit_set)
-    ((bitwise_is_any_bits_set) core-bitwise_is_any_bits_set)
-    ((bitwise_is_all_bits_set) core-bitwise_is_all_bits_set)
-    ((bitwise_copy_bit_field) core-bitwise_copy_bit_field)
-    ((bitwise_arithmetic_shift) core-bitwise_arithmetic_shift)
-    ((bitwise_rotate_bit_field) core-bitwise_rotate_bit_field)
-    ((bitwise_reverse_bit_field) core-bitwise_reverse_bit_field)
+    ((bnot) core-bnot)
+    ((band) core-band)
+    ((bior) core-bior)
+    ((bxor) core-bxor)
+    ((bif) core-bif)
+    ((bit_count) core-bit_count)
+    ((blength) core-blength)
+    ((first_bit_set) core-first_bit_set)
+    ((is_bit_set) core-is_bit_set)
+    ((is_any_bits_set) core-is_any_bits_set)
+    ((is_all_bits_set) core-is_all_bits_set)
+    ((copy_bit_field) core-copy_bit_field)
+    ((bshift) core-bshift)
+    ((rotate_bit_field) core-rotate_bit_field)
+    ((reverse_bit_field) core-reverse_bit_field)
     ((string_to_number) core-string_to_number)
     ((number_to_string) core-number_to_string)
     ((is_fixnum) core-is_fixnum)
@@ -1040,13 +1054,13 @@
     ((fxlength) core-fxlength)
     ((fxfirst_bit_set) core-fxfirst_bit_set)
     ((fxbit_is_set) core-fxbit_is_set)
-    ((fxarithmetic_shift) core-fxarithmetic_shift)
-    ((fxarithmetic_shift_left) core-fxarithmetic_shift_left)
-    ((fxarithmetic_shift_right) core-fxarithmetic_shift_right)
-    ((fxarithmetic_shift_wrap) core-fxarithmetic_shift_wrap)
-    ((fxarithmetic_shift_left_wrap) core-fxarithmetic_shift_left_wrap)
-    ((fxarithmetic_shift_right_wrap) core-fxarithmetic_shift_right_wrap)
-    ((fxlogical_shift_right_wrap) core-fxlogical_shift_right_wrap)
+    ((fxshift) core-fxshift)
+    ((fxshift_left) core-fxshift_left)
+    ((fxshift_right) core-fxshift_right)
+    ((fxshift_wrap) core-fxshift_wrap)
+    ((fxshift_left_wrap) core-fxshift_left_wrap)
+    ((fxshift_right_wrap) core-fxshift_right_wrap)
+    ((fxlshift_right_wrap) core-fxlshift_right_wrap)
     ((is_flonum) core-is_flonum)
     ((fl_is_eq) core-fl_is_eq)
     ((fl_is_lt) core-fl_is_lt)
@@ -1166,6 +1180,7 @@
     ((string_to_u8array) core-string_to_u8array)
     ((u8array_to_string) core-u8array_to_string)
     ((u8array_to_bit_array) core-u8array_to_bit_array)
+    ((to_string) core-to_string)
     ((string_to_symbol) core-string_to_symbol)
     ((symbol_to_string) core-symbol_to_string)
     ((gensym) core-gensym)
@@ -1178,6 +1193,8 @@
     ((make_array) core-make_array)
     ((array_length) core-array_length)
     ((array_at) core-array_at)
+    ((array_ref) core-array_ref)
+    ((array_ref_set) core-array_ref_set)
     ((arrays_at) core-arrays_at)
     ((array_set) core-array_set)
     ((array_fill) core-array_fill)
@@ -1356,6 +1373,7 @@
     ((make_bit_array) core-make_bit_array)
     ((bit_array_length) core-bit_array_length)
     ((bit_array_set) core-bit_array_set)
+    ((bit_array_at) core-bit_array_at)
     ((bit_array_is_set) core-bit_array_is_set)
     ((bit_array_is_all_set) core-bit_array_is_all_set)
     ((bit_array_is_any_set) core-bit_array_is_any_set)
@@ -1371,8 +1389,8 @@
     ((bit_arrays_concat) core-bit_arrays_concat)
     ((subbitarray) core-subbitarray)
     ((make_hashtable) core-make_hashtable)
-    ((@) core-@)
     ((make_eq_hashtable) core-make_eq_hashtable)
+    ((make_eqv_hashtable) core-make_eqv_hashtable)
     ((make_equal_hashtable) core-make_equal_hashtable)
     ((is_hashtable) core-is_hashtable)
     ((eq_hash) core-eq_hash)
@@ -1437,12 +1455,16 @@
     ((read_all) core-read_all)
     ((read) core-read)
     ((write_byte) core-write_byte)
+    ((write_bytes) core-write_bytes)
     ((write_n_bytes) core-write_n_bytes)
     ((write_char) core-write_char)
     ((write_chars) core-write_chars)
     ((write_n_chars) core-write_n_chars)
     ((show) core-show)
     ((showln) core-showln)
+    ((display) core-display)
+    ((print) core-print)
+    ((println) core-println)
     ((newline) core-newline)
     ((write) core-write)
     ((flush_writer) core-flush_writer)
@@ -1461,6 +1483,7 @@
     ((is_task) core-is_task)
     ((task) core-task)
     ((root_task) core-root_task)
+    ((self) core-self)
     ((task_run) core-task_run)
     ((task_yield) core-task_yield)
     ((task_sleep) core-task_sleep)
@@ -1586,31 +1609,17 @@
     ((reload) core-reload)
     ((link) core-link)
     ((now) core-now)
-    ((is_time) core-is_time)
-    ((time_to_seconds) core-time_to_seconds)
-    ((seconds_to_time) core-seconds_to_time)
-    ((time_second) core-time_second)
-    ((time_minute) core-time_minute)
-    ((time_hour) core-time_hour)
-    ((time_day_of_month) core-time_day_of_month)
-    ((time_month) core-time_month)
-    ((time_day_of_week) core-time_day_of_week)
-    ((time_day_of_year) core-time_day_of_year)
-    ((time_set_second) core-time_set_second)
-    ((time_set_minute) core-time_set_minute)
-    ((time_set_hour) core-time_set_hour)
-    ((time_set_day_of_month) core-time_set_day_of_month)
-    ((time_set_month) core-time_set_month)
-    ((time_set_day_of_week) core-time_set_day_of_week)
-    ((time_set_day_of_year) core-time_set_day_of_year)
-    ((time_is_dst) core-time_is_dst)
-    ((time_set_is_dst) core-time_set_is_dst)
+    ((now_utc) core-now_utc)
+    ((now_seconds) core-now_seconds)
+    ((string_to_time) core-string_to_time)
+    ((time_to_string) core-time_to_string)
     ((process_times) core-process_times)
     ((real_time) core-real_time)
     ((cpu_time) core-cpu_time)
     ((current_exception_handler) core-current_exception_handler)
     ((set_current_exception_handler) core-set_current_exception_handler)
     ((raise) core-raise)
+    ((abort) core-abort)
     ((is_noncontinuable_exception) core-is_noncontinuable_exception)
     ((noncontinuable_exception_reason) core-noncontinuable_exception_reason)
     ((show_exception) core-show_exception)
@@ -1646,13 +1655,18 @@
     ((install_package) core-install_package)
     ((uninstall_package) core-uninstall_package)
     ((load_package) core-load_package)
+    ((init_package) core-init_package)
 
     ((is_iterator) core-is_iterator)
     ((is_lpair) core-is_lpair)
     ((do_times) core-do_times)
     ((enable_asserts) core-enable_asserts)
+    ((disable_asserts) core-disable_asserts)
+
+    ((command_line_user_args) core-command_line_user_args)
 
     ;; set functions
+    ((set_length) core-set_length)
     ((set_difference) core-set_difference)
     ((set_intersection) core-set_intersection)
     ((set_union) core-set_union)
@@ -1666,3 +1680,204 @@
     ((hashtable_to_set) core-hashtable_to_set)
     ((set) core-set)
     (else (scm-error "Binding not found" *name*))))
+
+(define *core-names* '(_inf _zero abort abs accumulate acos act add angle append
+                            apply array array_append array_at array_copy array_fill
+                            array_for_each array_length array_map array_ref
+                            array_ref_set array_set array_shrink array_sort
+                            array_to_list arrays_at asin assoc assp assq assv at atan
+                            band bif bior bit_array bit_array_at bit_array_blit
+                            bit_array_clear bit_array_clear_all bit_array_is_all_set
+                            bit_array_is_any_set bit_array_is_eq bit_array_is_set
+                            bit_array_length bit_array_set bit_array_set_all
+                            bit_array_to_list bit_array_to_string bit_arrays_concat
+                            bit_count blength bnot bshift bxor byte_array_reader
+                            byte_array_writer c_struct_get c_struct_instance
+                            c_struct_name call_with_stream call_with_values callcc car
+                            cdr ceiling char_downcase char_is_alphabetic char_is_ci_eq
+                            char_is_ci_gt char_is_ci_gteq char_is_ci_lt char_is_ci_lteq
+                            char_is_eq char_is_gt char_is_gteq char_is_lower_case
+                            char_is_lt char_is_lteq char_is_numeric char_is_upper_case
+                            char_is_whitespace char_to_integer char_upcase close_reader
+                            close_stream close_writer command_line
+                            command_line_user_args compare compile complement compose
+                            copy_bit_field copy_file copy_list cos count cpu_time
+                            create_directory create_link create_symbolic_link
+                            current_directory current_error_stream
+                            current_exception_handler current_reader current_task
+                            current_writer dec default_random_source delete_directory
+                            delete_file denominator disable_asserts display div do_times
+                            drop drop_while dynamic_wind eighth enable_asserts enumerate
+                            eof_object eq_hash equal_hash eqv_hash error error_args
+                            error_message eval exact exists exit exp expression expt
+                            f32array f32array_append f32array_at f32array_copy
+                            f32array_fill f32array_length f32array_set f32array_shrink
+                            f32array_to_list f64array f64array_append f64array_at
+                            f64array_copy f64array_fill f64array_length f64array_set
+                            f64array_shrink f64array_to_list ffi_call_char_string
+                            ffi_call_char_string_with_void_pointer ffi_call_double
+                            ffi_call_double_with_void_pointer ffi_call_float
+                            ffi_call_float_with_void_pointer ffi_call_int ffi_call_int64
+                            ffi_call_int64_with_void_pointer
+                            ffi_call_int_with_void_pointer ffi_call_obj
+                            ffi_call_obj_with_void_pointer ffi_call_uint
+                            ffi_call_uint_with_void_pointer ffi_call_void
+                            ffi_call_void_pointer
+                            ffi_call_void_pointer_with_void_pointer
+                            ffi_call_void_with_void_pointer ffi_close ffi_fn ffi_open
+                            fifth file_attributes file_creation_time file_device
+                            file_exists file_group file_info file_info_attributes
+                            file_info_creation_time file_info_device file_info_group
+                            file_info_inode file_info_last_access_time
+                            file_info_last_change_time file_info_last_modification_time
+                            file_info_mode file_info_number_of_links file_info_owner
+                            file_info_size file_info_type file_inode
+                            file_last_access_time file_last_change_time
+                            file_last_modification_time file_mode file_number_of_links
+                            file_owner file_reader file_size file_stream file_type
+                            file_writer filter find first first_bit_set fixnum_to_flonum
+                            fixnum_width fl_is_eq fl_is_even fl_is_finite fl_is_gt
+                            fl_is_gteq fl_is_infinite fl_is_integer fl_is_lt fl_is_lteq
+                            fl_is_nan fl_is_negative fl_is_odd fl_is_positive fl_is_zero
+                            flabs flacos fladd flasin flatan flceiling flcos
+                            fldenominator fldiv flexp flexpt flfloor fllog fllogb flmax
+                            flmin flmod flmult flnumerator floor flround flsin flsqrt
+                            flsub fltan fltruncate flush_writer fold fold_left
+                            fold_right for_all for_each force fourth fx_is_eq fx_is_even
+                            fx_is_gt fx_is_gteq fx_is_lt fx_is_lteq fx_is_negative
+                            fx_is_odd fx_is_positive fx_is_zero fxadd fxadd_wrap fxand
+                            fxbit_count fxbit_is_set fxdiv fxfirst_bit_set fxif fxior
+                            fxlength fxlshift_right_wrap fxmax fxmin fxmod fxmult
+                            fxmult_wrap fxnot fxshift fxshift_left fxshift_left_wrap
+                            fxshift_right fxshift_right_wrap fxshift_wrap fxsub
+                            fxsub_wrap fxxor gcd gensym get get_output_bytes
+                            get_output_string get_token getenv greatest_fixnum
+                            hashtable_at hashtable_contains hashtable_copy
+                            hashtable_entries hashtable_for_each hashtable_keys
+                            hashtable_set hashtable_size hashtable_to_set
+                            hashtable_update hashtable_values head host_info
+                            host_info_addresses host_info_aliases host_info_name
+                            host_name identity imag_part inc inexact inf init_package
+                            install_package integer_to_char is_all_bits_set
+                            is_any_bits_set is_array is_bit_array is_bit_array
+                            is_bit_set is_boolean is_char is_complex is_empty
+                            is_eof_object is_eq is_equal is_eqv is_error is_even
+                            is_exact is_f32array is_f64array is_false is_file_info
+                            is_finite is_fixnum is_flonum is_function is_hashtable
+                            is_hashtable is_host_info is_inexact is_infinite is_integer
+                            is_iterator is_keyword_token is_list is_lpair is_monitor
+                            is_mutex is_nan is_negative is_noncontinuable_exception
+                            is_number is_object is_odd is_pair is_positive is_prime
+                            is_random_source is_rational is_reader is_real is_s16array
+                            is_s32array is_s64array is_s8array is_set is_set_member
+                            is_special_token is_stream is_string is_subset is_superset
+                            is_symbol is_task is_task_group is_true is_u16array
+                            is_u32array is_u64array is_u8array is_void is_writer is_zero
+                            lcm least_fixnum length link list list_directory list_of
+                            list_tail list_to_array list_to_bit_array list_to_f32array
+                            list_to_f64array list_to_s16array list_to_s32array
+                            list_to_s64array list_to_s8array list_to_set list_to_string
+                            list_to_u16array list_to_u32array list_to_u64array
+                            list_to_u8array load load_package log logb magnitude
+                            make_array make_bit_array make_eq_hashtable
+                            make_equal_hashtable make_eqv_hashtable make_f32array
+                            make_f64array make_hashtable make_s16array make_s32array
+                            make_s64array make_s8array make_set make_string
+                            make_u16array make_u32array make_u64array make_u8array map
+                            mapfn max member memp memq memv mergesort min mod modulo
+                            monitor monitor_broadcast monitor_data monitor_name
+                            monitor_notify monitor_set_data mult mutex mutex_data
+                            mutex_lock mutex_name mutex_set_data mutex_state
+                            mutex_unlock nan newline ninth
+                            noncontinuable_exception_reason now now_seconds now_utc nth
+                            nth_tail number_is_eq number_is_gt number_is_gteq
+                            number_is_lt number_is_lteq number_to_string numerator
+                            object_to_u8array os_name pair partial partition
+                            path_directory path_expand path_extension path_normalize
+                            path_strip_directory path_strip_extension
+                            path_strip_trailing_directory_separator path_strip_volume
+                            path_volume peek_char peek_token pipe_process_pid
+                            pipe_process_status pipe_reader pipe_stream pipe_writer
+                            pointer_to_c_struct polar position print println process
+                            process_close process_receive process_send process_times
+                            quicksort quo quotient raise random_byte_array
+                            random_integer random_real random_source
+                            random_source_for_byte_arrays random_source_for_integers
+                            random_source_for_reals random_source_pseudo_randomize
+                            random_source_randomize random_source_set_state
+                            random_source_state range rationalize rbind react read
+                            read_all read_all_bytes read_all_chars read_byte read_char
+                            read_line read_n_bytes read_n_chars reader_timeout real_part
+                            real_time rectangular ref ref_set reload rem remainder
+                            remove remp remq remv rename_file rest reverse
+                            reverse_bit_field rget root_task rotate_bit_field round rvar
+                            s16array s16array_append s16array_at s16array_copy
+                            s16array_fill s16array_length s16array_set s16array_shrink
+                            s16array_to_list s32array s32array_append s32array_at
+                            s32array_copy s32array_fill s32array_length s32array_set
+                            s32array_shrink s32array_to_list s64array s64array_append
+                            s64array_at s64array_copy s64array_fill s64array_length
+                            s64array_set s64array_shrink s64array_to_list s8array
+                            s8array_append s8array_at s8array_copy s8array_fill
+                            s8array_length s8array_set s8array_shrink s8array_to_list
+                            second self set set_current_exception_handler set_difference
+                            set_head set_intersection set_length set_stream_position
+                            set_tail set_to_list set_union setenv seventh shell_command
+                            show show_exception showln sin sixth slogan sort
+                            special_token_to_string sqrt statement stream_has_position
+                            stream_position stream_tokenizer string string_append
+                            string_at string_ci_ends_with string_ci_hash
+                            string_ci_starts_with string_copy string_downcase
+                            string_ends_with string_fill string_for_each string_hash
+                            string_index_of string_is_ci_eq string_is_ci_gt
+                            string_is_ci_gteq string_is_ci_lt string_is_ci_lteq
+                            string_is_eq string_is_gt string_is_gteq string_is_lt
+                            string_is_lteq string_length string_ltrim string_map
+                            string_reader string_replace_all string_rtrim string_set
+                            string_split string_starts_with string_titlecase
+                            string_to_bit_array string_to_list string_to_number
+                            string_to_symbol string_to_time string_to_u8array
+                            string_trim string_upcase string_writer strings_at
+                            strings_join sub subarray subarray_fill subarray_move
+                            subbitarray subf32array subf32array_fill subf32array_move
+                            subf64array subf64array_fill subf64array_move sublist
+                            subs16array subs16array_fill subs16array_move subs32array
+                            subs32array_fill subs32array_move subs64array
+                            subs64array_fill subs64array_move subs8array subs8array_fill
+                            subs8array_move substring subu16array subu16array_fill
+                            subu16array_move subu32array subu32array_fill
+                            subu32array_move subu64array subu64array_fill
+                            subu64array_move subu8array subu8array_fill subu8array_move
+                            symbol_hash symbol_to_string tail take take_while tan task
+                            task_base_priority task_base_priority task_data task_group
+                            task_group_name task_group_parent task_group_resume
+                            task_group_suspend task_group_terminate task_join
+                            task_messages_next task_messages_rewind task_name
+                            task_priority_boost task_quantum task_receive task_run
+                            task_send task_set_base_priority task_set_data
+                            task_set_priority_boost task_set_quantum task_sleep
+                            task_state task_state_abnormally_terminated_reason
+                            task_state_active_timeout task_state_active_waiting_for
+                            task_state_is_abnormally_terminated task_state_is_active
+                            task_state_is_initialized task_state_is_normally_terminated
+                            task_state_is_uninitialized
+                            task_state_normally_terminated_result task_terminate
+                            task_yield tcp_client_stream tcp_server_stream tenth third
+                            time_to_string to_string transcoder transcoder_codec
+                            transcoder_eol_style transcoder_error_handling_mode truncate
+                            u16array u16array_append u16array_at u16array_copy
+                            u16array_fill u16array_length u16array_set u16array_shrink
+                            u16array_to_list u32array u32array_append u32array_at
+                            u32array_copy u32array_fill u32array_length u32array_set
+                            u32array_shrink u32array_to_list u64array u64array_append
+                            u64array_at u64array_copy u64array_fill u64array_length
+                            u64array_set u64array_shrink u64array_to_list u8array
+                            u8array_append u8array_at u8array_copy u8array_fill
+                            u8array_length u8array_set u8array_shrink
+                            u8array_to_bit_array u8array_to_list u8array_to_object
+                            u8array_to_string uninstall_package until unzip values void
+                            write write_byte write_bytes write_char write_chars
+                            write_n_bytes write_n_chars writer_timeout zero zip
+                            zip_with))
+
+(define (core-name? name) (memq name *core-names*))
