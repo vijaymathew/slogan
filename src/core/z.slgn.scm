@@ -7,6 +7,7 @@
 (define core-partial partial)
 (define core-complement complement)
 (define core-apply apply)
+(define core-not not)
 (define core-until until)
 (define core-map map)
 (define core-for_each for_each)
@@ -851,6 +852,7 @@
     ((ref) core-ref)
     ((ref_set) core-ref_set)
     ((until) core-until)
+    ((not) core-not)
     ((map) core-map)
     ((for_each) core-for_each)
     ((for_all) core-for_all)
@@ -1790,7 +1792,7 @@
                             mutex_lock mutex_name mutex_set_data mutex_state
                             mutex_unlock nan newline ninth
                             noncontinuable_exception_reason now now_seconds now_utc nth
-                            nth_tail number_is_eq number_is_gt number_is_gteq
+                            not nth_tail number_is_eq number_is_gt number_is_gteq
                             number_is_lt number_is_lteq number_to_string numerator
                             object_to_u8array os_name pair partial partition
                             path_directory path_expand path_extension path_normalize
@@ -1880,4 +1882,4 @@
                             write_n_bytes write_n_chars writer_timeout zero zip
                             zip_with))
 
-(define (core-name? name) (memq name *core-names*))
+(define (core-name? name) (scm-memq name *core-names*))

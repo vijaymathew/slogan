@@ -331,7 +331,9 @@
          (scm-error "file not found " script)))
    (lambda () (scm-load script))))
 
-(define (reload script) (load script #t))
+(define slgn-load load)
+
+(define (reload script) (slgn-load script #t))
 
 (define (link script)
   (with-exception-catcher

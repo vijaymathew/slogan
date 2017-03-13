@@ -278,8 +278,8 @@
 ;; :~
 
 (define (range start end #!optional (next inc) (cmpr <=))
-  (let iter ((start start) 
-             (result (list))) 
+  (let iter ((start start)
+             (result (scm-list)))
     (if (cmpr start end)
         (let ((elem (next start)))
           (iter elem (scm-cons start result)))
@@ -374,6 +374,6 @@
                           (*comprehension-loop* (scm-rest *list*))))))))))
 
 (define (list-comprehension lists vars filters result-expr)
-  `(let ((*comprehension-result* (list)))
+  `(let ((*comprehension-result* (scm-list)))
      ,(mk-comprehension-loop lists vars filters result-expr)
      (scm-reverse *comprehension-result*)))

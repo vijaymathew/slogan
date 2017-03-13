@@ -27,21 +27,21 @@ function make_bag(xs)
     | 'ref -> bag_ref
     | 'ref_set -> bag_set
     
-assert nth(3, map(sqrt, make_bag(#[1,2,3,4,5]))) == 2
-assert nth(2, map(sqrt, make_bag(#[1,2,3,4,5]))) == 1.7320508075688772
+assert nth(3, core.map(sqrt, make_bag(#[1,2,3,4,5]))) == 2
+assert nth(2, core.map(sqrt, make_bag(#[1,2,3,4,5]))) == 1.7320508075688772
 
 let fs = 2.23606797749979
 
-assert nth(4, map(sqrt, make_bag(#[1,2,3,4,5]))) == fs
-assert nth(4, map(sqrt, [1,2,3,4,5])) == fs
+assert nth(4, core.map(sqrt, make_bag(#[1,2,3,4,5]))) == fs
+assert nth(4, core.map(sqrt, [1,2,3,4,5])) == fs
 
 function ints(i, x = 5) if (i > x) false else i:~ints(inc(i), x)
 
-assert nth(4, map(sqrt, ints(1))) == fs
+assert nth(4, core.map(sqrt, ints(1))) == fs
 
 function iints(i, x = 5) let loop (i = i) if (i > x) false else { yield i; loop(inc(i)) }
 
-assert nth(4, map(sqrt, iints(1))) == fs
+assert nth(4, core.map(sqrt, iints(1))) == fs
 
 let ssum = 0
 let esum = 15
@@ -57,16 +57,16 @@ ssum = 0
 for_each(^(n) ssum = ssum + n, iints(1))
 assert ssum == esum
 
-ssum = map(`+`, [1,2,3], [4,5,6])
+ssum = core.map(`+`, [1,2,3], [4,5,6])
 assert nth(1, ssum) == 7
 assert nth(2, ssum) == 9
-ssum = map(`+`, make_bag(#[1,2,3]), make_bag(#[4,5,6]))
+ssum = core.map(`+`, make_bag(#[1,2,3]), make_bag(#[4,5,6]))
 assert nth(1, ssum) == 7
 assert nth(2, ssum) == 9
-ssum = map(`+`, ints(1,3), ints(4,6))
+ssum = core.map(`+`, ints(1,3), ints(4,6))
 assert nth(1, ssum) == 7
 assert nth(2, ssum) == 9
-ssum = map(`+`, iints(1,3), iints(4,6))
+ssum = core.map(`+`, iints(1,3), iints(4,6))
 assert first(ssum) == 5
 ssum = rest(ssum)
 assert first(ssum) == 7
@@ -75,7 +75,7 @@ assert nth(0, ssum) == 9
 assert rest(ssum) == false
 
 let xs = [1,2,3,4,10]
-assert count(xs) == length(xs)
+assert count(xs) == core.length(xs)
 xs = #(2,2,3)
 assert count(xs) == 2
 xs = #[10,20,30]
@@ -125,7 +125,7 @@ assert to_string(e2) == "name: sally, salary: 1340"
 assert e1 <> e2
 let e3 = make_employee(e1.name, e1.salary)
 assert e1 == e3
-assert not(e1 <> e3)
+assert core.not(e1 <> e3)
 
 // issue #109
 let xs = #[1,100,200,300]

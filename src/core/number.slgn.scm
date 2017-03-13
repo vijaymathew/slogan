@@ -48,9 +48,10 @@
 (define div /)
 
 ;; for real numbers
-(define (quo x1 x2) (truncate (/ x1 x2)))
-(define (rem x1 x2) (- x1 (* x2 (quo x1 x2))))
-(define (mod x1 x2) (- x1 (* x2 (floor (/ x1 x2)))))
+(define (quo x1 x2) (scm-truncate (/ x1 x2)))
+(define scm-quo quo)
+(define (rem x1 x2) (- x1 (* x2 (scm-quo x1 x2))))
+(define (mod x1 x2) (- x1 (* x2 (scm-floor (/ x1 x2)))))
 
 (define scm-mod mod)
 
@@ -60,7 +61,7 @@
 (define (safe_div a b)
   (if (zero? b) +inf.0 (/ a b)))
 
-(define (logb x b) (/ (log x) (log b)))
+(define (logb x b) (/ (scm-log x) (scm-log b)))
 
 (define is_fixnum fixnum?)
 (define (least_fixnum) ##min-fixnum)
@@ -80,14 +81,14 @@
       (scm-error "(Argument 1) FIXNUM expected"))
   (if (scm-not (fixnum? f2))
       (scm-error "(Argument 2) FIXNUM expected"))
-  (inexact->exact (floor (/ f1 f2))))
+  (inexact->exact (scm-floor (/ f1 f2))))
 
 (define fxmod fxmodulo)
 (define fxadd_wrap fxwrap+)
 (define fxsub_wrap fxwrap-)
 (define fxmult_wrap fxwrap*)
 
-(define *fixnum-width* (- (inexact->exact (+ 2 (floor (logb ##max-fixnum 2)))) 1))
+(define *fixnum-width* (- (inexact->exact (+ 2 (scm-floor (logb ##max-fixnum 2)))) 1))
 (define (fixnum_width) *fixnum-width*)
 
 (define fx_is_eq fx=)
@@ -142,7 +143,9 @@
 (define fl_is_lteq fl<=)
 (define fl_is_gteq fl>=)
 
-(define (fllogb x b) (fl/ (fllog x) (fllog b)))
+(define scm-fllog fllog)
+
+(define (fllogb x b) (fl/ (scm-fllog x) (scm-fllog b)))
 
 (define bshift arithmetic-shift)
 (define bmerge bitwise-merge)
@@ -196,7 +199,7 @@
   (assert-bw-range start end)
   (assert-nonneg-int count "Count field must be a nonnegative integer.")
   (let* ((width (- end start))
-         (count (modulo count width))
+         (count (scm-modulo count width))
          (field0 (bit_field n start end))
          (field1 (arithmetic-shift field0 count))
          (field2 (arithmetic-shift field0 (- count width)))
@@ -249,7 +252,7 @@
       (and (odd? n)
 	   (let loop ((k 3))
 	     (or (> (* k k) n)
-		 (and (positive? (remainder n k))
+		 (and (positive? (scm-remainder n k))
 		      (loop (+ k 2))))))))
 
 (define is_prime prime?)

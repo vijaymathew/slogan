@@ -136,7 +136,7 @@
                   (cv (reactive-var-cv dfv)))
               (mutex-lock! mtx)
               (if (unbound? (condition-variable-specific cv))
-                  (if (not (mutex-unlock! mtx cv timeout))
+                  (if (scm-not (mutex-unlock! mtx cv timeout))
                       (return default))
                   (mutex-unlock! mtx))
               (condition-variable-specific cv)))

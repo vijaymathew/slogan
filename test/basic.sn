@@ -19,8 +19,8 @@ assert recur(-10) == -10
 function concat(a, b);
 declare generic concat
 
-function listc(a) ^(msg) | 'concat -> ^(b) append(a, b)
-function stringc(a) ^(msg) | 'concat -> ^(b) string_append(a, b)
+function listc(a) ^(msg) | 'concat -> ^(b) core.append(a, b)
+function stringc(a) ^(msg) | 'concat -> ^(b) core.string_append(a, b)
 assert concat(listc([1, 2, 3]), [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
 assert concat(stringc("hello "), "world") == "hello world"
 
@@ -134,7 +134,7 @@ assert a == 1.5
 // list comprehensions
 let s =[expt(x,2) | x <- range(0, 10)]
 assert s == [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
-assert [x | x <- s where remainder(x, 2) == 0] == [0, 4, 16, 36, 64, 100]
+assert [x | x <- s where core.remainder(x, 2) == 0] == [0, 4, 16, 36, 64, 100]
 assert [x*y*z | [x,y,z] <- [[1,2,3], [4,5,6]]] == [6, 120]
 let buy = ['oranges:4, 'newspaper:1, 'apples:10, 'pears:6, 'milk:3];
 assert [name:2*number | name:number <- buy] == ['oranges:8, 'newspaper:2, 'apples:20, 'pears:12, 'milk:6]
@@ -183,7 +183,7 @@ function is_palindrome(s)
 { let chars = string_to_list("abcdefghijklmnopqrstuvwxyz")
 
   function to_chars(s)
-   list_to_string(filter(^(c) member(c, chars),
+   list_to_string(filter(^(c) core.member(c, chars),
                   string_to_list(string_downcase(s))))
 
   function is_pal(s)
@@ -193,7 +193,7 @@ function is_palindrome(s)
 
    is_pal(to_chars(s)) }
 
-assert not(is_palindrome("abc"))
+assert core.not(is_palindrome("abc"))
 assert is_palindrome("a")
 assert is_palindrome("aba")
 assert is_palindrome("malayalam")
@@ -203,7 +203,7 @@ function is_palindrome2(s) where is_string(s)
 { let chars = string_to_list("abcdefghijklmnopqrstuvwxyz")
 
   function to_chars(s)
-   list_to_string(filter(^(c) member(c, chars),
+   list_to_string(filter(^(c) core.member(c, chars),
                   string_to_list(string_downcase(s))))
 
   function is_pal(s)
@@ -213,7 +213,7 @@ function is_palindrome2(s) where is_string(s)
 
    is_pal(to_chars(s)) }
 
-assert not(is_palindrome2("abc"))
+assert core.not(is_palindrome2("abc"))
 assert is_palindrome2("a")
 assert is_palindrome2("aba")
 assert is_palindrome2("malayalam")
@@ -224,7 +224,7 @@ function is_palindrome3(s) where is_string(s) -> is_boolean(%)
 { let chars = string_to_list("abcdefghijklmnopqrstuvwxyz")
 
   function to_chars(s)
-   list_to_string(filter(^(c) member(c, chars),
+   list_to_string(filter(^(c) core.member(c, chars),
                   string_to_list(string_downcase(s))))
 
   function is_pal(s)
@@ -235,7 +235,7 @@ function is_palindrome3(s) where is_string(s) -> is_boolean(%)
    if (s == "") 1
    else is_pal(to_chars(s)) }
 
-assert not(is_palindrome3("abc"))
+assert core.not(is_palindrome3("abc"))
 assert is_palindrome3("a")
 assert is_palindrome3("aba")
 assert is_palindrome3("malayalam")
@@ -244,8 +244,8 @@ assert try is_palindrome3(121) catch (e) error_message(e) == 'precondition_faile
 
 let t1 = [1, "two", 3]
 let t2 = [t1, 3.25]
-assert append(t1, t2)[3] == [1, "two", 3]
-assert append(t1, t2)[2:5] == [3, [1, "two", 3], 3.25]
+assert core.append(t1, t2)[3] == [1, "two", 3]
+assert core.append(t1, t2)[2:5] == [3, [1, "two", 3], 3.25]
 
 assert count("hello, world") == string_length("hello, world")
 assert count([1,2,3,4,15]) == 5
@@ -264,11 +264,11 @@ assert count(#f64[1.,2.,3.,4.,1.5]) == 5
 
 t1 = for (i = 0; i < 10; inc(i)) i
 assert t1 == 9
-assert not(for (i = 0; i < 10; inc(i)) if (i == 5) break else i)
-assert not(for (i = 0; i < 10; inc(i)) if (i == 5) break() else i)
+assert core.not(for (i = 0; i < 10; inc(i)) if (i == 5) break else i)
+assert core.not(for (i = 0; i < 10; inc(i)) if (i == 5) break() else i)
 assert for (i = 0; i < 10; inc(i)) if (i == 5) break(100) else i == 100
 t1 = 0
-for (i = 0; i < 10; inc(i)) if (mod(i, 2) == 0) continue else t1 = i + t1
+for (i = 0; i < 10; inc(i)) if (core.mod(i, 2) == 0) continue else t1 = i + t1
 assert t1 == 25
 
 // issue - 103
@@ -290,6 +290,6 @@ assert j == 9
 
 let xs = [1,2,3,4,5,6]
 assert sort(xs) == xs
-assert sort(xs, `>`) == reverse(xs)
+assert sort(xs, `>`) == core.reverse(xs)
 assert sort(xs, `<`, 'merge) == xs
-assert sort(xs, `>`, 'merge) == reverse(xs)
+assert sort(xs, `>`, 'merge) == core.reverse(xs)

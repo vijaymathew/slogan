@@ -24,7 +24,7 @@ assert balance('b, 10, 20, #['r, 30, 40, #['r, 50, 60, 70]]) == #['a, 10, 30, 50
 // not polluting the `+` in the global namespace.
 { function `+`(a, b) add(a, b)
   function `+`(a:string, b:string) string_append(a, b)
-  function `+`(a:list, b:list) append(a, b)
+  function `+`(a:list, b:list) core.append(a, b)
 
   assert  1 + 2 == 3
   assert "hello " + "world" == "hello world"
@@ -133,11 +133,11 @@ module leftist_heap(is_empty, insert, find_min, delete_min)
   function insert(x, h) merge(1:x:[]:[], h)
 
   function find_min(h)
-  | [] -> raise('empty)
+  | [] -> core.raise('empty)
   | _:x:a:b -> x
 
   function delete_min(h)
-  | [] -> raise('empty)
+  | [] -> core.raise('empty)
   | _:_:a:b -> merge(a, b) }
 
 module binomial_heap(is_empty, insert, find_min, delete_min)
@@ -167,7 +167,7 @@ module binomial_heap(is_empty, insert, find_min, delete_min)
     else ins_tree(link(x, y), merge(xs, ys))
 
   function remove_min_tree(ts)
-  | [] -> raise('empty)
+  | [] -> core.raise('empty)
   | [t] -> t:[]
   | t:ts ->
     match(remove_min_tree(ts))
@@ -179,7 +179,7 @@ module binomial_heap(is_empty, insert, find_min, delete_min)
 
   function delete_min(ts)
     match(remove_min_tree(ts))
-      (_:x:ts1):ts2 -> merge(reverse(ts1), ts2) }
+      (_:x:ts1):ts2 -> merge(core.reverse(ts1), ts2) }
   
 
 module red_black_set(is_member, insert)

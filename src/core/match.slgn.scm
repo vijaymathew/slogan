@@ -14,7 +14,7 @@
   (if (symbol? (scm-car lst))
       (let ((name (symbol->string (scm-car lst))))
         (if (char=? #\+ (string-ref name 0))
-            (let loop ((name (substring name 1 (string-length name)))
+            (let loop ((name (scm-substring name 1 (string-length name)))
                        (lst (scm-cdr lst))
                        (members '()))
               (cond ((null? lst)

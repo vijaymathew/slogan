@@ -28,7 +28,7 @@ assert ref(ba, 10, 100) == 100
 ref_set(ba, 3, 100)
 assert ref(ba, 3)
 
-let s = apply(string, string_to_list("hello world"))
+let s = core.apply(core.string, string_to_list("hello world"))
 assert ref(s, 1) == \e
 assert s[2] == \l
 assert ref(s, 20) == false
@@ -70,12 +70,12 @@ assert f(10, 1000) == 10000
 
 // issue #42 - parameter order of range changed
 let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, ^(x) x+i)]
-let primes = [x | x <- range(2, 50) where not(memq(x, noprimes))]
+let primes = [x | x <- range(2, 50) where core.not(core.memq(x, noprimes))]
 assert primes == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 
 // Slices
 let s = "hello world"
-assert s[1:5] == substring(s, 1, 5)
+assert s[1:5] == core.substring(s, 1, 5)
 assert s[:] == s
 assert s[:5] == s[0:5]
 assert s[0:] == s[:]

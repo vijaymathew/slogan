@@ -323,7 +323,7 @@
                     transcoder: transcoder))
 
 (define (tcp_client_stream addr #!key port_number keep_alive (coalesce #t) transcoder)
-  (let ((settings (list)))
+  (let ((settings (scm-list)))
     (if (string? addr)
         (set! settings (scm-append settings (scm-list server-address: addr)))
         (set! port_number addr))
@@ -339,7 +339,7 @@
     (open-tcp-client settings)))
 
 (define (open-tcp-server-helper fn addr port_number backlog reuse_address transcoder #!optional cbfn)
-  (let ((settings (list)))
+  (let ((settings (scm-list)))
     (if (string? addr)
         (set! settings (scm-append settings (scm-list server-address: addr)))
         (set! port_number addr))
@@ -417,7 +417,7 @@
 (define writer_timeout output-port-timeout-set!)
 
 (define (print #!key (stream (current-output-port)) #!rest objs)
-  (apply scm-print port: stream objs))
+  (scm-apply scm-print port: stream objs))
 
 (define (println #!key (stream (current-output-port)) #!rest objs)
-  (apply scm-println port: stream objs))
+  (scm-apply scm-println port: stream objs))

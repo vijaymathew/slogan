@@ -1,3 +1,4 @@
+link("../test/a")
 link("../test/basic")
 link("../test/parconc")
 link("../test/fp")

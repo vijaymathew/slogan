@@ -23,12 +23,12 @@ assert first(iter) == 15
 function cycle(seq)
   let (saved = 
     let loop (seq = seq, saved = [])
-     if (not(seq)) reverse(saved)
+     if (core.not(seq)) core.reverse(saved)
      else { yield first(seq)
             loop(rest(seq), first(seq):saved) })
    let loop()
     let loop2(s = saved)
-     if (not(s)) loop()
+     if (core.not(s)) loop()
      else { yield first(s)
             loop2(rest(s)) }
 
@@ -42,7 +42,7 @@ iter = rest(iter)
 assert first(iter) == 2
 
 function repeat(object, times=false)
-  if (not(times))
+  if (core.not(times))
    let loop()
    { yield object
      loop() }
@@ -61,15 +61,15 @@ assert first(iter) == 1
 iter = rest(iter)
 assert first(iter) == 1
 iter = rest(iter)
-assert not(first(iter))
-assert not(rest(iter))
+assert core.not(first(iter))
+assert core.not(rest(iter))
 
 // Most lazy-pair functions also work on iterators.
 function ln(n) if (n > 5) [] else n:~ln(n + 1)
 function in(n) let loop(n = n) when (n <= 5) { yield n loop(n + 1) }
 
-assert nth(1, map(`+`, filter(is_even, ln(1)))) == nth(1, map(`+`, filter(is_even, in(1)))) // both return 4
-assert nth(4, map(`+`, accumulate(`+`, 1, ln(1)))) == nth(4, map(`+`, accumulate(`+`, 1, in(1)))) // both return 16
+assert nth(1, core.map(`+`, filter(is_even, ln(1)))) == nth(1, core.map(`+`, filter(is_even, in(1)))) // both return 4
+assert nth(4, core.map(`+`, accumulate(`+`, 1, ln(1)))) == nth(4, core.map(`+`, accumulate(`+`, 1, in(1)))) // both return 16
 
 function ints(a, b)
  let loop (a = a, b = b)
@@ -79,4 +79,4 @@ function ints(a, b)
 // harmonic series
 let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)))
 assert first(a) == 1.5
-assert not(rest(a))
+assert core.not(rest(a))

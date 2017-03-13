@@ -15,8 +15,8 @@
 (define %bitvect-all-off% #b00000000000000000000000000000000)
 
 (define (%bitvector-vect-size bitvect-size)
-  (+ (if (> (remainder bitvect-size %bitvect-bpi%) 0) 1 0) 
-     (quotient bitvect-size %bitvect-bpi%)))
+  (+ (if (> (scm-remainder bitvect-size %bitvect-bpi%) 0) 1 0)
+     (scm-quotient bitvect-size %bitvect-bpi%)))
 
 (define (%bitvector-vector-length self) (u32vector-length (%bitvector-vector self)))
 

@@ -65,3 +65,6 @@
 
 (define scm-error error)
 (define scm-raise raise)
+(define scm-modulo modulo)
+(define scm-log log)
+(define scm-truncate truncate)

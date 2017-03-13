@@ -60,4 +60,4 @@ assert nth(2, x) == 5
 // harmonic series
 let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, enumerate(1,2)))
 assert first(a) == 1.5
-assert not(rest(a))
+assert core.not(rest(a))

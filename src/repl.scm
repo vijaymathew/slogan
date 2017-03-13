@@ -8,7 +8,7 @@
     (cond ((null? args) #f)
           ((string=? arg (scm-car args))
            (if (null? (scm-cdr args))
-               (error "Argument expects a parameter." arg)
+               (scm-error "Argument expects a parameter." arg)
                (scm-cadr args)))
           (else (loop (scm-cdr args))))))
 
@@ -22,7 +22,7 @@
     (if (null? args) #t
         (begin (if (char=? (string-ref (scm-car args) 0) #\-)
                    (if (scm-not (valid-command-line-option? (scm-car args)))
-                       (error "Invalid command line option." (scm-car args))))
+                       (scm-error "Invalid command line option." (scm-car args))))
                (loop (scm-cdr args))))))
 
 (define (show-vm-usage)
@@ -101,7 +101,7 @@ where OPTION is one of:
 
 (define (install-pkg args)
   (if (scm-not (>= (length args) 3))
-      (error "-i \"package-name,type,location\"")
+      (scm-error "-i \"package-name,type,location\"")
       (install_package (nth 0 args) (string->symbol (nth 1 args))
                        (nth 2 args) (if (> (length args) 3)
                                         (= (nth 2 args) "true")

@@ -8,7 +8,7 @@
   (let ((expr (expression/statement tokenizer)))
     (if (> (tokenizer 'yield-count) 0)
         (begin (reset-yield-count! tokenizer 0)
-               (error "yield can be called only from a function."))
+               (scm-error "yield can be called only from a function."))
         expr)))
 
 (define (expression/statement tokenizer #!optional (top #t))
@@ -157,18 +157,18 @@
   (check-if-reserved-name name tokenizer)
   (let ((params '(*self* #!rest *args*)))
     `(define ,name
-       (let ((*old-name* ,name))              
+       (let ((*old-name* ,name))
          (lambda ,params
            (if (procedure? *self*)
                (with-exception-catcher
                 (lambda (e)
                   (if (or (wrong-number-of-arguments-exception? e)
                           (nonprocedure-operator-exception? e))
-                      (apply *old-name* *self* *args*)
+                      (scm-apply *old-name* *self* *args*)
                       (scm-raise e)))
                 (lambda ()
-                  (apply (*self* ',name) *args*)))
-               (apply *old-name* *self* *args*)))))))                           
+                  (scm-apply (*self* ',name) *args*)))
+               (scm-apply *old-name* *self* *args*)))))))
                 
 (define (func-contract-expr tokenizer)
   (let ((token (tokenizer 'peek)))
@@ -451,7 +451,7 @@
 
 (define (normalize-rvar sym)
   (let ((s (symbol->string sym)))
-    (string->symbol (substring s 1 (string-length s)))))
+    (string->symbol (scm-substring s 1 (string-length s)))))
 
 (define (rvar? sym)
   (if (symbol? sym) 
@@ -773,7 +773,7 @@
       s))
 
 (define (assert-defs-in-block tokenizer expr)
-  (if (not(pair? expr)) expr
+  (if (scm-not (pair? expr)) expr
       (let ((type (scm-car expr)))
         (let loop ((body (case type
                            ((begin) (scm-cdr expr))
@@ -1360,7 +1360,7 @@
                              (let ((params (extract-param-names params)))
                                (if (= (scm-length params) 1)
                                    (scm-car params)
-                                   (append '(scm-list) (extract-param-names params))))
+                                   (scm-append '(scm-list) (extract-param-names params))))
                              #f)))
         (let ((old-yield-count (tokenizer 'yield-count)))
           (let ((body-expr

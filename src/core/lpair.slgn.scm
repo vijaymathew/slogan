@@ -118,8 +118,8 @@
       (let map-more ((ls ls) (more more))
         (if (null? ls)
             '()
-            (let ((a (scm-apply f (scm-car ls) (old-map car more)))
-                  (b (map-more (scm-cdr ls) (old-map cdr more))))
+            (let ((a (scm-apply f (scm-car ls) (old-map scm-car more)))
+                  (b (map-more (scm-cdr ls) (old-map scm-cdr more))))
               (scm-cons a b))))))
 
 (define (map f ls . more)
@@ -136,15 +136,15 @@
         (if (null? more)
             (begin (f (scm-first xs))
                    (loop (scm-rest xs) '()))
-            (begin (apply f (scm-first xs) (old-map first more))
+            (begin (scm-apply f (scm-first xs) (old-map first more))
                    (loop (scm-rest xs) (old-map rest more)))))))
 
 (define (generic-for-each f ls . more)
   (if (iterator? ls)
       (iter-for-each f ls more)
       (let ((lpair? (or (lpair? ls) (procedure? ls))))
-        (let ((scm-car (if lpair? first car))
-              (scm-cdr (if lpair? rest cdr)))
+        (let ((scm-car (if lpair? first scm-car))
+              (scm-cdr (if lpair? rest scm-cdr)))
           (do ((ls ls (scm-cdr ls)) (more more (scm-map scm-cdr more)))
               ((or (scm-not ls) (null? ls)))
             (scm-apply f (scm-car ls) (scm-map scm-car more)))))))
@@ -155,7 +155,7 @@
 ;;
 ;; function `iter-filter`(f, xs)
 ;;  let loop(xs = xs)
-;;   if (not(xs))
+;;   if (not (xs))
 ;;    xs
 ;;  else
 ;;    if (f(first(xs)))
@@ -217,7 +217,7 @@
 ;;
 ;; function `iter-accumulate`(f, initial, xs)
 ;;   let loop (initial = initial, xs = xs)
-;;    if (not(xs))
+;;    if (not (xs))
 ;;     xs
 ;;    else let (r = f(initial, first(xs)))
 ;;         { yield r;

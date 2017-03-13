@@ -870,7 +870,7 @@ c-declare-end
 (define (mk-c-fn-args ptypes pnames)
   (let loop ((ptypes ptypes)
              (pnames pnames)
-             (expr '(list)))
+             (expr '(scm-list)))
     (if (null? ptypes)
         expr
         (loop (scm-cdr ptypes) (scm-cdr pnames)
