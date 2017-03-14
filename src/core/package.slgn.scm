@@ -95,14 +95,14 @@
        (if (no-such-file-or-directory-exception? e)
            (scm-raise e)
            (show_exception e)))
-     (lambda () (load pkg-init-path)))
+     (lambda () (slgn-load pkg-init-path)))
     pkg-name))
 
 (define (init_package pkg-name)
   (let ((load-path (string-append (slogan_root) "/packages/" pkg-name)))
     (begin (if (scm-not (file-exists? load-path))
                (set! load-path "."))
-           (link (string-append load-path "/src/core")))))
+           (slgn-link (string-append load-path "/src/core")))))
 
 (define (force-rm-dir path)
   (let ((r (shell-command (string-append "rm -rf " path))))

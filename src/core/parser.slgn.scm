@@ -1170,30 +1170,42 @@
   (let ((s (symbol->string (scm-gensym))))
     (string->symbol (string-append s "-letpb"))))
 
+(define (make-let-pattern-bindings-for-table tokenizer expr-name pexpr bindings)
+  (if (null? pexpr)
+      bindings
+      (let* ((f (scm-car pexpr))
+             (k (scm-cadr f))
+             (n (scm-caddr f)))
+        (if (scm-not (valid-identifier? n))
+            (parser-error tokenizer "Invalid identifier in table pattern."))
+        (if (scm-not (scm-eq? '_ n))
+            (make-let-pattern-bindings-for-table
+             tokenizer expr-name (scm-cdr pexpr)
+             (scm-cons (scm-cons n `((scm-hashtable_at ,expr-name ,k))) bindings))
+            (make-let-pattern-bindings-for-table
+             tokenizer expr-name (scm-cdr pexpr) bindings)))))
+
 (define (make-let-pattern-bindings tokenizer expr expr-name pexpr bindings i)
   (if (null? pexpr)
       (scm-cons (scm-cons expr-name (scm-list expr)) bindings)
       (let ((pname (scm-car pexpr)))
         (cond
          ((pair? pname)
-          (case (scm-car pname)
-            ((scm-list)
-             (let ((sub-bindings
-                    (make-let-pattern-bindings
-                     tokenizer `(scm-nth ,i ,expr-name)
-                     (let-pattern-gensym) (scm-cdr pname) '() 0)))
-               (make-let-pattern-bindings
-                tokenizer expr expr-name (scm-cdr pexpr)
-                (scm-append bindings sub-bindings) (+ i 1))))
-            ((scm-cons)
-             (let ((sub-bindings
-                    (make-let-pattern-bindings
-                     tokenizer `(scm-nth ,i ,expr-name)
-                     (let-pattern-gensym) pname '() 0)))
-               (make-let-pattern-bindings
-                tokenizer expr expr-name
-                (scm-cdr pexpr) (scm-append bindings sub-bindings) (+ i 1))))
-            (else (parser-error tokenizer "Invalid pattern tag."))))
+          (let ((f (scm-car pname)))
+            (case f
+              ((scm-list scm-cons make-equal-hashtable)
+               (let ((sub-bindings
+                      (make-let-pattern-bindings
+                       tokenizer `(scm-nth ,i ,expr-name)
+                       (let-pattern-gensym)
+                       (if (scm-eq? f 'scm-list)
+                           (scm-cdr pname)
+                           pname)
+                       '() 0)))
+                 (make-let-pattern-bindings
+                  tokenizer expr expr-name (scm-cdr pexpr)
+                  (scm-append bindings sub-bindings) (+ i 1))))
+              (else (parser-error tokenizer "Invalid pattern tag.")))))
          ((scm-eq? pname 'scm-list)
           (make-let-pattern-bindings
            tokenizer expr expr-name
@@ -1213,13 +1225,18 @@
             (make-let-pattern-bindings
              tokenizer expr expr-name
              '() (scm-append bindings new-bindings) i)))
+         ((scm-eq? pname 'make-equal-hashtable)
+          (make-let-pattern-bindings
+           tokenizer expr expr-name '()
+           (scm-append bindings (make-let-pattern-bindings-for-table
+                                 tokenizer expr-name (scm-cdadr pexpr) '())) i))
          ((scm-not (valid-identifier? pname))
           (parser-error tokenizer "Invalid binding name in pattern."))
          (else
           (if (scm-eq? pname '_)
               (make-let-pattern-bindings
                tokenizer expr expr-name
-               (scm-cdr pexpr) binding (+ i 1))
+               (scm-cdr pexpr) bindings (+ i 1))
               (make-let-pattern-bindings
                tokenizer expr expr-name
                (scm-cdr pexpr)
@@ -1252,7 +1269,8 @@
 	     (bindings '()))
     (cond ((scm-eq? token '*close-paren*)
 	   (scm-cons has-patterns? bindings))
-          ((scm-eq? token '*open-bracket*)
+          ((or (scm-eq? token '*open-bracket*)
+               (scm-eq? token '*hash*))
            (tokenizer 'put token)
            (let ((pbindings (let-pattern-bindings tokenizer)))
              (loop (tokenizer 'next) #t (scm-append bindings pbindings))))

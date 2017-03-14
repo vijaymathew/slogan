@@ -1,0 +1,33 @@
+uninstall_package("sqlite")
+install_package("sqlite", 'local, "../example/packages/sqlite")
+load_package("sqlite")
+when (file_exists("db")) delete_file("db")
+
+let db = sqlite_open("db")
+
+let sql = "create table a(i)"
+let stmt = sqlite_prepare(db, sql)
+sqlite_step(db, stmt)
+sqlite_finalize(db, stmt)
+
+sql = "insert into a values(?)"
+stmt = sqlite_prepare(db, sql)
+sqlite_bind_int(db, stmt, 1, 100)
+sqlite_step(db, stmt)
+sqlite_reset(db, stmt)
+sqlite_bind_int(db, stmt, 1, 200)
+sqlite_step(db, stmt)
+sqlite_finalize(db, stmt)
+
+sql = "select * from a"
+stmt = sqlite_prepare(db, sql)
+let total_x = 0
+let loop (r = sqlite_step(db, stmt))
+  if (r == 1) { total_x = total_x + sqlite_column_int(db, stmt, 0)
+                loop(sqlite_step(db, stmt)) }
+
+sqlite_finalize(db, stmt)
+sqlite_close(db)
+uninstall_package("sqlite")
+
+assert total_x == 300

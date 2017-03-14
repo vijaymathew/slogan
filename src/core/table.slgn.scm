@@ -27,6 +27,8 @@
 
 (define (hashtable_at ht key #!optional default) (table-ref (hashtable-table ht) key default))
 
+(define scm-hashtable_at hashtable_at)
+
 (define (hashtable_contains ht key)
   (let ((table (hashtable-table ht))
         (predic (hashtable-eq-predic ht)))

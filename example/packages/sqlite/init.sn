@@ -1,5 +1,5 @@
 let libname = string_append(slogan_root(), "/packages/sqlite/slogan_sqlite3.so");
-if (not (file_exists(libname))) libname = "./slogan_sqlite3.so"; // in dev-mode
+if (core.not (file_exists(libname))) libname = "./slogan_sqlite3.so"; // in dev-mode
 
 declare ffi libname [
     pointer c_sqlite_db_open [charstring],

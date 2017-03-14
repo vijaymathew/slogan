@@ -346,6 +346,8 @@
            (else (scm-raise e))))
    (lambda () (scm-load script))))
 
+(define slgn-link link)
+
 (define (check-for-? name tokenizer)
   (let ((name (if (pair? name) (scm-cadr name) name)))
     (if (>= (string-indexof (symbol->string name) #\?) 0)

@@ -12,5 +12,7 @@ link("../test/v011_4")
 link("../test/v011_5")
 link("../test/v011_8")
 link("../test/v011_9")
+link("../test/v011_96")
+link("../test/package")
 
 showln("======= All tests passed. =======")
