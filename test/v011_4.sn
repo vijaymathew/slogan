@@ -33,25 +33,25 @@ function find_all(s, subs)
           loop (i + slen) }
 
 let iter = find_all("to be or not to be", "be")
-assert first(iter) == 3
-iter = rest(iter);
-assert first(iter) == 16
-iter = rest(iter);
-assert core.not(first(iter))
+assert core.first(iter) == 3
+iter = core.rest(iter);
+assert core.first(iter) == 16
+iter = core.rest(iter);
+assert core.not(core.first(iter))
 iter = find_all("to be or not to be", "to")
-assert first(iter) == 0
-iter = rest(iter)
-assert first(iter) == 13
-iter = rest(iter)
-assert core.not(first(iter))
+assert core.first(iter) == 0
+iter = core.rest(iter)
+assert core.first(iter) == 13
+iter = core.rest(iter)
+assert core.not(core.first(iter))
 iter = find_all("to be or not to be", "to be")
-assert first(iter) == 0
-iter = rest(iter);
-assert first(iter) == 13
-iter = rest(iter);
-assert core.not(first(iter))
+assert core.first(iter) == 0
+iter = core.rest(iter);
+assert core.first(iter) == 13
+iter = core.rest(iter);
+assert core.not(core.first(iter))
 iter = find_all("to be or not to be", "tobe")
-assert core.not(first(iter))
+assert core.not(core.first(iter))
 
 // for_each fixed for iterators
 function to(i, j) let loop (i = i) when(i < j) { yield i; loop(inc(i)) }
@@ -74,4 +74,4 @@ assert x == 25
 
 i = filter(is_odd, to(1, 10))
 i = core.map(sqrt, i)
-assert nth(2, i) == sqrt(5)
+assert core.nth(2, i) == sqrt(5)

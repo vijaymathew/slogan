@@ -175,7 +175,7 @@ module binomial_heap(is_empty, insert, find_min, delete_min)
         if (root(t) < root(x)) t:ts
         else x:(t:xs)
 
-  function find_min(ts) root(first(remove_min_tree(ts)))
+  function find_min(ts) root(core.first(remove_min_tree(ts)))
 
   function delete_min(ts)
     match(remove_min_tree(ts))

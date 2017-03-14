@@ -68,3 +68,5 @@
 (define scm-modulo modulo)
 (define scm-log log)
 (define scm-truncate truncate)
+
+(define scm-gensym gensym)

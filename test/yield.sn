@@ -4,11 +4,11 @@ function f()
   yield \c }
 
 let iter = f()
-assert first(iter) == \a
-iter = rest(iter)
-assert first(iter) == \b
-iter = rest(iter)
-assert first(iter) == \c
+assert core.first(iter) == \a
+iter = core.rest(iter)
+assert core.first(iter) == \b
+iter = core.rest(iter)
+assert core.first(iter) == \c
 
 function icount(start = 0, step = 1)
   let loop (n = start)
@@ -16,30 +16,30 @@ function icount(start = 0, step = 1)
     loop(n + step) }
 
 iter = icount(10, 5)
-assert first(iter) == 10
-iter = rest(iter)
-assert first(iter) == 15
+assert core.first(iter) == 10
+iter = core.rest(iter)
+assert core.first(iter) == 15
 
 function cycle(seq)
   let (saved = 
     let loop (seq = seq, saved = [])
      if (core.not(seq)) core.reverse(saved)
-     else { yield first(seq)
-            loop(rest(seq), first(seq):saved) })
+     else { yield core.first(seq)
+            loop(core.rest(seq), core.first(seq):saved) })
    let loop()
     let loop2(s = saved)
      if (core.not(s)) loop()
-     else { yield first(s)
-            loop2(rest(s)) }
+     else { yield core.first(s)
+            loop2(core.rest(s)) }
 
 iter = cycle([1, 2])
-assert first(iter) == 1
-iter = rest(iter)
-assert first(iter) == 2
-iter = rest(iter)
-assert first(iter) == 1
-iter = rest(iter)
-assert first(iter) == 2
+assert core.first(iter) == 1
+iter = core.rest(iter)
+assert core.first(iter) == 2
+iter = core.rest(iter)
+assert core.first(iter) == 1
+iter = core.rest(iter)
+assert core.first(iter) == 2
 
 function repeat(object, times=false)
   if (core.not(times))
@@ -53,23 +53,23 @@ function repeat(object, times=false)
 
 let loop (i = 0, iter = repeat(10))
  when (i < 5)
- { assert first(iter) == 10
-   loop(i + 1, rest(iter)) }
+ { assert core.first(iter) == 10
+   loop(i + 1, core.rest(iter)) }
 
 iter = repeat(1, 2)
-assert first(iter) == 1
-iter = rest(iter)
-assert first(iter) == 1
-iter = rest(iter)
-assert core.not(first(iter))
-assert core.not(rest(iter))
+assert core.first(iter) == 1
+iter = core.rest(iter)
+assert core.first(iter) == 1
+iter = core.rest(iter)
+assert core.not(core.first(iter))
+assert core.not(core.rest(iter))
 
 // Most lazy-pair functions also work on iterators.
 function ln(n) if (n > 5) [] else n:~ln(n + 1)
 function in(n) let loop(n = n) when (n <= 5) { yield n loop(n + 1) }
 
-assert nth(1, core.map(`+`, filter(is_even, ln(1)))) == nth(1, core.map(`+`, filter(is_even, in(1)))) // both return 4
-assert nth(4, core.map(`+`, accumulate(`+`, 1, ln(1)))) == nth(4, core.map(`+`, accumulate(`+`, 1, in(1)))) // both return 16
+assert core.nth(1, core.map(`+`, filter(is_even, ln(1)))) == core.nth(1, core.map(`+`, filter(is_even, in(1)))) // both return 4
+assert core.nth(4, core.map(`+`, accumulate(`+`, 1, ln(1)))) == core.nth(4, core.map(`+`, accumulate(`+`, 1, in(1)))) // both return 16
 
 function ints(a, b)
  let loop (a = a, b = b)
@@ -77,6 +77,6 @@ function ints(a, b)
   else { yield a loop(a+1, b - 1) }
 
 // harmonic series
-let a = rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)))
-assert first(a) == 1.5
-assert core.not(rest(a))
+let a = core.rest(accumulate(^(i, sum) sum + 1.0/i, 0, ints(1,2)))
+assert core.first(a) == 1.5
+assert core.not(core.rest(a))
