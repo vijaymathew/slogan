@@ -82,6 +82,8 @@
 		   #f))
 	     #t))))))
 
+(define slgn-compile compile)
+
 (define (show-waiting-prompt prompt)
   (if prompt
       (let loop ((len (- (string-length prompt) 2))

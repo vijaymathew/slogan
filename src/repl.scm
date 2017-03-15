@@ -94,10 +94,10 @@ where OPTION is one of:
 (define (compile-script scriptname args exe)
   (let ((ld-options (get-arg-val "-ld-options" args))
         (cc-options (get-arg-val "-cc-options" args)))
-    (if exe (compile scriptname exe: #t ld_options: ld-options
-                     cc_options: cc-options)
-        (compile scriptname assemble: #t ld_options: ld-options
-                 cc_options: cc-options))))
+    (if exe (slgn-compile scriptname exe: #t ld_options: ld-options
+                          cc_options: cc-options)
+        (slgn-compile scriptname assemble: #t ld_options: ld-options
+                      cc_options: cc-options))))
 
 (define (install-pkg args)
   (if (scm-not (>= (length args) 3))

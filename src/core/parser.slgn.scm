@@ -427,29 +427,44 @@
     (scm-display name) (scm-display ")")
     (scm-newline))))
 
+(define (make-pattern-defines bindings)
+  (scm-append '(begin) (scm-map (lambda (def) (scm-append '(define) def)) bindings)))
+
 (define (define-stmt tokenizer)
   (let ((token (tokenizer 'next)))
     (cond
-      ((symbol? token)
-       (check-if-reserved-name token tokenizer)
-       (core-name-warn! token)
-       (cond
-        ((scm-eq? '*assignment* (tokenizer 'peek))
-         (var-def-set token tokenizer #t))
-        ((scm-eq? '*comma* (tokenizer 'peek))
-         (tokenizer 'next)
-         (let ((vars (scm-append (scm-list token) (def-vars-list tokenizer))))
-           (if (scm-eq? '*assignment* (tokenizer 'next))
-               (let ((exprs (def-exprs-list tokenizer)))
-                 (vars-defs-set vars exprs #t))
-               (parser-error tokenizer "Expected assignment."))))
-        ((scm-eq? '*open-paren* (tokenizer 'peek))
-         (tokenizer 'put token)
-         (named-let-expr 'let tokenizer))
-        (else
-         (parser-error tokenizer "Invalid let expression."))))
-      (else
-       (parser-error tokenizer "Not a valid variable name.")))))
+     ((symbol? token)
+      (cond
+       ((scm-not (valid-identifier? token))
+        (tokenizer 'put token)
+        (let ((bindings (let-pattern-bindings tokenizer)))
+          (make-pattern-defines bindings)))
+       (else
+        (check-if-reserved-name token tokenizer)
+        (core-name-warn! token)
+        (cond
+         ((scm-eq? (tokenizer 'peek) '*colon*)
+          (tokenizer 'put token)
+          (let ((bindings (let-pattern-bindings tokenizer)))
+            (make-pattern-defines bindings)))
+         (else
+          (cond
+           ((scm-eq? '*assignment* (tokenizer 'peek))
+            (var-def-set token tokenizer #t))
+           ((scm-eq? '*comma* (tokenizer 'peek))
+            (tokenizer 'next)
+            (let ((vars (scm-append (scm-list token) (def-vars-list tokenizer))))
+              (if (scm-eq? '*assignment* (tokenizer 'next))
+                  (let ((exprs (def-exprs-list tokenizer)))
+                    (vars-defs-set vars exprs #t))
+                  (parser-error tokenizer "Expected assignment."))))
+           ((scm-eq? '*open-paren* (tokenizer 'peek))
+            (tokenizer 'put token)
+            (named-let-expr 'let tokenizer))
+           (else
+            (parser-error tokenizer "Invalid let expression."))))))))
+     (else
+      (parser-error tokenizer "Not a valid variable name.")))))
 
 (define (normalize-rvar sym)
   (let ((s (symbol->string sym)))
@@ -1148,22 +1163,16 @@
         (loop (scm-cdr bindings) (scm-cons (scm-caar bindings) vars)))))
 
 (define (normal-let-expr letkw tokenizer)
-  (let* ((binding-info (let-bindings tokenizer))
-         (bindings (scm-cdr binding-info))
-         (has-patterns? (scm-car binding-info)))
-    (if (and has-patterns? (scm-eq? letkw 'letrec))
-        (parser-error tokenizer "Pattern bindings not allowed in letrec."))
-    (scm-list (if has-patterns? 'let* letkw)
-              bindings (func-body-expr tokenizer (extract-let-binding-names bindings)))))
+  (let ((bindings (let-bindings tokenizer letkw)))
+    (scm-list letkw bindings (func-body-expr tokenizer (extract-let-binding-names bindings)))))
 
 (define (named-let-expr letkw tokenizer)
   (if (scm-not (scm-eq? letkw 'let))
       (parser-error tokenizer (string-append "Cannot define " (symbol->string letkw)
                                              " as a named let.")))
-  (let* ((name (tokenizer 'next))
-         (binding-info (let-bindings tokenizer))
-         (bindings (scm-cdr binding-info)))
-    (scm-list (if (scm-car binding-info) 'let* letkw) name
+  (let ((name (tokenizer 'next))
+        (bindings (let-bindings tokenizer letkw)))
+    (scm-list letkw name
               bindings (func-body-expr tokenizer (extract-let-binding-names bindings)))))
 
 (define (let-pattern-gensym)
@@ -1176,14 +1185,26 @@
       (let* ((f (scm-car pexpr))
              (k (scm-cadr f))
              (n (scm-caddr f)))
-        (if (scm-not (valid-identifier? n))
-            (parser-error tokenizer "Invalid identifier in table pattern."))
+        (check-if-reserved-name n tokenizer)
         (if (scm-not (scm-eq? '_ n))
             (make-let-pattern-bindings-for-table
              tokenizer expr-name (scm-cdr pexpr)
              (scm-cons (scm-cons n `((scm-hashtable_at ,expr-name ,k))) bindings))
             (make-let-pattern-bindings-for-table
              tokenizer expr-name (scm-cdr pexpr) bindings)))))
+
+(define (let-pair-part-bindings part expr-name first? tokenizer)
+  (let ((extractor (if first? 'scm-car 'scm-cdr)))
+    (cond
+     ((pair? part)
+      (make-let-pattern-bindings
+       tokenizer `(,extractor ,expr-name) (let-pattern-gensym)
+       part '() 0))
+     ((scm-not (valid-identifier? part))
+      (parser-error tokenizer "Invalid indentifier in pair binding pattern."))
+     ((scm-not (scm-eq? '_ part))
+      (scm-cons (scm-cons part `((,extractor ,expr-name))) '()))
+     (else '()))))
 
 (define (make-let-pattern-bindings tokenizer expr expr-name pexpr bindings i)
   (if (null? pexpr)
@@ -1211,17 +1232,10 @@
            tokenizer expr expr-name
            (scm-cdr pexpr) bindings i))
          ((scm-eq? pname 'scm-cons)
-          (let ((f (scm-cadr pexpr))
-                (s (scm-caddr pexpr))
-                (new-bindings '()))
-            (if (and (valid-identifier? f)
-                     (scm-not (scm-eq? '_ f)))
-                (set! new-bindings (scm-cons (scm-cons f `((scm-car ,expr-name)))
-                                             new-bindings)))
-            (if (and (valid-identifier? s)
-                     (scm-not (scm-eq? '_ s)))
-                (set! new-bindings (scm-cons (scm-cons s `((scm-cdr ,expr-name)))
-                                             new-bindings)))
+          (let ((new-bindings
+                 (scm-append
+                  (let-pair-part-bindings (scm-cadr pexpr) expr-name #t tokenizer)
+                  (let-pair-part-bindings (scm-caddr pexpr) expr-name #f tokenizer))))
             (make-let-pattern-bindings
              tokenizer expr expr-name
              '() (scm-append bindings new-bindings) i)))
@@ -1262,24 +1276,34 @@
       (make-let-pattern-bindings
        tokenizer expr expr-name pattern-expr  '() 0))))
 
-(define (let-bindings tokenizer)
+(define (assert-pattern-bindings-let tokenizer letkw)
+  (if (scm-not (scm-eq? letkw 'let*))
+      (parser-error tokenizer "Pattern bindings is allowed only in a letseq.")))
+
+(define (let-bindings tokenizer letkw)
   (if (scm-not (scm-eq? (tokenizer 'next) '*open-paren*))
       (parser-error tokenizer "Expected let variable bindings list."))
-  (let loop ((token (tokenizer 'next)) (has-patterns? #f)
+  (let loop ((token (tokenizer 'next))
 	     (bindings '()))
     (cond ((scm-eq? token '*close-paren*)
-	   (scm-cons has-patterns? bindings))
+	   bindings)
           ((or (scm-eq? token '*open-bracket*)
                (scm-eq? token '*hash*))
+           (assert-pattern-bindings-let tokenizer letkw)
            (tokenizer 'put token)
            (let ((pbindings (let-pattern-bindings tokenizer)))
-             (loop (tokenizer 'next) #t (scm-append bindings pbindings))))
+             (if (scm-eq? (tokenizer 'peek) '*comma*)
+                 (tokenizer 'next))
+             (loop (tokenizer 'next) (scm-append bindings pbindings))))
 	  ((symbol? token)
            (cond
             ((scm-eq? (tokenizer 'peek) '*colon*)
+             (assert-pattern-bindings-let tokenizer letkw)
              (tokenizer 'put token)
              (let ((pbindings (let-pattern-bindings tokenizer)))
-               (loop (tokenizer 'next) #t (scm-append bindings pbindings))))
+               (if (scm-eq? (tokenizer 'peek) '*comma*)
+                   (tokenizer 'next))
+               (loop (tokenizer 'next) (scm-append bindings pbindings))))
             (else
              (check-if-reserved-name token tokenizer)
              (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
@@ -1290,7 +1314,6 @@
                      (tokenizer 'next)))
                (loop
                 (tokenizer 'next)
-                has-patterns?
                 (scm-append bindings (scm-list (scm-list token expr))))))))
           (else
            (parser-error tokenizer "Invalid let binding name.")))))

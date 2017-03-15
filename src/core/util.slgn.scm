@@ -325,7 +325,7 @@
   (with-exception-catcher
    (lambda (e)
      (if (file-exists? (add-slgn-extn script))
-         (if (compile script assemble: #f)
+         (if (slgn-compile script assemble: #f)
              (scm-load (string-append script *scm-extn*))
              (scm-error "failed to compile script" script))
          (scm-error "file not found " script)))
@@ -340,7 +340,7 @@
    (lambda (e)
      (cond ((no-such-file-or-directory-exception? e)
             (if (file-exists? (add-slgn-extn script))
-                (if (scm-not (compile script assemble: #t))
+                (if (scm-not (slgn-compile script assemble: #t))
                     (scm-error "failed to compile script" script)))
             (scm-load script))
            (else (scm-raise e))))

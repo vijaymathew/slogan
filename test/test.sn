@@ -15,4 +15,4 @@ link("../test/v011_9")
 link("../test/v011_96")
 link("../test/package")
 
-showln("======= All tests passed. =======")
+showln("======= All tests passed =======")

@@ -64,3 +64,4 @@ gensym = false
 nth = false
 first = false
 rest = false
+compile = false

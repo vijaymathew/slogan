@@ -49,20 +49,20 @@
             (else (string-set! result i (string-ref s i))
                   (loop (+ i 1)))))))
           
-(define (string-starts-with? s suffix #!optional (eq string=?))
-  (let ((slen (string-length suffix))
+(define (string-starts-with? s prefix #!optional (eq string=?))
+  (let ((slen (string-length prefix))
         (len (string-length s)))
     (if (or (zero? slen) (zero? len) 
             (> slen len)) #f
-            (eq (scm-substring s 0 slen) suffix))))
+            (eq (scm-substring s 0 slen) prefix))))
 
-(define (string-ends-with? s prefix #!optional (eq string=?))
-  (let ((plen (string-length prefix))
+(define (string-ends-with? s suffix #!optional (eq string=?))
+  (let ((plen (string-length suffix))
         (slen (string-length s)))
     (if (and (scm-not (zero? plen)) (scm-not (zero? slen)) 
              (<= plen slen))
         (let ((subs (scm-substring s (- slen plen) slen)))
-          (eq subs prefix))
+          (eq subs suffix))
         #f)))
 
 (define (string-indexof s ch)
