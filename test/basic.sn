@@ -199,7 +199,7 @@ assert is_palindrome("aba")
 assert is_palindrome("malayalam")
 assert is_palindrome("")
 
-function is_palindrome2(s) where is_string(s)
+function is_palindrome2(s) where core.is_string(s)
 { let chars = string_to_list("abcdefghijklmnopqrstuvwxyz")
 
   function to_chars(s)
@@ -220,7 +220,7 @@ assert is_palindrome2("malayalam")
 assert is_palindrome2("")
 assert try is_palindrome2(121) catch (e) error_message(e) == 'precondition_failed
 
-function is_palindrome3(s) where is_string(s) -> is_boolean(%)
+function is_palindrome3(s) where core.is_string(s) -> is_boolean(%)
 { let chars = string_to_list("abcdefghijklmnopqrstuvwxyz")
 
   function to_chars(s)
@@ -247,20 +247,20 @@ let t2 = [t1, 3.25]
 assert core.append(t1, t2)[3] == [1, "two", 3]
 assert core.append(t1, t2)[2:5] == [3, [1, "two", 3], 3.25]
 
-assert count("hello, world") == string_length("hello, world")
-assert count([1,2,3,4,15]) == 5
-assert count(#[1,2,3,4,15]) == 5
-assert count(#b[1,0,1]) == 3
-assert count(#u8[1,2,3,4,15]) == 5
-assert count(#s8[1,2,3,4,15]) == 5
-assert count(#u16[1,2,3,4,15]) == 5
-assert count(#s16[1,2,3,4,15]) == 5
-assert count(#u32[1,2,3,4,15]) == 5
-assert count(#s32[1,2,3,4,15]) == 5
-assert count(#u64[1,2,3,4,15]) == 5
-assert count(#s64[1,2,3,4,15]) == 5
-assert count(#f32[1.,2.,3.,4.,1.5]) == 5
-assert count(#f64[1.,2.,3.,4.,1.5]) == 5
+assert core.count("hello, world") == string_length("hello, world")
+assert core.count([1,2,3,4,15]) == 5
+assert core.count(#[1,2,3,4,15]) == 5
+assert core.count(#b[1,0,1]) == 3
+assert core.count(#u8[1,2,3,4,15]) == 5
+assert core.count(#s8[1,2,3,4,15]) == 5
+assert core.count(#u16[1,2,3,4,15]) == 5
+assert core.count(#s16[1,2,3,4,15]) == 5
+assert core.count(#u32[1,2,3,4,15]) == 5
+assert core.count(#s32[1,2,3,4,15]) == 5
+assert core.count(#u64[1,2,3,4,15]) == 5
+assert core.count(#s64[1,2,3,4,15]) == 5
+assert core.count(#f32[1.,2.,3.,4.,1.5]) == 5
+assert core.count(#f64[1.,2.,3.,4.,1.5]) == 5
 
 t1 = for (i = 0; i < 10; inc(i)) i
 assert t1 == 9

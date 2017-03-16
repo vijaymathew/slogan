@@ -1,19 +1,19 @@
 // issue #104
 let st = #(1,10,20)
-assert set_length(st) == 3 && count(st) == 3
-assert set_length(#()) == 0 && count(#()) == 0
+assert set_length(st) == 3 && core.count(st) == 3
+assert set_length(#()) == 0 && core.count(#()) == 0
 
-assert st == set(st)
+assert st == core.set(st)
 st = #(1,2,3)
 let xs = [1,2,3]
-assert set(xs) == st
+assert core.set(xs) == st
 assert sort(set_to_list(st)) == xs
 xs = #{1:2, 3:4}
-assert set(xs) == #(1:2, 3:4)
+assert core.set(xs) == #(1:2, 3:4)
 xs = #[1,2,3]
-assert set(xs) == st
+assert core.set(xs) == st
 xs = "hello"
-assert set(xs) == #(\e,\o,\l,\h)
+assert core.set(xs) == #(\e,\o,\l,\h)
 
 // issue #105, #106, #107
 function make_bag(xs)
@@ -75,21 +75,21 @@ assert core.nth(0, ssum) == 9
 assert core.rest(ssum) == false
 
 let xs = [1,2,3,4,10]
-assert count(xs) == core.length(xs)
+assert core.count(xs) == core.length(xs)
 xs = #(2,2,3)
-assert count(xs) == 2
+assert core.count(xs) == 2
 xs = #[10,20,30]
-assert count(xs) == array_length(xs)
+assert core.count(xs) == array_length(xs)
 xs = make_bag(xs)
-assert count(xs) == 3
+assert core.count(xs) == 3
 xs = make_bag(#[])
-assert count(xs) == 0
+assert core.count(xs) == 0
 
 function assert_refs(xs)
-{ assert ref(xs, 1) == 20
-  assert ref(xs, 0) == xs[0]
-  ref_set(xs, 1, 100)
-  assert ref(xs, 1) == 100
+{ assert core.ref(xs, 1) == 20
+  assert core.ref(xs, 0) == xs[0]
+  core.ref_set(xs, 1, 100)
+  assert core.ref(xs, 1) == 100
   xs[2] = 200
   assert xs[2] == 200 }
   
@@ -100,10 +100,10 @@ assert_refs(#{1:20, 0:10, 2:30})
 assert_refs(make_bag(#[10, 20, 30]))
 
 // issue #108
-assert to_string(100) == "100"
-assert to_string([1,2,3]) == "[1, 2, 3]"
-assert to_string(#(1,2,3)) == "#(1, 2, 3)"
-assert to_string(#{1:2, 3:4}) == "#{1: 2, 3: 4}"
+assert core.to_string(100) == "100"
+assert core.to_string([1,2,3]) == "[1, 2, 3]"
+assert core.to_string(#(1,2,3)) == "#(1, 2, 3)"
+assert core.to_string(#{1:2, 3:4}) == "#{1: 2, 3: 4}"
 
 function make_employee(name, salary)
   let (str = ^()
@@ -120,8 +120,8 @@ function make_employee(name, salary)
 let e1, e2 = make_employee("sam", 1000), make_employee("sally", 1340)
 assert e1.name == "sam"
 assert e2.salary == 1340
-assert to_string(e1) == "name: sam, salary: 1000"
-assert to_string(e2) == "name: sally, salary: 1340"
+assert core.to_string(e1) == "name: sam, salary: 1000"
+assert core.to_string(e2) == "name: sally, salary: 1340"
 assert e1 <> e2
 let e3 = make_employee(e1.name, e1.salary)
 assert e1 == e3

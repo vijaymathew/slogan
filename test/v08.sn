@@ -34,11 +34,11 @@ let a = #{1:2, 3:4}
 let b = #{5:6}
 assert is_hashtable(a)
 assert core.not(is_set(a))
-let s1 = set(a)
-let s2 = set(b)
+let s1 = core.set(a)
+let s2 = core.set(b)
 assert is_set(s1)
 assert core.not(is_hashtable(s1))
-assert set_union(s1, s2) == set(#{1:2, 3:4, 5:6})
+assert set_union(s1, s2) == core.set(#{1:2, 3:4, 5:6})
 
 assert is_superset(#(0), #(0))
 assert is_superset(#(0, 1), #(0))
@@ -47,10 +47,10 @@ assert is_subset(#(2, 3), #(1, 2, 3, 4))
 assert is_subset(#(2, 4), #(1, 2, 3, 4))
 assert is_subset(#(2, 5), #(1, 2, 3, 4)) == false
 
-assert is_set(set([1, 2, 3, 4, 5]))
-assert is_set(set(#[1, 2, 3, 4, 5]))
-assert set_union(#(\a, \b), set("cd")) == #(\a, \b, \c, \d)
-assert set_intersection(set([1, 2, 3]), set(#[2, 3])) == #(2, 3)
+assert is_set(core.set([1, 2, 3, 4, 5]))
+assert is_set(core.set(#[1, 2, 3, 4, 5]))
+assert set_union(#(\a, \b), core.set("cd")) == #(\a, \b, \c, \d)
+assert set_intersection(core.set([1, 2, 3]), core.set(#[2, 3])) == #(2, 3)
 
 function cabs(a) sqrt(expt(real_part(a), 2) + expt(imag_part(a), 2))
 assert cabs(3+4i) == 5

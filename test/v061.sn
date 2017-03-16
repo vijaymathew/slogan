@@ -1,10 +1,10 @@
 // issue #38 - `@` to work with strings and all kinds of arrays.
 function @tests(a, real = false)
-{ assert ref(a, 1) == if (real) 2. else 2
+{ assert core.ref(a, 1) == if (real) 2. else 2
   assert a[1] == if (real) 2. else 2
-  assert ref(a, 10, 100) == 100
-  ref_set(a, 1, if (real) 100. else 100)
-  assert ref(a, 1) == if (real) 100. else 100
+  assert core.ref(a, 10, 100) == 100
+  core.ref_set(a, 1, if (real) 100. else 100)
+  assert core.ref(a, 1) == if (real) 100. else 100
   a[2] = if (real) 20. else 20
   assert a[2] == if (real) 20. else 20 }
   
@@ -22,40 +22,40 @@ function @tests(a, real = false)
 @tests(#f64[1., 2., 3., 4., 5.], true)
 
 let ba = #b[0, 1, 1, 0, 1]
-assert ref(ba, 0) == false
-assert ref(ba, 1)
-assert ref(ba, 10, 100) == 100
-ref_set(ba, 3, 100)
-assert ref(ba, 3)
+assert core.ref(ba, 0) == false
+assert core.ref(ba, 1)
+assert core.ref(ba, 10, 100) == 100
+core.ref_set(ba, 3, 100)
+assert core.ref(ba, 3)
 
 let s = core.apply(core.string, string_to_list("hello world"))
-assert ref(s, 1) == \e
+assert core.ref(s, 1) == \e
 assert s[2] == \l
-assert ref(s, 20) == false
-assert ref(s, 20, 100) == 100
-ref_set(s, 1, \a)
-assert ref(s, 1) == \a
+assert core.ref(s, 20) == false
+assert core.ref(s, 20, 100) == 100
+core.ref_set(s, 1, \a)
+assert core.ref(s, 1) == \a
 s[4] = \x
 assert s[4] == \x
 assert s == "hallx world"
 
 s = [\a:1, \b:2]
-assert get(s, \a) == 1
-assert get(s, \b) == 2
-assert get(s, \c, 100) == 100
+assert core.get(s, \a) == 1
+assert core.get(s, \b) == 2
+assert core.get(s, \c, 100) == 100
 
 s = #{1:2, 3:4}
-assert ref(s, 1) == 2
-assert ref(s, 3) == 4
-assert ref(s, 10, 100) == 100
-ref_set(s, 10, 200)
-assert ref(s, 1) == 2
-assert ref(s, 3) == 4
-assert ref(s, 10, 100) == 200
-ref_set(s, 1, 300)
-assert ref(s, 1) == 300
-assert ref(s, 3) == 4
-assert ref(s, 10, 100) == 200
+assert core.ref(s, 1) == 2
+assert core.ref(s, 3) == 4
+assert core.ref(s, 10, 100) == 100
+core.ref_set(s, 10, 200)
+assert core.ref(s, 1) == 2
+assert core.ref(s, 3) == 4
+assert core.ref(s, 10, 100) == 200
+core.ref_set(s, 1, 300)
+assert core.ref(s, 1) == 300
+assert core.ref(s, 3) == 4
+assert core.ref(s, 10, 100) == 200
 assert s[10] == 200
 s[100] = 2000
 assert s[100] = 2000
