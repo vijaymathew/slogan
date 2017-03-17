@@ -38,7 +38,7 @@
  typedef double (*fn_voidp_double)(void*, ___SCMOBJ*);
  typedef ___SCMOBJ (*fn_voidp_obj)(void*, ___SCMOBJ*);
 
- #define SCHEME_LIBRARY_LINKER ____20_ffi_2e_slgn
+ #define SCHEME_LIBRARY_LINKER ____20_ffi
  
  ___BEGIN_C_LINKAGE
  extern ___mod_or_lnk SCHEME_LIBRARY_LINKER (___global_state);

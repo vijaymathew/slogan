@@ -220,6 +220,8 @@
 (define (subbitarray self offset count)
   (bitvector-blit! self offset (make-bitvector (- count offset)) 0 count))
 
+(define scm-subbitarray subbitarray)
+
 (define *u8array-pad* (make-u8vector 1))
 
 (define (pad-u8array u8arr len)

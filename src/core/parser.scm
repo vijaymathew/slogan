@@ -1185,13 +1185,21 @@
       (let* ((f (scm-car pexpr))
              (k (scm-cadr f))
              (n (scm-caddr f)))
-        (check-if-reserved-name n tokenizer)
-        (if (scm-not (scm-eq? '_ n))
-            (make-let-pattern-bindings-for-table
-             tokenizer expr-name (scm-cdr pexpr)
-             (scm-cons (scm-cons n `((scm-hashtable_at ,expr-name ,k))) bindings))
-            (make-let-pattern-bindings-for-table
-             tokenizer expr-name (scm-cdr pexpr) bindings)))))
+        (cond
+         ((pair? n)
+          (make-let-pattern-bindings-for-table
+           tokenizer expr-name (scm-cdr pexpr)
+           (scm-append bindings (make-let-pattern-bindings
+                                 tokenizer `(scm-hashtable_at ,expr-name ,k)
+                                 (let-pattern-gensym) n '() 0))))
+         (else
+          (check-if-reserved-name n tokenizer)
+          (if (scm-not (scm-eq? '_ n))
+              (make-let-pattern-bindings-for-table
+               tokenizer expr-name (scm-cdr pexpr)
+               (scm-cons (scm-cons n `((scm-hashtable_at ,expr-name ,k))) bindings))
+              (make-let-pattern-bindings-for-table
+               tokenizer expr-name (scm-cdr pexpr) bindings)))))))
 
 (define (let-pair-part-bindings part expr-name first? tokenizer)
   (let ((extractor (if first? 'scm-car 'scm-cdr)))

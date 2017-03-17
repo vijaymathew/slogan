@@ -369,9 +369,9 @@
                   (scm-first vars)
                   `(begin (if ,(scm-first filters)
                               ,(mk-comprehension-loop
-                                (scm-rest lists) (scm-rest vars)
-                                (scm-rest filters) result-expr))
-                          (*comprehension-loop* (scm-rest *list*))))))))))
+                                (rest-helper lists) (rest-helper vars)
+                                (rest-helper filters) result-expr))
+                          (*comprehension-loop* (rest-helper *list*))))))))))
 
 (define (list-comprehension lists vars filters result-expr)
   `(let ((*comprehension-result* (scm-list)))

@@ -28,17 +28,22 @@
 (define (hashtable_at ht key #!optional default) (table-ref (hashtable-table ht) key default))
 
 (define scm-hashtable_at hashtable_at)
+(define scm-hashtable_set hashtable_set)
 
 (define (hashtable_contains ht key)
   (let ((table (hashtable-table ht))
         (predic (hashtable-eq-predic ht)))
     (table-search (lambda (k v) (predic k key)) table)))
 
+(define scm-hashtable_contains hashtable_contains)
+
 (define (hashtable_update ht key proc #!optional default)
   (let ((table (hashtable-table ht)))
     (table-set! table key (proc (table-ref table key default)))))
 
 (define (hashtable_size ht) (table-length (hashtable-table ht)))
+
+(define scm-hashtable_size hashtable_size)
 
 (define (hashtable_copy ht) (make-hashtable (table-copy (hashtable-table ht))
                                             (hashtable-eq-predic ht) 

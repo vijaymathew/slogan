@@ -17,3 +17,22 @@ let x:#{1:y, 2:z}:a:[b] = 10:#{1:20, 2:30}:40:[50]
 assert [x,y,z,a,b] == [10,20,30,40,50]
 
 assert (letseq ([x,y,z] = [1,2,3], a = x+5, [b,c] = [x,y]) [x,y,z,a,b,c]) == [1, 2, 3, 6, 1, 2]
+assert (letseq (#{1:[x,y], 2:z} = #{1:[200,300], 2:400}) [x,y,z]) == [200,300,400]
+assert letseq ([x,y,_,[a,_]] = #[1,2,3,[4,5]]) [x,y,a] == [1, 2, 4]
+assert letseq ([x,y,_,[a,_]] = [1,2,3,#[4,5]]) [x,y,a] == [1, 2, 4]
+assert letseq ([x,y,_,[a,_]] = #[1,2,3,#[4,5]]) [x,y,a] == [1, 2, 4]
+assert letseq ([x,y,_,[a,_]] = #[1,2,3,#s32[4,5]]) [x,y,a] == [1, 2, 4]
+assert letseq ([x,y,_,[a,_]] = #[1,2,3,#u8[4,5]]) [x,y,a] == [1, 2, 4]
+
+let [a,b,[c,[d]]] = #[1,2,[3,#u64[4]]]
+assert [a,b,c,d] == [1,2,3,4]
+
+// realize function for lazy sequences.
+function ints(x) x:~ints(x+1)
+let xs = ints(10)
+let ys = core.realize(5, xs)
+assert core.length(core.first(ys)) == 5
+assert core.head(ys)[2] == 12
+ys = core.realize(50, core.tail(ys))
+assert core.length(core.head(ys)) == 50
+assert core.head(ys)[5] == 20

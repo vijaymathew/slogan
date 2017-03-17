@@ -840,6 +840,8 @@
 (define core-ref_set ref_set)
 (define core-command_line_user_args command_line_user_args)
 
+(define core-realize realize)
+
 (define (core *name*)
   (case *name*
     ((compose) core-compose)
@@ -1681,6 +1683,7 @@
     ((is_set_member) core-is_set_member)
     ((hashtable_to_set) core-hashtable_to_set)
     ((set) core-set)
+    ((realize) core-realize)
     (else (scm-error "Binding not found" *name*))))
 
 (define *core-names* '(_inf _zero abort abs accumulate acos act add angle append
@@ -1810,7 +1813,7 @@
                             random_source_state range rationalize rbind react read
                             read_all read_all_bytes read_all_chars read_byte read_char
                             read_line read_n_bytes read_n_chars reader_timeout real_part
-                            real_time rectangular ref ref_set reload rem remainder
+                            real_time realize rectangular ref ref_set reload rem remainder
                             remove remp remq remv rename_file rest reverse
                             reverse_bit_field rget root_task rotate_bit_field round rvar
                             s16array s16array_append s16array_at s16array_copy

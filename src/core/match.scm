@@ -107,8 +107,8 @@
          (pvals (scm-map scm-caddr pkey-vals)))
     (let loop ((pkeys pkeys-1) (pvals pvals) (expr '()))
       (if (null? pkeys)
-          `(if (and (is_hashtable *value*)
-               (for_all (lambda (k) (hashtable_contains *value* k)) ,(scm-append '(scm-list) pkeys-1)))
+          `(if (and (hashtable? *value*)
+               (for_all (lambda (k) (scm-hashtable_contains *value* k)) ,(scm-append '(scm-list) pkeys-1)))
                (begin
                  (set! *match-found* #t)
                  ,@(scm-reverse expr))
@@ -118,7 +118,7 @@
              (scm-cdr pkeys) (scm-cdr pvals)
              (scm-cons
               `(begin
-                 (let ((*v* (hashtable_at *value* ,pk)))
+                 (let ((*v* (scm-hashtable_at *value* ,pk)))
                    ,(cond
                      ((symbol? pv)
                       (pattern-vars-bindings-set! bindings
@@ -141,7 +141,7 @@
          (begin (let ((*value* (scm-first *value*)))
                   ,(match-pattern-helper (scm-car pattern) bindings #t))
                 (if *match-found*
-                    (let ((*value* (scm-rest *value*)))
+                    (let ((*value* (rest-helper *value*)))
                       ,(match-pattern-helper (scm-cdr pattern) bindings #f))))
          (set! *match-found* #f))))
 
@@ -189,7 +189,7 @@
               (begin (let ((*value* (scm-first *value*)))
                        ,(match-pattern-helper (scm-car pattern) bindings))
                      (if *match-found*
-                         (let ((*value* (scm-rest *value*)))
+                         (let ((*value* (rest-helper *value*)))
                            ,(match-pattern-helper (scm-cadr pattern) bindings))))
               (set! *match-found* #f)))
         ((list? pattern)
@@ -218,7 +218,7 @@
   `(begin (set! *value* (if (,(vector-test-fn fname) *value*)
                             (,(vector-to-list-fn fname) *value*)
                             *value*))
-          (let ((*rest* (scm-rest *value*)))
+          (let ((*rest* (rest-helper *value*)))
             (set! *value* (scm-first *value*))
             ,(expand-consequent (scm-car pattern) #f)
             (set! *value* *rest*)
@@ -234,7 +234,7 @@
         (loop (scm-cdr pkeys) (scm-cdr pvals)
           (scm-cons
             `(let ((*orig-value* *value*))
-               (let ((*value* (hashtable_at *orig-value* ,(scm-car pkeys))))
+               (let ((*value* (scm-hashtable_at *orig-value* ,(scm-car pkeys))))
                  ,(expand-consequent (scm-car pvals) #f)))
             expr))))))
 
@@ -244,7 +244,7 @@
          consequent)
         ((scm-cons? pattern)
          (set! pattern (scm-cdr pattern))
-         `(let ((*rest* (scm-rest *value*)))
+         `(let ((*rest* (rest-helper *value*)))
             (set! *value* (scm-first *value*))
             ,(expand-consequent (scm-car pattern) #f)
             (set! *value* *rest*)
@@ -258,7 +258,7 @@
             ((hashtable-pattern? pattern)
               (expand-hashtable-consequent pattern consequent))
             (else
-              `(let ((*rest* (scm-rest *value*)))
+              `(let ((*rest* (rest-helper *value*)))
                  (set! *value* (scm-first *value*))
                  ,(expand-consequent (scm-car pattern) #f)
                  (set! *value* *rest*)
