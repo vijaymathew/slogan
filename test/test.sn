@@ -4,9 +4,7 @@ link("../test/parconc")
 link("../test/fp")
 link("../test/yield")
 link("../test/lazy")
-
-// Disabling this test until issue-121 is fixed.
-//link("../test/package")
+link("../test/package")
 
 link("../test/v061")
 link("../test/v08")

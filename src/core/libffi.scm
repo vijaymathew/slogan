@@ -823,18 +823,18 @@ c-declare-end
                                                   "libffi_pointer_object_to_string"))
 
 (define (libffitype->int type)
-  (let ((t (assv type *libffi-types*)))
+  (let ((t (scm-assv type *libffi-types*)))
     (if t (scm-cdr t)
         (scm-error "Invalid c type - " type))))
 
 (define (c-struct-defs sid accessor)
-  (let ((sdef (assv sid *c-struct-defs*)))
+  (let ((sdef (scm-assv sid *c-struct-defs*)))
     (if sdef
         (accessor (scm-cdr sdef))
         (scm-error "c_struct defintion not found" sid))))
 
-(define (c-struct-types sid) (c-struct-defs sid car))
-(define (c-struct-members sid) (c-struct-defs sid cdr))
+(define (c-struct-types sid) (c-struct-defs sid scm-car))
+(define (c-struct-members sid) (c-struct-defs sid scm-cdr))
 
 (define (normalize-c-struct result sid)
   (let loop ((types (c-struct-types sid))

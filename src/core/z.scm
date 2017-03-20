@@ -841,6 +841,8 @@
 (define core-command_line_user_args command_line_user_args)
 
 (define core-realize realize)
+(define core-slogan_root slogan_root)
+(define core-read_slogan_root read_slogan_root)
 
 (define (core *name*)
   (case *name*
@@ -1684,6 +1686,8 @@
     ((hashtable_to_set) core-hashtable_to_set)
     ((set) core-set)
     ((realize) core-realize)
+    ((slogan_root) core-slogan_root)
+    ((read_slogan_root) core-read_slogan_root)
     (else (scm-error "Binding not found" *name*))))
 
 (define *core-names* '(_inf _zero abort abs accumulate acos act add angle append
@@ -1814,7 +1818,7 @@
                             read_all read_all_bytes read_all_chars read_byte read_char
                             read_line read_n_bytes read_n_chars reader_timeout real_part
                             real_time realize rectangular ref ref_set reload rem remainder
-                            remove remp remq remv rename_file rest reverse
+                            remove remp remq remv rename_file rest reverse read_slogan_root
                             reverse_bit_field rget root_task rotate_bit_field round rvar
                             s16array s16array_append s16array_at s16array_copy
                             s16array_fill s16array_length s16array_set s16array_shrink
@@ -1828,7 +1832,7 @@
                             second self set set_current_exception_handler set_difference
                             set_head set_intersection set_length set_stream_position
                             set_tail set_to_list set_union setenv seventh shell_command
-                            show show_exception showln sin sixth slogan sort
+                            show show_exception showln sin sixth slogan slogan_root sort
                             special_token_to_string sqrt statement stream_has_position
                             stream_position stream_tokenizer string string_append
                             string_at string_ci_ends_with string_ci_hash

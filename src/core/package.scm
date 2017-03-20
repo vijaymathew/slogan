@@ -99,7 +99,7 @@
     pkg-name))
 
 (define (init_package pkg-name)
-  (let ((load-path (string-append (slogan_root) "/packages/" pkg-name)))
+  (let ((load-path (string-append (read-slogan-root) "/packages/" pkg-name)))
     (begin (if (scm-not (file-exists? load-path))
                (set! load-path "."))
            (slgn-link (string-append load-path "/src/core")))))

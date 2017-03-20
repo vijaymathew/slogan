@@ -1,0 +1,31 @@
+let libname = string_append(slogan_root(), "/packages/simple_package/test_ffi.so");
+let clib = core.ffi_open(libname)
+
+declare ffi clib [
+    int add_i[int, int],
+    uint add_ui[uint, uint],
+    long add_l[long, long],
+    ulong add_ul[ulong, ulong],
+    int64 add_ll[int64, int64],
+    float add_f[float, float],
+    double add_d[double, double],
+    longdouble add_ld[longdouble, longdouble],
+    char add_c[char, char],
+    charstring say_hello[charstring],
+    
+    pointer alloc_person[charstring, int],
+    int person_age[pointer],
+    charstring person_name[pointer],
+    void free_person[pointer],
+    pointer clone_person[pointer],
+
+    // Dealing with nested structures:
+    pointer alloc_employee[pointer, float],
+    pointer employee_person[pointer],
+    float employee_salary[pointer],
+    void free_employee[pointer],
+
+    struct point[int:x, int:y],
+    point make_point[int, int],
+    charstring point_string[point]
+];

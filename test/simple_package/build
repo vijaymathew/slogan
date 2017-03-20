@@ -1,0 +1,21 @@
+#!/bin/bash
+
+export SLOGAN_ROOT=../..
+out=test_ffi.so
+
+# clean up artifacts from the previous build
+rm -f $out
+rm -f *.o*
+
+osname=`uname`
+src="src/test_ffi.c"
+
+# build the shared library
+if [[ "$osname" == 'Linux' ]]; then
+    gcc -Wall -shared -fPIC -o $out $src
+else # Darwin??
+    gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o $out $src
+fi
+
+../.././src/slogan -c "init"
+

@@ -1,33 +1,42 @@
-uninstall_package("sqlite")
-install_package("sqlite", 'local, "../example/packages/sqlite")
-load_package("sqlite")
-when (file_exists("db")) delete_file("db")
+uninstall_package("simple_package")
+install_package("simple_package", 'local, "../test/simple_package")
+load_package("simple_package")
 
-let db = sqlite_open("db")
+let s = say_hello("hello")
+assert s == "C hello"
+assert add_i(10, 20) == 30
+assert add_i(10, -20) == -10
+assert add_ui(10, 20) == 30
+assert add_l(10, 20) == 30
+assert add_ul(10, 20) == 30
+assert add_ll(10, 20) == 30
+assert add_f(10.2, 20.3) == 30.5
+assert add_d(10.2, 20.3) == 30.5
+assert add_ld(10.2, 20.3) == 30.5
+assert add_c(60, 65) == 125
 
-let sql = "create table a(i)"
-let stmt = sqlite_prepare(db, sql)
-sqlite_step(db, stmt)
-sqlite_finalize(db, stmt)
+let p = alloc_person("tom", 30);
+assert person_age(p) == 30
+assert person_name(p) == "tom"
+let copy = clone_person(p);
+assert person_age(copy) == 30
+assert person_name(copy) == "tom"
+free_person(copy)
 
-sql = "insert into a values(?)"
-stmt = sqlite_prepare(db, sql)
-sqlite_bind_int(db, stmt, 1, 100)
-sqlite_step(db, stmt)
-sqlite_reset(db, stmt)
-sqlite_bind_int(db, stmt, 1, 200)
-sqlite_step(db, stmt)
-sqlite_finalize(db, stmt)
+let e = alloc_employee(p, 1000.23);
+assert person_age(employee_person(e)) == 30
+assert person_name(employee_person(e)) == "tom"
+assert core.floor(employee_salary(e)) == 1000.
+free_employee(e)
+free_person(p)
 
-sql = "select * from a"
-stmt = sqlite_prepare(db, sql)
-let total_x = 0
-let loop (r = sqlite_step(db, stmt))
-  if (r == 1) { total_x = total_x + sqlite_column_int(db, stmt, 0)
-                loop(sqlite_step(db, stmt)) }
+p = make_point(100, 340)
+assert point_string(p) == "100:340"
 
-sqlite_finalize(db, stmt)
-sqlite_close(db)
-uninstall_package("sqlite")
+assert c_struct_name(p) == 'point
+assert c_struct_get(p, 'x) == 100
+assert c_struct_get(p, 'y) == 340
 
-assert total_x == 300
+let pp = c_struct_instance('point, [10, 20])
+assert point_string(pp) == "10:20"
+assert ffi_close(clib) == true

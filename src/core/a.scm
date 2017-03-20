@@ -22,6 +22,7 @@
 (define scm-member member)
 (define scm-assoc assoc)
 (define scm-assq assq)
+(define scm-assv assv)
 (define scm-append append)
 (define scm-eq? eq?)
 (define scm-vector vector)
@@ -70,3 +71,4 @@
 (define scm-truncate truncate)
 
 (define scm-gensym gensym)
+(define scm-getenv getenv)
