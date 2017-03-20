@@ -27,6 +27,22 @@ assert letseq ([x,y,_,[a,_]] = #[1,2,3,#u8[4,5]]) [x,y,a] == [1, 2, 4]
 let [a,b,[c,[d]]] = #[1,2,[3,#u64[4]]]
 assert [a,b,c,d] == [1,2,3,4]
 
+function custom_seq()
+  let (data = [1,2,3])
+    ^(msg)
+    | 'first -> core.head(data)
+    | 'rest -> core.tail(data)
+
+assert (letseq([a,b,c] = custom_seq()) a+b+c) == 6
+
+function custom_dict()
+  let (data = #{'x:100, 'y:200})
+    ^(message)
+    | 'ref -> ^(k) hashtable_at(data, k)
+    | 'ref_set -> ^(k, v) hashtable_set(data, k, v)
+
+assert (letseq(#{'x:x, 'y:y} = custom_dict()) [x, y]) == [100, 200]
+
 // realize function for lazy sequences.
 function ints(x) x:~ints(x+1)
 let xs = ints(10)

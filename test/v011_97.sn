@@ -1,0 +1,16 @@
+// `contains` generic function
+function custom_dict2()
+  let (data = #{'x:100, 'y:200})
+    ^(message)
+    | 'ref -> ^(k) hashtable_at(data, k)
+    | 'ref_set -> ^(k, v) hashtable_set(data, k, v)
+    | 'contains -> ^(k) hashtable_contains(data, k)
+
+let cd = custom_dict2()
+assert cd['x] == 100
+assert cd['y] == 200
+assert cd['x] = 20
+assert cd['x] == 20
+assert contains(cd, 'x)
+assert contains(cd, 'y)
+assert contains(cd, 'z) == false

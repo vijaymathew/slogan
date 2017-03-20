@@ -1190,14 +1190,14 @@
           (make-let-pattern-bindings-for-table
            tokenizer expr-name (scm-cdr pexpr)
            (scm-append bindings (make-let-pattern-bindings
-                                 tokenizer `(scm-hashtable_at ,expr-name ,k)
+                                 tokenizer `(scm-ref ,expr-name ,k)
                                  (let-pattern-gensym) n '() 0))))
          (else
           (check-if-reserved-name n tokenizer)
           (if (scm-not (scm-eq? '_ n))
               (make-let-pattern-bindings-for-table
                tokenizer expr-name (scm-cdr pexpr)
-               (scm-cons (scm-cons n `((scm-hashtable_at ,expr-name ,k))) bindings))
+               (scm-cons (scm-cons n `((scm-ref ,expr-name ,k))) bindings))
               (make-let-pattern-bindings-for-table
                tokenizer expr-name (scm-cdr pexpr) bindings)))))))
 

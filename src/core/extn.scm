@@ -476,6 +476,15 @@ c-declare-end
       ((obj 'ref_set) key value)
       (map-mutate obj key value)))
 
+(define (contains obj key)
+  (if (procedure? obj)
+      ((obj 'contains) key)
+      (scm-hashtable_contains obj key)))
+
+(define scm-ref ref)
+(define scm-ref_set ref_set)
+(define scm-contains contains)
+
 (define (map-access tab key)
   (cond
    ((vector? tab)
