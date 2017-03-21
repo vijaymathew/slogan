@@ -158,7 +158,7 @@
 (define (define-generic-method name tokenizer)
   (check-if-reserved-name name tokenizer)
   (let ((params '(*self* #!rest *args*)))
-    `(define ,name
+    `(set! ,name
        (let ((*old-name* ,name))
          (lambda ,params
            (if (procedure? *self*)
@@ -294,8 +294,8 @@
              (fexpr (merge-lambda tokenizer params body-expr)))
         (if has-name?
             (if predics
-                (scm-list 'set! name `(let ((*old-func* ,name)) ,fexpr))
-                (scm-list 'define name fexpr))
+                `(set! ,name (let ((*old-func* ,name)) ,fexpr))
+                `(define ,name ,fexpr))
             fexpr)))))
 
 (define (func-def-stmt tokenizer)
@@ -1386,15 +1386,17 @@
       defs
       (let ((e (scm-car body)))
         (cond ((pair? e)
-               (extract-module-defs (scm-cdr body)
-                                    (cond ((scm-eq? 'define (scm-car e))
-                                           (scm-cons (scm-cadr e) defs))
-                                          ((scm-eq? 'begin (scm-car e))
-                                           (extract-module-defs (scm-cdr e) defs))
-                                          (else defs))))
+               (extract-module-defs
+                (scm-cdr body)
+                (cond ((or (scm-eq? 'define (scm-car e))
+                           (scm-eq? 'set! (scm-car e))) ; redefine and export a global.
+                       (scm-cons (scm-cadr e) defs))
+                      ((scm-eq? 'begin (scm-car e))
+                       (extract-module-defs (scm-cdr e) defs))
+                      (else defs))))
               ((symbol? e)
                (extract-module-defs (scm-cdr body)
-                                    (if (scm-eq? 'define e)
+                                    (if (or (scm-eq? 'define e) (scm-eq? 'set! e))
                                         (scm-cons (scm-cadr body) defs)
                                         defs)))
               (else (extract-module-defs (scm-cdr body) defs))))))
