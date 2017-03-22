@@ -30,8 +30,8 @@ assert m.b(10, 20) == 200
 
 module m(c, d)
 { function c(x, y) x+y
-  function d(x, y) x*y
-  function c(x:string, y:integer) [x, y] }
+  function c(x:string, y:integer) [x, y]
+  function d(x, y) x*y }
 
 assert m.c(1,2) == 3
 assert m.d(10,20) == 200
@@ -40,14 +40,13 @@ assert m.c("hi", 1) == ["hi", 1]
 // generics exported from modules.
 module m(x, c1, c2)
 { function x(a, b);
+  declare generic x
   function c1()
     ^(msg)
     | 'x -> ^(b) 10 + b
   function c2()
     ^(msg)
-    | 'x -> ^(b) 10 - b
-
-  declare generic x }
+    | 'x -> ^(b) 10 - b }
 
 assert m.x(m.c1(), 100) == 110
 assert m.x(m.c2(), 100) == -90
@@ -57,3 +56,15 @@ function c3()
   | 'x -> ^(b) 10 * b
 
 assert m.x(c3(), 100) == 1000
+
+module m2(f, g, r, r_c, a)
+{ function f() 100
+  function a(x:integer, y:integer) [100, x, y]
+  record r(c);
+  function g() 200 }
+
+assert m2.f() == 100
+assert m2.a(1,2) == [100, 1, 2]
+let rr = m2.r(c = 1000)
+assert m2.r_c(rr) == 1000
+assert m2.g() == 200

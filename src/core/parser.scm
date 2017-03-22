@@ -801,28 +801,58 @@
               (let ((e (scm-car body)))
                 (if (pair? e)
                     (let ((h (scm-car e)))
-                      (if (or (eq? h 'define) (eq? h 'begin))
+                      (if (or (eq? h 'define) (eq? h 'begin)
+                              (eq? h 'define-structure))
                           (if exprs?
                               (parser-error tokenizer "Ill-placed definition, must come before expressions in the block.")
                               (loop (scm-cdr body) #f))
                           (loop (scm-cdr body) #t))))))))))
 
+(define (move-up-defs-in-block expr)
+  (if (scm-not (pair? expr)) expr
+      (let ((type (scm-car expr)))
+        (let ((rewrote-expr
+               (let loop ((body (case type
+                                  ((begin) (scm-cdr expr))
+                                  ((let) (scm-cddr expr))
+                                  (else expr)))
+                          (defs '()) (exprs '()))
+                 (if (null? body)
+                     (scm-append (scm-reverse defs) (scm-reverse exprs))
+                     (let ((e (scm-car body)))
+                       (cond
+                        ((pair? e)
+                         (let ((f (scm-car e)))
+                           (cond
+                            ((or (eq? f 'define) (eq? f 'define-structure))
+                             (loop (scm-cdr body) (scm-cons e defs) exprs))
+                            ((eq? f 'begin)
+                             (loop (scm-append (scm-cdr e) (scm-cdr body)) defs exprs))
+                            (else
+                             (loop (scm-cdr body) defs (scm-cons e exprs))))))
+                        (else (loop (scm-cdr body) defs (scm-cons e exprs)))))))))
+          (case type
+            ((begin) `(begin ,@rewrote-expr))
+            ((let) `(let () ,@rewrote-expr))
+            (else rewrote-expr))))))
+
 (define (block-expr tokenizer #!optional (use-let #f))
   (let ((expr
-         (if (scm-not (scm-eq? (tokenizer 'peek) '*open-brace*))
-             (parser-error tokenizer "Missing block start.")
-             (begin (tokenizer 'next)
-                    (let loop ((expr (if use-let (scm-cons 'let (scm-cons '() '())) (scm-cons 'begin '())))
-                               (count 0))
-                      (let ((token (tokenizer 'peek)))
-                        (cond ((scm-eq? token '*close-brace*)
-                               (tokenizer 'next)
-                               (if (zero? count) (scm-append expr (scm-list *void*)) expr))
-                              ((eof-object? token)
-                               (parser-error tokenizer "Unexpected end of input. Missing closing brace?"))
-                              (else
-                               (loop (scm-append expr (scm-list (expression/statement tokenizer #f)))
-                                     (+ 1 count))))))))))
+         (move-up-defs-in-block
+          (if (scm-not (scm-eq? (tokenizer 'peek) '*open-brace*))
+              (parser-error tokenizer "Missing block start.")
+              (begin (tokenizer 'next)
+                     (let loop ((expr (if use-let (scm-cons 'let (scm-cons '() '())) (scm-cons 'begin '())))
+                                (count 0))
+                       (let ((token (tokenizer 'peek)))
+                         (cond ((scm-eq? token '*close-brace*)
+                                (tokenizer 'next)
+                                (if (zero? count) (scm-append expr (scm-list *void*)) expr))
+                               ((eof-object? token)
+                                (parser-error tokenizer "Unexpected end of input. Missing closing brace?"))
+                               (else
+                                (loop (scm-append expr (scm-list (expression/statement tokenizer #f)))
+                                      (+ 1 count)))))))))))
     (assert-defs-in-block tokenizer expr)
     expr))
 
