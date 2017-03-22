@@ -1,5 +1,7 @@
 ;; Copyright (c) 2013-2017 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
+;; Translate Slogan source code to intermediate representation, i.e Scheme.
+
 (define-structure s-yield fn k)
 
 (define *enforce-comma* #t)
