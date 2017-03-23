@@ -1314,7 +1314,7 @@
     (let ((expr (scm-expression tokenizer))
           (expr-name (let-pattern-gensym)))
       (make-let-pattern-bindings
-       tokenizer expr expr-name pattern-expr  '() 0))))
+       tokenizer expr expr-name pattern-expr '() 0))))
 
 (define (assert-pattern-bindings-let tokenizer letkw)
   (if (scm-not (scm-eq? letkw 'let*))
@@ -1798,51 +1798,54 @@
          (let loop ((params '()) (types '())
                     (directives-found #f))
            (let ((token (tokenizer 'peek)))
-             (cond ((valid-identifier? token)
-                    (let ((sym (check-func-param tokenizer)))
-                      (cond ((param-directive? sym)
-                             (loop (scm-cons (slgn-directive->scm-directive sym) params)
-				   (if (scm-eq? sym '@rest) (scm-cons sym types) types)
-				   #t))
-                            ((scm-eq? (tokenizer 'peek) '*assignment*)
-                             (tokenizer 'next)
-                             (let ((expr (scm-expression tokenizer)))
-                               (if directives-found
-                                   (loop (scm-cons (scm-list sym expr) params)
-					 (scm-cons (func-param-type tokenizer) types)					 
-					 directives-found)
-				   (loop (scm-cons
-					  (scm-list sym expr) 
-					  (scm-cons 
-					   (slgn-directive->scm-directive '@optional) params))
-					 (scm-cons (func-param-type tokenizer) types)					 
-					 #t))))
-                            (else
-                             (let ((type (func-param-type tokenizer)))
-                               (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
-                                      (tokenizer 'next)
-                                      (let ((expr (scm-expression tokenizer)))
-                                        (if (scm-eq? (tokenizer 'peek) '*comma*)
-                                            (tokenizer 'next))
-                                        (if directives-found
-                                            (loop (scm-cons (scm-list sym expr) params)
-                                                  (scm-cons type types)
-                                                  directives-found)
-                                            (loop (scm-cons
-                                                   (scm-list sym expr)
-                                                   (scm-cons
-                                                    (slgn-directive->scm-directive '@optional) params))
-                                                  (scm-cons type types)
-                                                  #t))))
-                                     (else
-                                      (loop (scm-cons sym params)
-                                            (scm-cons type types)
-                                            directives-found))))))))
-                   (else
-                    (if (scm-eq? token '*close-paren*)
-                        (begin (tokenizer 'next)
-                               (scm-cons (scm-reverse params) (scm-reverse types)))
-                        (parser-error tokenizer "Missing closing parenthesis after parameter list.")))))))
+             (cond
+              ((valid-identifier? token)
+               (let ((sym (check-func-param tokenizer)))
+                 (cond
+                  ((param-directive? sym)
+                   (loop (scm-cons (slgn-directive->scm-directive sym) params)
+                         (if (scm-eq? sym '@rest) (scm-cons sym types) types)
+                         #t))
+                  ((scm-eq? (tokenizer 'peek) '*assignment*)
+                   (tokenizer 'next)
+                   (let ((expr (scm-expression tokenizer)))
+                     (if directives-found
+                         (loop (scm-cons (scm-list sym expr) params)
+                               (scm-cons (func-param-type tokenizer) types)
+                               directives-found)
+                         (loop (scm-cons
+                                (scm-list sym expr)
+                                (scm-cons
+                                 (slgn-directive->scm-directive '@optional) params))
+                               (scm-cons (func-param-type tokenizer) types)
+                               #t))))
+                  (else
+                   (let ((type (func-param-type tokenizer)))
+                     (cond
+                      ((scm-eq? (tokenizer 'peek) '*assignment*)
+                       (tokenizer 'next)
+                       (let ((expr (scm-expression tokenizer)))
+                         (if (scm-eq? (tokenizer 'peek) '*comma*)
+                             (tokenizer 'next))
+                         (if directives-found
+                             (loop (scm-cons (scm-list sym expr) params)
+                                   (scm-cons type types)
+                                   directives-found)
+                             (loop (scm-cons
+                                    (scm-list sym expr)
+                                    (scm-cons
+                                     (slgn-directive->scm-directive '@optional) params))
+                                   (scm-cons type types)
+                                   #t))))
+                      (else
+                       (loop (scm-cons sym params)
+                             (scm-cons type types)
+                             directives-found))))))))
+              (else
+               (if (scm-eq? token '*close-paren*)
+                   (begin (tokenizer 'next)
+                          (scm-cons (scm-reverse params) (scm-reverse types)))
+                   (parser-error tokenizer "Missing closing parenthesis after parameter list.")))))))
         (else
 	 (if params-required?
 	     (parser-error tokenizer "Missing parameter list.")
