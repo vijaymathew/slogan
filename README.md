@@ -1,6 +1,6 @@
 Slogan is a general purpose programming language with facilities for concurrent and parallel computing.
 
-###Building and running Slogan
+### Building and running Slogan
 
     $ sudo ./install
 
