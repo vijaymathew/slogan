@@ -42,11 +42,46 @@
           (make-root-thread fn name)
           (make-root-thread fn))))
 
+(define (task-data t)
+  (let ((d (thread-specific t)))
+    (if d (scm-car d) d)))
+
+(define (task-data-set! t new-data)
+  (let ((d (thread-specific t)))
+    (if d
+        (set-car! d new-data)
+        (thread-specific-set! t (scm-cons new-data #f)))))
+
+(define (task-binding t var)
+  (let ((d (thread-specific t)))
+    (if d
+        (let ((b (scm-cdr d)))
+          (if b
+              (table-ref b var *void*)
+              *void*))
+        *void*)))
+
+(define (task-binding-set! t var val)
+  (let ((d (thread-specific t)))
+    (if d
+        (let ((b (scm-cdr d)))
+          (if b
+              (table-set! b var val)
+              (let ((b (make-table)))
+                (table-set! b var val)
+                (set-cdr! d b))))
+        (let ((b (make-table)))
+          (table-set! b var val)
+          (thread-specific-set! t (scm-cons #f b))))))
+
+(define (task-binding-remove! t var)
+  (task-binding-set! t var *void*))
+
 (define is_task thread?)
 (define self current-thread)
 (define task_name thread-name)
-(define task_data thread-specific)
-(define task_set_data thread-specific-set!)
+(define task_data task-data)
+(define task_set_data task-data-set!)
 (define task_base_priority thread-base-priority)
 (define task_set_base_priority thread-base-priority-set!)
 (define task_priority_boost thread-priority-boost)

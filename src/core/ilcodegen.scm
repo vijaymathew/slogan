@@ -479,6 +479,22 @@
              (char=? #\? (string-ref s 0))))
       #f))
 
+(define (dynamic-var? s)
+  (and (symbol? s)
+       (let* ((str (symbol->string s))
+              (len (string-length str)))
+         (and (> len 1)
+              (char=? (string-ref str 0) #\_)
+              (char=? (string-ref str (- len 1)) #\_)))))
+
+(define (make-dynamic-ref expr)
+  (if (dynamic-var? expr)
+      `(let ((*dbinding* (task-binding (current-thread) ',expr)))
+         (if (eq? *void* *dbinding*)
+             ,expr
+             *dbinding*))
+      expr))
+
 (define (var-def-set sym tokenizer def)
   (if (scm-eq? (tokenizer 'peek) '*assignment*)
       (begin (tokenizer 'next)
@@ -670,7 +686,7 @@
                                    (set! *value* *orig-value*)
                                    '*unbound*)))))
             (loop (scm-cdr patterns) (scm-cdr guards)
-                  (scm-cons (match-pattern (if (scm-eq? pattern '@) prev-pattern pattern) c) body)))))))
+                  (scm-cons (match-pattern (if (scm-eq? pattern '%) prev-pattern pattern) c) body)))))))
 
 (define (last-pattern patterns&guards)
   (scm-car (scm-reverse (scm-car patterns&guards))))
@@ -978,7 +994,7 @@
 	 (scm-list 'scm-rvar))
         ((scm-eq? token '*semicolon*)
          (parser-error tokenizer "Semicolon not expected here."))
-	(else (let ((var (tokenizer 'next)))
+	(else (let ((var (make-dynamic-ref (tokenizer 'next))))
                 (if (slgn-is_special_token var)
                     (parser-error tokenizer "Misplaced token or operator."))
 		(if (scm-eq? (tokenizer 'peek) '*period*)
@@ -1178,15 +1194,38 @@
                                      *for-value*))))))))))
         (else  (func-call-expr (literal-expr tokenizer) tokenizer))))
 
+(define (make-dyn-un/bind-exprs bindings)
+  (scm-map (lambda (b)
+             (let ((var (scm-car b)) (val (scm-cadr b)))
+               (if (scm-not (dynamic-var? var))
+                   (scm-error "Not a valid dynamic variable name. " var))
+               (scm-cons
+                `(task-binding-set! (current-thread) ',var ,val)
+                `(task-binding-remove! (current-thread) ',var))))
+           bindings))
+
+(define (letdyn-expr tokenizer)
+  (tokenizer 'next)
+  (let* ((bindings (let-bindings tokenizer 'letdyn))
+         (bind-unbind-exprs (make-dyn-un/bind-exprs bindings))
+         (bind-exprs (scm-map scm-car bind-unbind-exprs))
+         (unbind-exprs (scm-map scm-cdr bind-unbind-exprs)))
+    `(let ()
+       ,@bind-exprs
+       (let ((**letdyn-val** ,(func-body-expr tokenizer '())))
+         ,@unbind-exprs
+         **letdyn-val**))))
+
 (define (let-expr tokenizer)
-  (let ((expr (let ((letkw (letkw? (tokenizer 'peek))))
-		(if letkw
-		    (begin (tokenizer 'next)
-			   (if (valid-identifier? (tokenizer 'peek))
-			       (named-let-expr letkw tokenizer)
-			       (normal-let-expr letkw tokenizer)))
-		    (for-expr tokenizer)))))
-    expr))
+  (if (eq? (tokenizer 'peek) 'letdyn)
+      (letdyn-expr tokenizer)
+      (let ((letkw (letkw? (tokenizer 'peek))))
+        (if letkw
+            (begin (tokenizer 'next)
+                   (if (valid-identifier? (tokenizer 'peek))
+                       (named-let-expr letkw tokenizer)
+                       (normal-let-expr letkw tokenizer)))
+            (for-expr tokenizer)))))
 
 (define (extract-let-binding-names bindings)
   (let loop ((bindings bindings) (vars '()))
@@ -1915,7 +1954,7 @@
       expr))
 
 (define *reserved-names* '(^ function module record true false
-			     if else when let letseq letrec yield
+			     if else when let letseq letrec letdyn yield
 			     case match where try trycc catch finally
 			     declare assert for break continue))
 

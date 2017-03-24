@@ -138,7 +138,7 @@ match ([1, 20, 3])
 assert
 match ([1, 2, 3])
   [_, b, _] where b >= 10 -> 'hi
-| @ where b >= 1 -> 'hello
+| % where b >= 1 -> 'hello
 == 'hello
 
 // or-pattern test:

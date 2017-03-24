@@ -68,3 +68,50 @@ assert m2.a(1,2) == [100, 1, 2]
 let rr = m2.r(c = 1000)
 assert m2.r_c(rr) == 1000
 assert m2.g() == 200
+
+// changed match pattern variable from `@` to `%`
+function merge(xs, ys)
+ | [[], ys] -> ys
+ | [xs, []] -> xs
+ | [hx:tx, hy:ty] where hx < hy -> hx:merge(tx, hy:ty)
+ | % -> hy:merge(hx:tx, ty)
+
+function msort(xs)
+ | [] -> []
+ | [x] -> [x]
+ | _ ->
+  let (n = core.quotient(core.length(xs), 2))
+   merge(msort(core.take(n, xs)), msort(core.drop(n, xs)))
+
+assert msort([\o, \a, \i, \u, \e]) == [\a, \e, \i, \o, \u]
+assert msort([53, 9, 2, 6, 19]) == [2, 6, 9, 19, 53]
+
+// dynamic bindings
+let _x_ = 1
+let r = ?
+!{ letdyn (_x_ = 10) ?r = _x_ }
+assert ?r == 10
+r = ?
+!{ letdyn (_x_ = 10) letdyn (_x_ = 20) ?r = _x_ }
+assert ?r == 20
+core.task_set_data(self(), 10000)
+assert core.task_data(self()) == 10000
+assert letdyn (_x_ = 20) _x_ * core.task_data(self()) == 20 * 10000
+assert _x_ == 1
+
+function df() _y_ * 100
+
+let _y_ = 20
+assert df() == 2000
+assert letdyn (_y_ = 5) df() == 500
+assert df() 2000
+
+let y = 10
+function sf() y * 100
+assert sf() == 1000
+assert let (y = 5) sf() == 1000
+
+let _a_, _b_ = 1, 2
+assert [_a_, _b_] == [1, 2]
+assert letdyn (_a_ = 100, _b_ = 200) [_a_, _b_] == [100, 200]
+assert [_a_, _b_] == [1, 2]
