@@ -22,7 +22,7 @@ After the installation is complete, you can start the REPL by typing:
     $ slogan
 
 
-You can also install Slogan using explicit `make` commands:
+You can also install Slogan using explicit configure & make commands:
     
     $ ./configure
     $ make
@@ -34,7 +34,8 @@ If you skip system-wide installation, note that the `slogan` binary will be crea
 in the `src` folder and can be run as `./src/slogan`.
 
 
-Visit http://schemer.in/slogan/ for tutorials and detailed documentation on the language.
+Please visit http://schemer.in/slogan/ for tutorials and detailed documentation on the language.
+
 Slogan is under active development and can be considered beta quality.
 Please report bugs/issues at https://github.com/vijaymathew/slogan/issues.
 
