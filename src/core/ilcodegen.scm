@@ -1410,6 +1410,14 @@
 (define (list-literal? s)
   (or (eq? s 'scm-list) (eq? s 'scm-long-list)))
 
+(define (module-export-name-expr tokenizer)
+  (let ((t (tokenizer 'peek)))
+    (cond ((valid-identifier? t)
+           (tokenizer 'next)
+           t)
+          (else
+           (scm-expression tokenizer)))))
+
 (define (mod-exports-list tokenizer)
   (let ((token (tokenizer 'peek)))
     (cond ((scm-not (scm-eq? '*open-paren* token))
@@ -1419,7 +1427,7 @@
            (let loop ((exports '()))
              (let ((token (tokenizer 'peek)))
                (if (scm-not (scm-eq? token '*close-paren*))
-                   (let ((expr (scm-expression tokenizer)))
+                   (let ((expr (module-export-name-expr tokenizer)))
                      (cond ((symbol? expr)
                             (check-if-reserved-name expr tokenizer)
                             (assert-comma-separator tokenizer '*close-paren* *enforce-comma* 'mod-exports-list)

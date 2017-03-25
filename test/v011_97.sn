@@ -115,3 +115,24 @@ let _a_, _b_ = 1, 2
 assert [_a_, _b_] == [1, 2]
 assert letdyn (_a_ = 100, _b_ = 200) [_a_, _b_] == [100, 200]
 assert [_a_, _b_] == [1, 2]
+
+function _f_(x) x * 100
+assert _f_(20) == 2000
+assert letdyn(_f_ = ^(x) x + 100) _f_(20) == 120
+assert _f_(20) == 2000
+
+module m(a, _a_, _af_)
+{ let a = 100
+  let _a_ = 200
+  function _af_(x, y) x * y }
+
+assert m.a == 100
+assert m._a_ == 200
+assert m._af_(2, 5) == 10
+let _ma_ = m._a_
+assert letdyn (_ma_ = 20) _ma_ == 20
+assert m._a_ == 200
+assert _ma_ == 200
+let _maf_ = m._af_
+assert letdyn (_maf_ = ^(x, y) x + y) _maf_(2, 5) == 7
+assert m._af_(2, 5) == 10
