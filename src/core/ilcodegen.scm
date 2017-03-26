@@ -840,6 +840,12 @@
                          (let ((f (scm-car e)))
                            (cond
                             ((or (eq? f 'define) (eq? f 'define-structure))
+                             (if (scm-not (null? exprs))
+                                 (begin (scm-display (string-append
+                                                      "warning: binding of "
+                                                      (symbol->string (scm-cadr e))
+                                                      " will precede expressions"))
+                                        (scm-newline)))
                              (loop (scm-cdr body) (scm-cons e defs) exprs))
                             ((eq? f 'begin)
                              (loop (scm-append (scm-cdr e) (scm-cdr body)) defs exprs))
@@ -1520,8 +1526,18 @@
            (let ((mod-exports (mod-exports-list tokenizer))
                  (mod-body (func-body-expr tokenizer '())))
              (merge-module mod-name mod-exports mod-body))))
+        (else (namespace-def-expr tokenizer))))
+
+(define (namespace-def-expr tokenizer)
+  (cond ((scm-eq? 'namespace (tokenizer 'peek))
+         (tokenizer 'next)
+         (let ((ns-name (tokenizer 'next)))
+           (if (scm-not (valid-identifier? ns-name))
+               (parser-error tokenizer "invalid namespace identifier"))
+           (let ((ns-body (func-body-expr tokenizer '())))
+             ns-body)))
         (else #f)))
-             
+
 (define (func-def-expr tokenizer)
   (let ((token (tokenizer 'peek)))
     (if (or (scm-eq? '*fn* token) (scm-eq? 'function token))
