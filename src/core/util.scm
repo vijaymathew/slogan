@@ -98,6 +98,8 @@
         (slgn-display-char val port))
        ((set-type? val)
         (slgn-display-set val quotes port))
+       ((namespace? val)
+        (slgn-display-namespace val port))
        ((list? val)
         (slgn-display-list val quotes port))
        ((pair? val)
@@ -146,6 +148,13 @@
         (slgn-display-special-obj "monitor" port))
        (else
         (scm-display (scm-repr->slgn-repr val) port)))))
+
+(define (slgn-display-namespace obj port)
+  (let ((str (string-append
+              "<namespace "
+              (symbol->string (namespace-name obj))
+              ">")))
+  (scm-display str port)))
 
 (define (slgn-display-hashtable ht quotes port)
   (scm-display "#{" port)

@@ -88,7 +88,17 @@
                  ((ffi) (declare-ffi-stmt tokenizer))
                  (else
                   (parser-error tokenizer "invalid declare type")))))
-      (func-def-stmt tokenizer)))
+      (import-stmt tokenizer)))
+
+(define (import-stmt tokenizer)
+  (cond ((eq? (tokenizer 'peek) 'import)
+         (tokenizer 'next)
+         (let ((ns-name (tokenizer 'next)))
+           (if (scm-not (valid-identifier? ns-name))
+               (parser-error tokenizer "invalid namespace identifier"))
+           `(scm-eval (scm-eval (make-namespace-import-all-stmt ',ns-name #f)))))
+        (else
+         (func-def-stmt tokenizer))))
 
 (define (normalize-c-struct-members memtypes)
   (scm-map (lambda (m) (scm-cons (scm-cadr m) (scm-caddr m))) memtypes))
@@ -1528,6 +1538,17 @@
              (merge-module mod-name mod-exports mod-body))))
         (else (namespace-def-expr tokenizer))))
 
+(define (merge-namespace name body)
+  (let ((defs (extract-module-defs body '())))
+    `(define ,name (scm-cons
+                    (scm-cons ns-tag ',name)
+                    (let ()
+                      ,@(scm-cdr body)
+                      (scm-list
+                       ,@(scm-map (lambda (def)
+                                    (scm-list 'scm-cons (scm-list 'quote def) def))
+                                  defs)))))))
+
 (define (namespace-def-expr tokenizer)
   (cond ((scm-eq? 'namespace (tokenizer 'peek))
          (tokenizer 'next)
@@ -1535,7 +1556,7 @@
            (if (scm-not (valid-identifier? ns-name))
                (parser-error tokenizer "invalid namespace identifier"))
            (let ((ns-body (func-body-expr tokenizer '())))
-             ns-body)))
+             (merge-namespace ns-name ns-body))))
         (else #f)))
 
 (define (func-def-expr tokenizer)
