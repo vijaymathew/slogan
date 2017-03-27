@@ -88,17 +88,7 @@
                  ((ffi) (declare-ffi-stmt tokenizer))
                  (else
                   (parser-error tokenizer "invalid declare type")))))
-      (import-stmt tokenizer)))
-
-(define (import-stmt tokenizer)
-  (cond ((eq? (tokenizer 'peek) 'import)
-         (tokenizer 'next)
-         (let ((ns-name (tokenizer 'next)))
-           (if (scm-not (valid-identifier? ns-name))
-               (parser-error tokenizer "invalid namespace identifier"))
-           `(scm-eval (scm-eval (make-namespace-import-all-stmt ',ns-name #f)))))
-        (else
-         (func-def-stmt tokenizer))))
+      (func-def-stmt tokenizer)))
 
 (define (normalize-c-struct-members memtypes)
   (scm-map (lambda (m) (scm-cons (scm-cadr m) (scm-caddr m))) memtypes))
@@ -444,7 +434,7 @@
     (cond
      ((symbol? token)
       (cond
-       ((scm-not (valid-identifier? token))
+       ((slgn-is_special_token token)
         (tokenizer 'put token)
         (let ((bindings (let-pattern-bindings tokenizer)))
           (make-pattern-defines bindings)))
@@ -491,8 +481,8 @@
        (let* ((str (symbol->string s))
               (len (string-length str)))
          (and (> len 1)
-              (char=? (string-ref str 0) #\_)
-              (char=? (string-ref str (- len 1)) #\_)))))
+              (char=? (string-ref str 0) #\%)
+              (char=? (string-ref str (- len 1)) #\%)))))
 
 (define (make-dynamic-ref expr)
   (if (dynamic-var? expr)
@@ -515,6 +505,20 @@
                  (scm-list (if def 'define 'set!) sym (scm-expression tokenizer))))
       (parser-error tokenizer "expected assignment")))
 
+(define (deref-expr tokenizer obj)
+  (tokenizer 'next)
+  (invoke-access-expression
+   tokenizer
+   (let ((s (tokenizer 'next)))
+     (if (scm-not (valid-identifier? s))
+         (parser-error tokenizer "invalid identifier"))
+     `(let ((*obj* ,obj))
+        (scm-hashtable_at
+         (if (namespace? *obj*)
+             (namespace-defs *obj*)
+             *obj*)
+         ,(scm-list 'quote s))))))
+
 (define (invoke-access-expression tokenizer expr)
   (let loop ((expr expr))
     (let ((tok (tokenizer 'peek)))
@@ -524,8 +528,10 @@
              (pair-literal tokenizer expr))
             ((scm-eq? tok '*open-bracket*)
              (array-access-expr tokenizer expr))
+            ((scm-eq? tok '*deref*)
+             (deref-expr tokenizer expr))
             ((scm-eq? tok '*task-send*)
-             (task-send-expr expr tokenizer))
+             (task-send-expr tokenizer expr))
             (else expr)))))
 
 (define (scm-expression tokenizer)
@@ -850,12 +856,6 @@
                          (let ((f (scm-car e)))
                            (cond
                             ((or (eq? f 'define) (eq? f 'define-structure))
-                             (if (scm-not (null? exprs))
-                                 (begin (scm-display (string-append
-                                                      "warning: binding of "
-                                                      (symbol->string (scm-cadr e))
-                                                      " will precede expressions"))
-                                        (scm-newline)))
                              (loop (scm-cdr body) (scm-cons e defs) exprs))
                             ((eq? f 'begin)
                              (loop (scm-append (scm-cdr e) (scm-cdr body)) defs exprs))
@@ -946,7 +946,7 @@
       (- token)
       (scm-list '- token)))
 
-(define (task-send-expr task-expr tokenizer)
+(define (task-send-expr tokenizer task-expr)
   (tokenizer 'next)
   `(let ((*msg* ,(scm-expression tokenizer)))
      (thread-send ,task-expr *msg*)
@@ -1010,10 +1010,14 @@
 	(else (let ((var (make-dynamic-ref (tokenizer 'next))))
                 (if (slgn-is_special_token var)
                     (parser-error tokenizer "misplaced token or operator"))
-		(if (scm-eq? (tokenizer 'peek) '*period*)
-		    (begin (tokenizer 'next)
-			   (closure-member-access var tokenizer))
-		    (handle-rvar-access (slgn-repr->scm-repr var)))))))
+                (let ((ntok (tokenizer 'peek)))
+                  (cond ((eq? ntok '*period*)
+                         (tokenizer 'next)
+                         (closure-member-access var tokenizer))
+                        ((eq? ntok '*deref*)
+                         (deref-expr tokenizer token))
+                        (else
+                         (handle-rvar-access (slgn-repr->scm-repr var)))))))))
 
 (define (member-access/funcall-expr expr tokenizer)
   (cond ((scm-eq? (tokenizer 'peek) '*period*)
@@ -1137,7 +1141,11 @@
             (if mkset?
                 `(make-set ,@args)
                 `(make-equal-hashtable (scm-list ,@args))))
-          (let ((keyval (scm-expression tokenizer)))
+          (let ((keyval (let ((e (scm-expression tokenizer)))
+                          (if (and (tokenizer 'let-pattern-mode?)
+                                   (symbol? e))
+                              (scm-list 'scm-cons (scm-list 'quote e) e)
+                              e))))
             (begin
               (if (and (scm-not mkset?)
                        (scm-not (and
@@ -1357,8 +1365,19 @@
              (scm-eq? s 'scm-cons)
              (scm-eq? s 'make-equal-hashtable)))))
 
+(define (scm-let-pattern-expression tokenizer)
+  (with-exception-catcher
+   (lambda (e)
+     (tokenizer 'let-pattern-mode-off)
+     (scm-raise e))
+   (lambda ()
+     (tokenizer 'let-pattern-mode-on)
+     (let ((expr (scm-expression tokenizer)))
+       (tokenizer 'let-pattern-mode-off)
+       expr))))
+
 (define (let-pattern-bindings tokenizer)
-  (let ((pattern-expr (scm-expression tokenizer)))
+  (let ((pattern-expr (scm-let-pattern-expression tokenizer)))
     (if (scm-not (let-pattern-binding? pattern-expr))
         (parser-error tokenizer "invalid binding name or pattern"))
     (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
@@ -1538,17 +1557,6 @@
              (merge-module mod-name mod-exports mod-body))))
         (else (namespace-def-expr tokenizer))))
 
-(define (merge-namespace name body)
-  (let ((defs (extract-module-defs body '())))
-    `(define ,name (scm-cons
-                    (scm-cons ns-tag ',name)
-                    (let ()
-                      ,@(scm-cdr body)
-                      (scm-list
-                       ,@(scm-map (lambda (def)
-                                    (scm-list 'scm-cons (scm-list 'quote def) def))
-                                  defs)))))))
-
 (define (namespace-def-expr tokenizer)
   (cond ((scm-eq? 'namespace (tokenizer 'peek))
          (tokenizer 'next)
@@ -1556,7 +1564,7 @@
            (if (scm-not (valid-identifier? ns-name))
                (parser-error tokenizer "invalid namespace identifier"))
            (let ((ns-body (func-body-expr tokenizer '())))
-             (merge-namespace ns-name ns-body))))
+             (make-namespace-expr ns-name ns-body))))
         (else #f)))
 
 (define (func-def-expr tokenizer)
@@ -1998,7 +2006,7 @@
 (define *reserved-names* '(^ function module record true false
 			     if else when let letseq letrec letdyn yield
 			     case match where try trycc catch finally
-			     declare assert for break continue))
+			     namespace declare assert for break continue))
 
 (define (reserved-name? sym)
   (and (symbol? sym)

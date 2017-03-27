@@ -7,9 +7,13 @@
                       (make-table hash: hash-fn test: eq-predic))
                   eq-predic hash-fn))
 
-(define (make_eq_hashtable #!optional size) (make_hashtable eq?-hash eq? size))
-(define (make_eqv_hashtable #!optional size) (make_hashtable eqv?-hash eqv? size))
-(define (make_equal_hashtable #!optional size) (make_hashtable equal?-hash equal? size))
+(define scm-make_hashtable make_hashtable)
+
+(define (make_eq_hashtable #!optional size) (scm-make_hashtable eq?-hash eq? size))
+(define (make_eqv_hashtable #!optional size) (scm-make_hashtable eqv?-hash eqv? size))
+(define (make_equal_hashtable #!optional size) (scm-make_hashtable equal?-hash equal? size))
+
+(define scm-make_equal_hashtable make_equal_hashtable)
 
 (define symbol_hash symbol-hash)
 (define string_hash string=?-hash)
@@ -59,23 +63,30 @@
     (table-for-each (lambda (k v) (set! e (scm-cons v e))) (hashtable-table ht))
     (list->vector (scm-reverse e))))
 
+(define scm-hashtable_keys hashtable_keys)
+(define scm-hashtable_values hashtable_values)
+
 (define (hashtable_entries ht)
-  (scm-cons (hashtable_keys ht) (hashtable_values ht)))
+  (scm-cons (scm-hashtable_keys ht) (scm-hashtable_values ht)))
 
 (define (hashtable_for_each proc ht)
   (table-for-each proc (hashtable-table ht)))
 
 (define (make-equal-hashtable args)
-  (let ((ht (make_equal_hashtable)))
+  (let ((ht (scm-make_equal_hashtable)))
     (let loop ((args args))
       (if (null? args)
         ht
         (let ((a (scm-car args)))
-          (hashtable_set ht (scm-car a) (scm-cdr a))
+          (scm-hashtable_set ht (scm-car a) (scm-cdr a))
           (loop (scm-cdr args)))))))
 
 (define (hashtable->list ht)
   (table->list (hashtable-table ht)))
+
+(define (list->hashtable lst)
+  (let ((t (scm-make_equal_hashtable)))
+    (hashtable-table-set! t (list->table lst))))
 
 ;; The set datatype
 (define-structure set-type ht)

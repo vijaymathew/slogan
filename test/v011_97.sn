@@ -87,23 +87,23 @@ assert msort([\o, \a, \i, \u, \e]) == [\a, \e, \i, \o, \u]
 assert msort([53, 9, 2, 6, 19]) == [2, 6, 9, 19, 53]
 
 // dynamic bindings
-let _x_ = 1
+let %x% = 1
 let r = ?
-!{ letdyn (_x_ = 10) ?r = _x_ }
+!{ letdyn (%x% = 10) ?r = %x% }
 assert ?r == 10
 r = ?
-!{ letdyn (_x_ = 10) letdyn (_x_ = 20) ?r = _x_ }
+!{ letdyn (%x% = 10) letdyn (%x% = 20) ?r = %x% }
 assert ?r == 20
 core.task_set_data(self(), 10000)
 assert core.task_data(self()) == 10000
-assert letdyn (_x_ = 20) _x_ * core.task_data(self()) == 20 * 10000
-assert _x_ == 1
+assert letdyn (%x% = 20) %x% * core.task_data(self()) == 20 * 10000
+assert %x% == 1
 
-function df() _y_ * 100
+function df() %y% * 100
 
-let _y_ = 20
+let %y% = 20
 assert df() == 2000
-assert letdyn (_y_ = 5) df() == 500
+assert letdyn (%y% = 5) df() == 500
 assert df() 2000
 
 let y = 10
@@ -111,28 +111,68 @@ function sf() y * 100
 assert sf() == 1000
 assert let (y = 5) sf() == 1000
 
-let _a_, _b_ = 1, 2
-assert [_a_, _b_] == [1, 2]
-assert letdyn (_a_ = 100, _b_ = 200) [_a_, _b_] == [100, 200]
-assert [_a_, _b_] == [1, 2]
+let %a%, %b% = 1, 2
+assert [%a%, %b%] == [1, 2]
+assert letdyn (%a% = 100, %b% = 200) [%a%, %b%] == [100, 200]
+assert [%a%, %b%] == [1, 2]
 
-function _f_(x) x * 100
-assert _f_(20) == 2000
-assert letdyn(_f_ = ^(x) x + 100) _f_(20) == 120
-assert _f_(20) == 2000
+function %f%(x) x * 100
+assert %f%(20) == 2000
+assert letdyn(%f% = ^(x) x + 100) %f%(20) == 120
+assert %f%(20) == 2000
 
-module m(a, _a_, _af_)
+module m(a, %a%, %af%)
 { let a = 100
-  let _a_ = 200
-  function _af_(x, y) x * y }
+  let %a% = 200
+  function %af%(x, y) x * y }
 
 assert m.a == 100
-assert m._a_ == 200
-assert m._af_(2, 5) == 10
-let _ma_ = m._a_
-assert letdyn (_ma_ = 20) _ma_ == 20
-assert m._a_ == 200
-assert _ma_ == 200
-let _maf_ = m._af_
-assert letdyn (_maf_ = ^(x, y) x + y) _maf_(2, 5) == 7
-assert m._af_(2, 5) == 10
+assert m.%a% == 200
+assert m.%af%(2, 5) == 10
+let %ma% = m.%a%
+assert letdyn (%ma% = 20) %ma% == 20
+assert m.%a% == 200
+assert %ma% == 200
+let %maf% = m.%af%
+assert letdyn (%maf% = ^(x, y) x + y) %maf%(2, 5) == 7
+assert m.%af%(2, 5) == 10
+
+// namespaces
+namespace n1
+{ function f(x) #{1:x}
+  let g = 100 }
+
+assert n1::f(10)[1] == 10
+assert n1::g == 100
+
+let #{f, g} = n1
+assert f(200)[1] == 200
+assert g == 100
+
+let #{'f:nf, 'g:ng} = n1
+assert nf(200)[1] == f(200)[1]
+assert g == ng
+
+namespace n2
+{ function f(x) x * 100
+  record rr(a, b)
+  function g(y) 2 * y
+  let ttt = 200 }
+
+assert n2::f(10) == 1000
+let rr0 = n2::rr(a = 20, b = 30)
+assert n2::rr_a(rr0) == 20
+assert n2::rr_b(rr0) == 30
+n2::rr_set_b(rr0, 100);
+assert n2::rr_b(rr0) == 100
+assert n2::g(10) == 20
+assert n2::ttt == 200
+
+let #{'rr:abc, 'rr_a:a, 'rr_set_a:set_a,
+      'g:aaa, 'ttt:tt} = n2
+rr0 = abc(a=1000,b=2000)
+assert a(rr0) == 1000
+set_a(rr0, 1)
+assert a(rr0) == 1
+assert aaa(20) == 40
+assert tt == 200
