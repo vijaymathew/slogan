@@ -1782,7 +1782,9 @@
     (let loop ((members members)
                (preconds preconds)
                (i 0)
-               (expr (scm-list 
+               (expr (scm-list
+                      `(define ,(string->symbol (string-append sname "__members"))
+                         (lambda () ',members))
                       (scm-list 'define (string->symbol sname) 
                             (mk-record-constructor sname members default-values preconds))
                       (scm-list 'define (string->symbol (string-append "make_" sname))

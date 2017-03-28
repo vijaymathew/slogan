@@ -176,3 +176,38 @@ set_a(rr0, 1)
 assert a(rr0) == 1
 assert aaa(20) == 40
 assert tt == 200
+
+// some more match tests:
+function fold_tree(f, e, t)
+  match(t)
+    'lf -> e
+  | x:l:r -> f(x, fold_tree(f, e, l), fold_tree(f, e, r))
+
+let t = 1:(0:'lf:'lf):(6:(4:'lf:'lf):'lf)
+assert fold_tree(`+`, 0, t) == 11
+
+function tree_preorder(t)  fold_tree(^(x, l, r) core.append([x], l, r), [], t)
+function tree_inorder(t)   fold_tree(^(x, l, r) core.append(l, [x], r), [], t)
+function tree_postorder(t) fold_tree(^(x, l, r) core.append(l, r, [x]), [], t)
+
+assert tree_preorder(t) == [1, 0, 6, 4]
+assert tree_inorder(t) == [0, 1, 4, 6]
+assert tree_postorder(t) == [0, 4, 6, 1]
+
+// interleaving lazy seqs
+function interleave(xs, ys) core.first(xs):~interleave(ys, core.rest(xs))
+function all_from(xs) xs:~interleave(all_from(0:xs), all_from(1:xs))
+let allones = all_from([])
+assert core.take(20, allones) == [[], [0], [1], [0, 0], [0, 1], [1, 0], [1, 1], [0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 0, 1, 1], [0, 1, 0, 0]]
+
+// record patterns can match member-names and general variables by position
+record point(x, y, label)
+let p1 = point(x=100, y=200, label="abc")
+let p2 = point(x=10, y=20, label="xyz")
+assert match(p1) point(x, label, y) -> [x,y,label] == [100,200,"abc"]
+assert match(p2) point(@x, @y, @label) -> [@x,@y,@label] == [10,20,"xyz"]
+assert match(p1) point(x=100, label, y) -> [label, y] == ["abc", 200]
+assert match(p2) point(x=100, label, y) -> [label, y] | _ -> false == false
+
+// auto-generated function to list record members
+assert point__members() == ['x, 'y, 'label]

@@ -272,18 +272,29 @@
                      ,consequent)))
         (else consequent)))
 
+(define (make-rec-accessor-name recname varname i)
+  (let ((s (symbol->string varname)))
+    (string->symbol
+     (string-append
+      recname "-"
+      (if (char=? (string-ref s 0) #\@)
+          (number->string i)
+          s)))))
+
 (define (expand-rec-consequent pattern consequent)
-  (let loop ((members (record-pattern-members pattern))
-             (i 0)
-             (bindings '()))
-    (cond ((null? members)
-           (if (null? bindings)
-               consequent
-               `(begin ,@(scm-reverse bindings) ,consequent)))
-          ((symbol? (scm-car members))
-           (if (scm-eq? (scm-car members) '_)
-               (loop (scm-cdr members) (+ i 1) bindings)
-               (let ((accessor (string->symbol (string-append (record-pattern-name pattern)
-                                                              "-" (number->string i)))))
-                 (loop (scm-cdr members) (+ i 1) (scm-cons `(set! ,(scm-car members) (,accessor *value*)) bindings)))))
-          (else (loop (scm-cdr members) (+ i 1) bindings)))))
+  (let ((recname (record-pattern-name pattern)))
+    (let loop ((members (record-pattern-members pattern))
+               (i 0)
+               (bindings '()))
+      (cond ((null? members)
+             (if (null? bindings)
+                 consequent
+                 `(begin ,@(scm-reverse bindings) ,consequent)))
+            ((symbol? (scm-car members))
+             (if (scm-eq? (scm-car members) '_)
+                 (loop (scm-cdr members) (+ i 1) bindings)
+                 (let ((accessor (make-rec-accessor-name recname (scm-car members) i)))
+                   (loop (scm-cdr members) (+ i 1)
+                         (scm-cons `(set! ,(scm-car members)
+                                          (,accessor *value*)) bindings)))))
+            (else (loop (scm-cdr members) (+ i 1) bindings))))))
