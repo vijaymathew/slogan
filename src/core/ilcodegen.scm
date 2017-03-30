@@ -374,7 +374,7 @@
 
 (define (vars-defs-set syms exprs def)
   (if (scm-not (= (scm-length syms) (scm-length exprs)))
-      (scm-error "Not enough values or variables." syms exprs))
+      (scm-error "not enough values or variables" syms exprs))
   (let loop ((syms syms) (exprs exprs) (defexprs '()))
     (if (scm-not (null? syms))
         (let ((sym (scm-car syms)))
@@ -773,12 +773,17 @@
   (let ((try-expr (scm-list (get-exception-handler-fnname try-token)
 			(scm-list 'lambda catch-args catch-expr)
 			(scm-list 'lambda (scm-list) try-expr))))
-    (if (void? finally-expr) try-expr
-	(scm-list 'let (scm-list (scm-list '*finally* (scm-list 'lambda (scm-list) finally-expr)))
-            (scm-list (get-exception-handler-fnname try-token)
-                  (scm-list 'lambda '(*e*) '(begin (*finally*) (scm-raise *e*)))
-                  (scm-list 'lambda '() try-expr))
-	    '(*finally*)))))
+    (if (void? finally-expr)
+        try-expr
+        `(let ((*finally* (lambda () ,finally-expr)))
+           (let ((*try-expr-value*
+                  (,(get-exception-handler-fnname try-token)
+                   (lambda (*exception*)
+                     (begin (*finally*)
+                            (scm-raise *exception*)))
+                   (lambda () ,try-expr))))
+             (*finally*)
+             *try-expr-value*)))))
 
 (define (yield-expr tokenizer)
   (let ((token (tokenizer 'peek)))
@@ -1219,7 +1224,7 @@
   (scm-map (lambda (b)
              (let ((var (scm-car b)) (val (scm-cadr b)))
                (if (scm-not (dynamic-var? var))
-                   (scm-error "Not a valid dynamic variable name. " var))
+                   (scm-error "not a valid dynamic variable name" var))
                (scm-cons
                 `(task-binding-set! (current-thread) ',var ,val)
                 `(task-binding-remove! (current-thread) ',var))))
@@ -1270,6 +1275,10 @@
 (define (let-pattern-gensym)
   (let ((s (symbol->string (scm-gensym))))
     (string->symbol (string-append s "-letpb"))))
+
+(define (let-ignore-var)
+  (let ((s (symbol->string (scm-gensym))))
+    (string->symbol (string-append s "-let-ignore"))))
 
 (define (make-let-pattern-bindings-for-table tokenizer expr-name pexpr bindings)
   (if (null? pexpr)
@@ -1417,15 +1426,16 @@
                (loop (tokenizer 'next) (scm-append bindings pbindings))))
             (else
              (check-if-reserved-name token tokenizer)
-             (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
-                 (parser-error tokenizer "expected assignment"))
-             (let ((expr (scm-expression tokenizer)))
-               (let ((next (tokenizer 'peek)))
-                 (if (scm-eq? next '*comma*)
-                     (tokenizer 'next)))
-               (loop
-                (tokenizer 'next)
-                (scm-append bindings (scm-list (scm-list token expr))))))))
+             (let ((token (if (eq? token '_) (let-ignore-var) token)))
+               (if (scm-not (scm-eq? (tokenizer 'next) '*assignment*))
+                   (parser-error tokenizer "expected assignment"))
+               (let ((expr (scm-expression tokenizer)))
+                 (let ((next (tokenizer 'peek)))
+                   (if (scm-eq? next '*comma*)
+                       (tokenizer 'next)))
+                 (loop
+                  (tokenizer 'next)
+                  (scm-append bindings (scm-list (scm-list token expr)))))))))
           (else
            (parser-error tokenizer "invalid let binding name")))))
 
@@ -1524,7 +1534,7 @@
               (let ((e (scm-car exps)))
                 (if (scm-memq (if (symbol? e) e (scm-cdr e)) defs-in-body)
                     (loop (scm-cdr exps))
-                    (scm-error "Exported name not found in definitions." e))))))))
+                    (scm-error "exported name not found in definitions" e))))))))
 
 (define (merge-module name exports body)
   (let ((exports (check-if-body-has-exported-names body exports)))
@@ -1745,9 +1755,18 @@
                  (else (parser-error tokenizer "invalid record specification")))))
         (else (parser-error tokenizer "expected record member specification"))))
 
+(define (assert-rec-member-name s)
+  (if (symbol? s)
+      (let ((str (symbol->string s)))
+        (if (char=? (string-ref str 0) #\@)
+            (scm-error "record member's name cannot start with the @ character" s)
+            s))
+      (scm-error "record member must be a valid identifier" s)))
+
 (define (def-struct-expr name members default-values preconds)
-  (scm-append (scm-list 'begin (scm-append (scm-list 'define-structure name) members))
-	  (mk-struct-accessors/modifiers name members default-values preconds)))
+  (let ((members (scm-map assert-rec-member-name members)))
+    (scm-append (scm-list 'begin (scm-append (scm-list 'define-structure name) members))
+                (mk-struct-accessors/modifiers name members default-values preconds))))
 
 (define (mk-record-precond-expr precond mem)
   (if (scm-eq? precond #t)
@@ -1783,8 +1802,7 @@
                (preconds preconds)
                (i 0)
                (expr (scm-list
-                      `(define ,(string->symbol (string-append sname "__members"))
-                         (lambda () ',members))
+                      `(define ,(string->symbol (string-append "members@" sname)) ',members)
                       (scm-list 'define (string->symbol sname) 
                             (mk-record-constructor sname members default-values preconds))
                       (scm-list 'define (string->symbol (string-append "make_" sname))

@@ -67,7 +67,7 @@
         ((yield-count-down) (if (> yield-count 0) (set! yield-count (- yield-count 1))))
         ((yield-count) yield-count)
         ((reset-yield-count) (set! yield-count 0))
-        (else (scm-error "tokenizer received unknown message: " msg))))))
+        (else (scm-error "tokenizer received unknown message" msg))))))
 
 (define (reset-yield-count! tokenizer oldc)
   (let loop ((diff (- (tokenizer 'yield-count) oldc)))
@@ -571,7 +571,7 @@
                              *single-char-operators-strings* 
                              *multi-char-operators-strings*)
                    caar
-                   (lambda () (scm-error "Not a special token." token)))))
+                   (lambda () (scm-error "not a special token" token)))))
 
 (define special_token_to_string slgn-special_token_to_string)
 

@@ -177,6 +177,18 @@ assert a(rr0) == 1
 assert aaa(20) == 40
 assert tt == 200
 
+namespace n
+{ module m(a)
+   function a() 'hello }
+
+assert (n::m).a() == 'hello
+
+module m (xyz)
+  namespace xyz
+  { function b() 'hi }
+
+assert m.xyz::b() == 'hi
+
 // some more match tests:
 function fold_tree(f, e, t)
   match(t)
@@ -209,5 +221,27 @@ assert match(p2) point(@x, @y, @label) -> [@x,@y,@label] == [10,20,"xyz"]
 assert match(p1) point(x=100, label, y) -> [label, y] == ["abc", 200]
 assert match(p2) point(x=100, label, y) -> [label, y] | _ -> false == false
 
-// auto-generated function to list record members
-assert point__members() == ['x, 'y, 'label]
+// auto-generated list of record members
+assert members@point == ['x, 'y, 'label]
+
+// ignorable varnames in let
+assert (let (x = 200, _ = 300, y = 400, _ = 500) [x,y]) == [200, 400]
+assert (letseq (x = 200, _ = 300, y = x*10 , _ = 500) [x,y]) == [200, 2000]
+
+// finally block to return value of try-expression
+let e = false
+let f = false
+let craise = core.raise
+assert try let (x = 1000) if (x == 0) craise("err!") else x*20 catch (ex) { e = ex; 1 } == 20000
+assert e == false
+assert try let (x = 0) if (x == 0) craise("err!") else x*20 catch (ex) { e = ex; 1 } == 1
+assert e == "err!"
+e = false
+assert (try let (x = 0) if (x == 0) craise("err!") else x*20 catch (ex) { e = ex; 1 } finally f = "ok") == 1
+assert f == "ok"
+f = false
+assert try let (x = 100) if (x == 0) craise("err!") else x*20 finally {f = "ok"; 2 } == 2000
+assert f == "ok"
+f = false
+assert (try let (x = 100) if (x == 0) craise("err!") else x*20 finally f = "ok") == 2000
+assert f == "ok"

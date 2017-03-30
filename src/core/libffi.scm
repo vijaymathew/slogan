@@ -825,7 +825,7 @@ c-declare-end
 (define (libffitype->int type)
   (let ((t (scm-assv type *libffi-types*)))
     (if t (scm-cdr t)
-        (scm-error "Invalid c type - " type))))
+        (scm-error "invalid c type" type))))
 
 (define (c-struct-defs sid accessor)
   (let ((sdef (scm-assv sid *c-struct-defs*)))
@@ -857,7 +857,7 @@ c-declare-end
              (set! *libffi-types* (scm-cons (scm-cons name sid) *libffi-types*))
              (set! *c-struct-defs* (scm-cons (scm-cons sid (scm-cons types (scm-map scm-cdr memtypes))) *c-struct-defs*))
              name)
-            (else (scm-error "Failed to define c structure - " name))))))
+            (else (scm-error "failed to define c structure" name))))))
 
 (define (mk-c-fn-param-names plen)
   (let loop ((i 0) (pnames '()))

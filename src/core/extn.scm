@@ -678,7 +678,7 @@ c-declare-end
   (call/cc
     (lambda (break)
       (if (scm-not (procedure? fn))
-        (scm-error "expected procedure instead of " fn))
+        (scm-error "expected procedure" fn))
       (let ((cmpr (if (> n from) < >))
             (trans (if (> n from) + -)))
         (let loop ((i from) (res init))

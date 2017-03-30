@@ -9,23 +9,23 @@
 
 (define (validate-codec codec)
   (if (scm-not (symbol? codec))
-      (scm-error "Codec must be a symbol."))
+      (scm-error "codec must be a symbol"))
   (if (scm-not (scm-memq (string->symbol (string_upcase (symbol->string codec)))
                  *supported-codecs*))
-      (scm-error "Unsupported codec." codec))
+      (scm-error "unsupported codec" codec))
   codec)
 
 (define *error-modes* '(replace raise ignore))
 
 (define (validate-error-handling-mode mode)
   (if (scm-memq mode *error-modes*) mode
-      (scm-error "Invalid error handling mode." mode)))
+      (scm-error "invalid error handling mode" mode)))
 
 (define *eol-styles* '(lf cr crlf))
 
 (define (validate-eol-style eol-style)
   (if (scm-memq eol-style *eol-styles*) eol-style
-      (scm-error "Unsupported eol-style." eol-style)))
+      (scm-error "unsupported eol-style" eol-style)))
 
 (define (error-handling-mode->boolean mode) (scm-eq? mode 'replace))
 
@@ -68,7 +68,7 @@
         ((block) #t)
         ((none) #f)
         ((line) 'line)
-        (else (scm-error "Invalid buffer-mode." bmode)))
+        (else (scm-error "invalid buffer-mode" bmode)))
       bmode))
 
 (define (replace-underscores sym) (slgn-symbol->scm-sym/kw sym string->symbol))
@@ -159,7 +159,7 @@
     ((beginning) 0)
     ((current) 1)
     ((end) 2)
-    (else (scm-error "Invalid whence for stream position change." w))))
+    (else (scm-error "invalid whence for stream position change" w))))
 
 (define (set_stream_position p pos #!optional (whence 'beginning))
   (if (input-port? p)
@@ -372,7 +372,7 @@
          (if (scm-not current-token)
              (set! current-token (next-delimited-token stream delimiters)))
          current-token)
-        (else (scm-error "Invalid message received by delimited-tokenizer. " msg))))))
+        (else (scm-error "invalid message received by delimited-tokenizer" msg))))))
 
 (define (next-delimited-token stream delimiters)
   (if (eof-object? (peek-char stream))

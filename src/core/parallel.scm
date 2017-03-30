@@ -77,7 +77,7 @@ c-declare-end
     (let ((ch (make-process-info #f child #f)))
       (if (scm-not (eq? (scm-process_receive ch) 'hi))
           (begin (close-port child)
-                 (scm-error "failed to establish connection."))
+                 (scm-error "failed to establish connection"))
           ch))))
 
 (define (open-server-connection port-number tries)
@@ -102,7 +102,7 @@ c-declare-end
                    (input-port-timeout-set! sock timeout))
                (let ((conn (scm-read sock)))
                  (if (eof-object? conn)
-                     (scm-error "timedout waiting for child process.")
+                     (scm-error "time-out waiting for child process")
                      (make-process-info pid conn sock)))))
             (else #f)))))
 
@@ -110,7 +110,7 @@ c-declare-end
   (let ((out (process-info-socket pinfo)))
     (if timeout
         (if (scm-not (> timeout 0))
-            (scm-error "process-send - timeout must be a positive number.")
+            (scm-error "process-send - timeout must be a positive number")
             (output-port-timeout-set! out timeout)))
     (scm-showln stream: out quotes: #t object)
     (force-output out)))
@@ -124,7 +124,7 @@ c-declare-end
   (let ((in (process-info-socket pinfo)))
     (if timeout
         (if (scm-not (> timeout 0))
-            (scm-error "process-recv - timeout must be a positive number.")
+            (scm-error "process-recv - timeout must be a positive number")
             (input-port-timeout-set! in timeout)))
     (let ((r (read-line in)))
       (cond ((eof-object? r)
@@ -168,7 +168,7 @@ c-declare-end
              (scm-process_close pinfo))
             (else
              (if sent?
-                 (scm-error "Pending reply in queue, cannot send more messages."))
+                 (scm-error "pending reply in queue, cannot send more messages"))
              (scm-process_send pinfo message timeout)
              (set! sent? #t)
              (let ((value *void*))

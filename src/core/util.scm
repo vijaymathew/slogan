@@ -279,7 +279,7 @@
       (if (scm-not (null? rest))
           (begin (if (scm-not (scm-eq? (lenf (scm-car rest)) len))
                      (scm-error (with-output-to-string 
-                                  "Object is not of proper length: " 
+                                  "object is not of proper length: "
                                   (lambda () (slgn-display (scm-car rest))))))
                  (loop (scm-cdr rest)))))))
 
@@ -337,7 +337,7 @@
          (if (slgn-compile script assemble: #f)
              (scm-load (string-append script *scm-extn*))
              (scm-error "failed to compile script" script))
-         (scm-error "file not found " script)))
+         (scm-error "file not found" script)))
    (lambda () (scm-load script))))
 
 (define slgn-load load)

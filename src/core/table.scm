@@ -171,4 +171,4 @@
         ((string? obj)
          (list->set (string->list obj)))
         (else
-         (scm-error "Cannot convert object to set."))))
+         (scm-error "cannot convert object to a set"))))

@@ -14,7 +14,7 @@
          (if (null? (scm-cdr dim))
              (make-array (scm-car dim) fill constructor)
              (make-array (scm-car dim) (lambda () (make-array (scm-cdr dim) fill constructor)) constructor)))
-        (else (scm-error "invalid array dimension. " dim))))
+        (else (scm-error "invalid array dimension" dim))))
 
 (define array scm-vector)
 (define (make_array dim #!optional fill) (make-array dim fill make-vector))
@@ -36,7 +36,7 @@
 (define (array_ref_set arr dim obj)
   (if (list? dim)
       (cond ((null? dim) 
-             (scm-error "array dimension cannot be empty."))
+             (scm-error "array dimension cannot be empty"))
             ((= 1 (scm-length dim))
              (vector-set! arr (scm-car dim) obj)
              *void*)

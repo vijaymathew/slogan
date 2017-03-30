@@ -158,7 +158,7 @@
     (if (and (scm-not (unbound? (condition-variable-specific cv)))
              (scm-not (equal? value (condition-variable-specific cv))))
         (begin (mutex-unlock! (reactive-var-mtx dfv))
-               (scm-error "cannot rebind reactive variable to a new value."))
+               (scm-error "cannot rebind reactive variable to a new value"))
         (begin (condition-variable-specific-set! cv value)
                (condition-variable-broadcast! cv)
                (mutex-unlock! (reactive-var-mtx dfv))))))

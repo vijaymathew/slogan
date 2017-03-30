@@ -8,7 +8,7 @@
     (cond ((null? args) #f)
           ((string=? arg (scm-car args))
            (if (null? (scm-cdr args))
-               (scm-error "Argument expects a parameter." arg)
+               (scm-error "missing parameter" arg)
                (scm-cadr args)))
           (else (loop (scm-cdr args))))))
 
@@ -22,7 +22,7 @@
     (if (null? args) #t
         (begin (if (char=? (string-ref (scm-car args) 0) #\-)
                    (if (scm-not (valid-command-line-option? (scm-car args)))
-                       (scm-error "Invalid command line option." (scm-car args))))
+                       (scm-error "invalid command line option" (scm-car args))))
                (loop (scm-cdr args))))))
 
 (define (show-vm-usage)

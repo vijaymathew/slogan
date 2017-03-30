@@ -128,7 +128,7 @@
               (bitvector-set! b i))
              (else
               (if (scm-not (char=? c #\0))
-                  (scm-error "Not a valid bitstring."))))
+                  (scm-error "not a valid bitstring"))))
        (set! i (+ i 1)))
      (string->list s))
     b))

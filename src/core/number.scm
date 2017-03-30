@@ -78,9 +78,9 @@
 
 (define (fxdiv f1 f2)
   (if (scm-not (fixnum? f1))
-      (scm-error "(Argument 1) FIXNUM expected"))
+      (scm-error "(argument 1) FIXNUM expected"))
   (if (scm-not (fixnum? f2))
-      (scm-error "(Argument 2) FIXNUM expected"))
+      (scm-error "(argument 2) FIXNUM expected"))
   (inexact->exact (scm-floor (/ f1 f2))))
 
 (define fxmod fxmodulo)
@@ -121,9 +121,9 @@
 
 (define (flmod fl1 fl2)
   (if (scm-not (flonum? fl1))
-      (scm-error "(Argument 1) FLONUM expected"))
+      (scm-error "(argument 1) FLONUM expected"))
   (if (scm-not (flonum? fl2))
-      (scm-error "(Argument 2) FLONUM expected"))
+      (scm-error "(argument 2) FLONUM expected"))
   (scm-mod fl1 fl2))
 
 (define is_flonum flonum?)
@@ -169,7 +169,7 @@
 
 (define (copy_bit i index bit)
   (if (scm-not (or (= bit 1) (= bit 0)))
-      (scm-error "Bit flag must be either 0 or 1."))
+      (scm-error "bit flag must be either 0 or 1"))
   (if (= bit 1)
       (bitwise-ior i (arithmetic-shift 1 index))
       (bitwise-and i (bitwise-not (arithmetic-shift 1 index)))))
@@ -182,7 +182,7 @@
   (assert-nonneg-int start "Start index must be a nonnegative integer.")
   (assert-nonneg-int end "End index must be a nonnegative integer.")
   (if (> start end)
-      (scm-error "End index is less that start index." start end)))
+      (scm-error "end index is less that start index" start end)))
   
 (define (bit_field i start end)
   (assert-bw-range start end)
