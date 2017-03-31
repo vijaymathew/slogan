@@ -845,6 +845,16 @@
 (define core-read_slogan_root read_slogan_root)
 (define core-contains contains)
 
+;; bit streams functions
+(define core-bits_reader bits_reader)
+(define core-bits_writer bits_writer)
+(define core-read_bit read_bit)
+(define core-read_bits read_bits)
+(define core-bits_reader_align bits_reader_align)
+(define core-bits_writer_flush bits_writer_flush)
+(define core-write_bit write_bit)
+(define core-write_bits write_bits)
+
 (define (core *name*)
   (case *name*
     ((compose) core-compose)
@@ -1486,6 +1496,14 @@
     ((expression) core-expression)
     ((statement) core-statement)
     ((slogan) core-slogan)
+    ((bits_reader) core-bits_reader)
+    ((bits_writer) core-bits_writer)
+    ((read_bit) core-read_bit)
+    ((read_bits) core-read_bits)
+    ((bits_reader_align) core-bits_reader_align)
+    ((bits_writer_flush) core-bits_writer_flush)
+    ((write_bit) core-write_bit)
+    ((write_bits) core-write_bits)
     ((current_task) core-current_task)
     ((is_task) core-is_task)
     ((task) core-task)
@@ -1702,7 +1720,9 @@
                             bit_array_is_any_set bit_array_is_eq bit_array_is_set
                             bit_array_length bit_array_set bit_array_set_all
                             bit_array_to_list bit_array_to_string bit_arrays_concat
-                            bit_count blength bnot bshift bxor byte_array_reader
+                            bit_count bits_reader bits_writer read_bit read_bits
+                            bits_reader_align bits_writer_flush write_bit write_bits
+                            blength bnot bshift bxor byte_array_reader
                             byte_array_writer c_struct_get c_struct_instance
                             c_struct_name call_with_stream call_with_values callcc car
                             cdr ceiling char_downcase char_is_alphabetic char_is_ci_eq

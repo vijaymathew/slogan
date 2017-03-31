@@ -23,7 +23,7 @@
 (define (make-bitvector size #!optional vector)
   (make-%bitvector size (if vector vector (make-u32vector (%bitvector-vect-size size)))))
 
-(define (bit_array . rest)
+(define (slgn-bit_array . rest)
   (let loop ((rest rest)
              (i 0)
              (ba (make-bitvector (scm-length rest))))
@@ -31,6 +31,8 @@
         (begin (if (scm-not (= 0 (scm-car rest)))
                    (bitvector-set! ba i))
                (loop (scm-cdr rest) (+ i 1) ba)))))
+
+(define bit_array slgn-bit_array)
 
 (define make_bit_array make-bitvector)
 
@@ -240,16 +242,12 @@
           (else n))))
 
 (define (u8array_to_bit_array u8arr)
-  (let ((u8arr (pad-u8array u8arr (u8vector-length u8arr))))
-    (let* ((len (u8vector-length u8arr))
-           (barr (make-u32vector
-                  (let ((blen (scm-quotient len 4)))
-                    (if (zero? blen) 1 blen)))))
-      (let loop ((i 0) (j 0))
-        (cond ((< i len)
-               (u32vector-set! barr j (pack-u8->u32 u8arr i len))
-               (loop (+ i 4) (+ j 1)))
-              (else (make-bitvector (* len 8) barr)))))))
+  (let ((bits-stream (slgn-bits_reader (slgn-byte_array_reader u8arr))))
+    (let loop ((b (slgn-read_bit bits-stream))
+               (bits '()))
+      (if (eof-object? b)
+          (scm-apply slgn-bit_array (scm-reverse bits))
+          (loop (slgn-read_bit bits-stream) (scm-cons (if b 1 0) bits))))))
 
 (define (bitvector-ref a i)
   (if (bitvector-set? a i) 1 0))

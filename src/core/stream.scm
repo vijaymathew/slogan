@@ -120,8 +120,10 @@
           (if opt (set! settings (scm-append settings (scm-list eol-encoding: opt)))))
         (openfn settings))))
 
-(define (byte_array_reader byte_array #!key transcoder)
+(define (slgn-byte_array_reader byte_array #!key transcoder)
   (open-byte-stream-helper open-input-u8vector byte_array transcoder))
+
+(define byte_array_reader slgn-byte_array_reader)
 
 (define (byte_array_writer #!key transcoder)
   (open-byte-stream-helper open-output-u8vector '() transcoder))
@@ -137,12 +139,32 @@
 (define get_output_string get-output-string)
 (define get_output_bytes get-output-u8vector)
 
-(define is_stream port?)
-(define is_reader input-port?)
-(define is_writer output-port?)
-(define close_stream close-port)
-(define close_reader close-input-port)
-(define close_writer close-output-port)
+(define (is_stream obj)
+  (or (port? obj) (bits-stream? obj)))
+
+(define (is_reader obj)
+  (or (input-port? obj) (bits-reader-info? obj)))
+
+(define (is_writer obj)
+  (or (output-port? obj) (bits-writer-info? obj)))
+
+(define (close_stream obj)
+  (if (port? obj)
+      (close-port obj)
+      (if (scm-not (bits-stream? obj))
+          (scm-error "invalid stream object" obj))))
+
+(define (close_reader obj)
+  (if (input-port? obj)
+      (close-input-port obj)
+      (if (scm-not (bits-reader-info? obj))
+          (scm-not "invalid input stream object" obj))))
+
+(define (close_writer obj)
+  (if (output-port? obj)
+      (close-output-port obj)
+      (if (scm-not (bits-writer-info? obj))
+          (scm-not "invalid output stream object" obj))))
 
 (define (stream_position p)
   (if (input-port? p)
@@ -247,7 +269,10 @@
 (define (write_n_chars str start end #!optional (p (current-output-port)))
   (write-substring str start end p))
 
-(define flush_writer force-output)
+(define (flush_writer w)
+  (if (bits-writer-info? w)
+      (bits-writer-flush w)
+      (force-output w)))
 
 (define (open-process-stream-helper path direction arguments environment
                                     directory stdin_redirection
@@ -421,3 +446,91 @@
 
 (define (println #!key (stream (current-output-port)) #!rest objs)
   (scm-apply scm-println port: stream objs))
+
+;; bit streams
+(define-structure bits-reader-info input byte bit)
+(define-structure bits-writer-info output byte bit)
+
+(define (bits-stream? obj)
+  (or (bits-reader-info? obj)
+      (bits-writer-info? obj)))
+
+(define (slgn-bits_reader input)
+  (if (scm-not (input-port? input))
+      (scm-error "object is not an input stream" input))
+  (make-bits-reader-info input 0 0))
+
+(define bits_reader slgn-bits_reader)
+
+(define (bits_writer output)
+  (if (scm-not (output-port? output))
+      (scm-error "object is not an output stream" output))
+  (make-bits-writer-info output 0 7))
+
+(define (slgn-read_bit b)
+  (let ((input (bits-reader-info-input b))
+        (byte (bits-reader-info-byte b))
+        (bit (bits-reader-info-bit b)))
+    (cond ((= 0 bit)
+           (let ((byte (read-u8 input)))
+             (cond ((eof-object? byte)
+                    byte)
+                   (else
+                    (bits-reader-info-byte-set! b byte)
+                    (bits-reader-info-bit-set! b 128)
+                    (slgn-read_bit b)))))
+          (else
+           (bits-reader-info-bit-set! b (scm-quotient bit 2))
+           (> (bitwise-and byte bit) 0)))))
+
+(define read_bit slgn-read_bit)
+
+(define (bits_reader_align b)
+  (bits-reader-info-bit-set! b 0))
+
+(define (read_bits b n)
+  (if (or (<= n 0) (> n 32))
+      (scm-error "invalid argument" n))
+  (let loop ((x (- n 1))
+             (r 0))
+    (if (>= x 0)
+        (let ((next (slgn-read_bit b)))
+          (if (eof-object? next)
+              next
+              (loop (- x 1) (bitwise-ior
+                             r (arithmetic-shift
+                                (if next 1 0)
+                                x)))))
+        r)))
+
+(define (bits-writer-flush b)
+  (if (< (bits-writer-info-bit b) 7)
+      (write-u8 (bits-writer-info-byte b)
+                (bits-writer-info-output b)))
+  (bits-writer-info-byte-set! b 0)
+  (bits-writer-info-bit-set! b 7)
+  *void*)
+
+(define bits_writer_flush bits-writer-flush)
+
+(define (slgn-write_bit b v)
+  (let ((bit (bits-writer-info-bit b)))
+    (cond ((= bit -1)
+           (bits-writer-flush b)
+           (slgn-write_bit b v))
+          (else
+           (if (scm-not (= v 0))
+               (bits-writer-info-byte-set!
+                b (bitwise-ior (bits-writer-info-byte b)
+                               (arithmetic-shift 1 bit))))
+           (bits-writer-info-bit-set! b (- bit 1))
+           *void*))))
+
+(define write_bit slgn-write_bit)
+
+(define (write_bits b v n)
+  (let loop ((x (- n 1)))
+    (if (>= x 0)
+        (begin (slgn-write_bit b (bitwise-and v (arithmetic-shift 1 x)))
+               (loop (- x 1))))))
+
