@@ -11,7 +11,7 @@ Slogan is a general purpose programming language with facilities for concurrent 
     - Fast program design and development with the interpreter and REPL.
     - A compiler for creating optimized stand-alone binaries.
     - High-level FFI for integration with C libraries.
-    - Built-in package manager to ease software distribution.
+    - Built-in package manager.
 
 #### Building and running Slogan
 
