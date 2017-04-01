@@ -1,0 +1,119 @@
+// A byte-by-byte compression scheme.
+
+// Compressed data is a sequence of runs, where each
+// run shall consist of a length byte followed by 1 to 128
+// bytes of data. If the length byte is in the range 0 to 127,
+// the following length + 1 (1 to 128) bytes shall be copied
+// literally during decompression. If the length is in the
+// range 129 to 255, the following single byte shall be copied
+// 257 - length (2 to 128) times during decompression.
+// A length value of 128 shall denote end-of-sequence.
+
+namespace byte_by_byte {
+  function __decode_diff_run(b, input, output)
+    for (i = 0; i < b+1; i+1)
+      let (c = read_byte(input))
+        if (is_eof_object(c)) break
+        else write_byte(c, output)
+
+  function __decode_same_run(b, input, output)
+    let (c = read_byte(input))
+      for (i = 0; i < 257 - b; i+1)
+        write_byte(c, output)
+        
+  function decompress(u8buff) where is_u8array(u8buff)
+    let (input = byte_array_reader(u8buff),
+         output = byte_array_writer())
+      let loop (b = read_byte(input))
+        if (b <> 128 && not(is_eof_object(b)))
+        { if (b >= 0 && b <= 127)
+           __decode_diff_run(b, input, output)
+          else if (b > 128 && b <= 255)
+           __decode_same_run(b, input, output)
+          loop(read_byte(input)) }
+         else get_output_bytes(output)
+
+   function read_byte_unsafe(s)
+     let (b = read_byte(s))
+       if (is_eof_object(b)) raise('eof)
+       else b
+       
+   function rewindable_stream(input)
+     let (buffer = [], read_buffer = [],
+          read_dirty = false)
+     { function rdbyte()
+       { when (read_dirty) { read_dirty = false; read_buffer = [] }
+         if (not(is_empty(buffer)))
+           let (b = head(buffer))
+           { buffer = tail(buffer)
+             read_buffer = b:read_buffer
+             b }
+         else let (c = read_byte_unsafe(input))
+         { read_buffer = c:read_buffer
+           c }}
+           
+       function rewind()
+         if (head(read_buffer))
+         { buffer = head(read_buffer):buffer
+           read_buffer = tail(read_buffer)
+           read_dirty = true
+           head(buffer) }
+
+       ^(message)
+       | 'read_byte -> rdbyte
+       | 'rewind -> rewind
+       | _ -> error("invalid message", message) }
+       
+   function __get_same(input)
+     let loop (ch = input.read_byte(), c = 1)
+       try
+         if (c == 128) 128
+         else let (ch2 = input.read_byte())
+           if (ch2 == ch) loop(ch2, c+1)
+           else { input.rewind(); ch:c }
+       catch (e) | 'eof -> ch:c
+
+   function __get_different(input)
+     let loop (accum = [input.read_byte()], c = 1)
+       try
+         if (c == 128) reverse(accum)
+         else let (ch = input.read_byte())
+           if (ch <> head(accum)) loop (ch:accum, c+1)
+           else { input.rewind(); input.rewind(); reverse(tail(accum)) }
+       catch (e) | 'eof -> reverse(accum)
+
+   function compress(u8buff) where is_u8array(u8buff)
+     let (input = rewindable_stream(byte_array_reader(u8buff)),
+          output = byte_array_writer())
+       let loop ()
+         try
+           match (__get_same(input))
+             _:1 ->
+             { input.rewind()
+               let (cs = __get_different(input))
+               { write_byte(length(cs) - 1, output)
+                 for_each(^(b) write_byte(b, output), cs)
+                 loop () }}
+           | b:c ->
+             { write_byte(257 - c, output)
+               write_byte(b, output)
+               loop() }
+          catch (e) | 'eof -> { write_byte(128, output)
+                                get_output_bytes(output) }
+}        
+
+let original_data = #u8[40, 40, 53, 46, 48, 48, 48,
+                        48, 48, 48, 44, 32, 52, 46, 53,
+                        56, 51, 51, 51, 51, 41, 44, 32,
+                        40, 52, 46, 53, 48, 48, 48, 48,
+                        48, 44, 53, 46, 48, 48, 48, 48, 48, 48, 41, 41]
+
+let compressed_data = #u8[255, 40, 1, 53, 46,
+                          251, 48, 5, 44, 32, 52, 46, 53, 56,
+                          253, 51, 6, 41, 44, 32, 40, 52, 46, 53,
+                          252, 48, 2, 44, 53, 46, 251, 48, 255, 41, 128]
+
+let byb = byte_by_byte;
+let new_compressed = byb::compress(original_data)
+assert new_compressed == compressed_data
+assert byb::decompress(new_compressed) == original_data
