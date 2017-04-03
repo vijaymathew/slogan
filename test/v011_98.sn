@@ -11,8 +11,8 @@ function write_tcp_header(filename, header)
     try
     { write_bits(bits, header['source_port], 16)
       write_bits(bits, header['destination_port], 16)
-      write_bits(bits, header['sequence], 32)
-      write_bits(bits, header['acknowledgement_number], 32)
+      write_bits(bits, header['sequence], 31)
+      write_bits(bits, header['acknowledgement_number], 31)
       write_bits(bits, 5, 4) // data offset
       write_bits(bits, 0, 6) // reserved
       let (flags = header['flags])
@@ -34,8 +34,8 @@ function read_tcp_header(filename)
     try
       let (src_port = read_bits(b, 16),
            dest_port = read_bits(b, 16),
-           seq_number = read_bits(b, 32),
-           ack_number = read_bits(b, 32),
+           seq_number = read_bits(b, 31),
+           ack_number = read_bits(b, 31),
            _ = read_bits(b, 4),
            _ = read_bits(b, 6),
            urgent = read_bit(b),
@@ -109,3 +109,9 @@ close_writer(outbits)
 
 // u8array_to_bit_array updated to use bit_streams
 assert u8array_to_bit_array(#u8[1, 2, 3]) == #b[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+
+// && operator to take precedence over ||
+assert (1 < 2 || 2 == 2 && 4 == 3) == (1 < 2 || (2 == 2 && 4 == 3))
+assert (1 < 2 && 2 == 2 || 4 == 3) == ((1 < 2 && 2 == 2) || 4 == 3)
+assert (1 < 2 || 2 == 2 || 4 == 3) == ((1 < 2 || 2 == 2) || 4 == 3)
+assert (1 < 2 && 2 == 2 && 4 == 3) == ((1 < 2 && 2 == 2) && 4 == 3)

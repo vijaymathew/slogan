@@ -539,7 +539,7 @@
       *void*
       (sanitize-expression
        tokenizer
-       (invoke-access-expression tokenizer (logical-and-expr tokenizer)))))
+       (invoke-access-expression tokenizer (logical-or-expr tokenizer)))))
 
 (define (array-access-expr tokenizer expr)
   (invoke-access-expression
@@ -905,18 +905,18 @@
           ((*greater-than-equals*) (loop #t (swap-operands (scm-append (gteq-expr tokenizer) (scm-list expr))))))
         expr)))
 
-(define (logical-and-expr tokenizer)
-  (let loop ((expr (logical-or-expr tokenizer)))
-    (if (scm-eq? '*and* (tokenizer 'peek))
-        (begin (tokenizer 'next)
-               (loop (swap-operands (scm-append (and-expr tokenizer) (scm-list expr)))))
-        expr)))
-
 (define (logical-or-expr tokenizer)
-  (let loop ((expr (cmpr-expr tokenizer)))
+  (let loop ((expr (logical-and-expr tokenizer)))
     (if (scm-eq? '*or* (tokenizer 'peek))
         (begin (tokenizer 'next)
                (loop (swap-operands (scm-append (or-expr tokenizer) (scm-list expr)))))
+        expr)))
+
+(define (logical-and-expr tokenizer)
+  (let loop ((expr (cmpr-expr tokenizer)))
+    (if (scm-eq? '*and* (tokenizer 'peek))
+        (begin (tokenizer 'next)
+               (loop (swap-operands (scm-append (and-expr tokenizer) (scm-list expr)))))
         expr)))
   
 (define (addsub-expr tokenizer)
@@ -2004,11 +2004,11 @@
 (define (gteq-expr tokenizer)
   (swap-operands (scm-cons 'gteq-compare (scm-list (addsub-expr tokenizer)))))
 
-(define (and-expr tokenizer)
-  (swap-operands (scm-cons 'and (scm-list (logical-or-expr tokenizer)))))
-
 (define (or-expr tokenizer)
-  (swap-operands (scm-cons 'or (scm-list (cmpr-expr tokenizer)))))
+  (swap-operands (scm-cons 'or (scm-list (logical-and-expr tokenizer)))))
+
+(define (and-expr tokenizer)
+  (swap-operands (scm-cons 'and (scm-list (cmpr-expr tokenizer)))))
 
 (define (term-expr tokenizer)
   (let loop ((expr (factor-expr tokenizer)))
