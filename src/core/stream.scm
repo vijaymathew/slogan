@@ -489,7 +489,7 @@
   (bits-reader-info-bit-set! b 0))
 
 (define (read_bits b n)
-  (if (or (<= n 0) (> n 31))
+  (if (or (<= n 0) (> n 32))
       (scm-error "invalid argument" n))
   (let loop ((x (- n 1))
              (r 0))
