@@ -36,18 +36,18 @@
 (define (list-set! list k val)
     (if (zero? k)
         (set-car! list val)
-        (list-set! (scm-cdr list) (- k 1) val)))
+        (list-set! (scm-cdr list) (scm-- k 1) val)))
 
 (define (set-at! n v xs)
-  (if (or (null? xs) (< n 0))
+  (if (or (null? xs) (scm-< n 0))
       *void*
       (let loop ((n n) (ys xs) (rs '()))
         (cond
          ((null? ys) xs)
-         ((= n 0)
+         ((scm-= n 0)
           (scm-append (scm-reverse (scm-cons v rs)) (if (null? ys) ys (scm-cdr ys))))
          (else
-          (loop (- n 1) (scm-cdr ys) (scm-cons (scm-car ys) rs)))))))
+          (loop (scm-- n 1) (scm-cdr ys) (scm-cons (scm-car ys) rs)))))))
       
 (define set_head set-car!)
 (define set_tail set-cdr!)
@@ -151,7 +151,7 @@
               (else (loop (scm-cdr lst) (scm-cons (scm-car lst) result)))))))
 
 (define (list_of fill-with n)
-  (let ((opr (if (< n 0) + -)))
+  (let ((opr (if (scm-< n 0) + -)))
     (let loop ((r '())
                (n n))
       (if (zero? n) r
@@ -175,11 +175,11 @@
   (let loop ((ls ls)
 	     (pos 0))
     (cond ((null? ls) #f)
-	  ((and (>= pos start) 
+	  ((and (scm->= pos start)
 		(test obj (scm-car ls))) 
 	   pos)
 	  (else (loop (scm-cdr ls) 
-		      (+ pos 1))))))
+		      (scm-+ pos 1))))))
 
 ;; defined in extn.slgn.scm
 (define sublist scm-sublist)

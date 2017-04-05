@@ -22,8 +22,8 @@
 
 (define is_finite finite?)
 (define is_infinite infinite?)
-(define (is_positive_infinity n) (= n +inf.0))
-(define (is_negative_infinity n) (= n -inf.0))
+(define (is_positive_infinity n) (scm-= n +inf.0))
+(define (is_negative_infinity n) (scm-= n -inf.0))
 
 (define (exact num)
   (if (exact? num) num
@@ -48,20 +48,20 @@
 (define div /)
 
 ;; for real numbers
-(define (quo x1 x2) (scm-truncate (/ x1 x2)))
+(define (quo x1 x2) (scm-truncate (scm-/ x1 x2)))
 (define scm-quo quo)
-(define (rem x1 x2) (- x1 (* x2 (scm-quo x1 x2))))
-(define (mod x1 x2) (- x1 (* x2 (scm-floor (/ x1 x2)))))
+(define (rem x1 x2) (scm-- x1 (scm-* x2 (scm-quo x1 x2))))
+(define (mod x1 x2) (scm-- x1 (scm-* x2 (scm-floor (scm-/ x1 x2)))))
 
 (define scm-mod mod)
 
-(define (sub1 n) (- n 1))
-(define (add1 n) (+ n 1))
+(define (sub1 n) (scm-- n 1))
+(define (add1 n) (scm-+ n 1))
 
 (define (safe_div a b)
-  (if (zero? b) +inf.0 (/ a b)))
+  (if (zero? b) +inf.0 (scm-/ a b)))
 
-(define (logb x b) (/ (scm-log x) (scm-log b)))
+(define (logb x b) (scm-/ (scm-log x) (scm-log b)))
 
 (define is_fixnum fixnum?)
 (define (least_fixnum) ##min-fixnum)
@@ -81,14 +81,14 @@
       (scm-error "(argument 1) FIXNUM expected"))
   (if (scm-not (fixnum? f2))
       (scm-error "(argument 2) FIXNUM expected"))
-  (inexact->exact (scm-floor (/ f1 f2))))
+  (inexact->exact (scm-floor (scm-/ f1 f2))))
 
 (define fxmod fxmodulo)
 (define fxadd_wrap fxwrap+)
 (define fxsub_wrap fxwrap-)
 (define fxmult_wrap fxwrap*)
 
-(define *fixnum-width* (- (inexact->exact (+ 2 (scm-floor (logb ##max-fixnum 2)))) 1))
+(define *fixnum-width* (scm-- (inexact->exact (scm-+ 2 (scm-floor (logb ##max-fixnum 2)))) 1))
 (define (fixnum_width) *fixnum-width*)
 
 (define fx_is_eq fx=)
@@ -160,7 +160,7 @@
    (bitwise-and (bitwise-not i1) i3)))
 
 (define (bit_count i)
-  (if (>= i 0) (bit-count i)
+  (if (scm->= i 0) (bit-count i)
       (bitwise-not (bit_count (bitwise-not i)))))
 
 (define (is_bit_set i n) (bit-set? n i))
@@ -168,25 +168,25 @@
 (define blength integer-length)
 
 (define (copy_bit i index bit)
-  (if (scm-not (or (= bit 1) (= bit 0)))
+  (if (scm-not (or (scm-= bit 1) (scm-= bit 0)))
       (scm-error "bit flag must be either 0 or 1"))
-  (if (= bit 1)
+  (if (scm-= bit 1)
       (bitwise-ior i (arithmetic-shift 1 index))
       (bitwise-and i (bitwise-not (arithmetic-shift 1 index)))))
 
 (define (assert-nonneg-int i msg)
-  (if (or (scm-not (integer? i)) (< i 0))
+  (if (or (scm-not (integer? i)) (scm-< i 0))
       (scm-error msg i)))
 
 (define (assert-bw-range start end)
   (assert-nonneg-int start "Start index must be a nonnegative integer.")
   (assert-nonneg-int end "End index must be a nonnegative integer.")
-  (if (> start end)
+  (if (scm-> start end)
       (scm-error "end index is less that start index" start end)))
   
 (define (bit_field i start end)
   (assert-bw-range start end)
-  (extract-bit-field (- end start) start i))
+  (extract-bit-field (scm-- end start) start i))
 
 (define (copy_bit_field to start end from)
   (assert-bw-range start end)
@@ -198,18 +198,18 @@
 (define (rotate_bit_field n start end count)
   (assert-bw-range start end)
   (assert-nonneg-int count "Count field must be a nonnegative integer.")
-  (let* ((width (- end start))
+  (let* ((width (scm-- end start))
          (count (scm-modulo count width))
          (field0 (bit_field n start end))
          (field1 (arithmetic-shift field0 count))
-         (field2 (arithmetic-shift field0 (- count width)))
+         (field2 (arithmetic-shift field0 (scm-- count width)))
          (field (bitwise-ior field1 field2)))
     (copy_bit_field n start end field)))
 
 (define (reverse_bit_field n start end)
   (assert-bw-range start end)
   (let ((field (bit_field n start end))
-        (width (- end start)))
+        (width (scm-- end start)))
     (let loop ((old field)(new 0)(width width))
       (cond
        ((zero? width) (copy_bit_field n start end new))
@@ -248,14 +248,14 @@
 (define random_source_for_byte_arrays random-source-make-u8vectors)
 
 (define (prime? n)
-  (if (< n 4) (> n 1)
+  (if (scm-< n 4) (scm-> n 1)
       (and (odd? n)
 	   (let loop ((k 3))
-	     (or (> (* k k) n)
+	     (or (scm-> (scm-* k k) n)
 		 (and (positive? (scm-remainder n k))
-		      (loop (+ k 2))))))))
+		      (loop (scm-+ k 2))))))))
 
 (define is_prime prime?)
 
-(define (inc n) (+ n 1))
-(define (dec n) (- n 1))
+(define (inc n) (scm-+ n 1))
+(define (dec n) (scm-- n 1))

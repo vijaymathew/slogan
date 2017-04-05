@@ -845,7 +845,7 @@ c-declare-end
                 (scm-cons (scm-car result) (scm-reverse r))
                 (loop (scm-cdr types) (scm-cdr mems) (scm-cdr values)
                       (scm-cons (scm-cons (scm-car mems)
-                                  (if (>= (scm-car types) *libffi-types-count*)
+                                  (if (scm->= (scm-car types) *libffi-types-count*)
                                       (normalize-c-struct (scm-car values) (scm-car types))
                                       (scm-car values)))
                             r)))))
@@ -861,8 +861,8 @@ c-declare-end
 
 (define (mk-c-fn-param-names plen)
   (let loop ((i 0) (pnames '()))
-    (if (< i plen)
-        (loop (+ i 1) (scm-cons (string->symbol
+    (if (scm-< i plen)
+        (loop (scm-+ i 1) (scm-cons (string->symbol
                              (string-append "p" (number->string i)))
                             pnames))
         (scm-reverse pnames))))
@@ -884,16 +884,16 @@ c-declare-end
                          (let ((rettype-n (libffitype->int ',rettype)))
                            (let ((result (libffi-fncall fhandle ,(mk-c-fn-args paramtypes pnames)
                                                         ,plen rettype-n)))
-                             (if (>= rettype-n *libffi-types-count*)
+                             (if (scm->= rettype-n *libffi-types-count*)
                                  (normalize-c-struct result rettype-n)
                                  result)))))))))
 
 (define (c_struct_name s)
-  (let ((sid (+ (scm-car s) *libffi-types-count*)))
+  (let ((sid (scm-+ (scm-car s) *libffi-types-count*)))
     (let loop ((types *libffi-types*))
       (if (null? types)
           #f
-          (if (= (scm-cdar types) sid)
+          (if (scm-= (scm-cdar types) sid)
               (scm-caar types)
               (loop (scm-cdr types)))))))
 
@@ -904,7 +904,7 @@ c-declare-end
 (define (c_struct_instance name values)
   (let ((sid (libffitype->int name)))
     (let ((mems (c-struct-members sid)))
-      (scm-cons (- sid *libffi-types-count*) (scm-map scm-cons mems values)))))
+      (scm-cons (scm-- sid *libffi-types-count*) (scm-map scm-cons mems values)))))
 
 (define (pointer_to_c_struct name ptr)
   (let ((sid (libffitype->int name)))

@@ -72,3 +72,13 @@
 
 (define scm-gensym gensym)
 (define scm-getenv getenv)
+
+(define scm-+ +)
+(define scm-- -)
+(define scm-* *)
+(define scm-/ /)
+(define scm-< <)
+(define scm-> >)
+(define scm->= >=)
+(define scm-<= <=)
+(define scm-= =)

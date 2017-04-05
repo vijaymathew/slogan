@@ -8,7 +8,7 @@
 
 (define (scm-slogan tokenizer)
   (let ((expr (expression/statement tokenizer)))
-    (if (> (tokenizer 'yield-count) 0)
+    (if (scm-> (tokenizer 'yield-count) 0)
         (begin (reset-yield-count! tokenizer 0)
                (scm-error "yield can be called only from a function."))
         expr)))
@@ -30,15 +30,15 @@
 (define scm-statement statement)
 
 (define (highlighted-line colno)
-  (if (< colno 0)
+  (if (scm-< colno 0)
       (set! colno 1))
   (with-output-to-string
     '()
     (lambda ()
       (let loop ((n 0))
-	(if (= n colno) (scm-display #\^)
+	(if (scm-= n colno) (scm-display #\^)
 	    (begin (scm-display #\space)
-		   (loop (+ n 1))))))))
+		   (loop (scm-+ n 1))))))))
 
 (define (highlighted-error-line tokenizer #!optional token)
   (let ((curr-tok-len (current-token-length tokenizer))
@@ -49,9 +49,9 @@
                (n 1)
                (program-text (tokenizer 'program-text)))
       (if (scm-not (null? program-text))
-          (if (= n line-no)
+          (if (scm-= n line-no)
               (scm-cons (scm-car program-text) (highlighted-line (tokenizer 'column)))
-              (loop line-no (+ n 1) (scm-cdr program-text)))
+              (loop line-no (scm-+ n 1) (scm-cdr program-text)))
           #f))))
 
 (define (parser-error tokenizer msg #!optional token)
@@ -139,7 +139,7 @@
 (define *ffi-lib-count* 0)
 (define (genffisym)
   (let ((s (string-append "*ffi-" (number->string *ffi-lib-count*) "-*")))
-    (set! *ffi-lib-count* (+ *ffi-lib-count* 1))
+    (set! *ffi-lib-count* (scm-+ *ffi-lib-count* 1))
     (string->symbol s)))
 
 (define (declare-ffi-stmt tokenizer)
@@ -240,9 +240,9 @@
                  (loop (scm-cdr params) i insert?
                        (scm-cons p (scm-cons (string->keyword (symbol->string p)) nparams)))))
               (else
-               (if (= i offset)
+               (if (scm-= i offset)
                    (loop params i #t nparams)
-                   (loop (scm-cdr params) (+ i 1) insert?
+                   (loop (scm-cdr params) (scm-+ i 1) insert?
                          (scm-cons (scm-car params) nparams))))))))
 
 (define *scm-directives* '(#!optional #!key #!rest))
@@ -258,9 +258,9 @@
                      (loop (scm-cdr params) idx idx norms)
                      (loop (scm-cdr params) key-seen-at idx  norms)))
                 ((pair? p)
-                 (loop (scm-cdr params) key-seen-at (+ idx 1) (scm-cons (scm-car p) norms)))
+                 (loop (scm-cdr params) key-seen-at (scm-+ idx 1) (scm-cons (scm-car p) norms)))
                 (else
-                 (loop (scm-cdr params) key-seen-at (+ idx 1) (scm-cons p norms))))))))
+                 (loop (scm-cdr params) key-seen-at (scm-+ idx 1) (scm-cons p norms))))))))
 
 (define (typepredics-check predics params)
   (let loop ((predics predics) (params (normalize-params params #f))
@@ -373,7 +373,7 @@
     #f))
 
 (define (vars-defs-set syms exprs def)
-  (if (scm-not (= (scm-length syms) (scm-length exprs)))
+  (if (scm-not (scm-= (scm-length syms) (scm-length exprs)))
       (scm-error "not enough values or variables" syms exprs))
   (let loop ((syms syms) (exprs exprs) (defexprs '()))
     (if (scm-not (null? syms))
@@ -472,7 +472,7 @@
 (define (rvar? sym)
   (if (symbol? sym) 
       (let ((s (symbol->string sym)))
-        (and (> (string-length s) 0)
+        (and (scm-> (string-length s) 0)
              (char=? #\? (string-ref s 0))))
       #f))
 
@@ -480,9 +480,9 @@
   (and (symbol? s)
        (let* ((str (symbol->string s))
               (len (string-length str)))
-         (and (> len 1)
+         (and (scm-> len 1)
               (char=? (string-ref str 0) #\%)
-              (char=? (string-ref str (- len 1)) #\%)))))
+              (char=? (string-ref str (scm-- len 1)) #\%)))))
 
 (define (make-dynamic-ref expr)
   (if (dynamic-var? expr)
@@ -888,7 +888,7 @@
                                 (parser-error tokenizer "unexpected end of input. missing closing brace?"))
                                (else
                                 (loop (scm-append expr (scm-list (expression/statement tokenizer #f)))
-                                      (+ 1 count)))))))))))
+                                      (scm-+ 1 count)))))))))))
     (assert-defs-in-block tokenizer expr)
     expr))
 
@@ -948,8 +948,8 @@
 
 (define (token->neg-number token)
   (if (number? token)
-      (- token)
-      (scm-list '- token)))
+      (scm-- token)
+      (scm-list 'scm-- token)))
 
 (define (task-send-expr tokenizer task-expr)
   (tokenizer 'next)
@@ -1036,15 +1036,15 @@
 
 (define (mk-list-literal xs)
   (let ((len (scm-length xs)))
-    (if (> len *max-list-literal-length*)
+    (if (scm-> len *max-list-literal-length*)
         (let loop ((xs xs) (n 0) (ys '()) (result '()))
           (cond ((null? xs)
                  (let ((r (if (null? ys) result (scm-cons `(scm-list ,@ys) result))))
                    `(scm-long-list ,@r)))
-                ((> n *max-list-literal-length*)
+                ((scm-> n *max-list-literal-length*)
                  (loop (scm-cdr xs) 0 '() (scm-cons `(scm-list ,@(scm-cons (scm-car xs) ys)) result)))
                 (else
-                 (loop (scm-cdr xs) (+ n 1) (scm-cons (scm-car xs) ys) result))))
+                 (loop (scm-cdr xs) (scm-+ n 1) (scm-cons (scm-car xs) ys) result))))
         `(scm-list ,@(scm-reverse xs)))))
 
 (define (list-literal tokenizer)
@@ -1173,7 +1173,9 @@
 (define (for-bindings tokenizer)
   (let loop ((token (tokenizer 'peek)) (bindings '()))
     (cond ((or (scm-eq? token '*close-paren*)
-               (scm-eq? token '*semicolon*))
+               (scm-eq? token '*semicolon*)
+               (scm-eq? token 'to)
+               (scm-eq? token 'downto))
 	   bindings)
 	  ((symbol? token)
            (check-if-reserved-name token tokenizer)
@@ -1194,16 +1196,31 @@
          (tokenizer 'next)
          (if (scm-not (eq? (tokenizer 'next) '*open-paren*))
              (parser-error tokenizer "expected opening parenthesis"))
-         (let ((bindings (for-bindings tokenizer)))
-           (if (scm-not (eq? '*semicolon* (tokenizer 'next)))
-               (parser-error tokenizer "expected semicolon"))
-           (let ((cond-expr (if (eq? '*semicolon* (tokenizer 'peek)) #t (scm-expression tokenizer))))
-             (if (scm-not (eq? '*semicolon* (tokenizer 'next)))
+         (let ((bindings (for-bindings tokenizer))
+               (tok (tokenizer 'next))
+               (counter #f) (limit-expr #f) (range-kw #f))
+           (if (or (eq? tok 'to) (eq? tok 'downto))
+               (begin (set! range-kw tok)
+                      (set! counter (scm-caar bindings))
+                      (set! limit-expr (scm-expression tokenizer)))
+               (if (scm-not (eq? '*semicolon* tok))
+                   (parser-error tokenizer "expected semicolon")))
+           (let ((cond-expr (if counter
+                                (if (eq? range-kw 'to)
+                                    `(lteq-compare ,counter ,limit-expr)
+                                    `(gteq-compare ,counter ,limit-expr))
+                                (if (eq? '*semicolon* (tokenizer 'peek)) #t (scm-expression tokenizer)))))
+             (if (and (scm-not counter)
+                      (scm-not (eq? '*semicolon* (tokenizer 'next))))
                  (parser-error tokenizer "expected semicolon"))
-             (let ((nxt-expr (if (eq? '*close-paren* (tokenizer 'peek)) *no-nxt-expr* (scm-expression tokenizer))))
+             (let ((nxt-expr (if counter
+                                 (if (eq? range-kw 'to)
+                                     `(scm-+ ,counter 1)
+                                     `(scm-- ,counter 1))
+                                 (if (eq? '*close-paren* (tokenizer 'peek)) *no-nxt-expr* (scm-expression tokenizer)))))
                (if (scm-not (eq? (tokenizer 'next) '*close-paren*))
                    (parser-error tokenizer "expected closing parenthesis"))
-               (let ((counter (if (scm-not (null? bindings)) (scm-caar bindings) #f)))
+               (let ((counter (or counter (if (scm-not (null? bindings)) (scm-caar bindings) #f))))
                  `(call/cc (lambda (break)
                              (let* ,(scm-append '((*for-value* #f)) (scm-reverse bindings))
                                (let *for-loop* ()
@@ -1334,7 +1351,7 @@
                        '() 0)))
                  (make-let-pattern-bindings
                   tokenizer expr expr-name (scm-cdr pexpr)
-                  (scm-append bindings sub-bindings) (+ i 1))))
+                  (scm-append bindings sub-bindings) (scm-+ i 1))))
               (else (parser-error tokenizer "invalid pattern tag")))))
          ((scm-eq? pname 'scm-list)
           (make-let-pattern-bindings
@@ -1359,13 +1376,13 @@
           (if (scm-eq? pname '_)
               (make-let-pattern-bindings
                tokenizer expr expr-name
-               (scm-cdr pexpr) bindings (+ i 1))
+               (scm-cdr pexpr) bindings (scm-+ i 1))
               (make-let-pattern-bindings
                tokenizer expr expr-name
                (scm-cdr pexpr)
                (scm-cons (scm-cons pname `((scm-nth ,i ,expr-name)))
                          bindings)
-               (+ i 1))))))))
+               (scm-+ i 1))))))))
 
 (define (let-pattern-binding? pattern-expr)
   (and (pair? pattern-expr)
@@ -1590,7 +1607,7 @@
   (let ((expr (let ((lambda-expr (scm-list 'lambda params)))
                 (if (scm-not (list? lambda-body))
                     (set! lambda-body (scm-list 'begin lambda-body)))
-                (if (<= 1 (scm-length lambda-body))
+                (if (scm-<= 1 (scm-length lambda-body))
                     (scm-append lambda-expr (scm-list lambda-body))
                     (let loop ((lambda-expr lambda-expr)
                                (lambda-body (if (scm-eq? (scm-car lambda-body) 'begin)
@@ -1600,7 +1617,7 @@
                           lambda-expr
                           (loop (scm-append lambda-expr (scm-list (scm-car lambda-body)))
                                 (scm-cdr lambda-body))))))))
-    (if (> (tokenizer 'yield-count) 0)
+    (if (scm-> (tokenizer 'yield-count) 0)
         (tokenizer 'reset-yield-count))
     expr))
 
@@ -1632,17 +1649,17 @@
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
   (let ((implicit-match? #f)
-        (let-expr? (and params (> (scm-length params) 0) (eq? '*let* (scm-car params)))))
+        (let-expr? (and params (scm-> (scm-length params) 0) (eq? '*let* (scm-car params)))))
     (let ((params (if let-expr? (scm-cdr params) params)))
       (if (scm-eq? (tokenizer 'peek) '*pipe*)
-          (if (and params (> (scm-length params) 0))
+          (if (and params (scm-> (scm-length params) 0))
               (begin
                 (tokenizer 'next)
                 (set! implicit-match? #t))
               (parser-error tokenizer "implicit match cannot be specified here")))
       (let ((match-value (if implicit-match?
                              (let ((params (extract-param-names params)))
-                               (if (= (scm-length params) 1)
+                               (if (scm-= (scm-length params) 1)
                                    (scm-car params)
                                    (scm-append '(scm-list) (extract-param-names params))))
                              #f)))
@@ -1657,7 +1674,7 @@
                            (if (scm-eq? (tokenizer 'peek) '*open-brace*)
                                (block-expr tokenizer use-let)
                                (stmt-or-expr tokenizer)))))))
-            (if (and (scm-not let-expr?) params (> (tokenizer 'yield-count) old-yield-count))
+            (if (and (scm-not let-expr?) params (scm-> (tokenizer 'yield-count) old-yield-count))
                 (wrap-in-return-cont body-expr)
                 body-expr)))))))
 
@@ -1811,7 +1828,7 @@
                             (string->symbol (string-append "is_" sname))
                             (string->symbol (string-append sname "?"))))))
       (if (null? members) (scm-reverse expr)
-          (begin (loop (scm-cdr members) (scm-cdr preconds) (+ i 1)
+          (begin (loop (scm-cdr members) (scm-cdr preconds) (scm-+ i 1)
                        (scm-append expr (member-accessor/modifier name (scm-car members) (scm-car preconds) i))))))))
 
 (define (member-accessor/modifier name mem precond index)
@@ -1883,7 +1900,7 @@
   (let ((s (string-append
             "**--g" (number->string *local-sym-count*)
             "--**")))
-    (set! *local-sym-count* (+ 1 *local-sym-count*))
+    (set! *local-sym-count* (scm-+ 1 *local-sym-count*))
     (string->symbol s)))
 
 (define (check-func-param tokenizer) 
@@ -2019,7 +2036,7 @@
         expr)))
 
 (define (swap-operands expr)
-  (if (= 3 (scm-length expr))
+  (if (scm-= 3 (scm-length expr))
       (scm-list (scm-car expr) (scm-caddr expr) (scm-cadr expr))
       expr))
 

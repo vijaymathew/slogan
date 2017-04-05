@@ -100,11 +100,11 @@ where OPTION is one of:
                       cc_options: cc-options))))
 
 (define (install-pkg args)
-  (if (scm-not (>= (length args) 3))
+  (if (scm-not (scm->= (length args) 3))
       (scm-error "-i \"package-name,type,location\"")
       (install_package (scm-nth 0 args) (string->symbol (scm-nth 1 args))
-                       (scm-nth 2 args) (if (> (scm-length args) 3)
-                                            (= (scm-nth 2 args) "true")
+                       (scm-nth 2 args) (if (scm-> (scm-length args) 3)
+                                            (scm-= (scm-nth 2 args) "true")
                                             #f))))
 
 (define (uninstall-pkg name)

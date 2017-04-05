@@ -24,7 +24,7 @@ c-declare-end
 (define (parent-process? pinfo)
   (let ((pid (process-info-id pinfo)))
     (if (number? pid)
-        (> pid 0)
+        (scm-> pid 0)
         #t)))
 
 (define process_id process-info-id)
@@ -83,10 +83,10 @@ c-declare-end
 (define (open-server-connection port-number tries)
   (with-exception-catcher
    (lambda (e)
-     (if (>= tries 3)
+     (if (scm->= tries 3)
 	 (scm-raise e)
 	 (begin	(call-sched_yield)
-		(open-server-connection port-number (+ tries 1)))))
+		(open-server-connection port-number (scm-+ tries 1)))))
    (lambda () (open-tcp-client (scm-list port-number: port-number keep-alive: #t)))))
 
 (define (scm-process child-callback #!optional timeout)
@@ -95,7 +95,7 @@ c-declare-end
       (cond ((zero? pid)
              (let ((sock (open-server-connection port-number 0)))
                (invoke-child-callback child-callback sock)))
-            ((> pid 0)
+            ((scm-> pid 0)
              (let ((sock (open-tcp-server (scm-list port-number: port-number
                                                 coalesce: #f))))
                (if timeout
@@ -109,7 +109,7 @@ c-declare-end
 (define (scm-process_send pinfo object #!optional timeout)
   (let ((out (process-info-socket pinfo)))
     (if timeout
-        (if (scm-not (> timeout 0))
+        (if (scm-not (scm-> timeout 0))
             (scm-error "process-send - timeout must be a positive number")
             (output-port-timeout-set! out timeout)))
     (scm-showln stream: out quotes: #t object)
@@ -123,7 +123,7 @@ c-declare-end
 (define (scm-process_receive pinfo #!optional timeout default)
   (let ((in (process-info-socket pinfo)))
     (if timeout
-        (if (scm-not (> timeout 0))
+        (if (scm-not (scm-> timeout 0))
             (scm-error "process-recv - timeout must be a positive number")
             (input-port-timeout-set! in timeout)))
     (let ((r (read-line in)))

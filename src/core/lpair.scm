@@ -70,18 +70,18 @@
 (define is_lpair lpair?)
 
 (define (lpair-at i lpair)
-  (if (= i 0)
+  (if (scm-= i 0)
       (scm-first lpair)
-      (lpair-at (- i 1) (rest-helper lpair))))
+      (lpair-at (scm-- i 1) (rest-helper lpair))))
 
 (define (scm-nth n seq) 
-  (if (<= n 0)
+  (if (scm-<= n 0)
       (scm-first seq)
-      (scm-nth (- n 1) (rest-helper seq))))
+      (scm-nth (scm-- n 1) (rest-helper seq))))
 
 (define (scm-nth_tail n seq)
-  (if (<= n 0) (scm-force seq)
-      (scm-nth_tail (- n 1) (rest-helper seq))))
+  (if (scm-<= n 0) (scm-force seq)
+      (scm-nth_tail (scm-- n 1) (rest-helper seq))))
       
 (define (second seq) (scm-nth 1 seq))
 (define (third seq) (scm-nth 2 seq))
@@ -284,7 +284,7 @@
 	(if (or (zero? n)
 		(null? lst))
 	    lst
-	    (loop (rest-helper lst) (- n 1))))))
+	    (loop (rest-helper lst) (scm-- n 1))))))
 
 (define (take n lst)
   (if (or (zero? n)
@@ -297,7 +297,7 @@
 		(null? lst))
 	    (scm-reverse result)
 	    (loop (rest-helper lst)
-		  (- n 1)
+		  (scm-- n 1)
 		  (scm-cons (scm-first lst) result))))))
 
 (define (drop_while predic lst)
@@ -320,9 +320,9 @@
   (let loop ((ys '())
              (n n)
              (rs xs))
-    (if (<= n 0)
+    (if (scm-<= n 0)
         (scm-cons (scm-reverse ys) rs)
         (let ((f (scm-first rs)))
           (if f
-              (loop (scm-cons f ys) (- n 1) (scm-rest rs))
+              (loop (scm-cons f ys) (scm-- n 1) (scm-rest rs))
               (loop ys -1 (scm-rest rs)))))))

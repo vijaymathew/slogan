@@ -471,7 +471,7 @@
   (let ((input (bits-reader-info-input b))
         (byte (bits-reader-info-byte b))
         (bit (bits-reader-info-bit b)))
-    (cond ((= 0 bit)
+    (cond ((scm-= 0 bit)
            (let ((byte (read-u8 input)))
              (cond ((eof-object? byte)
                     byte)
@@ -481,7 +481,7 @@
                     (slgn-read_bit b)))))
           (else
            (bits-reader-info-bit-set! b (scm-quotient bit 2))
-           (> (bitwise-and byte bit) 0)))))
+           (scm-> (bitwise-and byte bit) 0)))))
 
 (define read_bit slgn-read_bit)
 
@@ -489,22 +489,22 @@
   (bits-reader-info-bit-set! b 0))
 
 (define (read_bits b n)
-  (if (or (<= n 0) (> n 32))
+  (if (or (scm-<= n 0) (scm-> n 32))
       (scm-error "invalid argument" n))
-  (let loop ((x (- n 1))
+  (let loop ((x (scm-- n 1))
              (r 0))
-    (if (>= x 0)
+    (if (scm->= x 0)
         (let ((next (slgn-read_bit b)))
           (if (eof-object? next)
               next
-              (loop (- x 1) (bitwise-ior
+              (loop (scm-- x 1) (bitwise-ior
                              r (arithmetic-shift
                                 (if next 1 0)
                                 x)))))
         r)))
 
 (define (bits-writer-flush b)
-  (if (< (bits-writer-info-bit b) 7)
+  (if (scm-< (bits-writer-info-bit b) 7)
       (write-u8 (bits-writer-info-byte b)
                 (bits-writer-info-output b)))
   (bits-writer-info-byte-set! b 0)
@@ -515,22 +515,22 @@
 
 (define (slgn-write_bit b v)
   (let ((bit (bits-writer-info-bit b)))
-    (cond ((= bit -1)
+    (cond ((scm-= bit -1)
            (bits-writer-flush b)
            (slgn-write_bit b v))
           (else
-           (if (scm-not (= v 0))
+           (if (scm-not (scm-= v 0))
                (bits-writer-info-byte-set!
                 b (bitwise-ior (bits-writer-info-byte b)
                                (arithmetic-shift 1 bit))))
-           (bits-writer-info-bit-set! b (- bit 1))
+           (bits-writer-info-bit-set! b (scm-- bit 1))
            *void*))))
 
 (define write_bit slgn-write_bit)
 
 (define (write_bits b v n)
-  (let loop ((x (- n 1)))
-    (if (>= x 0)
+  (let loop ((x (scm-- n 1)))
+    (if (scm->= x 0)
         (begin (slgn-write_bit b (bitwise-and v (arithmetic-shift 1 x)))
-               (loop (- x 1))))))
+               (loop (scm-- x 1))))))
 
