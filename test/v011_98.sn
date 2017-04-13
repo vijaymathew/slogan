@@ -121,3 +121,32 @@ assert (for (i = 0 to 10) i) == 10
 assert (for (i = 10 downto 0) i) == 0
 assert (for (i = 10 to 0) i) == false
 assert (for (i = 0 downto 10) i) == false
+
+// user-defined syntax
+declare syntax while { ($cond) $body }
+  let loop ()
+    when ($cond)
+    { $body; loop () }
+
+let i = 0
+while (i < 5) i = i + 1
+assert i == 5
+
+module sm(a)
+{ declare syntax mw { ($cond) $body }
+    let loop ()
+      when ($cond)
+      { $body; loop () }
+  function a(x) let (i = 0) { mw (i < x) i = i + 1; i } }
+
+assert sm.a(10) == 10
+
+namespace sn {
+  declare syntax nw { ($cond) $body }
+    let loop ()
+      when ($cond)
+      { $body; loop () }
+  function a(x) let (i = 0) { nw (i < x) i = i + 1; i }
+}
+
+assert sn::a(10) == 10

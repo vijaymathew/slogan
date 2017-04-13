@@ -2,10 +2,10 @@
 
 (setq slogan-keywords '("^" "function" "record" "if" "else" "when" "let" "letseq"
                         "letrec" "yield" "case" "match" "where" "try" "trycc" "break" "letdyn"
-                        "catch" "finally" "module" "declare" "generic" "assert" "for" "continue"
-                        "namespace"))
+                        "catch" "finally" "module" "declare" "assert" "for" "continue"
+                        "namespace" "and" "or"))
 
-(setq slogan-constants '("true" "false" "and" "or"))
+(setq slogan-constants '("true" "false" "to" "downto" "generic" "ffi" "syntax"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))
 (setq slogan-constant-regexp (regexp-opt slogan-constants 'words))
