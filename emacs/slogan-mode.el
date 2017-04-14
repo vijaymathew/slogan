@@ -5,7 +5,7 @@
                         "catch" "finally" "module" "declare" "assert" "for" "continue"
                         "namespace" "and" "or"))
 
-(setq slogan-constants '("true" "false" "to" "downto" "generic" "ffi" "syntax"))
+(setq slogan-constants '("true" "false" "to" "downto" "generic" "ffi" "syntax" "macro"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))
 (setq slogan-constant-regexp (regexp-opt slogan-constants 'words))

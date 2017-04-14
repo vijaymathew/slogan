@@ -161,6 +161,7 @@
                                              (scm-cons "::" *deref*)
                                              (scm-cons "!>" '*task-send*)
                                              (scm-cons "!<" '*task-recv*)
+                                             (scm-cons "=>" '*syntax-inserter*)
                                              (scm-cons "->" '*inserter*)
                                              (scm-cons "<-" '*extractor*)))
 
@@ -218,12 +219,18 @@
 
 (define (fetch-operator port suffix suffix-opr opr)
   (port-pos-read-char! port)
-  (if (scm-eq? opr '*less-than*)
-      (fetch-less-than-operator port)
-      (if (char=? (port-pos-peek-char port) suffix)
-          (begin (port-pos-read-char! port)
-                 suffix-opr)
-          opr)))
+  (cond
+   ((and (scm-eq? suffix-opr '*equals*)
+         (char=? (port-pos-peek-char port) #\>))
+    (port-pos-read-char! port)
+    '*syntax-inserter*)
+   (else
+    (if (scm-eq? opr '*less-than*)
+        (fetch-less-than-operator port)
+        (if (char=? (port-pos-peek-char port) suffix)
+            (begin (port-pos-read-char! port)
+                   suffix-opr)
+            opr)))))
 
 (define (tokenizer-error msg #!rest args)
   (scm-error (with-output-to-string 

@@ -87,6 +87,7 @@
                  ((generic) (declare-generic-stmt tokenizer))
                  ((ffi) (declare-ffi-stmt tokenizer))
                  ((syntax) (declare-syntax-stmt tokenizer))
+                 ((macro) (declare-macro-stmt tokenizer))
                  (else
                   (parser-error tokenizer "invalid declare type")))))
       (func-def-stmt tokenizer)))
@@ -809,7 +810,10 @@
         (let ((tokens (fetch-syntax name)))
           (if tokens
               (parse-syntax-call-expr name tokens tokenizer)
-              #f))
+              (let ((tokens-fn (fetch-macro name)))
+                (if tokens-fn
+                    (parse-macro-call-expr tokens-fn tokenizer)
+                    #f))))
         #f)))
 
 (define *assertions-enabled* #t)
@@ -1001,7 +1005,7 @@
                  (array-or-table-literal tokenizer))
                 ((scm-eq? token '*task*)
                  (tokenizer 'next)
-                 `(thread-start! (make-thread (lambda () ,(scm-expression tokenizer)))))                 
+                 `(thread-start! (make-thread (lambda () ,(func-body-expr tokenizer '())))))
                 ((scm-eq? token '*task-recv*)
                  (tokenizer 'next)
                  `(thread-receive))

@@ -174,3 +174,16 @@
           (if (scm-not (void? val))
               (begin (slgn-display val)
                      (scm-newline)))))))
+
+;; meta-programming
+(define (named-let name bindings body)
+  `(let ,name ,bindings ,body))
+
+(define (when-cond cond conseq)
+  `(if ,cond ,conseq #f))
+
+(define (code-block body)
+  `(begin ,@body))
+
+(define (fn-call fn-name args)
+  `(,fn-name ,@args))
