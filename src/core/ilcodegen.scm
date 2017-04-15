@@ -79,6 +79,9 @@
             (tokenizer 'next))
         #t)))
 
+(define (declare-compiler-fn-stmt tokenizer)
+  (scm-eval (func-def-stmt-with-name tokenizer)))
+
 (define (declare-stmt tokenizer)
   (if (scm-eq? (tokenizer 'peek) 'declare)
       (begin (tokenizer 'next)
@@ -88,6 +91,7 @@
                  ((ffi) (declare-ffi-stmt tokenizer))
                  ((syntax) (declare-syntax-stmt tokenizer))
                  ((macro) (declare-macro-stmt tokenizer))
+                 ((function) (declare-compiler-fn-stmt tokenizer))
                  (else
                   (parser-error tokenizer "invalid declare type")))))
       (func-def-stmt tokenizer)))
@@ -804,9 +808,14 @@
                            (*r* (scm-cons ,expr *yield-obj*)))))))
            (else (assert-stmt tokenizer)))))
 
+(define (valid-identifier-exlcude-syntax? sym)
+  (and (symbol? sym)
+       (scm-not (or (reserved-name? sym)
+                    (slgn-is_special_token sym)))))
+
 (define (syntax-call-expr tokenizer)
   (let ((name (tokenizer 'peek)))
-    (if (valid-identifier? name)
+    (if (valid-identifier-exlcude-syntax? name)
         (let ((tokens (fetch-syntax name)))
           (if tokens
               (parse-syntax-call-expr name tokens tokenizer)
@@ -1913,7 +1922,7 @@
           args))))
 
 (define (check-if-reserved-name sym tokenizer)
-  (if (or (reserved-name? sym) (slgn-is_special_token sym))
+  (if (scm-not (valid-identifier? sym))
       (parser-error tokenizer (string-append "invalid use of keyword or operator: "
                                              (symbol->string sym) ". ") sym)
       sym))
@@ -1921,7 +1930,9 @@
 (define (valid-identifier? sym)
   (and (symbol? sym)
        (scm-not (or (reserved-name? sym)
-		(slgn-is_special_token sym)))))
+                    (slgn-is_special_token sym)
+                    (fetch-syntax sym)
+                    (fetch-macro sym)))))
 
 (define *local-sym-count* 0)
 (define (local-gensym)

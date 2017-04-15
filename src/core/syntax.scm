@@ -85,7 +85,7 @@
 
 (define (declare-syntax-stmt tokenizer)
   (let ((name (tokenizer 'next)))
-    (if (scm-not (valid-identifier? name))
+    (if (scm-not (valid-identifier-exlcude-syntax? name))
         (parser-error tokenizer "invalid syntax name"))
     (let ((tokens (syntax-tokens tokenizer))
           (body-expr (syntax-body-expr tokenizer #t)))
@@ -94,7 +94,7 @@
 
 (define (declare-macro-stmt tokenizer)
   (let ((name (tokenizer 'next)))
-    (if (scm-not (valid-identifier? name))
+    (if (scm-not (valid-identifier-exlcude-syntax? name))
         (parser-error tokenizer "invalid macro keyword"))
     (let ((tokens (syntax-tokens tokenizer))
           (body-expr (syntax-body-expr tokenizer #f))

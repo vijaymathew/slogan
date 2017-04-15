@@ -574,6 +574,7 @@
         (scm-memp cdr-eq? *multi-char-operators-strings*))))
 
 (define is_special_token slgn-is_special_token)
+(define is_valid_identifier valid-identifier?)
 
 (define (slgn-special_token_to_string token)
   (let ((cdr-eq? (lambda (p) (scm-eq? token (scm-cdr p)))))
@@ -581,7 +582,7 @@
                    (scm-list *special-operators-strings*
                              *single-char-operators-strings* 
                              *multi-char-operators-strings*)
-                   caar
+                   scm-caar
                    (lambda () (scm-error "not a special token" token)))))
 
 (define special_token_to_string slgn-special_token_to_string)

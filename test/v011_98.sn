@@ -169,3 +169,27 @@ declare macro
  [$bindings:core.compiler.let_bindings_parser]
 
 assert do a + b where (a = 100, b = 200) == 300
+
+declare macro
+  bind_names ($names, $values) $body
+  => let (bindings = core.map(^(n, v) [n, v], $names, $values))
+       core.compiler.let_(bindings, $body)
+
+assert (bind_names ([a, b, c], [1, 10, 100]) [c, b, a]) == [100, 10, 1]
+
+// Custom code-parsers
+declare function parse_stared_name(tokenizer)
+  let (token = tokenizer.next)
+  { when (core.special_token_to_string(token) <> "*")
+      core.error("expected asterisk")
+    let (sym = tokenizer.next)
+    { when (core.not(core.is_valid_identifier(sym)))
+        core.error("invalid identifier")
+      sym }}
+
+declare macro
+  str $name
+  => core.symbol_to_string($name),
+  [$name:parse_stared_name]
+
+assert str * hello == "hello"

@@ -633,6 +633,7 @@
 (define core-peek_token peek_token)
 (define core-is_keyword_token is_keyword_token)
 (define core-is_special_token is_special_token)
+(define core-is_valid_identifier is_valid_identifier)
 (define core-special_token_to_string special_token_to_string)
 (define core-expression expression)
 (define core-statement statement)
@@ -1495,6 +1496,7 @@
     ((peek_token) core-peek_token)
     ((is_keyword_token) core-is_keyword_token)
     ((is_special_token) core-is_special_token)
+    ((is_valid_identifier) core-is_valid_identifier)
     ((special_token_to_string) core-special_token_to_string)
     ((expression) core-expression)
     ((statement) core-statement)
@@ -1808,8 +1810,8 @@
                             is_special_token is_stream is_string is_subset is_superset
                             is_symbol is_task is_task_group is_true is_u16array
                             is_u32array is_u64array is_u8array is_void is_writer is_zero
-                            lcm least_fixnum length link list list_directory list_of
-                            list_tail list_to_array list_to_bit_array list_to_f32array
+                            is_valid_identifier lcm least_fixnum length link list list_directory
+                            list_of list_tail list_to_array list_to_bit_array list_to_f32array
                             list_to_f64array list_to_s16array list_to_s32array
                             list_to_s64array list_to_s8array list_to_set list_to_string
                             list_to_u16array list_to_u32array list_to_u64array
