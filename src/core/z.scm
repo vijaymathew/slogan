@@ -855,6 +855,9 @@
 (define core-write_bit write_bit)
 (define core-write_bits write_bits)
 
+;; meta-programming
+(define core-compiler compiler)
+
 (define (core *name*)
   (case *name*
     ((compose) core-compose)
@@ -1708,6 +1711,7 @@
     ((slogan_root) core-slogan_root)
     ((read_slogan_root) core-read_slogan_root)
     ((contains) core-contains)
+    ((compiler) core-compiler)
     (else (scm-error "Binding not found" *name*))))
 
 (define *core-names* '(_inf _zero abort abs accumulate acos act add angle append
@@ -1731,8 +1735,8 @@
                             char_is_lt char_is_lteq char_is_numeric char_is_upper_case
                             char_is_whitespace char_to_integer char_upcase close_reader
                             close_stream close_writer command_line contains
-                            command_line_user_args compare compile complement compose
-                            copy_bit_field copy_file copy_list cos count cpu_time
+                            command_line_user_args compare compile compiler complement
+                            compose copy_bit_field copy_file copy_list cos count cpu_time
                             create_directory create_link create_symbolic_link
                             current_directory current_error_stream
                             current_exception_handler current_reader current_task

@@ -36,9 +36,9 @@
 (define (add-syntax! name tokens)
   (table-set! (scm-car *syntax-contexts*) name tokens))
 
-(define (add-macro! name tokens fn-expr)
+(define (add-macro! name tokens parsers fn-expr)
   (table-set! (scm-car *macro-contexts*) name
-              (scm-cons tokens (scm-eval fn-expr))))
+              (scm-cons (scm-cons tokens parsers) (scm-eval fn-expr))))
 
 (define (fetch-syntax-macro name ctx)
   (let loop ((contexts ctx))
@@ -61,6 +61,28 @@
        (tokenizer 'syntax-mode-off)
        expr))))
 
+(define (normalize-syntax-var-parsers parsers)
+  (scm-map (lambda (p)
+             (if (scm-not (eq? 'scm-cons (scm-car p)))
+                 (scm-error "invalid parser specification, expected a pair"))
+             (scm-cons (scm-cadr p) (scm-cddr p)))
+           parsers))
+
+(define (syntax-var-parsers tokenizer)
+  (cond
+   ((eq? '*comma* (tokenizer 'peek))
+    (tokenizer 'next)
+    (let ((parsers (scm-expression tokenizer)))
+      (if (and (scm-not (list? parsers))
+               (scm-not (eq? 'scm-list (scm-car parsers))))
+          (parser-error tokenizer "expected list of parsers")
+          (normalize-syntax-var-parsers (scm-cdr parsers)))))
+   (else '())))
+
+(define (var-parser var parsers)
+  (let ((p (scm-assq var parsers)))
+    (if p (scm-eval (scm-cadr p)) #f)))
+
 (define (declare-syntax-stmt tokenizer)
   (let ((name (tokenizer 'next)))
     (if (scm-not (valid-identifier? name))
@@ -75,8 +97,9 @@
     (if (scm-not (valid-identifier? name))
         (parser-error tokenizer "invalid macro keyword"))
     (let ((tokens (syntax-tokens tokenizer))
-          (body-expr (syntax-body-expr tokenizer #f)))
-      (add-macro! name tokens `(lambda ,(extract-syntax-params tokens) ,body-expr)))))
+          (body-expr (syntax-body-expr tokenizer #f))
+          (parsers (syntax-var-parsers tokenizer)))
+      (add-macro! name tokens parsers `(lambda ,(extract-syntax-params tokens) ,body-expr)))))
                                                              
 (define (parse-syntax-call-expr name tokens tokenizer)
   (tokenizer 'next)
@@ -92,13 +115,16 @@
 
 (define (parse-macro-call-expr tokens/fn-expr tokenizer)
   (tokenizer 'next)
-  (let loop ((tokens (scm-car tokens/fn-expr)) (args '()))
-    (if (null? tokens)
-        (let ((fn (scm-cdr tokens/fn-expr)))
-          (scm-apply fn (scm-reverse args)))
-        (loop (scm-cdr tokens)
-              (if (syntax-var? (scm-car tokens))
-                  (scm-cons (func-body-expr tokenizer '()) args)
-                  (if (equal? (scm-car tokens) (tokenizer 'next))
-                      args
-                      (parser-error tokenizer "unexpected token in macro call")))))))
+  (let ((parsers (scm-cdar tokens/fn-expr)))
+    (let loop ((tokens (scm-caar tokens/fn-expr))
+               (args '()))
+      (if (null? tokens)
+          (let ((fn (scm-cdr tokens/fn-expr)))
+            (scm-apply fn (scm-reverse args)))
+          (loop (scm-cdr tokens)
+                (if (syntax-var? (scm-car tokens))
+                    (let ((parser (var-parser (scm-car tokens) parsers)))
+                      (scm-cons (if parser (parser tokenizer) (func-body-expr tokenizer '())) args))
+                    (if (equal? (scm-car tokens) (tokenizer 'next))
+                        args
+                        (parser-error tokenizer "unexpected token in macro call"))))))))

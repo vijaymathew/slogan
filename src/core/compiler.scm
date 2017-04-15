@@ -176,14 +176,66 @@
                      (scm-newline)))))))
 
 ;; meta-programming
-(define (named-let name bindings body)
+(define (compiler-let-block bindings body)
+  `(let ,bindings ,body))
+
+(define (compiler-letseq-block bindings body)
+  `(let* ,bindings ,body))
+
+(define (compiler-letrec-block bindings body)
+  `(letrec ,bindings ,body))
+
+(define (compiler-named-let-block name bindings body)
   `(let ,name ,bindings ,body))
 
-(define (when-cond cond conseq)
+(define (compiler-when cond conseq)
   `(if ,cond ,conseq #f))
 
-(define (code-block body)
+(define (compiler-if-else cond conseq alter)
+  `(if ,cond ,conseq ,alter))
+
+(define (compiler-if-else-multi conds-conseqs)
+  `(cond ,conds-conseqs))
+
+(define (compiler-case conds-conseqs)
+  `(case ,conds-conseqs))
+
+(define (compiler-code-block body)
   `(begin ,@body))
 
-(define (fn-call fn-name args)
+(define (compiler-fn-call fn-name args)
   `(,fn-name ,@args))
+
+(define (compiler-fn args body)
+  `(lambda ,args ,body))
+
+(define (compiler-let var-name value)
+  `(define ,var-name ,value))
+
+(define (compiler-assignment var-name value)
+  `(set! ,var-name ,value))
+
+(define (compiler-parse-let-bindings tokenizer)
+  (let-bindings tokenizer 'let))
+
+(define (compiler-parse-bindings letkw tokenizer)
+  (let-bindings tokenizer letkw))
+
+(define (compiler msg)
+  (case msg
+    ((let_) compiler-let-block)
+    ((letseq_) compiler-letseq-block)
+    ((letrec_) compiler-letrec-block)
+    ((named_let) compiler-named-let-block)
+    ((when_) compiler-when)
+    ((if_) compiler-if-else)
+    ((if_multi) compiler-if-else-multi)
+    ((case_) compiler-case)
+    ((block) compiler-code-block)
+    ((call) compiler-fn-call)
+    ((function_) compiler-fn)
+    ((let_statement) compiler-let)
+    ((assignment) compiler-assignment)
+    ((let_bindings_parser) compiler-parse-let-bindings)
+    ((bindings_parser) compiler-parse-bindings)
+    (else (scm-error "invalid compiler message"))))

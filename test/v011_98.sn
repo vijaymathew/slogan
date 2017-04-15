@@ -154,19 +154,18 @@ namespace sn {
 
 assert sn::a(10) == 10
 
-declare syntax
-  cond @conds_conseq_list
-  => let loop (ccl = @conds_conseq_list)
-       if (is_empty(ccl)) false
-       else let (cc = first(ccl))
-         if (first(cc)()) second(cc)()
-         else loop(rest(ccl))
-
 // Compile-time code-generation with macros
 declare macro
-  while2($cond) $body
-  => `named-let`('loop, [], `when-cond`($cond, `code-block`([$body, `fn-call`('loop, [])])))
+ while2($cond) $body
+ => core.compiler.named_let('loop, [], core.compiler.when_($cond, core.compiler.block([$body, core.compiler.call('loop, [])])))
 
 let j = 0
 while2 (j < 5) j = j + 1
 assert j == 5
+
+declare macro
+ do $body where $bindings
+ => core.compiler.let_($bindings, $body),
+ [$bindings:core.compiler.let_bindings_parser]
+
+assert do a + b where (a = 100, b = 200) == 300
