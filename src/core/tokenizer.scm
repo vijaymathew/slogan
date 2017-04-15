@@ -21,6 +21,7 @@
                           '()))
         (port (make-port-pos port 1 0))
         (pattern-mode #f)
+        (syntax-mode #f)
         (let-pattern-mode #f)
         (radix 10)
         (yield-count 0)
@@ -58,6 +59,9 @@
         ((pattern-mode-on) (set! pattern-mode #t))
         ((pattern-mode-off) (set! pattern-mode #f))
         ((pattern-mode?) pattern-mode)
+        ((syntax-mode-on) (set! syntax-mode #t))
+        ((syntax-mode-off) (set! syntax-mode #f))
+        ((syntax-mode?) syntax-mode)
         ((let-pattern-mode-on) (set! let-pattern-mode #t))
         ((let-pattern-mode-off) (set! let-pattern-mode #f))
         ((let-pattern-mode?) let-pattern-mode)
@@ -157,6 +161,7 @@
                                              (scm-cons "::" *deref*)
                                              (scm-cons "!>" '*task-send*)
                                              (scm-cons "!<" '*task-recv*)
+                                             (scm-cons "=>" '*syntax-inserter*)
                                              (scm-cons "->" '*inserter*)
                                              (scm-cons "<-" '*extractor*)))
 
@@ -214,12 +219,18 @@
 
 (define (fetch-operator port suffix suffix-opr opr)
   (port-pos-read-char! port)
-  (if (scm-eq? opr '*less-than*)
-      (fetch-less-than-operator port)
-      (if (char=? (port-pos-peek-char port) suffix)
-          (begin (port-pos-read-char! port)
-                 suffix-opr)
-          opr)))
+  (cond
+   ((and (scm-eq? suffix-opr '*equals*)
+         (char=? (port-pos-peek-char port) #\>))
+    (port-pos-read-char! port)
+    '*syntax-inserter*)
+   (else
+    (if (scm-eq? opr '*less-than*)
+        (fetch-less-than-operator port)
+        (if (char=? (port-pos-peek-char port) suffix)
+            (begin (port-pos-read-char! port)
+                   suffix-opr)
+            opr)))))
 
 (define (tokenizer-error msg #!rest args)
   (scm-error (with-output-to-string 
@@ -563,6 +574,7 @@
         (scm-memp cdr-eq? *multi-char-operators-strings*))))
 
 (define is_special_token slgn-is_special_token)
+(define is_valid_identifier valid-identifier?)
 
 (define (slgn-special_token_to_string token)
   (let ((cdr-eq? (lambda (p) (scm-eq? token (scm-cdr p)))))
@@ -570,7 +582,7 @@
                    (scm-list *special-operators-strings*
                              *single-char-operators-strings* 
                              *multi-char-operators-strings*)
-                   caar
+                   scm-caar
                    (lambda () (scm-error "not a special token" token)))))
 
 (define special_token_to_string slgn-special_token_to_string)

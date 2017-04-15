@@ -79,6 +79,9 @@
             (tokenizer 'next))
         #t)))
 
+(define (declare-compiler-fn-stmt tokenizer)
+  (scm-eval (func-def-stmt-with-name tokenizer)))
+
 (define (declare-stmt tokenizer)
   (if (scm-eq? (tokenizer 'peek) 'declare)
       (begin (tokenizer 'next)
@@ -86,6 +89,9 @@
                (case name
                  ((generic) (declare-generic-stmt tokenizer))
                  ((ffi) (declare-ffi-stmt tokenizer))
+                 ((syntax) (declare-syntax-stmt tokenizer))
+                 ((macro) (declare-macro-stmt tokenizer))
+                 ((function) (declare-compiler-fn-stmt tokenizer))
                  (else
                   (parser-error tokenizer "invalid declare type")))))
       (func-def-stmt tokenizer)))
@@ -484,13 +490,18 @@
               (char=? (string-ref str 0) #\%)
               (char=? (string-ref str (scm-- len 1)) #\%)))))
 
-(define (make-dynamic-ref expr)
-  (if (dynamic-var? expr)
-      `(let ((*dbinding* (task-binding (current-thread) ',expr)))
-         (if (eq? *void* *dbinding*)
-             ,expr
-             *dbinding*))
-      expr))
+(define (special-var-access expr tokenizer)
+  (cond
+   ((dynamic-var? expr)
+    `(let ((*dbinding* (task-binding (current-thread) ',expr)))
+       (if (eq? *void* *dbinding*)
+           ,expr
+           *dbinding*)))
+   ((syntax-var? expr)
+    (if (tokenizer 'syntax-mode?)
+        `(,expr)
+        expr))
+   (else expr)))
 
 (define (var-def-set sym tokenizer def)
   (if (scm-eq? (tokenizer 'peek) '*assignment*)
@@ -797,6 +808,23 @@
                            (*r* (scm-cons ,expr *yield-obj*)))))))
            (else (assert-stmt tokenizer)))))
 
+(define (valid-identifier-exlcude-syntax? sym)
+  (and (symbol? sym)
+       (scm-not (or (reserved-name? sym)
+                    (slgn-is_special_token sym)))))
+
+(define (syntax-call-expr tokenizer)
+  (let ((name (tokenizer 'peek)))
+    (if (valid-identifier-exlcude-syntax? name)
+        (let ((tokens (fetch-syntax name)))
+          (if tokens
+              (parse-syntax-call-expr name tokens tokenizer)
+              (let ((tokens-fn (fetch-macro name)))
+                (if tokens-fn
+                    (parse-macro-call-expr tokens-fn tokenizer)
+                    #f))))
+        #f)))
+
 (define *assertions-enabled* #t)
 (define (enable_asserts) (set! *assertions-enabled* #t))
 (define (disable_asserts) (set! *assertions-enabled* #f))
@@ -818,7 +846,7 @@
                             (scm-error (quote assertion_failed)
                                    ,(string-append "line: " (number->string line)))))
                     #t))))
-          (else #f))))
+          (else (syntax-call-expr tokenizer)))))
 
 (define (normalize-sym s)
   (if (and (list? s) (scm-eq? (scm-car s) 'quote))
@@ -986,7 +1014,7 @@
                  (array-or-table-literal tokenizer))
                 ((scm-eq? token '*task*)
                  (tokenizer 'next)
-                 `(thread-start! (make-thread (lambda () ,(scm-expression tokenizer)))))                 
+                 `(thread-start! (make-thread (lambda () ,(func-body-expr tokenizer '())))))
                 ((scm-eq? token '*task-recv*)
                  (tokenizer 'next)
                  `(thread-receive))
@@ -1012,7 +1040,7 @@
 	 (scm-list 'scm-rvar))
         ((scm-eq? token '*semicolon*)
          (parser-error tokenizer "unexpected semicolon"))
-	(else (let ((var (make-dynamic-ref (tokenizer 'next))))
+	(else (let ((var (special-var-access (tokenizer 'next) tokenizer)))
                 (if (slgn-is_special_token var)
                     (parser-error tokenizer "misplaced token or operator"))
                 (let ((ntok (tokenizer 'peek)))
@@ -1648,35 +1676,44 @@
          (else (loop (scm-cdr params) res)))))))
 
 (define (func-body-expr tokenizer params #!optional (use-let #f))
-  (let ((implicit-match? #f)
-        (let-expr? (and params (scm-> (scm-length params) 0) (eq? '*let* (scm-car params)))))
-    (let ((params (if let-expr? (scm-cdr params) params)))
-      (if (scm-eq? (tokenizer 'peek) '*pipe*)
-          (if (and params (scm-> (scm-length params) 0))
-              (begin
-                (tokenizer 'next)
-                (set! implicit-match? #t))
-              (parser-error tokenizer "implicit match cannot be specified here")))
-      (let ((match-value (if implicit-match?
-                             (let ((params (extract-param-names params)))
-                               (if (scm-= (scm-length params) 1)
-                                   (scm-car params)
-                                   (scm-append '(scm-list) (extract-param-names params))))
-                             #f)))
-        (let ((old-yield-count (tokenizer 'yield-count)))
-          (let ((body-expr
-                 (let ((token (tokenizer 'peek)))
-                   (if (or (scm-eq? token '*semicolon*) 
-                           (eof-object? token))
-                       '(begin (quote ()))
-                       (if implicit-match?
-                           (match-body-expr match-value tokenizer)
-                           (if (scm-eq? (tokenizer 'peek) '*open-brace*)
-                               (block-expr tokenizer use-let)
-                               (stmt-or-expr tokenizer)))))))
-            (if (and (scm-not let-expr?) params (scm-> (tokenizer 'yield-count) old-yield-count))
-                (wrap-in-return-cont body-expr)
-                body-expr)))))))
+  (with-exception-catcher
+   (lambda (e)
+     (pop-syntax-context!)
+     (scm-raise e))
+   (lambda ()
+     (push-syntax-context!)
+     (let ((result-expr
+            (let ((implicit-match? #f)
+                  (let-expr? (and params (scm-> (scm-length params) 0) (eq? '*let* (scm-car params)))))
+              (let ((params (if let-expr? (scm-cdr params) params)))
+                (if (scm-eq? (tokenizer 'peek) '*pipe*)
+                    (if (and params (scm-> (scm-length params) 0))
+                        (begin
+                          (tokenizer 'next)
+                          (set! implicit-match? #t))
+                        (parser-error tokenizer "implicit match cannot be specified here")))
+                (let ((match-value (if implicit-match?
+                                       (let ((params (extract-param-names params)))
+                                         (if (scm-= (scm-length params) 1)
+                                             (scm-car params)
+                                             (scm-append '(scm-list) (extract-param-names params))))
+                                       #f)))
+                  (let ((old-yield-count (tokenizer 'yield-count)))
+                    (let ((body-expr
+                           (let ((token (tokenizer 'peek)))
+                             (if (or (scm-eq? token '*semicolon*)
+                                     (eof-object? token))
+                                 '(begin (quote ()))
+                                 (if implicit-match?
+                                     (match-body-expr match-value tokenizer)
+                                     (if (scm-eq? (tokenizer 'peek) '*open-brace*)
+                                         (block-expr tokenizer use-let)
+                                         (stmt-or-expr tokenizer)))))))
+                      (if (and (scm-not let-expr?) params (scm-> (tokenizer 'yield-count) old-yield-count))
+                          (wrap-in-return-cont body-expr)
+                          body-expr))))))))
+       (pop-syntax-context!)
+       result-expr))))
 
 (define (func-call-expr func-val tokenizer)
   (let ((token (tokenizer 'peek)))
@@ -1885,7 +1922,7 @@
           args))))
 
 (define (check-if-reserved-name sym tokenizer)
-  (if (or (reserved-name? sym) (slgn-is_special_token sym))
+  (if (scm-not (valid-identifier? sym))
       (parser-error tokenizer (string-append "invalid use of keyword or operator: "
                                              (symbol->string sym) ". ") sym)
       sym))
@@ -1893,7 +1930,9 @@
 (define (valid-identifier? sym)
   (and (symbol? sym)
        (scm-not (or (reserved-name? sym)
-		(slgn-is_special_token sym)))))
+                    (slgn-is_special_token sym)
+                    (fetch-syntax sym)
+                    (fetch-macro sym)))))
 
 (define *local-sym-count* 0)
 (define (local-gensym)

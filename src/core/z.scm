@@ -633,6 +633,7 @@
 (define core-peek_token peek_token)
 (define core-is_keyword_token is_keyword_token)
 (define core-is_special_token is_special_token)
+(define core-is_valid_identifier is_valid_identifier)
 (define core-special_token_to_string special_token_to_string)
 (define core-expression expression)
 (define core-statement statement)
@@ -854,6 +855,9 @@
 (define core-bits_writer_flush bits_writer_flush)
 (define core-write_bit write_bit)
 (define core-write_bits write_bits)
+
+;; meta-programming
+(define core-compiler compiler)
 
 (define (core *name*)
   (case *name*
@@ -1492,6 +1496,7 @@
     ((peek_token) core-peek_token)
     ((is_keyword_token) core-is_keyword_token)
     ((is_special_token) core-is_special_token)
+    ((is_valid_identifier) core-is_valid_identifier)
     ((special_token_to_string) core-special_token_to_string)
     ((expression) core-expression)
     ((statement) core-statement)
@@ -1708,6 +1713,7 @@
     ((slogan_root) core-slogan_root)
     ((read_slogan_root) core-read_slogan_root)
     ((contains) core-contains)
+    ((compiler) core-compiler)
     (else (scm-error "Binding not found" *name*))))
 
 (define *core-names* '(_inf _zero abort abs accumulate acos act add angle append
@@ -1731,8 +1737,8 @@
                             char_is_lt char_is_lteq char_is_numeric char_is_upper_case
                             char_is_whitespace char_to_integer char_upcase close_reader
                             close_stream close_writer command_line contains
-                            command_line_user_args compare compile complement compose
-                            copy_bit_field copy_file copy_list cos count cpu_time
+                            command_line_user_args compare compile compiler complement
+                            compose copy_bit_field copy_file copy_list cos count cpu_time
                             create_directory create_link create_symbolic_link
                             current_directory current_error_stream
                             current_exception_handler current_reader current_task
@@ -1804,8 +1810,8 @@
                             is_special_token is_stream is_string is_subset is_superset
                             is_symbol is_task is_task_group is_true is_u16array
                             is_u32array is_u64array is_u8array is_void is_writer is_zero
-                            lcm least_fixnum length link list list_directory list_of
-                            list_tail list_to_array list_to_bit_array list_to_f32array
+                            is_valid_identifier lcm least_fixnum length link list list_directory
+                            list_of list_tail list_to_array list_to_bit_array list_to_f32array
                             list_to_f64array list_to_s16array list_to_s32array
                             list_to_s64array list_to_s8array list_to_set list_to_string
                             list_to_u16array list_to_u32array list_to_u64array

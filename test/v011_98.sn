@@ -121,3 +121,75 @@ assert (for (i = 0 to 10) i) == 10
 assert (for (i = 10 downto 0) i) == 0
 assert (for (i = 10 to 0) i) == false
 assert (for (i = 0 downto 10) i) == false
+
+// user-defined syntax
+declare syntax
+  while ($cond) $body
+  => let loop ()
+      when ($cond)
+      { $body; loop () }
+
+let i = 0
+while (i < 5) i = i + 1
+assert i == 5
+
+module sm(a)
+{ declare syntax
+    mw ($cond) $body
+    => let loop ()
+        when ($cond)
+        { $body; loop () }
+  function a(x) let (i = 0) { mw (i < x) i = i + 1; i } }
+
+assert sm.a(10) == 10
+
+namespace sn {
+  declare syntax
+    nw ($cond) $body
+    => let loop ()
+        when ($cond)
+        { $body; loop () }
+  function a(x) let (i = 0) { nw (i < x) i = i + 1; i }
+}
+
+assert sn::a(10) == 10
+
+// Compile-time code-generation with macros
+declare macro
+ while2($cond) $body
+ => core.compiler.named_let('loop, [], core.compiler.when_($cond, core.compiler.block([$body, core.compiler.call('loop, [])])))
+
+let j = 0
+while2 (j < 5) j = j + 1
+assert j == 5
+
+declare macro
+ do $body where $bindings
+ => core.compiler.let_($bindings, $body),
+ [$bindings:core.compiler.let_bindings_parser]
+
+assert do a + b where (a = 100, b = 200) == 300
+
+declare macro
+  bind_names ($names, $values) $body
+  => let (bindings = core.map(^(n, v) [n, v], $names, $values))
+       core.compiler.let_(bindings, $body)
+
+assert (bind_names ([a, b, c], [1, 10, 100]) [c, b, a]) == [100, 10, 1]
+
+// Custom code-parsers
+declare function parse_stared_name(tokenizer)
+  let (token = tokenizer.next)
+  { when (core.special_token_to_string(token) <> "*")
+      core.error("expected asterisk")
+    let (sym = tokenizer.next)
+    { when (core.not(core.is_valid_identifier(sym)))
+        core.error("invalid identifier")
+      sym }}
+
+declare macro
+  str $name
+  => core.symbol_to_string($name),
+  [$name:parse_stared_name]
+
+assert str * hello == "hello"
