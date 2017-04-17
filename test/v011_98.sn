@@ -193,3 +193,12 @@ declare macro
   [$name:parse_stared_name]
 
 assert str * hello == "hello"
+
+// equal precedence for namespace and closure access operators
+namespace ns { module m1 (a) function a() 100; module m2 (b) function b() 200 };
+assert ns::m1.a() == 100
+assert ns::m2.b() == 200
+
+module m (ns1, ns2) { namespace ns1 {let a = 100}; namespace ns2 {function b() 200} }
+assert m.ns1::a == 100
+assert m.ns2::b() == 200
