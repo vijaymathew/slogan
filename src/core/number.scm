@@ -259,3 +259,6 @@
 
 (define (inc n) (scm-+ n 1))
 (define (dec n) (scm-- n 1))
+
+(define scm-inc inc)
+(define scm-dec dec)

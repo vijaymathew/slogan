@@ -195,10 +195,10 @@
   `(if ,cond ,conseq ,alter))
 
 (define (compiler-if-else-multi conds-conseqs)
-  `(cond ,conds-conseqs))
+  `(cond ,@conds-conseqs))
 
-(define (compiler-case conds-conseqs)
-  `(case ,conds-conseqs))
+(define (compiler-case expr conds-conseqs)
+  `(case ,expr ,@conds-conseqs))
 
 (define (compiler-code-block body)
   `(begin ,@body))
@@ -218,8 +218,9 @@
 (define (compiler-parse-let-bindings tokenizer)
   (let-bindings tokenizer 'let))
 
-(define (compiler-parse-bindings letkw tokenizer)
-  (let-bindings tokenizer letkw))
+(define (compiler-make-let-bindings-parser letkw)
+  (lambda (tokenizer)
+    (let-bindings tokenizer letkw)))
 
 (define (compiler msg)
   (case msg
@@ -237,5 +238,5 @@
     ((let_statement) compiler-let)
     ((assignment) compiler-assignment)
     ((let_bindings_parser) compiler-parse-let-bindings)
-    ((bindings_parser) compiler-parse-bindings)
+    ((make_bindings_parser) compiler-make-let-bindings-parser)
     (else (scm-error "invalid compiler message"))))

@@ -269,7 +269,7 @@
         (else
          (fold_left fn initial seq))))
 
-(define (enumerate start end #!optional (cmpr <=) (next inc))
+(define (enumerate start end #!optional (cmpr <=) (next scm-inc))
     (if (cmpr start end)
         (let ((elem (next start)))
           (lpair-cons start (enumerate elem end cmpr next)))

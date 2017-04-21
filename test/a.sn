@@ -75,3 +75,5 @@ ref_set = false
 get = false
 set = false
 getenv = false
+inc = false
+dec = false

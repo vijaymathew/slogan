@@ -194,6 +194,45 @@ declare macro
 
 assert str * hello == "hello"
 
+let gx = 100
+
+declare syntax
+  refgx => gx
+
+assert refgx == 100
+assert (let (gx = 200) refgx) == 100
+
+declare macro
+  refgx_impure => 'gx
+
+assert refgx_impure == 100
+assert (let (gx = 200) refgx_impure) == 200
+
+assert (core.eval(core.compiler.function_(['a, 'b], core.compiler.call('`+`, ['a, 'b])))(10, 20)) == 30
+
+let clist = core.list
+assert (core.eval(core.compiler.let_([['a, 1], ['b, 2]], core.compiler.call('clist, ['a, 'b])))) ==  [1, 2]
+assert (core.eval(core.compiler.letseq_([['a, 1], ['b, 'a]], core.compiler.call('clist, ['a, 'b])))) == [1, 1]
+
+let cinc = core.inc
+gx = 0
+core.eval(core.compiler.named_let('iter, [['i, 0]],
+          core.compiler.when_(core.compiler.call('`<`, ['i, 5]),
+          core.compiler.block([core.compiler.assignment('gx, core.compiler.call('cinc, ['gx])),
+                               core.compiler.call('iter, [core.compiler.call('cinc, ['i])])]))))
+assert gx == 5
+
+assert (core.eval(core.compiler.if_(core.compiler.call('`<`, [1, 2]), 100, 200))) == 100
+assert (core.eval(core.compiler.if_multi([[core.compiler.call('`>`, [1, 2]), 100], [core.compiler.call('`>`, [2, 1]), 200], ['else, 300]]))) == 200
+assert (core.eval(core.compiler.case_(200, [[[100], "a"], [[200], "b"], ['else, "c"]]))) == "b"
+
+declare macro define $name $value => core.compiler.let_statement($name, $value)
+define xyz 123
+assert xyz == 123
+
+core.eval(core.compiler.assignment('xyz, core.compiler.call('cinc, ['xyz])))
+assert xyz == 124
+
 // equal precedence for namespace and closure access operators
 namespace ns { module m1 (a) function a() 100; module m2 (b) function b() 200 };
 assert ns::m1.a() == 100

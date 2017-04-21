@@ -128,11 +128,11 @@ assert do_times(10, ^(i, x, b) if (i == 5) b("ok") else i) == "ok"
 assert do_times(0, run_add, init = 0, from = 9) == 45
 
 // harmonic series
-a = fold_left(^(i, sum) sum + 1.0/i, 0, range(1,2))
+a = fold_left(^(i, sum) sum + 1.0/i, 0, core.range(1,2))
 assert a == 1.5
 
 // list comprehensions
-let s =[expt(x,2) | x <- range(0, 10)]
+let s =[expt(x,2) | x <- core.range(0, 10)]
 assert s == [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
 assert [x | x <- s where core.remainder(x, 2) == 0] == [0, 4, 16, 36, 64, 100]
 assert [x*y*z | [x,y,z] <- [[1,2,3], [4,5,6]]] == [6, 120]
@@ -262,13 +262,13 @@ assert core.count(#s64[1,2,3,4,15]) == 5
 assert core.count(#f32[1.,2.,3.,4.,1.5]) == 5
 assert core.count(#f64[1.,2.,3.,4.,1.5]) == 5
 
-t1 = for (i = 0; i < 10; inc(i)) i
+t1 = for (i = 0; i < 10; core.inc(i)) i
 assert t1 == 9
-assert core.not(for (i = 0; i < 10; inc(i)) if (i == 5) break else i)
-assert core.not(for (i = 0; i < 10; inc(i)) if (i == 5) break() else i)
-assert for (i = 0; i < 10; inc(i)) if (i == 5) break(100) else i == 100
+assert core.not(for (i = 0; i < 10; core.inc(i)) if (i == 5) break else i)
+assert core.not(for (i = 0; i < 10; core.inc(i)) if (i == 5) break() else i)
+assert for (i = 0; i < 10; core.inc(i)) if (i == 5) break(100) else i == 100
 t1 = 0
-for (i = 0; i < 10; inc(i)) if (core.mod(i, 2) == 0) continue else t1 = i + t1
+for (i = 0; i < 10; core.inc(i)) if (core.mod(i, 2) == 0) continue else t1 = i + t1
 assert t1 == 25
 
 // issue - 103
@@ -285,7 +285,7 @@ j = 0
 for (i = 0; i < 10;) { i = i + 1; j = i }
 assert j == 10
 j = 0
-for (i = 0; i < 10; inc(i)) j = i
+for (i = 0; i < 10; core.inc(i)) j = i
 assert j == 9
 
 let xs = [1,2,3,4,5,6]

@@ -35,11 +35,11 @@ let fs = 2.23606797749979
 assert core.nth(4, core.map(sqrt, make_bag(#[1,2,3,4,5]))) == fs
 assert core.nth(4, core.map(sqrt, [1,2,3,4,5])) == fs
 
-function ints(i, x = 5) if (i > x) false else i:~ints(inc(i), x)
+function ints(i, x = 5) if (i > x) false else i:~ints(core.inc(i), x)
 
 assert core.nth(4, core.map(sqrt, ints(1))) == fs
 
-function iints(i, x = 5) let loop (i = i) if (i > x) false else { yield i; loop(inc(i)) }
+function iints(i, x = 5) let loop (i = i) if (i > x) false else { yield i; loop(core.inc(i)) }
 
 assert core.nth(4, core.map(sqrt, iints(1))) == fs
 
