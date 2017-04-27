@@ -586,7 +586,7 @@
 (define (pair-literal tokenizer expr)
   (tokenizer 'next)
   (let ((tail-expr (if (scm-eq? (tokenizer 'peek) '*close-bracket*)
-                       *void*
+                       '*void*
                        (scm-expression tokenizer))))
     `(scm-cons ,expr ,tail-expr)))
 

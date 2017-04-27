@@ -241,3 +241,11 @@ assert ns::m2.b() == 200
 module m (ns1, ns2) { namespace ns1 {let a = 100}; namespace ns2 {function b() 200} }
 assert m.ns1::a == 100
 assert m.ns2::b() == 200
+
+// insert void in missing splice index - bugfix
+assert "hello"[1:] == "ello"
+assert "hello"[2:4] == "ll"
+assert [\a, \e, \i, \o, \u][3:] == [\o, \u]
+assert [\a, \e, \i, \o, \u][3:1] == []
+assert [\a, \e, \i, \o, \u][1:3] == [\e, \i]
+assert [\a, \e, \i, \o, \u][:3] == [\a, \e, \i]
