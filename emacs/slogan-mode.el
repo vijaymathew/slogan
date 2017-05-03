@@ -1,11 +1,11 @@
 ;; Need lot of work here...
 
 (setq slogan-keywords '("^" "function" "record" "if" "else" "when" "let" "letseq"
-                        "letrec" "yield" "case" "match" "where" "try" "trycc" "break" "letdyn"
+                        "letrec" "yield" "case" "match" "try" "trycc" "break" "letdyn"
                         "catch" "finally" "module" "declare" "assert" "for" "continue"
                         "namespace" "and" "or"))
 
-(setq slogan-constants '("true" "false" "to" "downto" "generic" "ffi" "syntax" "macro"))
+(setq slogan-constants '("true" "false" "to" "downto" "generic" "ffi" "syntax" "macro" "where"))
 
 (setq slogan-keywords-regexp (regexp-opt slogan-keywords 'words))
 (setq slogan-constant-regexp (regexp-opt slogan-constants 'words))

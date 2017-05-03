@@ -51,6 +51,7 @@
 (define core-set_tail set_tail)
 (define core-list list)
 (define core-list_of list_of)
+(define core-list_set list_set)
 (define core-is_list is_list)
 (define core-length length)
 (define core-count count)
@@ -914,6 +915,7 @@
     ((set_tail) core-set_tail)
     ((list) core-list)
     ((list_of) core-list_of)
+    ((list_set) core-list_set)
     ((is_list) core-is_list)
     ((length) core-length)
     ((count) core-count)
@@ -1811,7 +1813,7 @@
                             is_symbol is_task is_task_group is_true is_u16array
                             is_u32array is_u64array is_u8array is_void is_writer is_zero
                             is_valid_identifier lcm least_fixnum length link list list_directory
-                            list_of list_tail list_to_array list_to_bit_array list_to_f32array
+                            list_of list_set list_tail list_to_array list_to_bit_array list_to_f32array
                             list_to_f64array list_to_s16array list_to_s32array
                             list_to_s64array list_to_s8array list_to_set list_to_string
                             list_to_u16array list_to_u32array list_to_u64array

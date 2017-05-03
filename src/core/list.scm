@@ -48,7 +48,8 @@
           (scm-append (scm-reverse (scm-cons v rs)) (if (null? ys) ys (scm-cdr ys))))
          (else
           (loop (scm-- n 1) (scm-cdr ys) (scm-cons (scm-car ys) rs)))))))
-      
+
+(define list_set list-set!)
 (define set_head set-car!)
 (define set_tail set-cdr!)
 (define list_to_string list->string)
@@ -91,7 +92,7 @@
               (loop (scm-cdr xs) as (scm-cons x bs)))))))
 
 ;; TODO: a more efficient, tail-recursive implementation.
-(define (quicksort l #!optional (test <))
+(define (quicksort l #!optional (test lt-compare))
   (if (null? l) '()
       (let* ((x (scm-car l))
              (parts (qs-partition (scm-cdr l) x test)))
@@ -125,13 +126,13 @@
                            (scm-cons (scm-head (scm-tail xs)) zs)))))))
     (split_helper xs '() '())))
 
-(define (mergesort xs #!optional (test <))
+(define (mergesort xs #!optional (test lt-compare))
   (if (or (null? xs) (eqv? (scm-length xs) 1)) xs 
       (let ((parts (+split+ xs))) 
         (+merge+ (mergesort (scm-head parts) test) 
                  (mergesort (scm-tail parts) test) test))))
 
-(define (scm-sort ls #!optional (test <) (type 'quick))
+(define (scm-sort ls #!optional (test lt-compare) (type 'quick))
   (case type
     ((quick) (quicksort ls test))
     ((merge) (mergesort ls test))
