@@ -1509,7 +1509,7 @@
 
 (define (module-export-name-expr tokenizer)
   (let ((t (tokenizer 'peek)))
-    (cond ((valid-identifier? t)
+    (cond ((dynamic-var? t)
            (tokenizer 'next)
            t)
           (else
