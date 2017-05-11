@@ -6,8 +6,8 @@ function int_to_bool(i) if (is_number(i)) not(is_zero(i)) else i
 function bool_to_int(b) if (b) 1 else 0
 
 function write_tcp_header(filename, header)
-  letseq (out = file_writer(filename),
-          bits = bits_writer(out))
+  let (out = file_writer(filename),
+       bits = bits_writer(out))
     try
     { write_bits(bits, header['source_port], 16)
       write_bits(bits, header['destination_port], 16)
@@ -29,8 +29,8 @@ function write_tcp_header(filename, header)
     finally close_stream(out)
 
 function read_tcp_header(filename)
-  letseq (in = file_reader(filename),
-          b = bits_reader(in))
+  let (in = file_reader(filename),
+       b = bits_reader(in))
     try
       let (src_port = read_bits(b, 16),
            dest_port = read_bits(b, 16),
@@ -211,8 +211,8 @@ assert (let (gx = 200) refgx_impure) == 200
 assert (core.eval(core.compiler.function_(['a, 'b], core.compiler.call('`+`, ['a, 'b])))(10, 20)) == 30
 
 let clist = core.list
-assert (core.eval(core.compiler.let_([['a, 1], ['b, 2]], core.compiler.call('clist, ['a, 'b])))) ==  [1, 2]
-assert (core.eval(core.compiler.letseq_([['a, 1], ['b, 'a]], core.compiler.call('clist, ['a, 'b])))) == [1, 1]
+assert (core.eval(core.compiler.letfn_([['a, 1], ['b, 2]], core.compiler.call('clist, ['a, 'b])))) ==  [1, 2]
+assert (core.eval(core.compiler.let_([['a, 1], ['b, 'a]], core.compiler.call('clist, ['a, 'b])))) == [1, 1]
 
 let cinc = core.inc
 gx = 0

@@ -1,13 +1,13 @@
-// Pattern bindings in letseq and let statement.
+// Pattern bindings in let expression and let statements.
 function rl() [1,2,3,[4,[5, 6], [7], 8]]
-assert (letseq ([a,b,c,[d,[e,f],[g],h]] = rl()) [a,b,c,d,e,f,g,h]) == [1,2,3,4,5,6,7,8]
-assert (letseq ([a,_,c,[d,[_,f],[g],_]] = rl()) [a,c,d,f,g]) == [1,3,4,6,7]
+assert (let ([a,b,c,[d,[e,f],[g],h]] = rl()) [a,b,c,d,e,f,g,h]) == [1,2,3,4,5,6,7,8]
+assert (let ([a,_,c,[d,[_,f],[g],_]] = rl()) [a,c,d,f,g]) == [1,3,4,6,7]
 
-assert (letseq (a:b = 1:2) a+b) == 3
-assert (letseq (#{1:x, 'hello:y, 'ss:z} = #{1:100, 'hello:200}) [x,y,z]) == [100,200,false]
-assert (letseq (#{1:_, 'hello:y, 'ss:z} = #{1:100, 'hello:200}) [y,z]) == [200,false]
-assert (letseq (x:y:z:[a,b] = 10:20:30:[100,200]) [x,y,z, a, b]) == [10,20,30,100,200]
-assert (letseq (x:#{1:y, 2:z}:a:[b] = 10:#{1:20, 2:30}:40:[50]) [x,y,z,a,b]) == [10,20,30,40,50]
+assert (let (a:b = 1:2) a+b) == 3
+assert (let (#{1:x, 'hello:y, 'ss:z} = #{1:100, 'hello:200}) [x,y,z]) == [100,200,false]
+assert (let (#{1:_, 'hello:y, 'ss:z} = #{1:100, 'hello:200}) [y,z]) == [200,false]
+assert (let (x:y:z:[a,b] = 10:20:30:[100,200]) [x,y,z, a, b]) == [10,20,30,100,200]
+assert (let (x:#{1:y, 2:z}:a:[b] = 10:#{1:20, 2:30}:40:[50]) [x,y,z,a,b]) == [10,20,30,40,50]
 
 let [a,b,c,_] = rl()
 assert [a,b,c] == [1,2,3]
@@ -16,13 +16,13 @@ assert a:b == 1:2
 let x:#{1:y, 2:z}:a:[b] = 10:#{1:20, 2:30}:40:[50]
 assert [x,y,z,a,b] == [10,20,30,40,50]
 
-assert (letseq ([x,y,z] = [1,2,3], a = x+5, [b,c] = [x,y]) [x,y,z,a,b,c]) == [1, 2, 3, 6, 1, 2]
-assert (letseq (#{1:[x,y], 2:z} = #{1:[200,300], 2:400}) [x,y,z]) == [200,300,400]
-assert letseq ([x,y,_,[a,_]] = #[1,2,3,[4,5]]) [x,y,a] == [1, 2, 4]
-assert letseq ([x,y,_,[a,_]] = [1,2,3,#[4,5]]) [x,y,a] == [1, 2, 4]
-assert letseq ([x,y,_,[a,_]] = #[1,2,3,#[4,5]]) [x,y,a] == [1, 2, 4]
-assert letseq ([x,y,_,[a,_]] = #[1,2,3,#s32[4,5]]) [x,y,a] == [1, 2, 4]
-assert letseq ([x,y,_,[a,_]] = #[1,2,3,#u8[4,5]]) [x,y,a] == [1, 2, 4]
+assert (let ([x,y,z] = [1,2,3], a = x+5, [b,c] = [x,y]) [x,y,z,a,b,c]) == [1, 2, 3, 6, 1, 2]
+assert (let (#{1:[x,y], 2:z} = #{1:[200,300], 2:400}) [x,y,z]) == [200,300,400]
+assert let ([x,y,_,[a,_]] = #[1,2,3,[4,5]]) [x,y,a] == [1, 2, 4]
+assert let ([x,y,_,[a,_]] = [1,2,3,#[4,5]]) [x,y,a] == [1, 2, 4]
+assert let ([x,y,_,[a,_]] = #[1,2,3,#[4,5]]) [x,y,a] == [1, 2, 4]
+assert let ([x,y,_,[a,_]] = #[1,2,3,#s32[4,5]]) [x,y,a] == [1, 2, 4]
+assert let ([x,y,_,[a,_]] = #[1,2,3,#u8[4,5]]) [x,y,a] == [1, 2, 4]
 
 let [a,b,[c,[d]]] = #[1,2,[3,#u64[4]]]
 assert [a,b,c,d] == [1,2,3,4]
@@ -33,7 +33,7 @@ function custom_seq()
     | 'first -> core.head(data)
     | 'rest -> core.tail(data)
 
-assert (letseq([a,b,c] = custom_seq()) a+b+c) == 6
+assert (let ([a,b,c] = custom_seq()) a+b+c) == 6
 
 function custom_dict()
   let (data = #{'x:100, 'y:200})
@@ -41,7 +41,7 @@ function custom_dict()
     | 'ref -> ^(k) hashtable_at(data, k)
     | 'ref_set -> ^(k, v) hashtable_set(data, k, v)
 
-assert (letseq(#{'x:x, 'y:y} = custom_dict()) [x, y]) == [100, 200]
+assert (let (#{'x:x, 'y:y} = custom_dict()) [x, y]) == [100, 200]
 
 // realize function for lazy sequences.
 function ints(x) x:~ints(x+1)

@@ -562,6 +562,8 @@
        tokenizer
        (invoke-access-expression tokenizer (logical-or-expr tokenizer)))))
 
+(define array-access-expr-err "invalid index access expression, expected closing bracket. (missing semicolon before list literal?)")
+
 (define (array-access-expr tokenizer expr)
   (invoke-access-expression
    tokenizer
@@ -579,7 +581,7 @@
                            (let ((e `(*-@-* ,expr (scm-cons 0 ,(scm-expression tokenizer)))))
                              (if (scm-eq? (tokenizer 'next) '*close-bracket*)
                                  e
-                                 (parser-error tokenizer "expected closing bracket"))))))
+                                 (parser-error tokenizer array-access-expr-err))))))
                    (else
                     (let ((idx-expr (scm-expression tokenizer)))
                       (if (scm-eq? (tokenizer 'next) '*close-bracket*)
@@ -588,7 +590,7 @@
                                  `(*-@-* ,expr ,idx-expr ,(scm-expression tokenizer)))
                                 (else
                                  `(*-@-* ,expr ,idx-expr)))
-                          (parser-error tokenizer "missing closing bracket")))))))
+                          (parser-error tokenizer array-access-expr-err)))))))
            (else expr)))))
 
 (define (pair-literal tokenizer expr)
@@ -1453,7 +1455,7 @@
 
 (define (assert-pattern-bindings-let tokenizer letkw)
   (if (scm-not (scm-eq? letkw 'let*))
-      (parser-error tokenizer "pattern bindings is allowed only in letseq")))
+      (parser-error tokenizer "pattern bindings is allowed only in let")))
 
 (define (let-bindings tokenizer letkw)
   (if (scm-not (scm-eq? (tokenizer 'next) '*open-paren*))
@@ -1497,10 +1499,12 @@
 (define (letkw? sym)
   (if (and (symbol? sym)
 	   (or (scm-eq? sym 'let)
-	       (scm-eq? sym 'letseq)
+	       (scm-eq? sym 'letfn)
 	       (scm-eq? sym 'letrec)))
-      (cond ((scm-eq? sym 'letseq)
+      (cond ((scm-eq? sym 'let)
              'let*)
+            ((scm-eq? sym 'letfn)
+             'let)
             (else sym))
       #f))
 
@@ -2092,7 +2096,7 @@
       expr))
 
 (define *reserved-names* '(^ function module record true false
-			     if else when let letseq letrec letdyn yield
+			     if else when let letfn letrec letdyn yield
 			     case match where try trycc catch finally
 			     namespace declare assert for break continue))
 

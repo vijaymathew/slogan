@@ -176,10 +176,10 @@
                      (scm-newline)))))))
 
 ;; meta-programming
-(define (compiler-let-block bindings body)
+(define (compiler-letfn-block bindings body)
   `(let ,bindings ,body))
 
-(define (compiler-letseq-block bindings body)
+(define (compiler-let-block bindings body)
   `(let* ,bindings ,body))
 
 (define (compiler-letrec-block bindings body)
@@ -224,8 +224,8 @@
 
 (define (compiler msg)
   (case msg
+    ((letfn_) compiler-letfn-block)
     ((let_) compiler-let-block)
-    ((letseq_) compiler-letseq-block)
     ((letrec_) compiler-letrec-block)
     ((named_let) compiler-named-let-block)
     ((when_) compiler-when)

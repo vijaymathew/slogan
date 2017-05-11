@@ -226,7 +226,7 @@ assert members@point == ['x, 'y, 'label]
 
 // ignorable varnames in let
 assert (let (x = 200, _ = 300, y = 400, _ = 500) [x,y]) == [200, 400]
-assert (letseq (x = 200, _ = 300, y = x*10 , _ = 500) [x,y]) == [200, 2000]
+assert (let (x = 200, _ = 300, y = x*10 , _ = 500) [x,y]) == [200, 2000]
 
 // finally block to return value of try-expression
 let e = false

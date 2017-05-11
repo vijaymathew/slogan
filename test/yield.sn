@@ -11,7 +11,7 @@ iter = core.rest(iter)
 assert core.first(iter) == \c
 
 function icount(start = 0, step = 1)
-  let loop (n = start)
+  letfn loop (n = start)
   { yield n
     loop(n + step) }
 
@@ -22,12 +22,12 @@ assert core.first(iter) == 15
 
 function cycle(seq)
   let (saved = 
-    let loop (seq = seq, saved = [])
+    letfn loop (seq = seq, saved = [])
      if (core.not(seq)) core.reverse(saved)
      else { yield core.first(seq)
             loop(core.rest(seq), core.first(seq):saved) })
-   let loop()
-    let loop2(s = saved)
+   letfn loop()
+    letfn loop2(s = saved)
      if (core.not(s)) loop()
      else { yield core.first(s)
             loop2(core.rest(s)) }
@@ -43,15 +43,15 @@ assert core.first(iter) == 2
 
 function repeat(object, times=false)
   if (core.not(times))
-   let loop()
+   letfn loop()
    { yield object
      loop() }
-  else let loop(i = 0)
+  else letfn loop(i = 0)
         when (i < times)
         { yield object
           loop(i + 1) }
 
-let loop (i = 0, iter = repeat(10))
+letfn loop (i = 0, iter = repeat(10))
  when (i < 5)
  { assert core.first(iter) == 10
    loop(i + 1, core.rest(iter)) }
@@ -66,13 +66,13 @@ assert core.not(core.rest(iter))
 
 // Most lazy-pair functions also work on iterators.
 function ln(n) if (n > 5) [] else n:~ln(n + 1)
-function in(n) let loop(n = n) when (n <= 5) { yield n loop(n + 1) }
+function in(n) letfn loop(n = n) when (n <= 5) { yield n loop(n + 1) }
 
 assert core.nth(1, core.map(`+`, filter(is_even, ln(1)))) == core.nth(1, core.map(`+`, filter(is_even, in(1)))) // both return 4
 assert core.nth(4, core.map(`+`, accumulate(`+`, 1, ln(1)))) == core.nth(4, core.map(`+`, accumulate(`+`, 1, in(1)))) // both return 16
 
 function ints(a, b)
- let loop (a = a, b = b)
+ letfn loop (a = a, b = b)
   if (is_zero(b)) []
   else { yield a loop(a+1, b - 1) }
 
