@@ -262,3 +262,15 @@
 
 (define scm-inc inc)
 (define scm-dec dec)
+
+(define (floor r)
+  (if (or (infinite? r)
+          (nan? r))
+      r
+      (scm-floor r)))
+
+(define (ceiling r)
+  (if (or (infinite? r)
+          (nan? r))
+      r
+      (scm-ceiling r)))

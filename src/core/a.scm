@@ -63,6 +63,7 @@
 (define scm-string string)
 (define scm-substring substring)
 (define scm-floor floor)
+(define scm-ceiling ceiling)
 
 (define scm-error error)
 (define scm-raise raise)

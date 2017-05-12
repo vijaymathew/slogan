@@ -269,7 +269,7 @@
 (define (write_n_chars str start end #!optional (p (current-output-port)))
   (write-substring str start end p))
 
-(define (flush_writer w)
+(define (flush_writer #!optional (w (current-output-port)))
   (if (bits-writer-info? w)
       (bits-writer-flush w)
       (force-output w)))
