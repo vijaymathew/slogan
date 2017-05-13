@@ -157,19 +157,19 @@ c-declare-end
              (child-msg-handler pinfo)))))
   child-msg-handler)
 
-(define (act child-callback #!optional timeout default)
-  (let ((pinfo (scm-process (mk-child-msg-handler child-callback timeout default) timeout))
+(define (act child-callback #!key child_timeout parent_timeout default_arg)
+  (let ((pinfo (scm-process (mk-child-msg-handler child-callback parent_timeout default_arg) child_timeout))
         (sent? #f))
     (lambda (message)
       (cond ((eq? message 'info)
              pinfo)
             ((eq? message 'quit)
-             (scm-process_send pinfo message timeout)
+             (scm-process_send pinfo message child_timeout)
              (scm-process_close pinfo))
             (else
              (if sent?
                  (scm-error "pending reply in queue, cannot send more messages"))
-             (scm-process_send pinfo message timeout)
+             (scm-process_send pinfo message child_timeout)
              (set! sent? #t)
              (let ((value *void*))
                (lambda (#!key timeout default)
@@ -179,12 +179,12 @@ c-declare-end
                        (set! sent? #f)))
                  value)))))))
 
-(define (react child-callback parent-callback #!optional timeout default)
-  (let ((pinfo (scm-process (mk-child-msg-handler child-callback timeout default) timeout))
+(define (react child-callback parent-callback #!key child_timeout parent_timeout default_arg default_val)
+  (let ((pinfo (scm-process (mk-child-msg-handler child-callback parent_timeout default_arg) child_timeout))
         (p-thread #f))
     (define (parent-msg-handler)
       (if (parent-callback
-           (eval-message (scm-process_receive pinfo timeout default)))
+           (eval-message (scm-process_receive pinfo child_timeout default_val)))
           (begin
             (thread-yield!)
             (parent-msg-handler))
@@ -193,12 +193,12 @@ c-declare-end
       (cond ((eq? message 'info)
              pinfo)
             ((eq? message 'quit)
-             (scm-process_send pinfo message timeout)
+             (scm-process_send pinfo message child_timeout)
              (if p-thread
                  (thread-terminate! p-thread))
              (scm-process_close pinfo))
             (else
-             (scm-process_send pinfo message timeout)
+             (scm-process_send pinfo message child_timeout)
              (if (scm-not p-thread)
                  (begin
                    (set! p-thread (make-thread parent-msg-handler))
