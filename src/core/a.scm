@@ -62,6 +62,7 @@
 
 (define scm-string string)
 (define scm-substring substring)
+(define scm-subu8vector subu8vector)
 (define scm-floor floor)
 (define scm-ceiling ceiling)
 

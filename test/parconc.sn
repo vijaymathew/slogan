@@ -2,73 +2,81 @@ let x = ?
 task(^{task_sleep(2) ?x = 100})
 assert ?x == 100
 
-x = ?
-let y = ?
-!{?x = ?y * 10}
-?y = 100
-assert ?x == 1000
+let p = process(^(p) let loop (a = process_receive(p))
+                     { process_send(p, core.first(a) + core.second(a))
+                       loop (process_receive(p)) })
+process_send(p, [10, 40])
+assert process_receive(p) == 50
+process_send(p, [200, 10])
+assert process_receive(p) == 210
+process_close(p)
 
-x = ?
-let p = react(^(message) | [x, y] -> x + y,
-              ^(message) | result -> ?x = result)
-p([10, 20])
-assert ?x == 30
-x = ?
-p([10, 200])
-assert ?x == 210
-p.quit
+function handler_2(msg)
+| 'pair -> 1:2
+| 'list -> [1,2,3]
+| 'long_list -> range(0, 1000)
+| 'array -> #[1,2,3]
+| 'u8array -> #u8[1,2,3]
+| 's8array -> #s8[1,-2,3]
+| 'u16array -> #u16[1,2,3]
+| 's16array -> #s16[1,-2,3]
+| 'u32array -> #u32[1,2,3]
+| 's32array -> #s32[1,-2,3]
+| 'u64array -> #u64[1,2,3]
+| 's64array -> #s64[1,-2,3]
+| 'f64array -> #f64[1.,-2.,3.]
+| 'f32array -> #f32[1.,-2.,3.]
+| 'bitarray -> #b[0,2,3]
+| 'set -> #(1,2,3)
+| 'table -> #{"hi":2, 'hello:4}
+| 'number -> 3.14
+| 'string -> "hello world"
+| ['add, x, y] -> x + y
+| _ -> ['exit]
 
-let p = act(^(msg)
-              | 'pair -> 1:2
-              | 'list -> [1,2,3]
-              | 'long_list -> range(0, 10000)
-              | 'array -> #[1,2,3]
-              | 'u8array -> #u8[1,2,3]
-              | 's8array -> #s8[1,-2,3]
-              | 'u16array -> #u16[1,2,3]
-              | 's16array -> #s16[1,-2,3]
-              | 'u32array -> #u32[1,2,3]
-              | 's32array -> #s32[1,-2,3]              
-              | 'u64array -> #u64[1,2,3]
-              | 's64array -> #s64[1,-2,3]
-              | 'f64array -> #f64[1.,-2.,3.]
-              | 'f32array -> #f32[1.,-2.,3.]
-              | 'bitarray -> #b[0,2,3]              
-              | 'set -> #(1,2,3)
-              | 'table -> #{"hi":2, 'hello:4}
-              | 'number -> 3.14
-              | 'string -> "hello world"
-              | ['add, x, y] -> x + y
-              | _ -> ['exit])
+p = process(^(p) let loop () { process_send(p, handler_2(process_receive(p))); loop() })
 
-assert p.pair() == 1:2
-assert p.list() == [1,2,3]
-assert p.long_list() == range(0, 10000)
-assert p.array() == #[1,2,3]
-assert p.u8array() == #u8[1,2,3]
-assert p.s8array() == #s8[1,-2,3]
-assert p.u16array() == #u16[1,2,3]
-assert p.s16array() == #s16[1,-2,3]
-assert p.u32array() == #u32[1,2,3]
-assert p.s32array() == #s32[1,-2,3]
-assert p.u64array() == #u64[1,2,3]
-assert p.s64array() == #s64[1,-2,3]
-assert p.f32array() == #f32[1.,-2.,3.]
-assert p.f64array() == #f64[1.,-2.,3.]
-assert p.bitarray() == #b[0,1,1]
-assert p.set() == #(1,2,3)
-assert p.table() == #{"hi":2, 'hello:4}
-assert p.number() == 3.14
-assert p.string() == "hello world"
-assert p.some() == ['exit]
-assert p(['add, 10, 20])() == 30
-p.quit
-
-p = act(^(msg) | 'hi -> 'hello)
-let x = 0;
-let f = p.hi;
-try p.hi() catch(e) x = 1
-assert x == 1
-assert f() == 'hello
-assert p.hi() == 'hello
-p.quit
+process_send(p, 'pair)
+assert process_receive(p) == 1:2
+process_send(p, 'list)
+assert process_receive(p) == [1,2,3]
+process_send(p, 'long_list)
+task_sleep(1)
+assert process_receive(p) == range(0, 1000)
+process_send(p, 'array)
+assert process_receive(p) == #[1,2,3]
+process_send(p, 'u8array)
+assert process_receive(p) == #u8[1,2,3]
+process_send(p, 's8array)
+assert process_receive(p) == #s8[1,-2,3]
+process_send(p, 'u16array)
+assert process_receive(p) == #u16[1,2,3]
+process_send(p, 's16array)
+assert process_receive(p) == #s16[1,-2,3]
+process_send(p, 'u32array)
+assert process_receive(p) == #u32[1,2,3]
+process_send(p, 's32array)
+assert process_receive(p) == #s32[1,-2,3]
+process_send(p, 'u64array)
+assert process_receive(p) == #u64[1,2,3]
+process_send(p, 's64array)
+assert process_receive(p) == #s64[1,-2,3]
+process_send(p, 'f32array)
+assert process_receive(p) == #f32[1.,-2.,3.]
+process_send(p, 'f64array)
+assert process_receive(p) == #f64[1.,-2.,3.]
+process_send(p, 'bitarray)
+assert process_receive(p) == #b[0,1,1]
+process_send(p, 'set)
+assert process_receive(p) == #(1,2,3)
+process_send(p, 'table)
+assert process_receive(p) == #{"hi":2, 'hello:4}
+process_send(p, 'number)
+assert process_receive(p) == 3.14
+process_send(p, 'string)
+assert process_receive(p) == "hello world"
+process_send(p, 'some)
+assert process_receive(p) == ['exit]
+process_send(p, ['add, 10, 20])
+assert process_receive(p) == 30
+process_close(p)
