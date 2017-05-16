@@ -14,7 +14,7 @@ process_close(p)
 function handler_2(msg)
 | 'pair -> 1:2
 | 'list -> [1,2,3]
-| 'long_list -> range(0, 1000)
+| 'long_list -> range(0, 5)
 | 'array -> #[1,2,3]
 | 'u8array -> #u8[1,2,3]
 | 's8array -> #s8[1,-2,3]
@@ -34,49 +34,32 @@ function handler_2(msg)
 | ['add, x, y] -> x + y
 | _ -> ['exit]
 
-p = process(^(p) let loop () { process_send(p, handler_2(process_receive(p))); loop() })
+function psend(msg, res)
+  let (p = process(^(par) process_send(par, handler_2(process_receive(par)))))
+  { process_send(p, msg)
+    task_sleep(.2)
+    let (rep = process_receive(p))
+    { assert rep == res
+      process_close(p) }}
 
-process_send(p, 'pair)
-assert process_receive(p) == 1:2
-process_send(p, 'list)
-assert process_receive(p) == [1,2,3]
-process_send(p, 'long_list)
-task_sleep(1)
-assert process_receive(p) == range(0, 1000)
-process_send(p, 'array)
-assert process_receive(p) == #[1,2,3]
-process_send(p, 'u8array)
-assert process_receive(p) == #u8[1,2,3]
-process_send(p, 's8array)
-assert process_receive(p) == #s8[1,-2,3]
-process_send(p, 'u16array)
-assert process_receive(p) == #u16[1,2,3]
-process_send(p, 's16array)
-assert process_receive(p) == #s16[1,-2,3]
-process_send(p, 'u32array)
-assert process_receive(p) == #u32[1,2,3]
-process_send(p, 's32array)
-assert process_receive(p) == #s32[1,-2,3]
-process_send(p, 'u64array)
-assert process_receive(p) == #u64[1,2,3]
-process_send(p, 's64array)
-assert process_receive(p) == #s64[1,-2,3]
-process_send(p, 'f32array)
-assert process_receive(p) == #f32[1.,-2.,3.]
-process_send(p, 'f64array)
-assert process_receive(p) == #f64[1.,-2.,3.]
-process_send(p, 'bitarray)
-assert process_receive(p) == #b[0,1,1]
-process_send(p, 'set)
-assert process_receive(p) == #(1,2,3)
-process_send(p, 'table)
-assert process_receive(p) == #{"hi":2, 'hello:4}
-process_send(p, 'number)
-assert process_receive(p) == 3.14
-process_send(p, 'string)
-assert process_receive(p) == "hello world"
-process_send(p, 'some)
-assert process_receive(p) == ['exit]
-process_send(p, ['add, 10, 20])
-assert process_receive(p) == 30
-process_close(p)
+psend('pair, 1:2)
+psend('list, [1,2,3])
+psend('long_list, range(0, 5))
+psend('array, #[1,2,3])
+psend('u8array, #u8[1,2,3])
+psend('s8array, #s8[1,-2,3])
+psend('u16array, #u16[1,2,3])
+psend('s16array, #s16[1,-2,3])
+psend('u32array, #u32[1,2,3])
+psend('s32array, #s32[1,-2,3])
+psend('u64array, #u64[1,2,3])
+psend('s64array, #s64[1,-2,3])
+psend('f32array, #f32[1.,-2.,3.])
+psend('f64array, #f64[1.,-2.,3.])
+psend('bitarray, #b[0,1,1])
+psend('set, #(1,2,3))
+psend('table, #{"hi":2, 'hello:4})
+psend('number, 3.14)
+psend('string, "hello world")
+psend('some, ['exit])
+psend(['add, 10, 20], 30)
