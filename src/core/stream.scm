@@ -222,7 +222,7 @@
 
 (define (read_n_bytes n #!optional (p (current-input-port)))
   (check-array-for-eof 
-   (read-n-helper p n make-u8vector read-subu8vector subu8vector)
+   (read-n-helper p n make-u8vector read-subu8vector scm-subu8vector)
    u8vector-length))
 
 (define (read-all-helper p init rdfn apndfn bufsz)
@@ -242,13 +242,15 @@
 
 (define (read_n_chars n #!optional (p (current-input-port)))
   (check-array-for-eof 
-   (read-n-helper p n make-string read-substring substring)
+   (read-n-helper p n make-string read-substring scm-substring)
    string-length))
 
-(define (read_all_chars #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
+(define (scm-read_all_chars #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
   (check-array-for-eof 
    (read-all-helper p "" read_n_chars string-append bufsz)
    string-length))
+
+(define read_all_chars scm-read_all_chars)
 
 (define read_line read-line)
 (define read_all read-all)

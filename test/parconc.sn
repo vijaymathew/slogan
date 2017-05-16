@@ -2,73 +2,64 @@ let x = ?
 task(^{task_sleep(2) ?x = 100})
 assert ?x == 100
 
-x = ?
-let y = ?
-!{?x = ?y * 10}
-?y = 100
-assert ?x == 1000
+let p = process(^(p) let loop (a = process_receive(p))
+                     { process_send(p, core.first(a) + core.second(a))
+                       loop (process_receive(p)) })
+process_send(p, [10, 40])
+assert process_receive(p) == 50
+process_send(p, [200, 10])
+assert process_receive(p) == 210
+process_close(p)
 
-x = ?
-let p = react(^(message) | [x, y] -> x + y,
-              ^(message) | result -> ?x = result)
-p([10, 20])
-assert ?x == 30
-x = ?
-p([10, 200])
-assert ?x == 210
-p.quit
+function handler_2(msg)
+| 'pair -> 1:2
+| 'list -> [1,2,3]
+| 'long_list -> range(0, 5)
+| 'array -> #[1,2,3]
+| 'u8array -> #u8[1,2,3]
+| 's8array -> #s8[1,-2,3]
+| 'u16array -> #u16[1,2,3]
+| 's16array -> #s16[1,-2,3]
+| 'u32array -> #u32[1,2,3]
+| 's32array -> #s32[1,-2,3]
+| 'u64array -> #u64[1,2,3]
+| 's64array -> #s64[1,-2,3]
+| 'f64array -> #f64[1.,-2.,3.]
+| 'f32array -> #f32[1.,-2.,3.]
+| 'bitarray -> #b[0,2,3]
+| 'set -> #(1,2,3)
+| 'table -> #{"hi":2, 'hello:4}
+| 'number -> 3.14
+| 'string -> "hello world"
+| ['add, x, y] -> x + y
+| _ -> ['exit]
 
-let p = act(^(msg)
-              | 'pair -> 1:2
-              | 'list -> [1,2,3]
-              | 'long_list -> range(0, 10000)
-              | 'array -> #[1,2,3]
-              | 'u8array -> #u8[1,2,3]
-              | 's8array -> #s8[1,-2,3]
-              | 'u16array -> #u16[1,2,3]
-              | 's16array -> #s16[1,-2,3]
-              | 'u32array -> #u32[1,2,3]
-              | 's32array -> #s32[1,-2,3]              
-              | 'u64array -> #u64[1,2,3]
-              | 's64array -> #s64[1,-2,3]
-              | 'f64array -> #f64[1.,-2.,3.]
-              | 'f32array -> #f32[1.,-2.,3.]
-              | 'bitarray -> #b[0,2,3]              
-              | 'set -> #(1,2,3)
-              | 'table -> #{"hi":2, 'hello:4}
-              | 'number -> 3.14
-              | 'string -> "hello world"
-              | ['add, x, y] -> x + y
-              | _ -> ['exit])
+function psend(msg, res)
+  let (p = process(^(par) process_send(par, handler_2(process_receive(par)))))
+  { process_send(p, msg)
+    task_sleep(.2)
+    let (rep = process_receive(p))
+    { assert rep == res
+      process_close(p) }}
 
-assert p.pair() == 1:2
-assert p.list() == [1,2,3]
-assert p.long_list() == range(0, 10000)
-assert p.array() == #[1,2,3]
-assert p.u8array() == #u8[1,2,3]
-assert p.s8array() == #s8[1,-2,3]
-assert p.u16array() == #u16[1,2,3]
-assert p.s16array() == #s16[1,-2,3]
-assert p.u32array() == #u32[1,2,3]
-assert p.s32array() == #s32[1,-2,3]
-assert p.u64array() == #u64[1,2,3]
-assert p.s64array() == #s64[1,-2,3]
-assert p.f32array() == #f32[1.,-2.,3.]
-assert p.f64array() == #f64[1.,-2.,3.]
-assert p.bitarray() == #b[0,1,1]
-assert p.set() == #(1,2,3)
-assert p.table() == #{"hi":2, 'hello:4}
-assert p.number() == 3.14
-assert p.string() == "hello world"
-assert p.some() == ['exit]
-assert p(['add, 10, 20])() == 30
-p.quit
-
-p = act(^(msg) | 'hi -> 'hello)
-let x = 0;
-let f = p.hi;
-try p.hi() catch(e) x = 1
-assert x == 1
-assert f() == 'hello
-assert p.hi() == 'hello
-p.quit
+psend('pair, 1:2)
+psend('list, [1,2,3])
+psend('long_list, range(0, 5))
+psend('array, #[1,2,3])
+psend('u8array, #u8[1,2,3])
+psend('s8array, #s8[1,-2,3])
+psend('u16array, #u16[1,2,3])
+psend('s16array, #s16[1,-2,3])
+psend('u32array, #u32[1,2,3])
+psend('s32array, #s32[1,-2,3])
+psend('u64array, #u64[1,2,3])
+psend('s64array, #s64[1,-2,3])
+psend('f32array, #f32[1.,-2.,3.])
+psend('f64array, #f64[1.,-2.,3.])
+psend('bitarray, #b[0,1,1])
+psend('set, #(1,2,3))
+psend('table, #{"hi":2, 'hello:4})
+psend('number, 3.14)
+psend('string, "hello world")
+psend('some, ['exit])
+psend(['add, 10, 20], 30)

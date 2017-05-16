@@ -884,6 +884,12 @@
                               (loop (scm-cdr body) #f))
                           (loop (scm-cdr body) #t))))))))))
 
+(define (make-rewrote-def def)
+  `(define ,(scm-cadr def) #f))
+
+(define (make-rewrote-assign def)
+  `(set! ,(scm-cadr def) ,(scm-caddr def)))
+
 (define (move-up-defs-in-block expr)
   (if (scm-not (pair? expr)) expr
       (let ((type (scm-car expr)))
@@ -900,7 +906,10 @@
                         ((pair? e)
                          (let ((f (scm-car e)))
                            (cond
-                            ((or (eq? f 'define) (eq? f 'define-structure))
+                            ((eq? f 'define)
+                             (loop (scm-cdr body) (scm-cons (make-rewrote-def e) defs)
+                                   (scm-cons (make-rewrote-assign e) exprs)))
+                            ((eq? f 'define-structure)
                              (loop (scm-cdr body) (scm-cons e defs) exprs))
                             ((eq? f 'begin)
                              (loop (scm-append (scm-cdr e) (scm-cdr body)) defs exprs))

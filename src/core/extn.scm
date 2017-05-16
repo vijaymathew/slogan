@@ -112,6 +112,8 @@ c-declare-end
              (scm-newline port)
              (slgn-display (parse-exception e) port: port))))
 
+(define scm-show_exception show_exception)
+
 (define (tagged-list tag #!rest elems)
   (scm-cons tag elems))
 

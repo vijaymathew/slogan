@@ -703,8 +703,6 @@
 (define core-process_send process_send)
 (define core-process_receive process_receive)
 (define core-process_close process_close)
-(define core-act act)
-(define core-react react)
 (define core-current_directory current_directory)
 (define core-path_expand path_expand)
 (define core-path_normalize path_normalize)
@@ -1575,8 +1573,6 @@
     ((process_send) core-process_send)
     ((process_receive) core-process_receive)
     ((process_close) core-process_close)
-    ((act) core-act)
-    ((react) core-react)
     ((current_directory) core-current_directory)
     ((path_expand) core-path_expand)
     ((path_normalize) core-path_normalize)
@@ -1718,7 +1714,7 @@
     ((compiler) core-compiler)
     (else (scm-error "Binding not found" *name*))))
 
-(define *core-names* '(_inf _zero abort abs accumulate acos act add angle append
+(define *core-names* '(_inf _zero abort abs accumulate acos add angle append
                             apply array array_append array_at array_copy array_fill
                             array_for_each array_length array_map array_ref
                             array_ref_set array_set array_shrink array_sort
@@ -1844,7 +1840,7 @@
                             random_source_for_byte_arrays random_source_for_integers
                             random_source_for_reals random_source_pseudo_randomize
                             random_source_randomize random_source_set_state
-                            random_source_state range rationalize rbind react read
+                            random_source_state range rationalize rbind read
                             read_all read_all_bytes read_all_chars read_byte read_char
                             read_line read_n_bytes read_n_chars reader_timeout real_part
                             real_time realize rectangular ref ref_set reload rem remainder
