@@ -278,10 +278,10 @@
             (f (scm-car ls) (recur (scm-cdr ls)))))))
 ;; :~
 
-(define (range start end #!optional (next scm-inc) (cmpr <=))
+(define (range start end #!key (next scm-inc) (compare <=))
   (let iter ((start start)
              (result (scm-list)))
-    (if (cmpr start end)
+    (if (compare start end)
         (let ((elem (next start)))
           (iter elem (scm-cons start result)))
         (scm-reverse result))))

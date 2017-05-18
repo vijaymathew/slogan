@@ -69,7 +69,7 @@ assert f(10, 100) == 1000
 assert f(10, 1000) == 10000
 
 // issue #42 - parameter order of range changed
-let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, ^(x) x+i)]
+let noprimes = [j | i <- range(2, 8), j <- range(i*2, 50, next = ^(x) x+i)]
 let primes = [x | x <- range(2, 50) where core.not(core.memq(x, noprimes))]
 assert primes == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 

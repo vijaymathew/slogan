@@ -269,10 +269,10 @@
         (else
          (fold_left fn initial seq))))
 
-(define (enumerate start end #!optional (cmpr <=) (next scm-inc))
-    (if (cmpr start end)
+(define (enumerate start end #!key (compare <=) (next scm-inc))
+    (if (compare start end)
         (let ((elem (next start)))
-          (lpair-cons start (enumerate elem end cmpr next)))
+          (lpair-cons start (enumerate elem end compare: compare next: next)))
         '()))
 
 (define (drop n lst)
