@@ -583,14 +583,21 @@
                                  e
                                  (parser-error tokenizer array-access-expr-err))))))
                    (else
-                    (let ((idx-expr (scm-expression tokenizer)))
-                      (if (scm-eq? (tokenizer 'next) '*close-bracket*)
-                          (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
-                                 (tokenizer 'next)
-                                 `(*-@-* ,expr ,idx-expr ,(scm-expression tokenizer)))
-                                (else
-                                 `(*-@-* ,expr ,idx-expr)))
-                          (parser-error tokenizer array-access-expr-err)))))))
+                    (let ((idx-expr (scm-expression tokenizer))
+                          (tok (tokenizer 'next)))
+                      (cond
+                       ((scm-eq? tok '*close-bracket*)
+                        (cond ((scm-eq? (tokenizer 'peek) '*assignment*)
+                               (tokenizer 'next)
+                               `(*-@-* ,expr ,idx-expr ,(scm-expression tokenizer)))
+                              (else
+                               `(*-@-* ,expr ,idx-expr))))
+                       ((scm-eq? tok '*comma*)
+                        (tokenizer 'put '*open-bracket*)
+                        (let ((xs (list-literal tokenizer)))
+                          `(begin ,expr (scm-append (scm-list ,idx-expr) ,xs))))
+                       (else
+                        (parser-error tokenizer array-access-expr-err))))))))
            (else expr)))))
 
 (define (pair-literal tokenizer expr)
