@@ -827,14 +827,14 @@
                            (*r* (scm-cons ,expr *yield-obj*)))))))
            (else (assert-stmt tokenizer)))))
 
-(define (valid-identifier-exlcude-syntax? sym)
+(define (valid-identifier-exclude-syntax? sym)
   (and (symbol? sym)
        (scm-not (or (reserved-name? sym)
                     (slgn-is_special_token sym)))))
 
 (define (syntax-call-expr tokenizer)
   (let ((name (tokenizer 'peek)))
-    (if (valid-identifier-exlcude-syntax? name)
+    (if (valid-identifier-exclude-syntax? name)
         (let ((tokens (fetch-syntax name)))
           (if tokens
               (parse-syntax-call-expr name tokens tokenizer)
