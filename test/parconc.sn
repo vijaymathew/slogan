@@ -39,8 +39,7 @@ function psend(msg, res)
   { process_send(p, msg)
     task_sleep(.2)
     let (rep = process_receive(p))
-    { assert rep == res
-      process_close(p) }}
+    { process_close(p); assert rep == res }}
 
 psend('pair, 1:2)
 psend('list, [1,2,3])
