@@ -267,7 +267,7 @@
         ((iterator? seq)
          (iter-accumulate fn initial seq))
         (else
-         (fold_left fn initial seq))))
+         (scm-fold_left fn initial seq))))
 
 (define (enumerate start end #!key (compare <=) (next scm-inc))
     (if (compare start end)

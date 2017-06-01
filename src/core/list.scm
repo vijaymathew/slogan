@@ -249,6 +249,7 @@
                    (scm-cdr ls) 
                    (scm-map scm-cdr more)))))
 
+(define scm-fold_left fold_left)
 
 ;; Taken from http://srfi.schemers.org/srfi-1/srfi-1-reference.scm:
 (define (%cdrs lists)
