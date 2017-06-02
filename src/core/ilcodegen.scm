@@ -563,6 +563,7 @@
        (invoke-access-expression tokenizer (logical-or-expr tokenizer)))))
 
 (define array-access-expr-err "invalid index access expression, expected closing bracket. (missing semicolon before list literal?)")
+(define misplaced-list-literal-err "misplaced list literal, either use the `list` function or terminate the preceding expression with a semicolon")
 
 (define (array-access-expr tokenizer expr)
   (invoke-access-expression
@@ -593,9 +594,7 @@
                               (else
                                `(*-@-* ,expr ,idx-expr))))
                        ((scm-eq? tok '*comma*)
-                        (tokenizer 'put '*open-bracket*)
-                        (let ((xs (list-literal tokenizer)))
-                          `(begin ,expr (scm-append (scm-list ,idx-expr) ,xs))))
+                        (parser-error tokenizer misplaced-list-literal-err))
                        (else
                         (parser-error tokenizer array-access-expr-err))))))))
            (else expr)))))
