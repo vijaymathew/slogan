@@ -225,6 +225,8 @@
    (read-n-helper p n make-u8vector read-subu8vector scm-subu8vector)
    u8vector-length))
 
+(define scm-read_n_bytes read_n_bytes)
+
 (define (read-all-helper p init rdfn apndfn bufsz)
   (let loop ((r init)
              (nr (rdfn bufsz p)))
@@ -234,7 +236,7 @@
 
 (define (read_all_bytes #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
   (check-array-for-eof 
-   (read-all-helper p (make-u8vector 0) read_n_bytes u8vector-append bufsz)
+   (read-all-helper p (make-u8vector 0) scm-read_n_bytes u8vector-append bufsz)
    u8vector-length))
 
 (define read_char read-char)
@@ -245,9 +247,11 @@
    (read-n-helper p n make-string read-substring scm-substring)
    string-length))
 
+(define scm-read_n_chars read_n_chars)
+
 (define (scm-read_all_chars #!optional (p (current-input-port)) (bufsz *def-buf-sz*))
   (check-array-for-eof 
-   (read-all-helper p "" read_n_chars string-append bufsz)
+   (read-all-helper p "" scm-read_n_chars string-append bufsz)
    string-length))
 
 (define read_all_chars scm-read_all_chars)
