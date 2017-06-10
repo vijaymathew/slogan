@@ -12,7 +12,7 @@ function binary_search_st(capacity)
       let (i = rank(key, 0, n))
         if (i < n && keys[i] == key) vals[i] = val
         else
-        { let loop (j = n)
+        { letfn loop (j = n)
             when (j < i)
             { keys[j] = keys[j-1]
               vals[j] = vals[j-1]
@@ -24,7 +24,7 @@ function binary_search_st(capacity)
      
      function rank(key, lo, hi)
        if (hi < lo) lo
-       else letseq (mid = quotient(lo + (hi-lo), 2),
+       else let (mid = quotient(lo + (hi-lo), 2),
                     cmp = {showln(key, ", ", mid, ", ", keys[mid]); compare(key, keys[mid])})
          if (cmp < 0) rank(key, lo, mid-1)
          else if (cmp > 0) rank(key, mid+1, hi)

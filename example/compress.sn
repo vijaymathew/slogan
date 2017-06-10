@@ -24,7 +24,7 @@ namespace byte_by_byte {
   function decompress(u8buff) where is_u8array(u8buff)
     let (input = byte_array_reader(u8buff),
          output = byte_array_writer())
-      let loop (b = read_byte(input))
+      letfn loop (b = read_byte(input))
         if (b <> 128 && not(is_eof_object(b)))
         { if (b >= 0 && b <= 127)
            __decode_diff_run(b, input, output)
@@ -65,7 +65,7 @@ namespace byte_by_byte {
        | _ -> error("invalid message", message) }
        
    function __get_same(input)
-     let loop (ch = input.read_byte(), c = 1)
+     letfn loop (ch = input.read_byte(), c = 1)
        try
          if (c == 128) 128
          else let (ch2 = input.read_byte())
@@ -74,7 +74,7 @@ namespace byte_by_byte {
        catch (e) | 'eof -> ch:c
 
    function __get_different(input)
-     let loop (accum = [input.read_byte()], c = 1)
+     letfn loop (accum = [input.read_byte()], c = 1)
        try
          if (c == 128) reverse(accum)
          else let (ch = input.read_byte())
@@ -85,7 +85,7 @@ namespace byte_by_byte {
    function compress(u8buff) where is_u8array(u8buff)
      let (input = rewindable_stream(byte_array_reader(u8buff)),
           output = byte_array_writer())
-       let loop ()
+       letfn loop ()
          try
            match (__get_same(input))
              _:1 ->

@@ -26,7 +26,7 @@ assert string_index_of("slow motion", "") == -1
 
 function find_all(s, subs)
   let (slen = string_length(subs))
-    let loop (offset = 0)
+    letfn loop (offset = 0)
       let (i = string_index_of(s, subs, offset))
         when (i >= 0)
         { yield i
@@ -54,7 +54,7 @@ iter = find_all("to be or not to be", "tobe")
 assert core.not(core.first(iter))
 
 // for_each fixed for iterators
-function to(i, j) let loop (i = i) when(i < j) { yield i; loop(core.inc(i)) }
+function to(i, j) letfn loop (i = i) when(i < j) { yield i; loop(core.inc(i)) }
 let x = 0
 for_each(^(y) x = x + y, to(1, 10))
 assert x == 45

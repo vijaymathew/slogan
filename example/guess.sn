@@ -5,7 +5,7 @@
 showln("Guess the number!")
 random_source_randomize(default_random_source())
 let secret_number = random_integer(101)
-let loop ()
+letfn loop ()
 { match (compare(string_to_number(read_line()), secret_number))
     0  -> { showln("You win!"); exit(0) }
   | 1  -> showln("Too big!")

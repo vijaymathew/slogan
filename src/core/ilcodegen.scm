@@ -473,7 +473,7 @@
                   (parser-error tokenizer "expected assignment"))))
            ((scm-eq? '*open-paren* (tokenizer 'peek))
             (tokenizer 'put token)
-            (named-let-expr 'let tokenizer))
+            (parser-error tokenizer "only a letfn expression can be assigned a name."))
            (else
             (parser-error tokenizer "invalid let expression"))))))))
      (else
@@ -1321,7 +1321,9 @@
         (if letkw
             (begin (tokenizer 'next)
                    (if (valid-identifier? (tokenizer 'peek))
-                       (named-let-expr letkw tokenizer)
+                       (if (scm-not (eq? letkw 'let))
+                           (parser-error tokenizer "not a letfn expression, cannot assign a name.")
+                           (named-let-expr 'let tokenizer))
                        (normal-let-expr letkw tokenizer)))
             (for-expr tokenizer)))))
 

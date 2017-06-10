@@ -4,8 +4,8 @@ reload("./algo/sort")
 
 // An imperative algorithm for generating all permutations of an array.
 function first_item(arr)
-  letseq (len = array_length(arr),
-          f = len-1)
+  let (len = array_length(arr),
+       f = len-1)
    for (i = 0 to len-2)
    { when (arr[i] < arr[i+1]) f = i; f }
 
@@ -25,15 +25,15 @@ function swap(arr, i, j)
     arr[j] = ii }
 
 function sort_subarray(arr, offset, len)
-  letseq (end = offset + (len-1),
-          sub = subarray(arr, offset, end))
+  let (end = offset + (len-1),
+       sub = subarray(arr, offset, end))
   { quick(sub)
     subarray_move(sub, 0, end-offset, arr, offset) }
 
 function next_permutation(arr)
-  letseq (arr_copy = array_copy(arr),
-          f = first_item(arr),
-          c = last_item(arr, f))
+  let (arr_copy = array_copy(arr),
+       f = first_item(arr),
+       c = last_item(arr, f))
   { swap(arr_copy, f, c)
     sort_subarray(arr_copy, f+1, array_length(arr_copy) - 1 - f)
     arr_copy }
@@ -48,7 +48,7 @@ function is_non_increasing(arr)
 function all_permutations(arr)
   let (copy = array_copy(arr))
   { quick(copy)
-    let loop (perm = copy, perms = [])
+    letfn loop (perm = copy, perms = [])
       if (is_non_increasing(perm)) reverse(perms)
       else let (p = next_permutation(perm))
             loop(p, p:perms) }

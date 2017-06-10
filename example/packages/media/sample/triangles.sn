@@ -12,13 +12,13 @@ let m = media
 function draw(c)
 { m.bg(c, 0, 0, 0, 255)
   m.fg(c, 255, 255, 255, 255)
-  letseq (side = 0.95 * min_maxxy, side_half = 0.5 * side,
-          h = side_half * sqrt(3), q = 0.05, p = 1 - q,
-          xa = x_center - side_half,
-          ya = y_center - 0.5 * h,
-          xb = x_center + side_half,
-          yb = ya, xc = x_center,
-          yc = y_center + 0.5 * h)
+  let (side = 0.95 * min_maxxy, side_half = 0.5 * side,
+       h = side_half * sqrt(3), q = 0.05, p = 1 - q,
+       xa = x_center - side_half,
+       ya = y_center - 0.5 * h,
+       xb = x_center + side_half,
+       yb = ya, xc = x_center,
+       yc = y_center + 0.5 * h)
      for (i = 0; i < 50; i+1)
      { m.line(c, ix(xa), iy(ya, maxy), ix(xb), iy(yb, maxy))
        m.line(c, ix(xb), iy(yb, maxy), ix(xc), iy(yc, maxy))

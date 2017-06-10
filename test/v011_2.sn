@@ -1,6 +1,6 @@
 module area_server(start, area)
 {  function start()
-     !let loop (msg = !<)
+     !letfn loop (msg = !<)
         | sender:['rectangle, width, height] -> { sender !> width*height; loop(!<) }
         | sender:['square, side] -> { sender !> side*side; loop(!<) }
         | sender:_ -> { sender !> 'invalid_message; loop(!<) }       

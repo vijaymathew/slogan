@@ -3,13 +3,13 @@ module similarity(jaccard, jaccard_bag, shingles)
     set_length(set_intersection(set1, set2))/set_length(set_union(set1, set2))
 
   function count_x(x, xs, counts)
-    let loop (xs = xs, count = 0)
+    letfn loop (xs = xs, count = 0)
       if (is_empty(xs)) { counts[x] = count; counts }
       else if (head(xs) == x) loop(tail(xs), inc(count))
       else loop(tail(xs), count)
 
   function count_instances(xs)
-    let loop (ys = xs, counts = #{})
+    letfn loop (ys = xs, counts = #{})
       if (is_empty(ys)) counts
       else loop (tail(ys), count_x(head(ys), xs, counts))
 
@@ -23,19 +23,19 @@ module similarity(jaccard, jaccard_bag, shingles)
       mins }
                          
   function jaccard_bag(xs, ys)
-    letseq (mins = min_tab_entries(count_instances(xs),
+    let (mins = min_tab_entries(count_instances(xs),
                                    count_instances(ys))
-            clen = hashtable_size(mins)
-            tlen = length(xs) + length(ys))
+         clen = hashtable_size(mins)
+         tlen = length(xs) + length(ys))
       clen/tlen
 
   function remove_white_spaces(str)
     list_to_string(filter(complement(char_is_whitespace), string_to_list(str)))
     
   function shingles(str, size, remove_ws = true)
-    letseq (s = if (remove_ws) remove_white_spaces(str) else str,
-            slen = string_length(s))
-      let loop (i = 0, j = size, words = [])
+    let (s = if (remove_ws) remove_white_spaces(str) else str,
+         slen = string_length(s))
+      letfn loop (i = 0, j = size, words = [])
         if (j > slen) set(reverse(words))
         else loop(inc(i), inc(j), s[i:j]:words)
 }

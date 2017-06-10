@@ -39,7 +39,7 @@ function ints(i, x = 5) if (i > x) false else i:~ints(core.inc(i), x)
 
 assert core.nth(4, core.map(sqrt, ints(1))) == fs
 
-function iints(i, x = 5) let loop (i = i) if (i > x) false else { yield i; loop(core.inc(i)) }
+function iints(i, x = 5) letfn loop (i = i) if (i > x) false else { yield i; loop(core.inc(i)) }
 
 assert core.nth(4, core.map(sqrt, iints(1))) == fs
 

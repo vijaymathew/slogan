@@ -48,7 +48,7 @@ function merge(xs)
     merge_helper(xs, make_array(n), 0, dec(n))
 
 function merge_bu(xs)
-  letseq (len = count(xs), aux = make_array(len))
+  let (len = count(xs), aux = make_array(len))
     if (len == 0) xs
     else
       for (sz = 1; sz < len; sz+sz)
@@ -62,9 +62,9 @@ function exch_2(xs, a, b, accessor, mutator)
     
 function partition(xs, lo, hi, accessor, mutator)
   let (i = lo, j = inc(hi), v = accessor(xs, lo))
-  { let loop ()
-    { let iloop () { i = inc(i); when (accessor(xs, i) < v) when (i <> hi) iloop() }
-      let iloop () { j = dec(j); when (v < accessor(xs, j)) when (j <> lo) iloop() }
+  { letfn loop ()
+    { letfn iloop () { i = inc(i); when (accessor(xs, i) < v) when (i <> hi) iloop() }
+      letfn iloop () { j = dec(j); when (v < accessor(xs, j)) when (j <> lo) iloop() }
       when (not(i >= j)) { exch_2(xs, i, j, accessor, mutator); loop() } }
     exch_2(xs, lo, j, accessor, mutator)
     j }

@@ -20,8 +20,8 @@ module matrix(make, makea, is_matrix,
   function set(m, i, j, x) m[i][j] = x
 
   function scal_mult(m, x)
-    letseq (nr = rows(m), nc = columns(m),
-            result = make(nr, nc))
+    let (nr = rows(m), nc = columns(m),
+         result = make(nr, nc))
     { for (i = 0; i < nr; i+1)
         for (j = 0; j < nc; j+1)
 	  result[i][j] = x * m[i][j]

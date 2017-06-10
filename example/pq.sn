@@ -3,9 +3,9 @@
 module pq(make, insert, pop) {
 
   function make(size, cmpr = `>`)
-    letseq (q = make_array(size), n = 0,
-            ref = ^(i) array_at(q, i-1),
-            ref_set = ^(i, x) array_set(q, i-1, x))
+    let (q = make_array(size), n = 0,
+         ref = ^(i) array_at(q, i-1),
+         ref_set = ^(i, x) array_set(q, i-1, x))
       ^(_)
       | 'n -> n
       | 'ref -> ref
@@ -16,7 +16,7 @@ module pq(make, insert, pop) {
       | 'size -> size
 
   function swap(q, a, b)
-    letseq (t = q[b])
+    let (t = q[b])
     { q[b] = q[a]; q[a] = t }
 
   function parent(n)
@@ -67,10 +67,10 @@ module pq(make, insert, pop) {
 
 // test
 function heapsort(xs, cmpr)
-  letseq (len = length(xs),
-          q = pq.make(length(xs), cmpr))
+  let (len = length(xs),
+       q = pq.make(length(xs), cmpr))
   { pq.insert(q, xs);
-    let loop (i = 0, ys = [])
+    letfn loop (i = 0, ys = [])
       if (i < len) loop(i+1, pq.pop(q):ys)
       else ys }
 

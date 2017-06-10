@@ -74,7 +74,7 @@ module media (init, quit, open_window, close_window, event, window_canvas,
        if (e == 'quit) running = false
        else running = if (user_handler) user_handler(e) else true
 
-    let loop()
+    letfn loop()
     { if (running) { event(handler); when (draw) draw(); loop() }
       else close_window(w) } }
 
@@ -83,11 +83,11 @@ module media (init, quit, open_window, close_window, event, window_canvas,
                    fg_color = #[0, 0, 0, 255],
                    handler)
   { init()
-    letseq (win = open_window(title, w = w, h = h),
-            c = when (win)
-                 let (c = window_canvas(win))
-                 { when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
-                   c })
+    let (win = open_window(title, w = w, h = h),
+         c = when (win)
+               let (c = window_canvas(win))
+               { when (fg_color) fg(c, fg_color[0], fg_color[1], fg_color[2], fg_color[3])
+                 c })
       { when (not(win)) error("Failed to create window.")
         when (not(c)) error("Failed to create canvas.")
         let (draw_fn = ^() try { when (bg_color) bg(c, bg_color[0], bg_color[1], bg_color[2], bg_color[3])
