@@ -1,0 +1,11 @@
+2017-06-10  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.0 is a major release of the language with multiple breaking changes with past releases.
+	* let expression changed to support sequential variable bindings and pattern based destructuring.
+	* letseq removed from.
+	* letfn introduced for local bindings with no backward reference.
+	* dynamic variables, `letdyn` expression introduced for task-local bindings.
+	* bit_streams support added.
+	* macros and syntactic extensions.
+	* parallel code refactored - `act` and `react` removed.
+	* bug fixes and tests.

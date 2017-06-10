@@ -85,7 +85,7 @@ where OPTION is one of:
   (show-vm-usage))   
 
 (define (show-version)
-  (scm-println "slogan version \"" *major-version* "." *minor-version* "-" *release-name* "\"")
+  (scm-println "slogan version \"" *major-version* "." *minor-version* "." *minor-minor-version* "-" *release-name* "\"")
   (scm-println))
 
 (define (execute-script scriptname)
