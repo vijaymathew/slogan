@@ -22,28 +22,30 @@
 (define is_array vector?)
 
 (define (vectors-ref vectors i)
-  (scm-map (lambda (v) (array_at v i)) vectors))
+  (scm-map (lambda (v) (scm-array_ref v i)) vectors))
 
 (define array_at vector-ref)
 (define array_set vector-set!)
 
-(define (array_ref arr dim)
+(define (scm-array_ref arr dim)
   (if (list? dim)
       (if (null? dim) arr
-          (array_ref (vector-ref arr (scm-car dim)) (scm-cdr dim)))
+          (scm-array_ref (vector-ref arr (scm-car dim)) (scm-cdr dim)))
       (vector-ref arr dim)))
 
-(define (array_ref_set arr dim obj)
+(define (scm-array_ref_set arr dim obj)
   (if (list? dim)
       (cond ((null? dim) 
              (scm-error "array dimension cannot be empty"))
             ((scm-= 1 (scm-length dim))
              (vector-set! arr (scm-car dim) obj)
              *void*)
-            (else (array_ref_set (vector-ref arr (scm-car dim)) (scm-cdr dim) obj)))
+            (else (scm-array_ref_set (vector-ref arr (scm-car dim)) (scm-cdr dim) obj)))
       (begin (vector-set! arr dim obj)
              *void*)))      
 
+(define array_ref scm-array_ref)
+(define array_ref_set scm-array_ref_set)
 (define array_length vector-length)
 (define arrays_at vectors-ref)
 (define array_to_list vector->list)

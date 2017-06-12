@@ -365,7 +365,6 @@
 (define core-subarray subarray)
 (define core-subarray_fill subarray_fill)
 (define core-subarray_move subarray_move)
-(define core-array_sort array_sort)
 (define core-array_map array_map)
 (define core-array_for_each array_for_each)
 (define core-u8array u8array)
@@ -1227,7 +1226,6 @@
     ((subarray) core-subarray)
     ((subarray_fill) core-subarray_fill)
     ((subarray_move) core-subarray_move)
-    ((array_sort) core-array_sort)
     ((array_map) core-array_map)
     ((array_for_each) core-array_for_each)
     ((u8array) core-u8array)
@@ -1717,7 +1715,7 @@
 (define *core-names* '(_inf _zero abort abs accumulate acos add angle append
                             apply array array_append array_at array_copy array_fill
                             array_for_each array_length array_map array_ref
-                            array_ref_set array_set array_shrink array_sort
+                            array_ref_set array_set array_shrink
                             array_to_list arrays_at asin assoc assp assq assv at atan
                             band bif bior bit_array bit_array_at bit_array_blit
                             bit_array_clear bit_array_clear_all bit_array_is_all_set
