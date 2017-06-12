@@ -8,10 +8,12 @@ Slogan is a general purpose programming language with facilities for concurrent 
     - Efficient concurrency: execute tens-of-thousands of independent tasks
     - Multi-core parallelism based on a simple message-passing model
     - Declarative programming: reactive variables, pattern matching
+    - Polymorphism, multiple dispatch
     - Hygienic and un-hygienic syntax extensions
     - REPL for fast program design and development
     - Compiles to optimized stand-alone binaries
     - Easy integration with C libraries
+    - Modules and namespaces for organizing large programs
     - Built-in package manager
 
 #### Building and running Slogan
