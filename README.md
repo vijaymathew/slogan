@@ -9,11 +9,11 @@ Slogan is a general purpose programming language with facilities for concurrent 
     - Multi-core parallelism based on a simple message-passing model
     - Declarative programming: reactive variables, pattern matching
     - Polymorphism, multiple dispatch
-    - Hygienic and un-hygienic syntax extensions
+    - Hygienic and unhygienic syntax extensions
     - REPL for fast program design and development
     - Compiles to optimized stand-alone binaries
     - Easy integration with C libraries
-    - Modules and namespaces for organizing large programs
+    - Modules and namespaces for program organization
     - Built-in package manager
 
 #### Building and running Slogan
