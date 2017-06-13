@@ -638,7 +638,6 @@
 (define core-expression expression)
 (define core-statement statement)
 (define core-slogan slogan)
-(define core-current_task current_task)
 (define core-is_task is_task)
 (define core-task task)
 (define core-root_task root_task)
@@ -1507,7 +1506,6 @@
     ((bits_writer_flush) core-bits_writer_flush)
     ((write_bit) core-write_bit)
     ((write_bits) core-write_bits)
-    ((current_task) core-current_task)
     ((is_task) core-is_task)
     ((task) core-task)
     ((root_task) core-root_task)
@@ -1737,7 +1735,7 @@
                             compose copy_bit_field copy_file copy_list cos count cpu_time
                             create_directory create_link create_symbolic_link
                             current_directory current_error_stream
-                            current_exception_handler current_reader current_task
+                            current_exception_handler current_reader
                             current_writer dec default_random_source delete_directory
                             delete_file denominator disable_asserts display div do_times
                             drop drop_while dynamic_wind eighth enable_asserts enumerate

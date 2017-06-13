@@ -5,13 +5,15 @@
 (define *supported-codecs* '(ISO_8859_1 
                              ASCII UTF_8 UTF_16 UTF_16LE
                              UTF_16BE UCS_2 UCS_2LE UCS_2BE 
-			     UCS_4 UCS_4LE UCS_4BE))
+			     UCS_4 UCS_4LE UCS_4BE
+                             UTF UTF_fallback_ASCII UTF_fallback_ISO_8859_1
+                             UTF_fallback_UTF_16 UTF_fallback_UTF_16LE UTF_fallback_UTF_16BE))
+
 
 (define (validate-codec codec)
   (if (scm-not (symbol? codec))
       (scm-error "codec must be a symbol"))
-  (if (scm-not (scm-memq (string->symbol (string_upcase (symbol->string codec)))
-                 *supported-codecs*))
+  (if (scm-not (scm-memq codec *supported-codecs*))
       (scm-error "unsupported codec" codec))
   codec)
 
