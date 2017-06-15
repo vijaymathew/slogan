@@ -1,0 +1,15 @@
+// finally to work properly with continuations captured outside the
+// try expression.
+let kk = false
+let r = true
+function f() { r = core.callcc(^(k) { kk = k; true }); 'done }
+assert f() == 'done
+let x, y = 0, 0;
+try { x = 123; when (r) kk(false); y = 456 } finally y = 200
+assert x == 123
+assert y == 200
+
+x = 0; y = 0
+assert (try { x = 123; core.raise(100); y = 456 } catch (e) { x = e; 'ok } finally y = 300) == 'ok
+assert x == 100
+assert y == 300

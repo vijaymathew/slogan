@@ -84,3 +84,5 @@
 (define scm->= >=)
 (define scm-<= <=)
 (define scm-= =)
+
+(define scm-void void)

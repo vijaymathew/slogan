@@ -804,15 +804,10 @@
 			(scm-list 'lambda (scm-list) try-expr))))
     (if (void? finally-expr)
         try-expr
-        `(let ((*finally* (lambda () ,finally-expr)))
-           (let ((*try-expr-value*
-                  (,(get-exception-handler-fnname try-token)
-                   (lambda (*exception*)
-                     (begin (*finally*)
-                            (scm-raise *exception*)))
-                   (lambda () ,try-expr))))
-             (*finally*)
-             *try-expr-value*)))))
+        `(dynamic-wind
+             scm-void
+             (lambda () ,try-expr)
+             (lambda () ,finally-expr)))))
 
 (define (yield-expr tokenizer)
   (let ((token (tokenizer 'peek)))

@@ -818,6 +818,8 @@
 (define core-do_times do_times)
 (define core-enable_asserts enable_asserts)
 (define core-disable_asserts disable_asserts)
+(define core-enable_function_contracts enable_function_contracts)
+(define core-disable_function_contracts disable_function_contracts)
 
 ;; set functions
 (define core-set_length set_length)
@@ -1686,6 +1688,8 @@
     ((do_times) core-do_times)
     ((enable_asserts) core-enable_asserts)
     ((disable_asserts) core-disable_asserts)
+    ((enable_function_contracts) core-enable_function_contracts)
+    ((disable_function_contracts) core-disable_function_contracts)
 
     ((command_line_user_args) core-command_line_user_args)
 
