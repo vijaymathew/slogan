@@ -1,11 +1,17 @@
 2017-06-10  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
 
 	* v0.12.0 is a major release of the language with multiple breaking changes with past releases.
-	* let expression changed to support sequential variable bindings and pattern based destructuring.
-	* letseq removed from.
-	* letfn introduced for local bindings with no backward reference.
-	* dynamic variables, `letdyn` expression introduced for task-local bindings.
-	* bit_streams support added.
-	* macros and syntactic extensions.
-	* parallel code refactored - `act` and `react` removed.
-	* bug fixes and tests.
+	* src/core/ilcodegen.scm: `let` expression changed to support sequential variable bindings and pattern based destructuring.
+	* src/core/ilcodegen.scm: `letseq` removed from the language.
+	* src/core/ilcodegen.scm: `letfn` introduced for local bindings with no backward reference.
+	* src/core/ilcodegen.scm: dynamic variables, `letdyn` expression introduced for task-local bindings.
+	* src/core/stream.scm: bit_streams support added.
+	* src/core/syntax.scm: macros and syntactic extensions.
+	* src/core/parallel.scm: code refactored, TCP/IP based async messaging, `act` and `react` removed.
+
+2017-06-17  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.1 is a bug fix release.
+	* src/core/array.scm: `array_ref_set` to support multidimensional arrays.
+	* src/core/stream.scm: transcoder names fixed.
+	* src/core/ilcodegen.scm: `finally` semantics made conformant with `dynamic_wind`.
