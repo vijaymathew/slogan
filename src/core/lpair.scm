@@ -326,3 +326,9 @@
           (if f
               (loop (scm-cons f ys) (scm-- n 1) (scm-rest rs))
               (loop ys -1 (scm-rest rs)))))))
+
+(define (find predic ls #!key default)
+  (let loop ((ls ls))
+    (cond ((scm-not ls) default)
+          ((predic (scm-first ls)) (scm-first ls))
+          (else (loop (scm-rest ls))))))

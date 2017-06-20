@@ -166,12 +166,6 @@
           ((predic (scm-car ls)) (loop (scm-cdr ls) (scm-cons (scm-car ls) first) second))
           (else (loop (scm-cdr ls) first (scm-cons (scm-car ls) second))))))
 
-(define (find predic ls #!key default)
-  (let loop ((ls ls))
-    (cond ((null? ls) default)
-          ((predic (scm-car ls)) (scm-car ls))
-          (else (loop (scm-cdr ls))))))
-
 (define (position obj ls #!key (start 0) (test eq?))
   (let loop ((ls ls)
 	     (pos 0))

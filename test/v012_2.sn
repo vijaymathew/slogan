@@ -1,0 +1,20 @@
+let s = [1, 2, 3, 4, 5]
+assert core.find(core.is_even, s) == 2
+assert core.find(core.is_even, core.list_to_array(s)) == 2
+s = [1, 3, 5]
+assert core.not(core.find(core.is_even, s))
+assert core.find(core.is_even, s, default = 10) == 10
+
+s = [true, false, true]
+assert core.not(core.find(core.is_false, s, default = 'nil))
+s = [true, true, true]
+assert core.find(core.is_false, s, default = 'nil) == 'nil
+
+function cust_seq(xs)
+  ^(msg)
+  | 'first -> ^(_) core.first(xs)
+  | 'rest -> ^(_) core.rest(xs)
+
+s = cust_seq([1,2,3,4,5])
+assert core.find(^(x) x == 4, s) == 4
+assert core.not(core.find(^(x) x == 10, s))

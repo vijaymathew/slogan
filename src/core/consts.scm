@@ -2,7 +2,7 @@
 
 (define *major-version* 0)
 (define *minor-version* 12)
-(define *minor-minor-version* 1)
+(define *minor-minor-version* 2)
 (define *release-name* 'beta)
 
 (define *scm-extn* ".scm")
