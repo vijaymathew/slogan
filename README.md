@@ -3,7 +3,7 @@ Slogan is a general purpose programming language with facilities for concurrent 
 #### Features
 
     - Dynamic and strong type system
-    - Rich library: data structures, IO, networking
+    - Rich library: data structures, I/O, networking
     - Unicode support
     - Efficient concurrency: execute tens-of-thousands of independent tasks
     - Multi-core parallelism based on a simple message-passing model
