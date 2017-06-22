@@ -65,7 +65,7 @@
 
 (define (lpair? obj)
   (and (pair? obj)
-       (is_promise (scm-cdr obj))))
+       (##promise? (scm-cdr obj))))
 
 (define is_lpair lpair?)
 

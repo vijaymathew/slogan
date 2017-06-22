@@ -1,3 +1,4 @@
+// find made generic
 let s = [1, 2, 3, 4, 5]
 assert core.find(core.is_even, s) == 2
 assert core.find(core.is_even, core.list_to_array(s)) == 2
@@ -18,3 +19,10 @@ function cust_seq(xs)
 s = cust_seq([1,2,3,4,5])
 assert core.find(^(x) x == 4, s) == 4
 assert core.not(core.find(^(x) x == 10, s))
+
+// lazy-seqs to support access by []
+function ds(xs) ^(msg) | 'first -> core.head(xs) | 'rest -> core.tail(xs)
+let xs = ds([100, 20, 3, 40])
+let ys = core.map(^(x) x * 2, xs) // returns a lazy-seq
+assert ys[0] == 200
+assert ys[2] == 6

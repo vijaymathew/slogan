@@ -465,6 +465,7 @@ c-declare-end
     (f32vector-safe-ref tab key default))
    ((f64vector? tab)
     (f64vector-safe-ref tab key default))
+   ((lpair? tab) (scm-nth key tab))
    ((namespace? tab)
     (scm-hashtable_at (namespace-defs tab) key default))
    (else
@@ -521,6 +522,8 @@ c-declare-end
     (array-accessor 'f32vector tab key))
    ((f64vector? tab)
     (array-accessor 'f64vector tab key))
+   ((lpair? tab)
+    (scm-nth key tab))
    ((namespace? tab)
     (scm-hashtable_at (namespace-defs tab) key))
    (else
