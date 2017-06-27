@@ -26,3 +26,17 @@ let xs = ds([100, 20, 3, 40])
 let ys = core.map(^(x) x * 2, xs) // returns a lazy-seq
 assert ys[0] == 200
 assert ys[2] == 6
+
+// `next` for iteration
+let gr = false
+function f(x) letfn loop () { let r = yield(x); gr = r; x = x + 1; loop() }
+let iter = f(10)
+assert core.first(iter) == 10
+assert gr == false
+assert core.first(core.rest(iter)) == 11
+assert is_void(gr)
+assert core.first(core.next(iter, 'hi)) == 12
+assert gr == 'hi
+assert core.first(core.next(iter, 'ok)) == 13
+assert gr == 'ok
+assert core.first(core.rest(iter)) == 14

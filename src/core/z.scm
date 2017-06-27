@@ -623,6 +623,7 @@
 (define core-display display)
 (define core-print print)
 (define core-println println)
+(define core-next next)
 (define core-newline newline)
 (define core-write write)
 (define core-flush_writer flush_writer)
@@ -1485,6 +1486,7 @@
     ((display) core-display)
     ((print) core-print)
     ((println) core-println)
+    ((next) core-next)
     ((newline) core-newline)
     ((write) core-write)
     ((flush_writer) core-flush_writer)
@@ -1823,7 +1825,7 @@
                             monitor monitor_broadcast monitor_data monitor_name
                             monitor_notify monitor_set_data mult mutex mutex_data
                             mutex_lock mutex_name mutex_set_data mutex_state
-                            mutex_unlock nan newline ninth
+                            mutex_unlock nan next newline ninth
                             noncontinuable_exception_reason now now_seconds now_utc nth
                             not nth_tail number_is_eq number_is_gt number_is_gteq
                             number_is_lt number_is_lteq number_to_string numerator

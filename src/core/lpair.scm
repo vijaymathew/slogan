@@ -11,17 +11,19 @@
 (define is_iterator iterator?)
 
 ;; Move an iterator to the next element.
-(define (iter-next iter)
+(define (iter-next iter #!optional (arg *void*))
   (let ((r (call/cc (lambda (caller-return)
                       (let ((yield-obj (scm-cdr iter)))
                         (s-yield-k-set! yield-obj caller-return)
                         (let ((fn (s-yield-fn yield-obj)))
-                          (if fn (fn) '())))))))
+                          (if fn (fn arg) '())))))))
     (if (and (scm-not (pair? r))
              (s-yield? r)
              (scm-not (s-yield-fn r)))
         #f
         r)))
+
+(define next iter-next)
 
 ;; Functions for working with sequences.
 ;; A sequence can be either a normal list, lazy-pair, an array

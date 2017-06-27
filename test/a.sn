@@ -77,3 +77,4 @@ set = false
 getenv = false
 inc = false
 dec = false
+next = false
