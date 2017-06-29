@@ -13,25 +13,39 @@ c-declare-end
 
 (define proc-port-min 10000)
 (define proc-port-max 65535)
+(define proc-max-retries 10)
 (define proc-port-curr proc-port-min)
 (define channel-mutex (make-mutex))
 
 (define-structure process-info pid channel1 channel2 server-channels)
 
-(define (create-process-channel)
+(define (set_process_base_port pmin)
+  (if (and (scm->= pmin 1024)
+           (scm-<= pmin proc-port-max))
+      (begin
+        (set! proc-port-min pmin)
+        (set! proc-port-curr pmin))
+      (scm-error "port out-of-range")))
+
+(define (create-process-channel #!optional (retries 0))
   (mutex-lock! channel-mutex)
   (with-exception-catcher
    (lambda (e)
-     (if (scm-> proc-port-curr proc-port-max)
-         (begin (set! proc-port-curr proc-port-min)
-                (mutex-unlock! channel-mutex)
-                (scm-raise e))
+     (if (scm-> retries proc-max-retries)
          (begin (mutex-unlock! channel-mutex)
-                (create-process-channel))))
+                (scm-raise e))
+         (if (scm-> proc-port-curr proc-port-max)
+             (begin (set! proc-port-curr proc-port-min)
+                    (mutex-unlock! channel-mutex)
+                    (scm-raise e))
+             (begin (set! proc-port-curr (scm-+ proc-port-curr 1))
+                    (mutex-unlock! channel-mutex)
+                    (create-process-channel (scm-+ retries 1))))))
    (lambda ()
      (if (scm-> proc-port-curr proc-port-max)
          (set! proc-port-curr proc-port-min))
-     (let ((channel (open-tcp-server (scm-list server-address: "localhost"
+     (let ((channel (open-tcp-server (scm-list server-address: "" ; accept connections only on the loopback interface.
+                                               reuse-address: #f
                                                port-number: proc-port-curr)))
            (port proc-port-curr))
        (set! proc-port-curr (scm-+ proc-port-curr 1))

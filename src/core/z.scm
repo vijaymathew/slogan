@@ -49,6 +49,7 @@
 (define core-cdr cdr)
 (define core-set_head set_head)
 (define core-set_tail set_tail)
+(define core-set_process_base_port set_process_base_port)
 (define core-list list)
 (define core-list_of list_of)
 (define core-list_set list_set)
@@ -834,7 +835,6 @@
 (define core-is_set is_set)
 (define core-make_set make_set)
 (define core-is_set_member is_set_member)
-(define core-hashtable_to_set hashtable_to_set)
 (define core-set set)
 
 (define core-ref ref)
@@ -912,6 +912,7 @@
     ((cdr) core-cdr)
     ((set_head) core-set_head)
     ((set_tail) core-set_tail)
+    ((set_process_base_port) core-set_process_base_port)
     ((list) core-list)
     ((list_of) core-list_of)
     ((list_set) core-list_set)
@@ -1707,7 +1708,6 @@
     ((is_set) core-is_set)
     ((make_set) core-make_set)
     ((is_set_member) core-is_set_member)
-    ((hashtable_to_set) core-hashtable_to_set)
     ((set) core-set)
     ((realize) core-realize)
     ((slogan_root) core-slogan_root)
@@ -1791,7 +1791,7 @@
                             get_output_string get_token getenv greatest_fixnum
                             hashtable_at hashtable_contains hashtable_copy
                             hashtable_entries hashtable_for_each hashtable_keys
-                            hashtable_set hashtable_size hashtable_to_set
+                            hashtable_set hashtable_size
                             hashtable_update hashtable_values head host_info
                             host_info_addresses host_info_aliases host_info_name
                             host_name identity imag_part inc inexact inf init_package
@@ -1859,7 +1859,7 @@
                             s8array_length s8array_set s8array_shrink s8array_to_list
                             second self set set_current_exception_handler set_difference
                             set_head set_intersection set_length set_stream_position
-                            set_tail set_to_list set_union setenv seventh shell_command
+                            set_tail set_process_base_port set_to_list set_union setenv seventh shell_command
                             show show_exception showln sin sixth slogan slogan_root sort
                             special_token_to_string sqrt statement stream_has_position
                             stream_position stream_tokenizer string string_append
