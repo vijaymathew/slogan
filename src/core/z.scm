@@ -40,7 +40,6 @@
 (define core-is_s8array is_s8array)
 (define core-is_bit_array is_bit_array)
 (define core-is_symbol is_symbol)
-(define core-is_hashtable is_hashtable)
 (define core-is_function is_function)
 (define core-pair pair)
 (define core-head head)
@@ -527,7 +526,6 @@
 (define core-subf64array_fill subf64array_fill)
 (define core-subf64array_move subf64array_move)
 
-(define core-is_bit_array is_bit_array)
 (define core-bit_array bit_array)
 (define core-make_bit_array make_bit_array)
 (define core-bit_array_length bit_array_length)
@@ -903,7 +901,6 @@
     ((is_s8array) core-is_s8array)
     ((is_bit_array) core-is_bit_array)
     ((is_symbol) core-is_symbol)
-    ((is_hashtable) core-is_hashtable)
     ((is_function) core-is_function)
     ((pair) core-pair)
     ((head) core-head)
@@ -1390,7 +1387,6 @@
     ((subf64array_fill) core-subf64array_fill)
     ((subf64array_move) core-subf64array_move)
 
-    ((is_bit_array) core-is_bit_array)
     ((bit_array) core-bit_array)
     ((make_bit_array) core-make_bit_array)
     ((bit_array_length) core-bit_array_length)
@@ -1796,11 +1792,11 @@
                             host_info_addresses host_info_aliases host_info_name
                             host_name identity imag_part inc inexact inf init_package
                             install_package integer_to_char is_all_bits_set
-                            is_any_bits_set is_array is_bit_array is_bit_array
+                            is_any_bits_set is_array is_bit_array
                             is_bit_set is_boolean is_char is_complex is_empty
                             is_eof_object is_eq is_equal is_eqv is_error is_even
                             is_exact is_f32array is_f64array is_false is_file_info
-                            is_finite is_fixnum is_flonum is_function is_hashtable
+                            is_finite is_fixnum is_flonum is_function
                             is_hashtable is_host_info is_inexact is_infinite is_integer
                             is_iterator is_keyword_token is_list is_lpair is_monitor
                             is_mutex is_nan is_negative is_noncontinuable_exception
