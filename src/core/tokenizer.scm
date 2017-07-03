@@ -565,7 +565,10 @@
                        (loop (port-pos-peek-char port)))
                    (loop (port-pos-peek-char port)))))))
 
-(define is_keyword_token reserved-name?)
+(define (is_keyword_token s)
+  (if (reserved-name? s)
+      #t
+      #f))
 
 (define (slgn-is_special_token token)
   (let ((cdr-eq? (lambda (p) (scm-eq? token (scm-cdr p)))))
@@ -573,7 +576,11 @@
         (scm-memp cdr-eq? *single-char-operators*)
         (scm-memp cdr-eq? *multi-char-operators-strings*))))
 
-(define is_special_token slgn-is_special_token)
+(define (is_special_token s)
+  (if (slgn-is_special_token s)
+      #t
+      #f))
+
 (define is_valid_identifier valid-identifier?)
 
 (define (slgn-special_token_to_string token)
