@@ -347,7 +347,6 @@
 (define core-is_false is_false)
 (define core-void void)
 (define core-is_void is_void)
-(define core-is_object is_object)
 (define core-array array)
 (define core-make_array make_array)
 (define core-array_length array_length)
@@ -1208,7 +1207,6 @@
     ((is_false) core-is_false)
     ((void) core-void)
     ((is_void) core-is_void)
-    ((is_object) core-is_object)
     ((array) core-array)
     ((make_array) core-make_array)
     ((array_length) core-array_length)
@@ -1800,7 +1798,7 @@
                             is_hashtable is_host_info is_inexact is_infinite is_integer
                             is_iterator is_keyword_token is_list is_lpair is_monitor
                             is_mutex is_nan is_negative is_noncontinuable_exception
-                            is_number is_object is_odd is_pair is_positive is_prime
+                            is_number is_odd is_pair is_positive is_prime
                             is_random_source is_rational is_reader is_real is_s16array
                             is_s32array is_s64array is_s8array is_set is_set_member
                             is_special_token is_stream is_string is_subset is_superset
