@@ -100,6 +100,8 @@
         (slgn-display-set val quotes port))
        ((namespace? val)
         (slgn-display-namespace val port))
+       ((task_group? val)
+        (slgn-display-task-group port))
        ((list? val)
         (slgn-display-list val quotes port))
        ((pair? val)
@@ -256,6 +258,9 @@
 
 (define (slgn-display-task port)
   (slgn-display-special-obj "task" port))
+
+(define (slgn-display-task-group port)
+  (slgn-display-special-obj "task_group" port))
 
 (define (generic-map1! f result vec len reff setf)
   (let loop ((i 0))

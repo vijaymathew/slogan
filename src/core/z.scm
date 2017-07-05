@@ -645,6 +645,8 @@
 (define core-task_yield task_yield)
 (define core-task_sleep task_sleep)
 (define core-task_terminate task_terminate)
+(define core-task_suspend task_suspend)
+(define core-task_resume task_resume)
 (define core-task_join task_join)
 (define core-task_name task_name)
 (define core-task_set_data task_set_data)
@@ -1513,6 +1515,8 @@
     ((task_yield) core-task_yield)
     ((task_sleep) core-task_sleep)
     ((task_terminate) core-task_terminate)
+    ((task_suspend) core-task_suspend)
+    ((task_resume) core-task_resume)
     ((task_join) core-task_join)
     ((task_name) core-task_name)
     ((task_set_data) core-task_set_data)
@@ -1893,10 +1897,10 @@
                             task_state_is_initialized task_state_is_normally_terminated
                             task_state_is_uninitialized
                             task_state_normally_terminated_result task_terminate
-                            task_yield tcp_client_stream tcp_server_stream tenth third
-                            time_to_string to_string transcoder transcoder_codec
-                            transcoder_eol_style transcoder_error_handling_mode truncate
-                            u16array u16array_append u16array_at u16array_copy
+                            task_suspend task_resume task_yield tcp_client_stream
+                            tcp_server_stream tenth third time_to_string to_string transcoder
+                            transcoder_codec transcoder_eol_style transcoder_error_handling_mode
+                            truncate u16array u16array_append u16array_at u16array_copy
                             u16array_fill u16array_length u16array_set u16array_shrink
                             u16array_to_list u32array u32array_append u32array_at
                             u32array_copy u32array_fill u32array_length u32array_set

@@ -19,28 +19,32 @@
     t))
 
 (define (task-with-args fn args name group)
-  (if group
-      (make-thread (lambda () (scm-apply fn args)) name group)
-      (make-thread (lambda () (scm-apply fn args)) name)))
+  (let ((t (make-thread (lambda () (scm-apply fn args)) name)))
+    (if group
+        (task_group-tasks-add! group t))
+    t))
 
 (define (task-with-no-args fn name group)
-  (if group
-      (make-thread fn name group)
-      (if name 
-          (make-thread fn name)
-          (make-thread fn))))
+  (let ((t (if name
+               (make-thread fn name)
+               (make-thread fn))))
+    (if group
+        (task_group-tasks-add! group t))
+    t))
 
 (define (root-task-with-args fn args name group ip op)
-  (if group
-      (make-root-thread (lambda () (scm-apply fn args)) name group ip op)
-      (make-root-thread (lambda () (scm-apply fn args)) name)))
+  (let ((t (make-root-thread (lambda () (scm-apply fn args)) name)))
+    (if group
+        (task_group-tasks-add! group t))
+    t))
 
 (define (root-task-with-no-args fn name group ip op)
-  (if group
-      (make-root-thread fn name group ip op)
-      (if name 
-          (make-root-thread fn name)
-          (make-root-thread fn))))
+  (let ((t (if name
+               (make-root-thread fn name)
+               (make-root-thread fn))))
+    (if group
+        (task_group-tasks-add! group t))
+    t))
 
 (define (task-data t)
   (let ((d (thread-specific t)))
@@ -91,6 +95,8 @@
 (define task_run thread-start!)
 (define task_yield thread-yield!)
 (define task_sleep thread-sleep!)
+(define task_resume thread-resume!)
+(define task_suspend thread-suspend!)
 (define task_terminate thread-terminate!)
 (define task_join thread-join!)
 (define task_send thread-send)
@@ -113,13 +119,45 @@
 (define task_state_is_abnormally_terminated thread-state-abnormally-terminated?)
 (define task_state_abnormally_terminated_reason thread-state-abnormally-terminated-reason)
 
-(define task_group make-thread-group)
-(define is_task_group thread-group?)
-(define task_group_name thread-group-name)
-(define task_group_parent thread-group-parent)
-(define task_group_resume thread-group-resume!)
-(define task_group_suspend thread-group-suspend!)
-(define task_group_terminate thread-group-terminate!)
+(define (task_group #!optional (name *void*) parent)
+  (scm-cons (scm-cons '*task-group* (make-mutex)) (scm-list '() parent name)))
+
+(define (task_group? obj)
+  (and (pair? obj) (pair? (scm-car obj))
+       (eq? (scm-caar obj) '*task-group*)))
+
+(define is_task_group task_group?)
+
+(define (task_group_name tg)
+  (list-ref (scm-cdr tg) 2))
+
+(define (task_group_parent tg)
+  (list-ref (scm-cdr tg) 1))
+
+(define (task_group-tasks tg)
+  (list-ref (scm-cdr tg) 0))
+
+(define (task_group-tasks-add! tg t)
+  (let ((tasks (task_group-tasks tg))
+        (mtx (scm-cdr (scm-car tg))))
+    (mutex-lock! mtx)
+    (set-car! (scm-cdr tg) (scm-cons t tasks))
+    (mutex-unlock! mtx)))
+
+(define (task_group-change-task-state! tg f!)
+  (let loop ((tasks (list-ref (scm-cdr tg) 0)))
+    (if (scm-not (null? tasks))
+        (begin (f! (scm-car tasks))
+               (loop (scm-cdr tasks))))))
+
+(define (task_group_resume tg)
+  (task_group-change-task-state! tg thread-resume!))
+
+(define (task_group_suspend tg)
+  (task_group-change-task-state! tg thread-suspend!))
+
+(define (task_group_terminate tg)
+  (task_group-change-task-state! tg thread-terminate!))
 
 (define mutex make-mutex)
 (define is_mutex mutex?)
