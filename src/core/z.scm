@@ -829,7 +829,6 @@
 (define core-set_union set_union)
 (define core-is_superset is_superset)
 (define core-is_subset is_subset)
-(define core-list_to_set list_to_set)
 (define core-set_to_list set_to_list)
 (define core-is_set is_set)
 (define core-make_set make_set)
@@ -1701,7 +1700,6 @@
     ((set_union) core-set_union)
     ((is_superset) core-is_superset)
     ((is_subset) core-is_subset)
-    ((list_to_set) core-list_to_set)
     ((set_to_list) core-set_to_list)
     ((is_set) core-is_set)
     ((make_set) core-make_set)
@@ -1811,7 +1809,7 @@
                             is_valid_identifier lcm least_fixnum length link list list_directory
                             list_of list_set list_tail list_to_array list_to_bit_array list_to_f32array
                             list_to_f64array list_to_s16array list_to_s32array
-                            list_to_s64array list_to_s8array list_to_set list_to_string
+                            list_to_s64array list_to_s8array list_to_string
                             list_to_u16array list_to_u32array list_to_u64array
                             list_to_u8array load load_package log logb magnitude
                             make_array make_bit_array make_eq_hashtable
