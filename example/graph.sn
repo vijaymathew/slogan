@@ -1,0 +1,80 @@
+namespace graph {
+  function make(v)
+    let (e = 0, adj = make_array(v, []))
+    { function add_edge(v, w)
+      { adj[v] = w:adj[v]
+        adj[w] = v:adj[w]
+        e = e + 1 }
+
+      function get_adj(v) array_at(adj, v)
+      
+      ^(msg)
+      | 'v -> v
+      | 'e -> e
+      | 'adj -> get_adj
+      | 'add_edge -> add_edge }
+
+  function init(in)
+    let (g = make(read(in)), e = read(in))
+    { for (i = 0; i < e; i+1)
+        g.add_edge(read(in), read(in))
+      g }
+      
+  function degree(g, v)
+    length(g.adj(v))
+
+  function max_degree(g)
+    apply(max, map(^(v) degree(g, v),
+                   range(0, g.v-1)))
+
+  function avg_degree(g) 2 * g.e / g.v
+
+  function count_self_loops(g)
+  { let c, nv = 0, g.v
+    for (v = 0; v < nv; v+1)
+      for_each(^(w) when (w == v) c = c + 1,
+               g.adj(v))
+    c/2 }
+}
+
+// test
+// tinyG.txt:
+/*
+13
+13
+0 5
+4 3
+0 1
+9 12
+6 4
+5 4
+0 2
+11 12
+9 10
+0 6
+7 8
+9 11
+5 3
+*/
+
+/*
+let g = call_with_stream(file_reader("tinyG.txt"), graph::init)
+g.v
+// 13
+g.e
+// 13
+g.adj(0)
+// [6, 2, 1, 5]
+g.adj(5)
+// [3, 4, 0]
+g.adj(9)
+// [11, 10, 12]
+g.adj(1)
+// [0]
+graph::degree(g, 1)
+// 1
+graph::max_degree(g)
+// 4
+graph::count_self_loops(g)
+// 0
+*/
