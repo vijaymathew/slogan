@@ -40,3 +40,23 @@ assert gr == 'hi
 assert core.first(core.next(iter, 'ok)) == 13
 assert gr == 'ok
 assert core.first(core.rest(iter)) == 14
+
+// unique IDs for strcutures, required for reliable serialization
+let h = #{1:2, 3:"hello"}
+let e = object_to_u8array(h)
+let h2 = u8array_to_object(e)
+assert h2 == h
+h2[3] = "ok"
+assert h2[3] == "ok"
+assert h[3] == "hello"
+
+record color (r, g, b)
+let c = color(r = 234, g = 100, b = 89)
+e = object_to_u8array(c)
+let c2 = u8array_to_object(e)
+assert color_r(c) == 234
+assert color_r(c2) == 234
+assert [234, 100, 89] == [color_r(c2), color_g(c2), color_b(c2)]
+color_set_r(c2, 200)
+assert color_r(c2) == 200
+assert color_r(c) == 234

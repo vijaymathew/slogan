@@ -1,6 +1,7 @@
 ;; Copyright (c) 2013-2017 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
-(define-structure hashtable table eq-predic hash-fn)
+(define-structure hashtable id: 54EFAC5C-DCA1-4C74-964C-AEBD245125E3
+  table eq-predic hash-fn)
 
 (define (make_hashtable hash-fn eq-predic #!optional size)
   (make-hashtable (if size (make-table hash: hash-fn size: size test: eq-predic)

@@ -1845,9 +1845,23 @@
             s))
       (scm-error "record member must be a valid identifier" s)))
 
+(define (struct-uname name)
+  (let ((s (number->string (time->seconds (current-time)))))
+    (string->symbol (string-append name "-" s))))
+
+(define (struct-uuid name)
+  (with-exception-catcher
+   (lambda (e)
+     (struct-uname name))
+   (lambda ()
+     (let ((r (shell-command "uuidgen" #t)))
+       (if (zero? (scm-car r))
+           (string->symbol (scm-cdr r))
+           (struct-uname name))))))
+
 (define (def-struct-expr name members default-values preconds)
   (let ((members (scm-map assert-rec-member-name members)))
-    (scm-append (scm-list 'begin (scm-append (scm-list 'define-structure name) members))
+    (scm-append (scm-list 'begin (scm-append (scm-list 'define-structure name 'id: (struct-uuid name)) members))
                 (mk-struct-accessors/modifiers name members default-values preconds))))
 
 (define (mk-record-precond-expr precond mem)
