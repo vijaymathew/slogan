@@ -1847,7 +1847,7 @@
 
 (define (struct-uname name)
   (let ((s (number->string (time->seconds (current-time)))))
-    (string->symbol (string-append name "-" s))))
+    (string->symbol (string-append (symbol->string name) "-" s))))
 
 (define (struct-uuid name)
   (with-exception-catcher
