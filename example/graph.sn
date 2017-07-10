@@ -35,6 +35,46 @@ namespace graph {
       for_each(^(w) when (w == v) c = c + 1,
                g.adj(v))
     c/2 }
+
+  function depth_first_search(g, s, f)
+    letrec (marked = make_array(g.v, false),
+            dfs = ^(g, v)
+                  { marked[v] = true
+                    for_each(^(w) when (not(marked[w])) { f(w); dfs(g, w) },
+                             g.adj(v)) })
+      dfs(g, s)
+
+  namespace paths {
+    // Implementations of the following interface to
+    // for answering "connectivity" queries against a graph:
+    //   make_paths(graph, source_vertex)
+    //   has_path_to(paths, target_vertex)
+    //   path_to(paths, target_vertex)
+
+    function make_depth_first_paths(g, sv)
+      let (marked = make_array(g.v, false),
+           edge_to = make_array(g.v, 0))
+      { function dfs(v)
+        { marked[v] = true
+          for_each(^(w) when(not(marked[w]))
+                        { edge_to[w] = v
+                          dfs(w) },
+                   g.adj(v)) }
+
+        dfs(sv)
+        
+        function has_path_to(v) marked[v]
+
+        function path_to(v)
+          if (not(marked[v])) false
+          else letfn loop (x = v, stack = [])
+            if (x == sv) sv:stack
+            else loop(edge_to[x], x:stack)
+            
+        ^(msg)
+        | 'has_path_to -> has_path_to
+        | 'path_to -> path_to }
+   }
 }
 
 // test
@@ -77,4 +117,27 @@ graph::max_degree(g)
 // 4
 graph::count_self_loops(g)
 // 0
+*/
+
+// tinyCG.txt
+/*
+6
+8
+0 5
+2 4
+2 3
+1 2
+0 1
+3 4
+3 5
+0 2
+*/
+
+/*
+let g = call_with_stream(file_reader("tinyCG.txt"), graph::init)
+let p = graph::paths::make_depth_first_paths(g, 0)
+p.has_path_to(5)
+// true
+p.path_to(5)
+// [0, 2, 3, 5]
 */
