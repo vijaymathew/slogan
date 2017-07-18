@@ -1,3 +1,12 @@
+2017-07-18  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.2 has some minor feature additions and bug fixes.
+	* src/core/ilcodegen.scm: hash-table and record literals are now serializable
+	* src/core/task.scm: task-suspend/resume functions added
+	* src/core/parallel.scm: facility to set base IPC port.
+	* src/core/lpair.scm: `yield` is an expression now, can return a value.
+	* src/core/lpair.scm: `find` made generic for all sequence types.
+
 2017-06-17  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
 
 	* v0.12.1 is a bug fix release.

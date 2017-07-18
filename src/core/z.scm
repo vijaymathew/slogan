@@ -655,7 +655,6 @@
 (define core-task_base_priority task_base_priority)
 (define core-task_set_priority_boost task_set_priority_boost)
 (define core-task_priority_boost task_priority_boost)
-(define core-task_base_priority task_base_priority)
 (define core-task_set_quantum task_set_quantum)
 (define core-task_quantum task_quantum)
 (define core-task_send task_send)
@@ -1524,7 +1523,6 @@
     ((task_base_priority) core-task_base_priority)
     ((task_set_priority_boost) core-task_set_priority_boost)
     ((task_priority_boost) core-task_priority_boost)
-    ((task_base_priority) core-task_base_priority)
     ((task_set_quantum) core-task_set_quantum)
     ((task_quantum) core-task_quantum)
     ((task_send) core-task_send)
@@ -1882,7 +1880,7 @@
                             subu32array_move subu64array subu64array_fill
                             subu64array_move subu8array subu8array_fill subu8array_move
                             symbol_hash symbol_to_string tail take take_while tan task
-                            task_base_priority task_base_priority task_data task_group
+                            task_base_priority task_data task_group
                             task_group_name task_group_parent task_group_resume
                             task_group_suspend task_group_terminate task_join
                             task_messages_next task_messages_rewind task_name
