@@ -55,7 +55,7 @@
 (define scm-identity identity)
 (define scm-force force)
 
-;; These reactive-variable releated functions and set! in task.slgn.scm.
+;; These reactive-variable releated functions are set! in task.slgn.scm.
 (define scm-rvar #f)
 (define scm-rbind #f)
 (define scm-rget #f)
