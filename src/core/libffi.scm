@@ -1,5 +1,5 @@
 ;; Copyright (C) 2013-2017 by Vijay Mathew Pandyalakal, All Rights Reserved.
-;; Linkage to libffi to provide a higher level of abstraction to C library calls.
+;; Linkage to libffi, a higher level of abstraction for C library calls.
 
 (c-declare #<<c-declare-end
 

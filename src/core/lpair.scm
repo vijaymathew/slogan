@@ -178,9 +178,9 @@
 ;;    xs
 ;;  else
 ;;    if (f(first(xs)))
-;;     { yield first(xs);
+;;     { yield first(xs)
 ;;       loop(rest(xs)) }
-;;    else loop(rest(xs));
+;;    else loop(rest(xs))
 ;;
 (define (iter-filter f xs)
   (call/cc
@@ -239,8 +239,8 @@
 ;;    if (not (xs))
 ;;     xs
 ;;    else let (r = f(initial, first(xs)))
-;;         { yield r;
-;;           loop(r, rest(xs)) };
+;;    { yield r
+;;      loop(r, rest(xs)) }
 ;;
 (define (iter-accumulate f initial xs)
   (call/cc

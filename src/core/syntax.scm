@@ -1,3 +1,5 @@
+;; Copyright (c) 2013-2017 by Vijay Mathew Pandyalakal, All Rights Reserved.
+
 (define (syntax-tokens tokenizer)
   (let loop ((token (tokenizer 'next))
              (tokens '()))
