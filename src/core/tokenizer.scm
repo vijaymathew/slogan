@@ -285,7 +285,7 @@
            (tokenizer-error "expected a valid operator. unexpected character: " (port-pos-read-char! port))))))
 
 (define (numeric-string->number s #!optional (radix 10))
-  (string->number (list->string (filter (lambda (c) (scm-not (char=? c #\_))) (string->list s))) radix))
+  (string->number (list->string (scm-filter (lambda (c) (scm-not (char=? c #\_))) (string->list s))) radix))
 
 (define (read-number port prefix #!optional (radix 10))
   (let ((num (let loop ((c (port-pos-peek-char port))

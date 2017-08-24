@@ -215,7 +215,7 @@
 	(else
 	 (lpair-filter fn (rest-helper lpair) drill: drill))))
 
-(define (filter fn ls #!key drill)
+(define (scm-filter fn ls #!key drill)
   (cond ((lpair? ls)
          (lpair-filter fn ls drill: drill))
         ((iterator? ls)
@@ -226,11 +226,13 @@
            (cond ((null? ls)
                   (scm-reverse result))
                  ((and (list? (scm-car ls)) drill)
-                  (loop (scm-cdr ls) (scm-cons (filter fn (scm-car ls) drill: drill) result)))
+                  (loop (scm-cdr ls) (scm-cons (scm-filter fn (scm-car ls) drill: drill) result)))
                  ((fn (scm-car ls))
                   (loop (scm-cdr ls) (scm-cons (scm-car ls) result)))
                  (else
                   (loop (scm-cdr ls) result)))))))
+
+(define filter scm-filter)
 
 ;; iter-accumulate generated from this Slogan definition:
 ;;
