@@ -4,6 +4,10 @@
 
 (define-macro (lpair-cons a b) `(scm-cons ,a (delay ,b)))
 
+(define (empty? obj) (or (null? obj) (eq? obj #f)))
+
+(define is_empty empty?)
+
 (define (iterator? obj)
   (and (pair? obj)
        (s-yield? (scm-cdr obj))))

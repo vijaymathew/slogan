@@ -11,6 +11,11 @@ function make_option(@optional v = 'none)
       make_option(fn(v))
     else _none
 
+  function option_map2(f, other)
+    if (is_option() && other.is_option())
+      make_option(f(v, other.value))
+    else _none
+
   function option_flat_map(fn)
     if (is_option())
       let (r = fn(v))
@@ -23,31 +28,54 @@ function make_option(@optional v = 'none)
       if (f(v)) make_option(v)
       else _none
     else _none
-  
+
   ^(msg)
-  | 'value -> v
-  | 'map -> option_map
-  | 'flat_map -> option_flat_map
-  | 'filter -> option_filter
+  | 'value     -> v
+  | 'map       -> option_map
+  | 'map2      -> option_map2
+  | 'flat_map  -> option_flat_map
+  | 'filter    -> option_filter
   | 'is_option -> is_option
-  | 'is_none -> is_none }
+  | 'is_none   -> is_none }
 
 _none = make_option()
   
-declare syntax ifn ($opt) $default
+declare syntax _if ($opt) $default
   => let (opt = $opt)
        if (opt.is_option()) opt.value
        else $default
 
-declare syntax either($opt1, $opt2)
+declare syntax _either($opt1, $opt2)
   => if ($opt1.is_option()) $opt1
      else if ($opt2.is_option()) $opt2
      else _none
 
+function lift(f)
+  ^(x)
+  if (x.is_none()) _none
+  else x.map(f)
+
+declare syntax _try $a
+  => try make_option($a) catch (e) _none
+
+function sequence(options)
+  letfn loop (xs = options, r = [])
+    match (xs)
+     []                      -> reverse(r)
+    | x:_ where x.is_none()  -> _none
+    | x:xs                   -> loop(xs, x.value:r)
+
+function traverse(fn, xs)
+  letfn loop (xs = xs, r = [])
+    if (is_empty(xs)) reverse(r)
+    else let (opt = fn(first(xs)))
+     if (opt.is_none()) _none
+     else loop(rest(xs), opt.value:r)
+
 // Examples
 record employee(name, department, manager)
 
-let e1 = make_employee("abc", "dev", none())
+let e1 = make_employee("abc", "dev", _none)
 let e2 = make_employee("xyz", "qa", e1)
 let db = [e1, e2]
 
@@ -62,12 +90,24 @@ let dept = lookup_by_name("abc").
            map(employee_department).
            filter(^(d) d == "dev")
            
-assert (ifn (dept) "engg") == "dev"
+assert (_if (dept) "engg") == "dev"
 
 dept = lookup_by_name("xyz").
        map(employee_department).
        filter(^(d) d == "dev")
        
-assert (ifn (dept) "engg") == "engg"
+assert (_if (dept) "engg") == "engg"
       
+let sqrt0 = lift(sqrt)
+assert sqrt0(make_option(12)).value == 3.4641016151377544
+assert sqrt0(_none) == _none
 
+assert (_try 12/1).value == 12/1
+assert (_try 12/0) == _none
+
+assert sequence([make_option(1), make_option(2), _none]).is_none()
+assert sequence([make_option(1), make_option(2), make_option(3)]) == [1, 2, 3]
+assert sequence([make_option(1), _none, make_option(3)]).is_none()
+
+assert traverse(^(x) _try string_to_number(x.value), [make_option("1"), _none]).is_none()
+assert traverse(^(x) _try string_to_number(x.value), [make_option("1"), make_option("2")]) == [1, 2]

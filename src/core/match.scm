@@ -180,7 +180,7 @@
 (define (match-pattern-helper pattern bindings #!optional (length-test? #t))
   (set! pattern (normalize-list-for-matching pattern))
   (cond ((null? pattern)
-         `(if (null? *value*)
+         `(if (empty? *value*)
               (set! *match-found* #t)
               (set! *match-found* #f)))
         ((scm-cons? pattern)

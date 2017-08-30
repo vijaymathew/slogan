@@ -25,8 +25,6 @@
 (define head scm-head)
 (define tail scm-tail)
 
-(define is_empty null?)
-
 (define at list-ref)
 
 (define (get seq key #!optional deflaut)
