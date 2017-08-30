@@ -1,0 +1,73 @@
+// Implementation of an `option` type for dealing with partial functions.
+
+let _none = false
+
+function make_option(@optional v = 'none)
+{ function is_option() not(is_eq(v, 'none))
+  function is_none() is_eq(v, 'none)
+  
+  function option_map(fn)
+    if (is_option())
+      make_option(fn(v))
+    else _none
+
+  function option_flat_map(fn)
+    if (is_option())
+      let (r = fn(v))
+        if (r.is_option() || r.is_none()) r
+        else make_option(r)
+    else _none
+
+  function option_filter(f)
+    if (is_option())
+      if (f(v)) make_option(v)
+      else _none
+    else _none
+  
+  ^(msg)
+  | 'value -> v
+  | 'map -> option_map
+  | 'flat_map -> option_flat_map
+  | 'filter -> option_filter
+  | 'is_option -> is_option
+  | 'is_none -> is_none }
+
+_none = make_option()
+  
+declare syntax ifn ($opt) $default
+  => let (opt = $opt)
+       if (opt.is_option()) opt.value
+       else $default
+
+declare syntax either($opt1, $opt2)
+  => if ($opt1.is_option()) $opt1
+     else if ($opt2.is_option()) $opt2
+     else _none
+
+// Examples
+record employee(name, department, manager)
+
+let e1 = make_employee("abc", "dev", none())
+let e2 = make_employee("xyz", "qa", e1)
+let db = [e1, e2]
+
+function lookup_by_name(name)
+  letfn loop(db = db)
+    if (is_empty(db)) _none
+    else if (employee_name(head(db)) == name)
+     make_option(head(db))
+    else loop(tail(db))
+
+let dept = lookup_by_name("abc").
+           map(employee_department).
+           filter(^(d) d == "dev")
+           
+assert (ifn (dept) "engg") == "dev"
+
+dept = lookup_by_name("xyz").
+       map(employee_department).
+       filter(^(d) d == "dev")
+       
+assert (ifn (dept) "engg") == "engg"
+      
+
