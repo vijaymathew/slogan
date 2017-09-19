@@ -350,7 +350,7 @@
 
 (define (mk-comprehension-loop lists vars filters result-expr)
   (let ((expr-acc '()))
-    (if (null? lists) 
+    (if (empty? lists)
         (scm-append 
          expr-acc 
          `(set! *comprehension-result* 
@@ -358,7 +358,7 @@
         (scm-append 
          expr-acc 
          `(let *comprehension-loop* ((*list* ,(scm-first lists)))
-            (if (scm-not (null? *list*))
+            (if (scm-not (empty? *list*))
                 ,(expand-comprehension-binding
                   (scm-first vars)
                   `(begin (if ,(scm-first filters)
