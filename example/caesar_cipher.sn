@@ -1,0 +1,56 @@
+// Caesar cipher encoder and decoder.
+// Also a function that "cracks" an encoding.
+
+let basecode = char_to_integer(\a)
+
+function charcode(c) char_to_integer(c) - basecode
+function codechar(i) integer_to_char(i+basecode)
+
+function shift(n, c)
+ if (char_is_lower_case(c))
+   codechar(mod(charcode(c) + n, 26))
+ else c
+
+function encode_helper(n ,xs) [shift(n, x) | x <- xs]
+  
+function encode(n, str) list_to_string(encode_helper(n, string_to_list(str)))
+
+let str = "slogan is fun"
+assert encode(-3, encode(3, str)) == str
+
+// decoder
+let letter_freqs = [8.1, 1.5, 2.8, 4.2, 12.7, 2.2, 2.0, 6.1, 7.0,
+                    0.2, 0.8, 4.0, 2.4, 6.7, 7.5, 1.9, 0.1, 6.0,
+                    6.3, 9.0, 2.8, 1.0, 2.4, 0.2, 2.0, 0.1]
+let lower_letters = range(\a, \z, next = ^(c) integer_to_char(char_to_integer(c) + 1), compare = char_is_lteq)                    
+
+// Return number of lower-case letters in `xs`.
+function lowers(xs)
+  length([x | x <- xs where char_is_lower_case(x)])
+
+// Return the number of occurences of `c` in `xs`.
+function count_char(c, xs)
+  length([x | x <- xs where char_is_eq(x, c)])
+
+function sum(xs) fold(`+`, 0, xs)
+
+function positions(x, xs) [i | x1:i <- zip(xs, range(0, length(xs))) where x == x1]
+    
+function percent(n, m) inexact(n) / inexact(m) * 100
+
+function freqs(xs)
+  let (n = lowers(xs))
+    [percent(count_char(x, xs), n) | x <- lower_letters]
+
+function chisqr(os, es) sum([expt(o-e, 2)/e | o:e <- zip(os, es)])
+
+function rotate(n, xs) append(drop(n, xs), take(n, xs))
+
+function crack(str)
+  let (xs = string_to_list(str),
+       t  = freqs(xs),
+       chitab = [chisqr(rotate(n, t), letter_freqs) | n <- range(0, 25)],
+       factor = head(positions(apply(min, chitab), chitab)))
+    list_to_string(encode_helper(-factor, xs))
+
+assert crack(encode(3, str)) == str
