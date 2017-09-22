@@ -40,7 +40,7 @@
     (scm-head obj))
    ((procedure? obj)
     (obj 'first))
-   ((null? obj)
+   ((empty? obj)
     #f)
    (else
     (safe-generic-array-first obj))))
@@ -65,7 +65,7 @@
 
 (define (scm-rest lpair)
   (let ((r (rest-helper lpair)))
-    (if (null? r) #f r)))
+    (if (empty? r) #f r)))
 
 (define rest scm-rest)
 
@@ -110,22 +110,22 @@
      (let ((*yield-obj* (make-s-yield #f *return*)))
        (let loop ((xs xs) (more more))
          (let ((*r* (s-yield-k *yield-obj*)))
-           (cond ((or (scm-not xs) (null? xs))
+           (cond ((or (scm-not xs) (empty? xs))
                   (s-yield-fn-set! *yield-obj* #f)
                   (*r* *yield-obj*))
                  (else
                   (call/cc
                    (lambda (*yield*)
                      (s-yield-fn-set! *yield-obj* *yield*)
-                     (if (null? more)
+                     (if (empty? more)
                          (*r* (scm-cons (fn (scm-car xs)) *yield-obj*))
                          (*r* (scm-cons (scm-apply fn (scm-car xs) (old-map scm-car more)) *yield-obj*)))))
-                  (loop (rest-helper xs) (if (null? more) '() (old-map rest-helper more)))))))))))
+                  (loop (rest-helper xs) (if (empty? more) '() (old-map rest-helper more)))))))))))
 
 (define (lpair-map f ls more)
-  (if (null? (scm-first ls))
+  (if (empty? (scm-first ls))
       '()
-      (if (null? more)
+      (if (empty? more)
           (lpair-cons (f (scm-first ls)) (lpair-map f (rest-helper ls) '()))
           (lpair-cons (scm-apply f (scm-first ls) (old-map scm-first more))
                       (lpair-map f (rest-helper ls) (old-map rest-helper more))))))
@@ -156,7 +156,7 @@
 (define (iter-for-each f xs more)
   (let loop ((xs xs) (more more))
     (if xs
-        (if (null? more)
+        (if (empty? more)
             (begin (f (scm-first xs))
                    (loop (rest-helper xs) '()))
             (begin (scm-apply f (scm-first xs) (old-map scm-first more))
@@ -206,7 +206,7 @@
                 (*r* *yield-obj*)))))))
 
 (define (lpair-filter fn lpair #!key drill)
-  (cond ((null? lpair) 
+  (cond ((empty? lpair)
 	 '())
 	((and (lpair? (scm-first lpair)) drill)
 	 (lpair-cons
@@ -227,7 +227,7 @@
         (else
          (let loop ((ls ls)
                     (result '()))
-           (cond ((null? ls)
+           (cond ((empty? ls)
                   (scm-reverse result))
                  ((and (list? (scm-car ls)) drill)
                   (loop (scm-cdr ls) (scm-cons (scm-filter fn (scm-car ls) drill: drill) result)))
@@ -264,7 +264,7 @@
               (let ((*r* (s-yield-k *yield-obj*))) (s-yield-fn-set! *yield-obj* #f) (*r* *yield-obj*)))))))
 
 (define (lpair-accumulate fn initial lpair)
-  (if (null? lpair)
+  (if (empty? lpair)
       '()
       (let ((r (fn (scm-first lpair) initial)))
         (lpair-cons r (lpair-accumulate fn r (rest-helper lpair))))))
@@ -290,7 +290,7 @@
       (let loop ((lst lst)
 		 (n n))
 	(if (or (zero? n)
-		(null? lst))
+		(empty? lst))
 	    lst
 	    (loop (rest-helper lst) (scm-- n 1))))))
 
@@ -302,7 +302,7 @@
 		 (n n)
 		 (result '()))
 	(if (or (zero? n)
-		(null? lst))
+		(empty? lst))
 	    (scm-reverse result)
 	    (loop (rest-helper lst)
 		  (scm-- n 1)
@@ -310,7 +310,7 @@
 
 (define (drop_while predic lst)
   (let loop ((lst lst))
-    (if (or (null? lst)
+    (if (or (empty? lst)
 	    (scm-not (predic (scm-first lst))))
 	lst
 	(loop (rest-helper lst)))))
@@ -318,7 +318,7 @@
 (define (take_while predic lst)
   (let loop ((lst lst)
 	     (result '()))
-    (if (or (null? lst)
+    (if (or (empty? lst)
 	    (scm-not (predic (scm-first lst))))
 	(scm-reverse result)
 	(loop (rest-helper lst)
