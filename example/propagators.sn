@@ -1,0 +1,92 @@
+// An implementation of Sussman's propagators.
+
+module propagators (make_cell, adder, subtractor,
+                    multiplier, divider, constant)
+{ let nothing = ['the_nothing]
+
+  function is_nothing(obj) is_eq(obj, nothing)
+
+  function alert_propagator(p) p()
+  function alert_propagators(ps) map(^(p) p(), ps)
+   
+  function make_cell()
+    let (neighbors = [], content = nothing)
+    { function add_new_neighbor(new_neighbor)
+        when (not(memq(new_neighbor, neighbors)))
+        { neighbors = new_neighbor:neighbors
+          alert_propagator(new_neighbor) }
+
+      function add_content(increment)
+        if (is_nothing(increment)) 'ok
+        else if (is_nothing(content))
+        { content = increment
+          alert_propagators(neighbors) }
+        else when (content <> increment)
+          error("Ack! Inconsistency!")
+
+      ^(message)
+      | 'add_new_neighbor -> add_new_neighbor
+      | 'add_content      -> add_content
+      | 'content          -> content }
+   
+   function propagator(neighbors, to_do)
+   { for_each(^(cell) cell.add_new_neighbor(to_do), neighbors)
+     alert_propagator(to_do) }
+
+   function fn_to_propagator_maker(fn)
+     ^(@rest cells)
+     let (len    = length(cells)
+          inputs = take(len-1, cells),
+          output = head(drop(len-1, cells)))
+       propagator(inputs, ^output.add_content(apply(fn, map(^(i) i.content, inputs))))
+
+   function handling_nothings(fn)
+     ^(@rest args)
+     if (exists(is_nothing, args)) nothing
+     else apply(fn, args)
+
+   function primprop(fn) fn_to_propagator_maker(handling_nothings(fn))
+
+   let adder = primprop(`+`)
+   let subtractor = primprop(`-`)
+   let multiplier = primprop(`*`)
+   let divider = primprop(`/`)
+   function constant(value) fn_to_propagator_maker(^() value) }
+
+// examples
+
+let p = propagators
+
+function listfn(fn, n)
+  letfn loop (n = n, rs = [])
+    if (n <= 0) rs
+    else loop(n-1, fn():rs)
+
+function sum(x, y, total)
+{ p.adder(x, y, total)
+  p.subtractor(total, x, y)
+  p.subtractor(total, y, x) }
+
+function product(x, y, total)
+{ p.multiplier(x, y, total)
+  p.divider(total, x, y)
+  p.divider(total, y, x) }
+  
+function fahrenheit_to_celsius(f, c)
+  let ([thirty_two, f32, five, c_times_9, nine] = listfn(p.make_cell, 5))
+  { p.constant(32)(thirty_two)
+    p.constant(5)(five)
+    p.constant(9)(nine)
+    sum(thirty_two, f32, f)
+    product(f32, five, c_times_9)
+    product(c, nine, c_times_9) }
+
+let f, c = p.make_cell(), p.make_cell()
+fahrenheit_to_celsius(f, c)
+c.add_content(25)
+assert f.content == 77
+
+let f, c = p.make_cell(), p.make_cell()
+fahrenheit_to_celsius(f, c)
+f.add_content(77)
+assert c.content == 25
