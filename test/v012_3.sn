@@ -1,0 +1,14 @@
+// Reactive variables now use the generic is_equal function to compare new values.
+function make_point(x, y)
+  ^(msg)
+  | 'x -> x
+  | 'y -> y
+  | 'is_equal -> ^(p) p.x == x && p.y == y
+
+let ?p1 = make_point(10, 20)
+assert (?p1).x == 10
+assert (?p1).y == 20
+!?p1 = make_point(10, 20)
+assert (?p1).x == 10
+assert (?p1).y == 20
+assert try ?p1 = make_point(100, 20) catch (e) true

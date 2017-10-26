@@ -71,11 +71,7 @@ c-declare-end
 
 (define (is_equal x y)
   (if (procedure? x)
-      (with-exception-catcher
-       (lambda (e)
-         (equal? x y))
-       (lambda ()
-         ((x 'is_equal) y)))
+      ((x 'is_equal) y)
       (equal? x y)))
              
 (define is_eqv eqv?)

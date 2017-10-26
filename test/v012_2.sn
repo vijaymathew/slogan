@@ -13,8 +13,8 @@ assert core.find(core.is_false, s, default = 'nil) == 'nil
 
 function cust_seq(xs)
   ^(msg)
-  | 'first -> ^(_) core.first(xs)
-  | 'rest -> ^(_) core.rest(xs)
+  | 'first -> core.first(xs)
+  | 'rest -> core.rest(xs)
 
 s = cust_seq([1,2,3,4,5])
 assert core.find(^(x) x == 4, s) == 4
