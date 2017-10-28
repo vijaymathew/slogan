@@ -1,3 +1,10 @@
+2017-10-28  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.3 enhancements to list comprehensions and reactive variables.
+	* src/core/list.scm: comprehensions to work with all sequences, including user defined ones.
+	* src/core/task.scm: reactive variables equality check can be customized.
+	* src/Makefile: faster, parallel builds.
+
 2017-07-18  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
 
 	* v0.12.2 has some minor feature additions and bug fixes.
