@@ -12,3 +12,12 @@ assert (?p1).y == 20
 assert (?p1).x == 10
 assert (?p1).y == 20
 assert try ?p1 = make_point(100, 20) catch (e) true
+
+// List comprehensions on all sequences
+function make_seq(xs)
+  ^(msg)
+  | 'first -> head(xs)
+  | 'rest  -> tail(xs)
+
+let xs = make_seq([1,2,3,4,5])
+assert [x * x | x <- xs] == [1, 4, 9, 16, 25]
