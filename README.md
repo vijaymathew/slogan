@@ -1,4 +1,4 @@
-Slogan is a general purpose programming language with facilities for concurrent and parallel computing.
+Slogan is a general purpose functional programming language with facilities for concurrent and parallel computing.
 
 #### Features
 
