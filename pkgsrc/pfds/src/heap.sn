@@ -1,0 +1,3 @@
+// A purely functional leftist heap
+module heap(make)
+{}

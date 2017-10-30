@@ -1,0 +1,62 @@
+// A purely functional Random-access list based on the implementation
+// described here: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.55.5156&rep=rep1&type=pdf
+
+module ralist(array_cons, array_head, array_tail, lookup, update)
+{ function tree_lookup(size, tree, i)
+    match (tree:i)
+      ['leaf, x]:0           -> x
+    | ['leaf, _]:_           -> error("tree_lookup -- invalid index")
+    | ['node, [x, _, _]]:0   -> x
+    | ['node, [x, t1, t2]]:_ ->
+      let (sizep = quotient(size, 2))
+        if (i <= sizep) tree_lookup(sizep, t1, i-1)
+        else tree_lookup(sizep, t2, i-1-sizep)
+
+  function tree_update(size, tree, i, y)
+    match (tree:i)
+      ['leaf, x]:0           -> ['leaf, y]
+    | ['leaf, _]:_           -> error("tree_update -- invalid index")
+    | ['node, [_, t1, t2]]:0 -> ['node, [y, t1, t2]]
+    | ['node, [x, t1, t2]]:_ ->
+      let (sizep = quotient(size, 2))
+        if (i <= sizep) ['node, [x, tree_update(sizep, t1, i-1, y), t2]]
+        else ['node, [x, t1, tree_update(sizep, t2, i-1-sizep, y)]]
+
+  function lookup(arr, i)
+    match (arr)
+      []           -> error("lookup -- invalid index")
+    | (size:t):rst ->
+      if (i < size) tree_lookup(size, t, i)
+      else lookup(rst, i-size)
+
+  function update(arr, i, y)
+    match (arr)
+      [] -> error("update -- invalid index")
+    | (size:t):rst ->
+      if (i < size) (size:tree_update(size, t, i, y)):rst
+      else (size:t):update(rst, i-size, y)
+
+   let empty = []
+
+   function is_empty(arr)
+   | [] -> true
+   | _  -> false
+
+   function array_cons(x, arr)
+     match (arr)
+     (size1:t1):(size2:t2):rst ->
+       if (size1 == size2) ((1+size1+size2):['node, [x, t1, t2]]):rst
+       else (1:['leaf, x]):xs
+     | _ -> (1:['leaf, x]):arr
+
+   function array_head(arr)
+   | []                       -> error("array_head - empty")
+   | (_:['leaf, x]):_         -> x
+   | (_:['node, [x, _, _]]):_ -> x
+
+   function array_tail(arr)
+   | []                              -> error("array_tail -- empty")
+   | (_:['leaf, _]):rst              -> rst
+   | (size:['node, [_, t1, t2]]):rst ->
+     let (sizep = quotient(size, 2))
+       (sizep:t1):(sizep:t2):rst }
