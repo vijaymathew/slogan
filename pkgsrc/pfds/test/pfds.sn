@@ -1,0 +1,163 @@
+// Tests for the pfds package.
+// Before running these tests, make sure the `pfds` package is installed:
+//   install_package("pfds", 'local, "./pkgsrc/pfds")
+
+load_package("pfds")
+
+let nmax = 1000000
+let large_list = range(1, nmax)
+
+// queue
+let q = queue.make([1, 2, 3, 4, 5])
+assert q.head() == 1
+q = q.snoc(10)
+letfn loop (q = q, i = 1)
+  if (i <= 5)
+  { assert q.head() == i
+    loop(q.tail(), inc(i)) }
+  else
+  { assert q.head() == 10
+    assert q.tail().is_empty() }
+
+q = queue.make(large_list)
+letfn loop (q = q, i = 1)
+  when (i <= nmax)
+  { assert q.head() == i
+    loop(q.tail(), inc(i)) }
+
+q = queue.make()
+assert q.is_empty()
+q = q.snoc(10).snoc(20)
+assert q.head() == 10
+q = q.tail()
+assert q.head() == 20
+assert q.tail().is_empty()
+assert (try q.tail().head() catch (e) 'ok) == 'ok
+
+// random-access list
+let xs = ralist.make([10, 20, 30, 40, 50])
+assert count(xs) == 5
+assert nth(4, accumulate(`+`, 0, xs)) == 10+20+30+40+50
+xs = ralist.make(large_list)
+assert count(xs) == nmax
+assert xs[10] == 11
+assert xs[0] == 1
+assert xs[10000 - 1] == 10000
+assert (try xs[nmax] catch (e) 'ok) == 'ok
+assert xs[nmax-1] == nmax
+let ys = xs.set(10000 - 1, 234)
+assert xs[10000 - 1] == 10000
+assert ys[10000 - 1] == 234
+
+xs = ralist.make()
+assert count(xs) == 0
+xs = xs.cons(100)
+assert xs[0] == 100
+assert count(xs) == 1
+ys = xs.set(0, 10)
+assert ys[0] == 10
+assert xs[0] == 100
+
+// leftist-heap
+let h = heap.make([10, 1, 20, 8, 7])
+assert first(h) == 1
+let h2 = rest(h)
+assert first(h) == 1
+assert first(h2) == 7
+h2 = h2.cons(5)
+assert first(h2) == 5
+assert first(rest(h2)) == 7
+h2 = rest(rest(h2))
+assert first(h2) == 8
+assert first(rest(h2)) == 10
+h2 = rest(rest(h2))
+assert first(h2) == 20
+h2 = rest(h2)
+assert (try first(h2) catch (e) 'ok) == 'ok
+
+xs = range(1, 10000)
+h = heap.make(xs)
+assert first(h) == 1
+assert first(rest(h)) == 2
+letfn loop (h = h, i = 0)
+  if (i == 10000 - 1)
+    assert first(h) == 10000
+  else loop(rest(h), i+1)
+
+h = heap.make()
+h = h.cons(1)
+h = h.cons(0)
+assert first(h) == 0
+assert first(rest(h)) == 1
+
+// red-black tree
+let t = tree.make(#{1:2, 3:4})
+assert t[1] == 2
+assert t[3] == 4
+assert t[5] == false
+assert t.ref(5, 100) == 100
+let t2 = t.set(5, 200)
+assert t2[5] == 200
+assert t2[1] == 2
+assert t2[3] == 4
+assert t[5] == false
+
+t = letfn loop (large_list = [], i = 0)
+     if (i < nmax)
+       loop((i:i+1):large_list, i + 2)
+     else tree.make(large_list)
+
+assert t[1] == false
+assert t[0] == 1
+assert t[2] == 3
+assert t[99999] == false
+assert t[99999+1] == 100001
+assert t[nmax-2] == 999999
+let t2 = t.set(2, 'hello)
+assert t2[2] == 'hello
+assert t[2] == 3
+t2 = t.set(1, 'ok)
+assert t2[1] == 'ok
+assert t.at(1, 'no) == 'no
+
+t = tree.make()
+t = t.set("hello", 1)
+t = t.set("world", 2)
+let x = 0
+let ns = []
+t.for_each(^(k, v) { x = x + v; ns = k:ns }, t)
+assert x == 3
+assert sort(ns) == ["hello", "world"]
+t2 = t.map(^(k, v) string_upcase(k):(v*v))
+t2["HELLO"] == 1
+t2["WORLD"] == 4
+t["hello"] == 1
+t2["world"] == 2
+t2["world"] == false
+t["WORLD"] == false
+
+t = tree.make([1:10, 2:20, 3:30, 4:40, 5:50])
+t2 = t.remove(^(k, _) is_odd(k))
+assert t2[1] == false
+assert t2[2] == 20
+assert t2[3] == false
+assert t[1] == 10
+t2 = t.filter(^(k, _) is_odd(k))
+assert t2[1] == 10
+assert t2[2] == false
+assert t2[5] == 50
+assert t[1] == 10
+t2 = t.delete([1, 4, 5])
+assert t2[1] == false
+assert t2[2] == 20
+assert t2[4] == false
+assert t2[5] == false
+assert t2[3] == 30
+assert t[5] = 50
+t2 = t.select([1, 4, 5])
+assert t2[1] == 10
+assert t2[2] == false
+assert t2[4] == 40
+assert t2[5] == 50
+assert t2[3] == false
+assert t[3] == 30

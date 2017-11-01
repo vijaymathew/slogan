@@ -1,0 +1,42 @@
+// A purely functional queue.
+module queue(make)
+{ let empty = []:[]
+
+  function is_q_empty(q)
+    is_empty(head(q))
+
+  function checkf(q)
+  | []:r  -> reverse(r):[]
+  | _     -> q
+
+  function snoc(q, x)
+    checkf((head(q)):x:tail(q))
+
+  function qhead(q)
+  | []:_    -> error("head -- empty queue")
+  | (x:_):_ -> x
+
+  function qtail(q)
+  | []:_    -> error("tail -- empty queue")
+  | (_:f):r -> checkf(f:r)
+
+  function seq_to_queue(xs)
+    if (is_empty(xs)) empty
+    else letfn loop (q = empty, xs = xs)
+      if (is_empty(xs)) q
+      else loop(snoc(q, first(xs)), rest(xs))
+      
+  function _make(q)
+  { function _is_empty() is_q_empty(q)
+    function _snoc(x) _make(snoc(q, x))
+    function _head() qhead(q)
+    function _tail() _make(qtail(q))
+
+    ^(message)
+    | 'head     -> _head
+    | 'tail     -> _tail
+    | 'snoc     -> _snoc
+    | 'is_empty -> _is_empty }
+
+  function make(init_seq = [])
+    _make(seq_to_queue(init_seq)) }
