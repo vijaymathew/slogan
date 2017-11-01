@@ -328,6 +328,14 @@
       file-name
       (string-append file-name *slgn-extn*)))
 
+(define (safe-slgn-compile script #!key assemble)
+  (with-exception-catcher
+   (lambda (e)
+     (display-exception e) (newline)
+     #f)
+   (lambda ()
+     (slgn-compile script assemble: assemble))))
+
 (define (load script #!optional force-compile)
   (if force-compile
       (with-exception-catcher
@@ -339,7 +347,7 @@
   (with-exception-catcher
    (lambda (e)
      (if (file-exists? (add-slgn-extn script))
-         (if (slgn-compile script assemble: #f)
+         (if (safe-slgn-compile script assemble: #f)
              (scm-load (string-append script *scm-extn*))
              (scm-error "failed to compile script" script))
          (scm-error "file not found" script)))
@@ -354,7 +362,7 @@
    (lambda (e)
      (cond ((no-such-file-or-directory-exception? e)
             (if (file-exists? (add-slgn-extn script))
-                (if (scm-not (slgn-compile script assemble: #t))
+                (if (scm-not (safe-slgn-compile script assemble: #t))
                     (scm-error "failed to compile script" script)))
             (scm-load script))
            (else (scm-raise e))))
