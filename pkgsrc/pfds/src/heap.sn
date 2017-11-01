@@ -1,3 +1,55 @@
 // A purely functional leftist heap
 module heap(make)
-{}
+{ let empty = '`*E*`
+
+  function rank(h)
+  | '`*E*`       -> 0
+  | [r, _, _, _] -> r
+
+  function make_t(x, a, b)
+    letfn (ra = rank(a), rb = rank(b))
+      if (ra >= rb) [rb+1, x, a, b]
+      else [ra+1, x, b, a]
+
+  function is_heap_empty(h) is_eq(h, empty)
+
+  function merge(h1, h2)
+  | [_, '`*E*`]                      -> h1
+  | ['`*E*`, _]                      -> h2
+  | [[_, x, a1, b1], [_, y, a2, b2]] ->
+    if (x <= y) make_t(x, a1, merge(b1, h2))
+    else make_t(y, a2, merge(h1, b2))
+
+  function insert(x, h) merge([1, x, empty, empty], h)
+
+  function find_min(h)
+  | '`*E*`       -> error("find_min -- empty heap")
+  | [_, x, _, _] -> x
+
+  function delete_min(h)
+  | '`*E*`       -> error("delete_min -- empty heap")
+  | [_, _, a, b] -> merge(a, b)
+
+  function seq_to_heap(xs)
+    if (is_empty(xs)) empty
+    else letfn loop(h = empty, xs = xs)
+      if (is_empty(xs)) h
+      else loop(insert(first(xs), h), rest(xs))
+
+  function _make(h)
+  { function _is_empty() is_heap_empty(h)
+    function _cons(x) _make(insert(x, h))
+    function _head() find_min(h)
+    function _tail() _make(delete_min(h))
+    function _rest() try _tail() catch (_) false
+    
+    ^(message)
+    | 'first    -> find_min(h)
+    | 'rest     -> _rest()
+    | 'cons     -> _cons
+    | 'head     -> _head
+    | 'tail     -> _tail
+    | 'is_empty -> _is_empty }
+
+  function make(init_seq = [])
+    _make(seq_to_heap(init_seq)) }

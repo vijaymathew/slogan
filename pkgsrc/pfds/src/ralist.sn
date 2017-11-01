@@ -1,7 +1,7 @@
 // A purely functional Random-access list based on the implementation
 // described here: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.55.5156&rep=rep1&type=pdf
 
-module ralist(array_cons, array_head, array_tail, lookup, update)
+module ralist(make)
 { function tree_lookup(size, tree, i)
     match (tree:i)
       ['leaf, x]:0           -> x
@@ -14,7 +14,7 @@ module ralist(array_cons, array_head, array_tail, lookup, update)
 
   function tree_update(size, tree, i, y)
     match (tree:i)
-      ['leaf, x]:0           -> ['leaf, y]
+      ['leaf, _]:0           -> ['leaf, y]
     | ['leaf, _]:_           -> error("tree_update -- invalid index")
     | ['node, [_, t1, t2]]:0 -> ['node, [y, t1, t2]]
     | ['node, [x, t1, t2]]:_ ->
@@ -31,32 +31,74 @@ module ralist(array_cons, array_head, array_tail, lookup, update)
 
   function update(arr, i, y)
     match (arr)
-      [] -> error("update -- invalid index")
+      []           -> error("update -- invalid index")
     | (size:t):rst ->
       if (i < size) (size:tree_update(size, t, i, y)):rst
       else (size:t):update(rst, i-size, y)
 
    let empty = []
 
-   function is_empty(arr)
+   function ral_is_empty(xs)
    | [] -> true
    | _  -> false
 
-   function array_cons(x, arr)
-     match (arr)
+   function ral_cons(x, xs)
+     match (xs)
      (size1:t1):(size2:t2):rst ->
        if (size1 == size2) ((1+size1+size2):['node, [x, t1, t2]]):rst
        else (1:['leaf, x]):xs
-     | _ -> (1:['leaf, x]):arr
+     | _ -> (1:['leaf, x]):xs
 
-   function array_head(arr)
-   | []                       -> error("array_head - empty")
+   function ral_head(xs)
+   | []                       -> error("ralist_head - empty")
    | (_:['leaf, x]):_         -> x
    | (_:['node, [x, _, _]]):_ -> x
 
-   function array_tail(arr)
-   | []                              -> error("array_tail -- empty")
+   function ral_tail(xs)
+   | []                              -> error("ralist_tail -- empty")
    | (_:['leaf, _]):rst              -> rst
    | (size:['node, [_, t1, t2]]):rst ->
      let (sizep = quotient(size, 2))
-       (sizep:t1):(sizep:t2):rst }
+       (sizep:t1):(sizep:t2):rst
+
+   function seq_to_ralist(xs)
+     if (core.is_empty(xs)) xs
+     else letfn loop (arr = [], xs = reverse(xs))
+       if (core.is_empty(xs)) arr
+       else loop(ral_cons(first(xs), arr), rest(xs))
+
+   function ral_count(xs)
+     letfn loop (xs = xs, len = 0)
+       if (ral_is_empty(xs)) len
+       else loop (ral_tail(xs), len+1)
+
+   function _make(arr)
+   { function _is_empty() ral_is_empty(arr)
+     function _cons(x) _make(ral_cons(x, arr))
+     function _head() ral_head(arr)
+     function _tail() _make(ral_tail(arr))
+     function _at(i) lookup(arr, i)
+     function _set(i, x) _make(update(arr, i, x))
+
+     function _rest()
+       let (t = ral_tail(arr))
+         if (is_empty(t)) false
+         else _make(t)
+
+     let len = false
+
+     ^(message)
+     | 'ref      -> _at
+     | 'set      -> _set
+     | 'first    -> ral_head(arr)
+     | 'rest     -> _rest()
+     | 'cons     -> _cons
+     | 'head     -> _head
+     | 'tail     -> _tail
+     | 'is_empty -> _is_empty
+     | 'count    -> if (len) len
+                    else { len = ral_count(arr)
+                           len }}
+
+   function make(init_seq = [])
+     _make(seq_to_ralist(init_seq)) }

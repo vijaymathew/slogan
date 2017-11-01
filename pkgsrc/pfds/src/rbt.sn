@@ -1,16 +1,17 @@
 // A persistent red-black tree based on the implementation
-// by Okasaki as described in hi book "Purely functional data structures".
-module balanced_tree(make)
+// by Okasaki as described in the book "Purely functional data structures".
+// Keys must be of the same type and should implement `compare`.
+module tree(make)
 { let empty = '`*E*`
 
-  function get(x, t, @optional default = false)
+  function tree_get(x, t, @optional default = false)
     match([x, t])
       [_, '`*E*`] -> default
     | [x, [_,a,y,b]] ->
        match (y)
          k:v ->           
-          if (x < k) get(x, a, default)
-          else if (k < x) get(x, b, default)
+          if (x < k) tree_get(x, a, default)
+          else if (k < x) tree_get(x, b, default)
           else v
 
   function balance(color, t, z, d) 
@@ -21,7 +22,7 @@ module balanced_tree(make)
       -> ['r,['b,a,x,b],y,['b,c,z,d]]
   | _ -> [color, t, z, d]
 
-  function insert(x, s)
+  function tree_insert(x, s)
   { function ins(rs)
     | '`*E*` -> ['r,empty,x,empty]
     | [color,a,y,b] ->
@@ -29,10 +30,10 @@ module balanced_tree(make)
         [kx:_, ky:_] ->
         if (kx < ky) balance(color, ins(a), y, b)
         else if (ky < kx) balance(color, a, y, ins(b))
-        else s;
-      match(ins(s)) [_,a,y,b] -> ['b,a,y,b] }
+        else [color, a, x, b];
+      let ([_,a,y,b] = ins(s)) ['b,a,y,b] }
 
-  function put(key, value, s = empty) insert(key:value, s)
+  function tree_put(key, value, s = empty) tree_insert(key:value, s)
 
   function tree_for_each(fn, t)
     match (t)
@@ -47,7 +48,7 @@ module balanced_tree(make)
      '`*E*` -> rt
     | [_,a,y,b] ->
     { let k:v = fn(head(y), tail(y))
-      rt = put(k, v, rt)
+      rt = tree_put(k, v, rt)
       rt = tree_map_helper(fn, a, rt)
       tree_map_helper(fn, b, rt) }
 
@@ -56,47 +57,47 @@ module balanced_tree(make)
      '`*E*` -> rt
     | [_,a,y,b] ->
     { when (predic(head(y), tail(y)))
-        rt = put(head(y), tail(y), rt)
-      rt = tree_filter_helper(fn, a, rt)
-      tree_filter_helper(fn, b, rt) }
+        rt = tree_put(head(y), tail(y), rt)
+      rt = tree_filter_helper(predic, a, rt)
+      tree_filter_helper(predic, b, rt) }
 
-  function make(initial_values = empty)
-    let (tree = empty)
-    { if (is_list(initial_values) && is_pair(head(initial_values)))
-        for_each(^(kv) tree = put(head(kv), tail(kv), tree), initial_values)
-      else if (is_hashtable(initial_values))
-        hashtable_for_each(^(k, v) tree = put(k, v, tree), initial_values)
-      else tree = initial_values
+  function _make(tree)
+  { function _at(k, @optional default = false) tree_get(k, tree, default)
+    function _set(k, v) _make(tree_put(k, v, tree))
+    function local_for_each(fn) tree_for_each(fn, tree)
+    function local_map(fn) _make(tree_map_helper(fn, tree, empty))
 
-      function at(k, @optional default = false) get(k, tree, default)
-      function set(k, v) make(put(k, v, tree))
-      function local_for_each(fn) tree_for_each(fn, tree)
-      function local_map(fn) make(tree_map_helper(fn, tree, empty))
+    function tree_remove(predic)
+      _make(tree_filter_helper(complement(predic), tree, empty))
 
-      function tree_remove(predic)
-        make(tree_filter_helper(complement(predic), tree, empty))
+    function tree_filter(predic)
+      _make(tree_filter_helper(predic, tree, empty))
 
-     function tree_filter(predic)
-       make(tree_filter_helper(predic, tree, empty))
-
-     function listify(keys) if (is_list(keys)) keys else [keys]
+    function listify(keys) if (is_list(keys)) keys else [keys]
      
-     function delete_keys(keys)
-       let (keys = listify(keys))
-         tree_remove(^(k, _) member(k, keys), tree)
+    function delete_keys(keys)
+      let (keys = listify(keys))
+        tree_remove(^(k, _) member(k, keys))
 
-     function select_keys(keys)
-       let (keys = listify(keys))
-         tree_filter(^(k, _) member(k, keys), tree)
+    function select_keys(keys)
+      let (keys = listify(keys))
+        tree_filter(^(k, _) member(k, keys))
         
-      ^(message)
-      | 'ref      -> at
-      | 'set      -> set
-      | 'at       -> at
-      | 'for_each -> local_for_each
-      | 'map      -> local_map
-      | 'remove   -> tree_remove
-      | 'filter   -> tree_filter
-      | 'delete   -> delete_keys
-      | 'select   -> select_keys
-      | '__tree   -> tree }}
+    ^(message)
+    | 'ref      -> _at
+    | 'set      -> _set
+    | 'at       -> _at
+    | 'for_each -> local_for_each
+    | 'map      -> local_map
+    | 'remove   -> tree_remove
+    | 'filter   -> tree_filter
+    | 'delete   -> delete_keys
+    | 'select   -> select_keys }
+
+    function make(initial_values = [])
+      let (tree = empty)
+      { if (is_list(initial_values) && is_pair(head(initial_values)))
+          for_each(^(kv) tree = tree_put(head(kv), tail(kv), tree), initial_values)
+        else if (is_hashtable(initial_values))
+          hashtable_for_each(^(k, v) tree = tree_put(k, v, tree), initial_values)
+        _make(tree) }}

@@ -1,0 +1,14 @@
+// accumulate and filter made generic for all sequence types.
+function bag(xs)
+ ^(msg)
+ | 'first -> core.head(xs)
+ | 'rest  -> core.tail(xs)
+
+let xs = bag([1, 10, 3, 100])
+assert core.nth(3, core.accumulate(`+`, 0, xs)) == 1+10+3+100
+assert core.nth(1, core.accumulate(`+`, 0, core.filter(core.is_odd, xs))) == 4
+
+let s = 0
+core.for_each(^(x) s = s + x, xs)
+assert s == 1+10+3+100
+assert core.nth(1, core.map(^(x) x * x, xs)) == 100
