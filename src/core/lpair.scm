@@ -220,7 +220,7 @@
 	 (lpair-filter fn (rest-helper lpair) drill: drill))))
 
 (define (scm-filter fn ls #!key drill)
-  (cond ((lpair? ls)
+  (cond ((or (lpair? ls) (procedure? ls))
          (lpair-filter fn ls drill: drill))
         ((iterator? ls)
          (iter-filter fn ls))
@@ -270,7 +270,7 @@
         (lpair-cons r (lpair-accumulate fn r (rest-helper lpair))))))
 
 (define (accumulate fn initial seq)
-  (cond ((lpair? seq)
+  (cond ((or (lpair? seq) (procedure? seq))
          (lpair-accumulate fn initial seq))
         ((iterator? seq)
          (iter-accumulate fn initial seq))
