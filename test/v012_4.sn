@@ -12,3 +12,10 @@ let s = 0
 core.for_each(^(x) s = s + x, xs)
 assert s == 1+10+3+100
 assert core.nth(1, core.map(^(x) x * x, xs)) == 100
+
+// hashtable_keys/values to return lists instead of arrays.
+let ht = #{'a:1, 'b:2, 'c:3}
+assert core.sort(core.hashtable_keys(ht)) == ['a,'b,'c]
+assert core.sort(core.hashtable_values(ht)) == [1,2,3]
+assert core.hashtable_keys(#{}) == []
+assert core.hashtable_values(#{}) == []

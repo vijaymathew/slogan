@@ -1,8 +1,8 @@
 // Tests for the pfds package.
 // Before running these tests, make sure the `pfds` package is installed:
 //   install_package("pfds", 'local, "./pkgsrc/pfds")
-
-load_package("pfds")
+// If already installed, load the package before running the tests:
+//   load_package("pfds")
 
 let nmax = 1000000
 let large_list = range(1, nmax)

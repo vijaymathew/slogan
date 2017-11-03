@@ -57,12 +57,12 @@
 (define (hashtable_keys ht)
   (let ((keys '()))
     (table-for-each (lambda (k v) (set! keys (scm-cons k keys))) (hashtable-table ht))
-    (list->vector (scm-reverse keys))))
+    keys))
 
 (define (hashtable_values ht)
   (let ((e '()))
     (table-for-each (lambda (k v) (set! e (scm-cons v e))) (hashtable-table ht))
-    (list->vector (scm-reverse e))))
+    e))
 
 (define scm-hashtable_keys hashtable_keys)
 (define scm-hashtable_values hashtable_values)
@@ -134,10 +134,10 @@
 (define set_length set-length)
 
 (define (set_difference s1 #!rest ss)
-  (set-merge is_false s1 ss))
+  (set-merge scm-is_false s1 ss))
 
 (define (set_intersection s1 #!rest ss)
-  (set-merge is_true s1 ss))
+  (set-merge scm-is_true s1 ss))
 
 (define (set_union s1 #!rest ss)
   (list->set (scm-apply scm-append (set->list s1) (scm-map set->list ss))))

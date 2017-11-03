@@ -83,6 +83,8 @@ c-declare-end
 
 (define (is_true obj) (scm-eq? obj #t))
 (define (is_false obj) (scm-eq? obj #f))
+(define scm-is_true is_true)
+(define scm-is_false is_false)
 
 (define (is_void obj) (void? obj))
 
