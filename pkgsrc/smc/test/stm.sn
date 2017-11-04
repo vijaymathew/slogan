@@ -1,0 +1,98 @@
+// Tests for the STM module.
+// Before running these tests, make sure the `smc` (shared-memory concurrency) package is installed:
+//   install_package("smc", 'local, "./pkgsrc/smc")
+// If already installed, load the package before running the tests:
+//   load_package("smc")
+
+let t1, t2 = stm.var(100), stm.var(200)
+assert stm.peek(t1) == 100
+assert stm.peek(t2) == 200
+
+stm.transact(
+  ^(txn)
+  { stm.write(t1, stm.read(t2, txn), txn)
+    stm.write(t2, 500, txn) })
+
+assert stm.peek(t1) == 200
+assert stm.peek(t2) == 500
+
+let t1, t2, t3, t4 = stm.var(2), stm.var(10), stm.var(4), stm.var(3)
+
+function t1_t2_2_t3(txn)
+  let (t1v = stm.read(t1, txn), t2v = stm.read(t2, txn))
+    stm.write(t3, t1v+t2v+2, txn)
+
+function t1_t2_3_t3(txn)
+  let (t1v = stm.read(t1, txn), t2v = stm.read(t2, txn))
+    stm.write(t3, t1v+t2v+3, txn)
+
+function t2_t3_2_t4(txn)
+  let (t1v = stm.read(t2, txn), t2v = stm.read(t3, txn))
+    stm.write(t4, t1v+t2v+2, txn)
+
+function t2_t3_3_t4(txn)
+  let (t1v = stm.read(t2, txn), t2v = stm.read(t3, txn))
+    stm.write(t4, t1v+t2v+3, txn)
+
+!stm.transact(t1_t2_2_t3)
+!stm.transact(t1_t2_3_t3)
+!stm.transact(t2_t3_2_t4)
+!stm.transact(t2_t3_3_t4)
+task_sleep(2)
+assert stm.peek(t1) == 2
+assert stm.peek(t2) == 10
+let v = stm.peek(t3)
+assert v == 14 || v == 15
+v = stm.peek(t4)
+let a, b, c = 14 + 10, 15 + 10, 4 + 10
+assert v == a + 2 || v == a + 3 || v == b + 2 || v == b + 3 || v == c + 2 || v == c + 3
+
+let x = stm.var(100)
+assert stm.peek(x) == 100
+!stm.transact(^(txn) { stm.write(x, 200, txn); stm.abort(txn) })
+task_sleep(1)
+assert stm.peek(x) == 100
+!stm.transact(^(txn) stm.write(x, 300, txn))
+task_sleep(1)
+assert stm.peek(x) == 300
+
+let y = stm.var(100)
+!stm.transact(^(txn) let (r = stm.read_enforce(y, txn))
+                       if (r >= 100) stm.retry(txn)
+                       else stm.write(y, 101, txn))
+!stm.transact(^(txn) stm.write(y, 200, txn))
+!stm.transact(^(txn) { task_sleep(2); stm.write(y, 99, txn) })
+task_sleep(3)
+assert stm.peek(y) == 101
+
+let z = stm.var(100)
+!stm.transact(^(txn) { stm.write(z, 200, txn)
+                       stm.write(z, 300, txn)
+                       task_sleep(2)
+                       stm.write(z, stm.read(z, txn) + 10, txn) })
+!stm.transact(^(txn) stm.write(z, 1000, txn))
+task_sleep(10)
+assert stm.peek(z) == 310
+
+let a = stm.var(100)
+!stm.transact(^(txn) { stm.write(a, 200, txn)
+                       stm.write(a, 300, txn)
+                       task_sleep(2)
+                       stm.write(a, stm.read_enforce(a, txn) + 10, txn) })
+!stm.transact(^(txn) stm.write(a, 1000, txn))
+task_sleep(10)
+assert stm.peek(a) == 1010
+
+let exec = stm.executor("test_exec")
+let xx, yy, zz = stm.var(10, exec), stm.var(20, exec), stm.var(30)
+let err = false
+
+stm.transact(^(txn) try let (r = stm.read(zz, txn)) stm.write(xx, r+100, txn) catch (e) err = true)
+assert err
+err = false
+stm.transact(^(txn) try let (r = stm.read(xx, txn)) stm.write(zz, r+100, txn) catch (e) err = true)
+assert err
+stm.transact(^(txn) let (r = stm.read(yy, txn)) stm.write(xx, r+100, txn))
+assert stm.peek(xx) == 120
+assert stm.peek(yy) == 20
+assert stm.peek(zz) == 30

@@ -1,0 +1,132 @@
+module stm(var:tvar, read:tvar_read, write:tvar_write,
+           peek:tvar_peek, transact, abort:txn_abort,
+           retry:txn_retry, read_enforce:tvar_read_enforce,
+           executor)
+{ let executor = mutex
+  let executor_start = mutex_lock
+  let executor_end = mutex_unlock
+
+  let global_executor = executor("global_txn_executor")
+
+  function manager() #[#{}, #{}, #{}, false, false, false]
+  function manager_log(mgr) array_at(mgr, 0)
+  function manager_vars(mgr) array_at(mgr, 1)
+  function manager_write_log(mgr) array_at(mgr, 2)
+  function manager_executor(mgr) array_at(mgr, 3)
+  function manager_executor_set(mgr, exec) array_set(mgr, 3, exec)
+  function manager_varnames_in_log(mgr) hashtable_keys(manager_log(mgr))
+  function manager_retry_cont(mgr) array_at(mgr, 4)
+  function manager_retry_cont_set(mgr, c) array_set(mgr, 4, c)
+  function manager_abort_cont(mgr) array_at(mgr, 5)
+  function manager_abort_cont_set(mgr, c) array_set(mgr, 5, c)
+  
+  let log_at = hashtable_at
+  let log_set = hashtable_set
+  let write_log_at = hashtable_at
+  let write_log_set = hashtable_set
+  let vars_at = hashtable_at
+  let vars_set = hashtable_set
+  let write_log_for_each = hashtable_for_each
+
+  function clear_logs(mgr)
+  { array_set(mgr, 0, #{})
+    array_set(mgr, 1, #{})
+    array_set(mgr, 2, #{})
+    array_set(mgr, 3, false) }
+    
+  function txn_read(mgr, var)
+    let (log = manager_log(mgr),
+         name = tvar_name(var),
+         entry = log_at(log, name, false))
+      if (not(entry))
+        let (val_and_version = tvar_read_safe_with_version(var, mgr))
+        { log_set(log, name, val_and_version)
+          vars_set(manager_vars(mgr), name, var)
+          val_and_version }
+      else entry
+
+  function txn_write(mgr, var, new_value)
+    let (_:version = txn_read(mgr, var), n = tvar_name(var),
+         wlog = manager_write_log(mgr),
+         already_written = write_log_at(wlog, n, false),
+         new_version = if (already_written) version else inc(version))
+    { log_set(manager_log(mgr), n, new_value:new_version)
+      when (not(already_written))
+        write_log_set(wlog, n, true) }
+        
+  function tvar(init_val = false, exec = global_executor)
+    [init_val:1, gensym(), exec]
+
+  function tvar_value_and_version(var) head(var)
+  function tvar_name(var) cadr(var)
+  function tvar_executor(var) caddr(var)
+
+  function tvar_read_safe_with_version(var, mgr)
+    let (exec = tvar_executor(var),
+         mgr_exec = manager_executor(mgr))
+    { if (not(mgr_exec))
+        manager_executor_set(mgr, exec)
+      else if (not(is_eq(mgr_exec, exec)))
+        error("tvar_read_safe_with_version -- invalid transaction executor")
+      let (val_and_ver = false)
+      { executor_start(exec)
+        val_and_ver = tvar_value_and_version(var)
+        executor_end(exec)
+        val_and_ver }}
+
+  function tvar_write_with_version(var, new_val_and_ver)
+    set_head(var, new_val_and_ver)
+
+  function verify_versions(mgr)
+    let (vars = manager_vars(mgr),
+         log = manager_log(mgr),
+         wlog = manager_write_log(mgr))
+      letfn loop (varnames = manager_varnames_in_log(mgr))
+        if (is_empty(varnames)) true
+        else let (n = head(varnames),
+                  _:version = log_at(log, n),
+                  _:new_version = tvar_value_and_version(vars_at(vars, n)))
+          if (new_version > version) false
+          else if (new_version == version && write_log_at(wlog, n)) false
+          else loop(tail(varnames))
+
+  function commit_vars(mgr)
+    let (write_log = manager_write_log(mgr),
+         vars = manager_vars(mgr),
+         log = manager_log(mgr))
+      write_log_for_each(^(varname, var)
+                         tvar_write_with_version(vars_at(vars, varname),
+                                                 log_at(log, varname)),
+                         write_log)
+  
+  function txn_commit(mgr)
+    let (exec = manager_executor(mgr), f = false)
+    { executor_start(exec)
+      try f = verify_versions(mgr)
+      catch (e) { executor_end(exec); raise(e) }
+      if (not(f))
+      { executor_end(exec); false }
+      else
+      { try commit_vars(mgr)
+        catch (e) { executor_end(exec); raise(e) }
+        executor_end(exec); true }}
+
+   function tvar_peek(var) head(tvar_value_and_version(var))
+   function tvar_read(var, txn) head(txn_read(txn, var))
+   function tvar_read_enforce(var, txn) head(tvar_read_safe_with_version(var, txn))
+   function tvar_write(var, new_val, txn) txn_write(txn, var, new_val)
+
+   function txn_abort(txn, abort_val = false) manager_abort_cont(txn)(abort_val)
+   function txn_retry(txn) manager_retry_cont(txn)()
+
+   function transact(fn)
+     callcc(^(abort_k)
+            let (txn = manager(), retry_cont_set = false)
+            { manager_abort_cont_set(txn, abort_k)
+              letfn loop ()
+              { when(not(retry_cont_set))
+                { manager_retry_cont_set(txn, loop)
+                  retry_cont_set = true }
+                let (v = fn(txn))
+                  if (txn_commit(txn)) v
+                  else { clear_logs(txn); task_yield(); loop() } } }) }

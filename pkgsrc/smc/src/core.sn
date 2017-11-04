@@ -1,0 +1,2 @@
+let root = string_append(slogan_root(), "/packages/smc/src/")
+link(string_append(root, "stm"))
