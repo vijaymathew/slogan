@@ -117,7 +117,7 @@ module stm(var:tvar, read:tvar_read, write:tvar_write,
    function tvar_write(var, new_val, txn) txn_write(txn, var, new_val)
 
    function txn_abort(txn, abort_val = false) manager_abort_cont(txn)(abort_val)
-   function txn_retry(txn) manager_retry_cont(txn)()
+   function txn_retry(txn) { clear_logs(txn); manager_retry_cont(txn)() }
 
    function transact(fn)
      callcc(^(abort_k)
