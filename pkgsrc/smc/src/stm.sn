@@ -1,7 +1,7 @@
 module stm(var:tvar, read:tvar_read, write:tvar_write,
            peek:tvar_peek, transact, abort:txn_abort,
            retry:txn_retry, read_enforce:tvar_read_enforce,
-           executor)
+           group:executor)
 { let executor = mutex
   let executor_start = mutex_lock
   let executor_end = mutex_unlock
