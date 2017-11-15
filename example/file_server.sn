@@ -1,0 +1,15 @@
+function make_file_server(dir)
+  ^(message)
+  | [client, 'list_dir]           -> client !> list_directory(dir)
+  | [client, 'get_file, filename] -> client !> call_with_stream(file_reader(filename), ^(s) read_all_chars(s))
+
+let server_fn = make_file_server(".")
+let server = !letfn loop() { server_fn(!<) loop() }
+
+/* Usage:
+
+server !> [self(), 'list_dir]
+!<
+server !> [self(), 'get_file, "somefile"]
+!<
+*/
