@@ -218,9 +218,15 @@
            (loop (scm-cdr lst))))))
 
 (define (slgn-display-pair p quotes port)
-  (slgn-display (scm-car p) port: port quotes: quotes)
-  (scm-display ":" port)
-  (slgn-display (scm-cdr p) port: port quotes: quotes))
+  (if (lpair? p)
+      (begin
+        (scm-display "[" port)
+        (slgn-display (scm-car p) port: port quotes: quotes)
+        (scm-display ", ...]" port))
+      (begin
+        (slgn-display (scm-car p) port: port quotes: quotes)
+        (scm-display ":" port)
+        (slgn-display (scm-cdr p) port: port quotes: quotes))))
 
 (define (slgn-display-array a quotes port
                             prefix tolist)
