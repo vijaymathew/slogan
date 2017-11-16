@@ -121,12 +121,10 @@ module stm(var:tvar, read:tvar_read, write:tvar_write,
 
    function transact(fn)
      callcc(^(abort_k)
-            let (txn = manager(), retry_cont_set = false)
+            let (txn = manager())
             { manager_abort_cont_set(txn, abort_k)
               letfn loop ()
-              { when(not(retry_cont_set))
-                { manager_retry_cont_set(txn, loop)
-                  retry_cont_set = true }
+              { callcc(^(retry_k) manager_retry_cont_set(txn, retry_k) )
                 let (v = fn(txn))
                   if (txn_commit(txn)) v
                   else { clear_logs(txn); task_yield(); loop() } } }) }
