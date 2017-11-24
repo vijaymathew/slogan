@@ -1,3 +1,10 @@
+2017-11-24  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.4 improved support for concurrent programming.
+	* pkgsrc/smc: utilities for shared-memory concurrency, software transactional memory.
+	* pkgsrc/pfds: purely functional (persistent) data structures.
+	* src/core/lpair.scm: filter and accumulate functions made generic for all sequences.
+
 2017-10-28  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
 
 	* v0.12.3 enhancements to list comprehensions and reactive variables.
