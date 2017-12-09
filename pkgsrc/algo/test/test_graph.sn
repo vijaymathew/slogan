@@ -1,0 +1,72 @@
+let nodes = [0:5, 4:3, 0:1, 9:12, 6:4, 5:4, 0:2, 11:12, 9:10, 0:6, 7:8, 9:11, 5:3]
+let g = graph::make(13, nodes)
+
+assert g.V == 13
+assert g.E == 13
+assert sort(g[0]) == [1, 2, 5, 6]
+assert sort(g[6]) == [0, 4]
+assert sort(g[3]) == [4, 5]
+assert g.adj(3) == g[3]
+
+let dfs = graph::search.dfs(g, 0)
+assert dfs.count == 7
+assert dfs.is_marked(0)
+assert dfs.is_marked(6)
+assert dfs.is_marked(3)
+assert not(dfs.is_marked(9))
+
+let bfs = graph::search.bfs(g, 0)
+assert bfs.is_marked(0)
+assert bfs.is_marked(6)
+assert bfs.is_marked(3)
+assert not(bfs.is_marked(9))
+
+dfs = graph::search.dfs(g, 9)
+assert dfs.count == 4
+assert dfs.is_marked(11)
+assert dfs.is_marked(12)
+assert dfs.is_marked(9)
+assert dfs.is_marked(10)
+assert not(dfs.is_marked(2))
+assert not(dfs.is_marked(8))
+
+let dfs_path = graph::path.make(graph::search.dfs, g, 0)
+assert dfs_path.has_path_to(6)
+assert dfs_path.has_path_to(3)
+assert dfs_path.path_to(3) == [0, 6, 4, 5, 3]
+assert dfs_path.path_to(2) == [0, 2]
+assert dfs_path.path_to(5) == [0, 6, 4, 5]
+assert not(dfs_path.path_to(9))
+
+let bfs_path = graph::path.make(graph::search.bfs, g, 0)
+assert bfs_path.has_path_to(6)
+assert bfs_path.has_path_to(3)
+assert bfs_path.path_to(3) == [0, 5, 3]
+assert bfs_path.path_to(2) == [0, 2]
+assert bfs_path.path_to(5) == [0, 5]
+assert not(bfs_path.path_to(9))
+
+assert graph::has_cycle(g)
+
+let e = graph::edge
+let es = [e(4, 5, .35),
+          e(4, 7, .37),
+          e(5, 7, .28),
+          e(0, 7, .16),
+          e(1, 5, .32),
+          e(0, 4, .38),
+          e(2, 3, .17),
+          e(1, 7, .19),
+          e(0, 2, .26),
+          e(1, 2, .36),
+          e(1, 3, .29),
+          e(2, 7, .34),
+          e(6, 2, .40),
+          e(3, 6, .52),
+          e(6, 0, .58),
+          e(6, 4, .93)]
+let ewg = graph::edge_weighted(8)
+for_each(^(e) ewg.add_edge(e), es)
+let mst = graph::lazy_prim_mst(ewg)
+let expected_mst = [[0, 7, .16], [1, 7, .19], [0, 2, .26], [2, 3, .17], [5, 7, .28], [4, 5, .35], [6, 2, .4]]
+assert head(realize(7, map(^(e) let (v = e.either) [v, e.other(v), e.weight], mst))) == expected_mst

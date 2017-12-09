@@ -1,0 +1,19 @@
+let q = queue.make()
+assert q.size == 0
+assert q.is_empty
+
+for (i = 0; i < 10000; i+1)
+  q.enqueue(i)
+
+assert q.size == 10000
+assert not(q.is_empty)
+assert q.dequeue() == 0
+assert q.dequeue() == 1
+assert q.size == 10000-2
+
+for (i = 0; i < 10000-2; i+1)
+  q.dequeue()
+
+assert not(q.dequeue())
+assert q.is_empty
+assert q.size == 0

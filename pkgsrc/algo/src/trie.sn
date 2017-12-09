@@ -1,0 +1,153 @@
+namespace trie
+{ module r_way(make)
+  { function chari(s, i)
+      char_to_integer(string_at(s, i))
+
+    function make(R = 256)
+    { function make_node(val = false)
+      { function set_val(v) val = v
+        let (next = make_array(R))
+          ^(message)
+          | 'val     -> val
+          | 'next    -> next
+          | 'set_val -> set_val }
+
+      let root = make_node()
+
+      function get(key, default = false)
+        let (x = get_by_node(root, key, 0))
+          if (x) x.val
+          else default
+
+      function get_by_node(x, key, d)
+        if (not(x)) false
+        else if (d == string_length(key)) x
+        else let (i = chari(key, d))
+          get_by_node(array_at(x.next, i), key, d+1)
+
+      function put(key, val)
+      { root = put_by_node(root, key, val, 0)
+        key:val }
+
+      function put_by_node(x, key, val, d)
+      { when (not(x)) x = make_node()
+        if (d == string_length(key)) 
+        { x.set_val(val); x }
+        else let (c = chari(key, d), n = x.next)
+        { array_set(n, c, put_by_node(array_at(n, c),
+                                      key, val, d+1))
+          x } }
+
+      function keys(pre = "")
+        collect(get_by_node(root, pre, 0), pre, queue.make())
+
+      function collect(x, pre, q)
+        if (not(x)) q
+        else
+        { when (x.val) q.enqueue(pre)
+          for (c = 0; c < R; c+1)
+            collect(array_at(x.next, c),
+                    string_append(pre, string(integer_to_char(c))),
+                    q) }
+
+      function keys_that_match(pat)
+        let (q = queue.make())
+        { collect_pat(root, "", pat, q)
+          q }
+
+      function collect_pat(x, pre, pat, q)
+        if (not(x)) q
+        else let (d = string_length(pre), pd = string_length(pat))
+        { when (d == pd && x.val) q.enqueue(pre)
+          if (d == pd) q
+          else let (nc = string_at(pat, d))
+            for (i = 0; i < R; i+1)
+              let (c = integer_to_char(i))
+                when (char_is_eq(\., nc) || char_is_eq(c, nc))
+                  collect(array_at(x.next, i), string_append(pre, string(c)), pat, q) }
+
+       function longest_prefix_of(s)
+         let (len = search(root, s, 0, 0))
+           substring(s, 0, len)
+
+       function search(x, s, d, len)
+         if (not(x)) len
+         else
+         { when (x.val) len = d
+           if (d == string_length(s)) len
+           else let (c = chari(s, d))
+             search(array_at(x.next, c), s, d+1, len) }
+
+       function delete(key)
+       { root = _delete(root, key, 0)
+         key }
+
+       function _delete(x, key, d)
+       { if (not(x)) false
+         else if (d == string_length(key))
+           x.set_val(false)
+         else let (c = chari(key, d), n = x.next)
+           array_set(n, c, _delete(array_at(n, c), key, d+1))
+         if (not(x.val)) x
+         else for (c = 0; c < R; c+1)
+           when (array_at(x.next, c)) break(x) }
+
+       ^(message)
+       | 'get               -> get
+       | 'put               -> put
+       | 'keys              -> keys
+       | 'delete            -> delete
+       | 'keys_that_match   -> keys_that_match
+       | 'longest_prefix_of -> longest_prefix_of } }
+
+  module tst(make)
+  { function node(new_c = false)
+      let (c = new_c, left = false,
+           mid = false, right = false,
+           val = false)
+      { function set_left(l) left = l
+        function set_right(r) right = r
+        function set_mid(m) mid = m
+        function set_val(v) val = v
+
+        ^(message)
+        | 'c         -> c
+        | 'val       -> val
+        | 'left      -> left
+        | 'right     -> right
+        | 'mid       -> mid
+        | 'set_left  -> set_left
+        | 'set_right -> set_right
+        | 'set_mid   -> set_mid
+        | 'set_val   -> set_val }
+
+    let root = false
+    
+    function make()
+    { function get(key, default = false)
+        let (x = _get(root, key, 0))
+         if (x) x.val
+         else default
+
+      function _get(x, key, d)
+        if (not(x)) false
+        else let (ch = string_at(key, d))
+          if (char_is_lt(ch, x.c)) _get(x.left, key, d)
+          else if (char_is_gt(ch, x.c)) _get(x.right, key, d)
+          else if (d < string_length(key) - 1) _get(x.mid, key, d+1)
+          else x
+
+      function put(key, val) root = _put(root, key, val, 0)
+
+      function _put(x, key, val, d)
+        let (ch = string_at(key, d))
+        { when (not(x)) x = node(ch)
+          if (char_is_lt(ch, x.c)) x.set_left(_put(x.left, key, val, d))
+          else if (char_is_gt(ch, x.c)) x.set_right(_put(x.right, key, val, d))
+          else if (d < string_length(key) - 1) x.set_mid(_put(x.mid, key, val, d+1))
+          else x.set_val(val)
+          x }
+
+      ^(message)
+      | 'get  -> get
+      | 'put  -> put } } }

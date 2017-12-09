@@ -1,0 +1,85 @@
+let pq = priority_queue.make(10)
+assert count(pq) == 0
+assert pq.is_empty
+pq.insert(10)
+pq.insert(1)
+pq.insert(20)
+pq.insert(-2)
+assert count(pq) == 4
+assert pq.is_empty == false
+assert pq.del() == 20
+assert count(pq) == 3
+assert pq.del() == 10
+assert count(pq) == 2
+assert pq.del() == 1
+assert count(pq) == 1
+assert pq.is_empty == false
+assert pq.del() == -2
+assert count(pq) == 0
+assert pq.is_empty
+
+pq = priority_queue.make(2)
+pq.insert(1)
+pq.insert(2)
+assert count(pq) == 2
+pq.insert(3)
+pq.insert(4)
+assert count(pq) == 4
+assert pq.size == 6
+
+assert pq.del() == 4
+assert count(pq) == 3
+assert pq.del() == 3
+assert pq.del() == 2
+assert count(pq) == 1
+assert pq.insert(200)
+assert pq.insert(-50)
+assert count(pq) == 3
+assert pq.del() == 200
+assert pq.del() == 1
+assert count(pq) == 1
+assert pq.del() == -50
+assert count(pq) == 0
+assert pq.is_empty
+pq.insert(10)
+assert pq.is_empty == false
+assert count(pq) == 1
+assert pq.del() == 10
+assert count(pq) == 0
+assert pq.is_empty
+
+pq = priority_queue.make(1024)
+let maxx = 100000
+for (i = 1; i <= maxx; i+1)
+  pq.insert(i)
+
+assert pq.size > maxx && pq.size < (maxx + 5000)
+assert count(pq) == maxx
+assert pq.del() == maxx
+assert pq.is_empty == false
+
+for (i = maxx-1; i >= 1; i-1)
+  assert pq.del() == i
+
+assert count(pq) == 0
+assert pq.is_empty
+
+pq = priority_queue.make(10, true)
+assert count(pq) == 0
+assert pq.is_empty
+pq.insert(10)
+pq.insert(1)
+pq.insert(20)
+pq.insert(-2)
+assert count(pq) == 4
+assert pq.is_empty == false
+assert pq.del() == -2
+assert count(pq) == 3
+assert pq.del() == 1
+assert count(pq) == 2
+assert pq.del() == 10
+assert count(pq) == 1
+assert pq.is_empty == false
+assert pq.del() == 20
+assert count(pq) == 0
+assert pq.is_empty

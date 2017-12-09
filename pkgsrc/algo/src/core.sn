@@ -1,0 +1,6 @@
+let root = string_append(slogan_root(), "/packages/algo/src/")
+link(string_append(root, "sorts"))
+link(string_append(root, "q"))
+link(string_append(root, "pq"))
+link(string_append(root, "trie"))
+link(string_append(root, "graph"))

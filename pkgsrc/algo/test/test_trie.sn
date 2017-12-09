@@ -1,0 +1,52 @@
+let t = trie::r_way.make()
+t.put("by", 4)
+t.put("sea", 6)
+t.put("sells", 1)
+t.put("she", 0)
+t.put("shells", 3)
+t.put("shore", 7)
+t.put("the", 5)
+
+assert t.get("by") == 4
+assert t.get("sea") == 6
+assert t.get("sells") == 1
+assert not(t.get("se"))
+assert not(t.get("sell"))
+assert t.get("she") == 0
+assert t.get("shells") == 3
+assert not(t.get("shell"))
+assert t.get("shore") == 7
+assert t.get("the") == 5
+
+let q = t.keys()
+assert head(realize(7, q)) == ["by", "sea", "sells", "she", "shells", "shore", "the"]
+q = t.keys("she")
+assert head(realize(2, q)) == ["she", "shells"]
+
+assert t.longest_prefix_of("shellsort") == "shells"
+assert t.longest_prefix_of("she") == "she"
+assert t.longest_prefix_of("shells") == "shells"
+assert t.longest_prefix_of("shelters") == "she"
+
+t.delete("shells")
+assert not(t.get("shells"))
+
+t = trie::tst.make()
+t.put("by", 4)
+t.put("sea", 6)
+t.put("sells", 1)
+t.put("she", 0)
+t.put("shells", 3)
+t.put("shore", 7)
+t.put("the", 5)
+
+assert t.get("by") == 4
+assert t.get("sea") == 6
+assert t.get("sells") == 1
+assert not(t.get("se"))
+assert not(t.get("sell"))
+assert t.get("she") == 0
+assert t.get("shells") == 3
+assert not(t.get("shell"))
+assert t.get("shore") == 7
+assert t.get("the") == 5

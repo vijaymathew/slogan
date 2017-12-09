@@ -1,0 +1,25 @@
+// An imperative queue data structure.
+module queue(make)
+{ function make()
+    let (first = false, last = false, n = 0)
+    { function enqueue(item)
+        let (old_last = last)
+        { last = item:false
+          if (not(first)) first = last
+          else set_tail(old_last, last)
+          n = n+1; item }
+
+      function dequeue()
+        let (item = head(first))
+        { first = tail(first)
+          when (not(first)) last = false
+          n = n-1
+          item }
+
+       ^(message)
+       | 'enqueue  -> enqueue
+       | 'dequeue  -> dequeue
+       | 'size     -> if (n < 0) 0 else n
+       | 'is_empty -> first == false
+       | 'first    -> head(first)
+       | 'rest     -> when (first) tail(first) } }

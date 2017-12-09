@@ -1,0 +1,81 @@
+
+function test01(m, gt_ok = true)
+  letfn (seq_sort = m.seq_sort,
+         array_sort = m.array_sort,
+         make = m.make,
+         xs = [10, 2, 3, -1, 100],
+         s = false)
+  { seq_sort(xs)
+    assert xs == [-1, 2, 3, 10, 100]
+    when (gt_ok)
+    { xs = [10, 2, 3, -1, 100]
+      let s = make(compare = `>`)
+      s(xs)
+      assert xs == [100, 10, 3, 2, -1] }
+
+    xs = #[10, 2, 3, -1, 100]
+    seq_sort(xs)
+    assert xs == #[-1, 2, 3, 10, 100]
+    xs = #[10, 2, 3, -1, 100]
+    array_sort(xs)
+    assert xs == #[-1, 2, 3, 10, 100]
+    xs = #u8[10, 2, 3, 1, 100]
+    if (gt_ok)
+    { s = make(len = u8array_length, compare = fx_is_gt)
+      s(xs)
+      assert xs == #u8[100, 10, 3, 2, 1] }
+    else
+    { s = make(len = u8array_length, compare = fx_is_lt)
+      s(xs)
+      assert xs == #u8[1, 2, 3, 10, 100] }
+    xs = []
+    seq_sort(xs)
+    assert xs == []
+    xs = #[]
+    array_sort(xs)
+    assert xs == #[]
+    xs = #u8[]
+    s(xs)
+    assert xs == #u8[] }
+
+test01(sorts::selection)
+test01(sorts::insertion)
+test01(sorts::shell)
+test01(sorts::merge)
+test01(sorts::quick, false)
+
+let xs = [10, 1, 3, 100, 20]
+sorts::quick.select(xs, 3)
+assert xs[0] == 3
+assert xs[1] == 1
+assert xs[2] == 10
+
+function entry(kv)
+  ^(message)
+  | 'key   -> tail(kv)
+  | 'value -> head(kv)
+  
+let names = #[entry('Anderson:2), entry('Brown:3), entry('Davis:3),
+              entry('Garcia:4), entry('Harris:1), entry('Jackson:3),
+              entry('Johnson:4), entry('Jones:3), entry('Martin:1),
+              entry('Martinez:2), entry('Miller:2), entry('Moore:1),
+              entry('Robinson:2), entry('Smith:4), entry('Taylor:3),
+              entry('Thomas:4), entry('Thompson:4), entry('White:2),
+              entry('Williams:3), entry('Wilson:4)]
+
+let kic = sorts::key_indexed_counting.seq_sort(names, 4)
+
+let sorted_names = ['Harris:1, 'Martin:1, 'Moore:1, 'Anderson:2, 'Martinez:2,
+                    'Miller:2, 'Robinson:2, 'White:2, 'Brown:3, 'Davis:3, 'Jackson:3,
+                    'Jones:3, 'Taylor:3, 'Williams:3, 'Garcia:4, 'Johnson:4, 'Smith:4,
+                    'Thomas:4, 'Thompson:4, 'Wilson:4]
+assert sorted_names == map(^(n) n.value:n.key, array_to_list(names))                    
+
+xs = #["4PGC938", "2IYE230", "3CIO720", "1ICK750", "1OHV845",
+           "4JZY524", "1ICK750", "3CIO720", "1OHV845", "1OHV845",
+           "2RLA629", "2RLA629", "3ATW723"]
+let lsd = sorts::lsd.make()
+lsd(xs, 7)
+assert xs == #["1ICK750", "1ICK750", "1OHV845", "1OHV845", "1OHV845",
+               "2IYE230", "2RLA629", "2RLA629", "3ATW723", "3CIO720",
+               "3CIO720", "4JZY524", "4PGC938"]

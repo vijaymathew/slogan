@@ -1,0 +1,53 @@
+// A classic priority-queue implementation
+// based on the binary heap data structure.
+module priority_queue(make)
+{ function make(init_sz, is_min = false)
+    let (pq = make_array(init_sz),
+         max_n = init_sz,
+         n = 0,
+         less = false)
+    { if (is_min) less = ^(i, j) array_at(pq, i) > array_at(pq, j)
+      else less = ^(i, j) array_at(pq, i) < array_at(pq, j)
+
+      function exch(i, j)
+        let (t = array_at(pq, j))
+        { array_set(pq, j, array_at(pq, i))
+          array_set(pq, i, t) }
+
+      function swim(k)
+        let (hk = quotient(k, 2))
+          when (k > 1 && less(hk, k))
+          { exch(hk, k)
+            swim(hk) }
+
+      function sink(k)
+        let (kk = 2 * k)
+          when (kk <= n)
+          { when (kk < n && less(kk, kk+1))
+              kk = kk + 1
+            when (less(k, kk))
+            { exch(k, kk)
+              sink(kk) } }
+
+      function insert(v)
+      { n = n + 1
+        when (n >= max_n)
+        { pq = array_append(pq, make_array(init_sz))
+          max_n = max_n + init_sz }
+        array_set(pq, n, v)
+        swim(n); v }
+
+      function del()
+        let (kmax = array_at(pq, 1))
+        { exch(1, n)
+          array_set(pq, n, false)
+          n = n-1
+          sink(1)
+          kmax }
+
+      ^(message)
+      | 'insert    -> insert
+      | 'del       -> del
+      | 'is_empty  -> n == 0
+      | 'count     -> n
+      | 'size      -> max_n } }

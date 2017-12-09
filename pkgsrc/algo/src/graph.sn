@@ -1,0 +1,182 @@
+namespace graph
+{ function degree(g, v)
+    count(g.adj(v))
+
+  function max_degree(g)
+    apply(max, map(degree, range(0, g.V-1)))
+
+  function avg_degree(g)
+    2 * g.E/g.V
+
+  function count_self_loops(g)
+    let (vs = range(0, g.V-1),
+         ss = map(^(v) length(filter(^(w) w == v, g.adj(v))), vs))
+      quotient(fold(`+`, 0, ss), 2)
+
+  function make(v, nodes = [])
+    let (V = v, E = 0, adj = make_array(v, []))
+    { function add_edge(v, w)
+      { array_set(adj, v, w:array_at(adj, v))
+        array_set(adj, w, v:array_at(adj, w))
+        E = E + 1 }
+
+      for_each(^(n) add_edge(head(n), tail(n)), nodes)
+      
+      function at(i) array_at(adj, i)
+
+      ^(message)
+      | 'V        -> V
+      | 'E        -> E
+      | 'add_edge -> add_edge
+      | 'adj      -> at
+      | 'ref      -> at }
+
+  module search(dfs, bfs)
+  { function dfs(g, s, fn = false)
+      let (marked = make_array(g.V), count = 0)
+      { function search(v)
+        { array_set(marked, v, true)
+          count = count + 1
+          for_each(^(w)
+                   when (not(array_at(marked, w)))
+                   { when (fn) fn(v, w); search(w) },
+                   g.adj(v)) }
+
+        search(s)
+
+        function is_marked(w) array_at(marked, w)
+
+        ^(message)
+        | 'is_marked -> is_marked
+        | 'count     -> count }
+
+    function bfs(g, s, fn = false)
+      let (marked = make_array(g.V))
+      { function search()
+          let (q = queue.make())
+          { array_set(marked, s, true)
+            q.enqueue(s)
+            letfn loop ()
+              when (not(q.is_empty))
+                let (v = q.dequeue())
+                { for_each(^(w)
+                           when (not(array_at(marked, w)))
+                             handle(w, v, q),
+                           g.adj(v))
+                  loop() } }
+
+        function handle(w, v, q)
+        { array_set(marked, w, true)
+          when (fn) fn(v, w)
+          q.enqueue(w) }
+
+        search()
+
+        function is_marked(w) array_at(marked, w)
+
+        ^(message)
+        | 'is_marked -> is_marked } }
+
+  module path(make)
+  { function make(search_algo, g, s)
+      let (edge_to = make_array(g.V, 0),
+           finder = search_algo(g, s, ^(v, w) array_set(edge_to, w, v)))
+      { function has_path_to(v) finder.is_marked(v)
+        function path_to(v)
+          if (not(has_path_to(v))) false
+          else letfn loop (x = v, path = [])
+            if (x <> s)
+              loop(array_at(edge_to, x), x:path)
+            else s:path
+
+        ^(message)
+        | 'has_path_to -> has_path_to
+        | 'path_to     -> path_to } }
+
+  function has_cycle(g)
+    let (v = g.V, marked = make_array(v), has_cycle = false)
+    { function dfs(v, u)
+      { array_set(marked, v, true)
+        for_each(^(w) if (not(array_at(marked, w))) dfs(w, v)
+                      else if (w <> u) has_cycle = true,
+                 g.adj(v)) }
+
+      for (s = 0; s < v; s+1)
+        when (not(array_at(marked, s)))
+          dfs(s, s)
+
+      has_cycle }
+
+  function is_bipartite(g)
+    let (v = g.V, marked = make_array(v), color = make_array(v),
+         is_two_colorable = true)
+    { function dfs(v)
+        when(is_two_colorable)
+        { array_set(marked, v, true)
+          for_each(^(w) if (not(array_at(marked, w))) { array_set(color, w, array_at(color, v)); dfs(w) }
+                        else if (array_at(color, w) == array_at(color, v)) is_two_colorable = false,
+                    g.adj(v)) }
+
+      for (s = 0; s < v; s+1)
+        when (not(array_at(marked, s)) && is_two_colorable)
+          dfs(s)
+
+      is_two_colorable }
+
+  // Data structures for edge-weighted-graphs.
+  function edge(v, w, weight)
+  { function other(vertex)
+      if (vertex == v) w
+      else if (vertex == w) v
+      else error("inconsistent edge")
+
+    function compare_to(e)
+      if (e.weight < weight) 1
+      else if (e.weight > weight) -1
+      else 0
+
+    ^(message)
+    | 'weight  -> weight
+    | 'either  -> v
+    | 'other   -> other
+    | 'compare -> compare_to }
+
+  function edge_weighted(V)
+  { let (E = 0, adj = make_array(V, []))
+    { function add_edge(e)
+        let (v = e.either, w = e.other(v))
+        { array_set(adj, v, e:array_at(adj, v))
+          array_set(adj, w, e:array_at(adj, w))
+          E = E + 1 }
+
+      function _adj(v) array_at(adj, v)
+
+      ^(message)
+      | 'V        -> V
+      | 'E        -> E
+      | 'adj      -> _adj
+      | 'add_edge -> add_edge } }
+
+
+  // Minimum-spanning-tree algorithms:
+  
+  function lazy_prim_mst(ewg)
+    let (pq = priority_queue.make(ewg.V, true),
+         marked = make_array(ewg.V))
+    { function is_marked(i) array_at(marked, i)
+
+      function visit(v)
+      { array_set(marked, v, true)
+        for_each(^(e) when (not(is_marked(e.other(v))))
+                       pq.insert(e),
+                 ewg.adj(v)) }
+
+      visit(0)
+      letfn loop ()
+        if (pq.is_empty) false
+        else let (e = pq.del(), v = e.either, w = e.other(v))
+          if (is_marked(v) && is_marked(w)) loop()
+          else
+          { e:~{ when (not(is_marked(v))) visit(v)
+                 when (not(is_marked(w))) visit(w)
+                 loop() } } } }
