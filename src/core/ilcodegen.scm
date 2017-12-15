@@ -290,6 +290,7 @@
       (if has-name?
           (begin
             (check-if-reserved-name name tokenizer)
+            (core-name-warn! name)
             (tokenizer 'next)))
       (let* ((params-types (func-params-expr tokenizer #t))
              (params (scm-car params-types))
@@ -1338,6 +1339,7 @@
                                              " as a named let")))
   (let ((name (tokenizer 'next))
         (bindings (let-bindings tokenizer letkw)))
+    (core-name-warn! name)
     (scm-list letkw name
               bindings (func-body-expr tokenizer (extract-let-binding-names bindings)))))
 
