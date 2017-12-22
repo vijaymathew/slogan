@@ -14,7 +14,7 @@ namespace trie
 
       let root = make_node()
 
-      function get(key, default = false)
+      function _get(key, default = false)
         let (x = get_by_node(root, key, 0))
           if (x) x.val
           else default
@@ -93,7 +93,7 @@ namespace trie
            when (array_at(x.next, c)) break(x) }
 
        ^(message)
-       | 'get               -> get
+       | 'get               -> _get
        | 'put               -> put
        | 'keys              -> keys
        | 'delete            -> delete
@@ -124,7 +124,7 @@ namespace trie
     let root = false
     
     function make()
-    { function get(key, default = false)
+    { function __get(key, default = false)
         let (x = _get(root, key, 0))
          if (x) x.val
          else default
@@ -149,5 +149,5 @@ namespace trie
           x }
 
       ^(message)
-      | 'get  -> get
+      | 'get  -> __get
       | 'put  -> put } } }

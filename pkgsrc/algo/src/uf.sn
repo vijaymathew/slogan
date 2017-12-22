@@ -1,0 +1,36 @@
+// Implementation of union-find using the weighter quick-union method.
+module uf(make)
+{ function rarray(n)
+    list_to_array(range(0, n-1))
+    
+  function make(n)
+    let (id = rarray(n), sz = array_copy(id),
+         count = n)
+    { function is_connected(p, q)
+        _find(p) == _find(q)
+
+      function _find(p)
+        let (q = array_at(id, p))
+          if (p <> q) _find(q)
+          else p
+
+      function union(p, q)
+        let (i = _find(p), j = _find(q))
+          if (i == j) count
+          else let (si = array_at(sz, i),
+                    sj = array_at(sz, j))
+          { if (si < sj)
+            { array_set(id, i, j)
+              array_set(sz, j, si + sj) }
+            else
+            { array_set(id, j, i)
+              array_set(sz, i, si + sj) }
+
+            count = count - 1
+            count }
+
+        ^(message)
+        | 'is_connected  -> is_connected
+        | 'union         -> union
+        | 'find          -> _find
+        | 'count         -> count } }

@@ -1,0 +1,6 @@
+reload("./test_graph")
+reload("./test_sorts")
+reload("./test_uf")
+reload("./test_pq")
+reload("./test_trie")
+reload("./test_q")

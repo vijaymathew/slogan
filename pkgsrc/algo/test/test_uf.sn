@@ -1,0 +1,14 @@
+function run(sites, ids)
+  let (ufc = uf.make(sites),
+       newly_connected = [])
+  { function connect(entry)
+     let ([p, q] = [head(entry), tail(entry)])
+       when (not(ufc.is_connected(p, q)))
+       { ufc.union(p, q)
+         newly_connected = (p:q):newly_connected }
+         
+    for_each(connect, ids);
+    [ufc.count, reverse(newly_connected)] }
+
+let xs = [4:3, 3:8, 6:5, 9:4, 2:1, 8:9, 5:0, 7:2, 6:1, 1:0, 6:7]
+assert run(10, xs) == [2, [4:3, 3:8, 6:5, 9:4, 2:1, 5:0, 7:2, 6:1]]

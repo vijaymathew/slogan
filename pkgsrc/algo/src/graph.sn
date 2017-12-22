@@ -22,14 +22,14 @@ namespace graph
 
       for_each(^(n) add_edge(head(n), tail(n)), nodes)
       
-      function at(i) array_at(adj, i)
+      function _at(i) array_at(adj, i)
 
       ^(message)
       | 'V        -> V
       | 'E        -> E
       | 'add_edge -> add_edge
-      | 'adj      -> at
-      | 'ref      -> at }
+      | 'adj      -> _at
+      | 'ref      -> _at }
 
   module search(dfs, bfs)
   { function dfs(g, s, fn = false)
