@@ -1,0 +1,40 @@
+function make_counter(x)
+  compose(length, partial(filter, ^(y) x == y))
+
+function rmdups(xs)
+| []    -> []
+| x:xs  -> x:filter(^(y) x <> y, rmdups(xs))
+
+function result(vs)
+  sort([[make_counter(v)(vs), v] | v <- rmdups(vs)])
+
+function last(xs) head(reverse(xs))
+
+function winner(votes)
+  second(last(result(votes)))
+
+// test
+let votes = ['red, 'green, 'blue, 'blue, 'blue, 'red]
+assert winner(votes) == 'blue
+
+// Alternative vote
+let rmempty = partial(filter, ^(xs) not(is_empty(xs)))
+
+function elim(x, xs)
+  map(partial(partial(filter, ^(y) y <> x)), xs)
+
+function rank(xs)
+  map(second, result(map(head, xs)))
+
+function winner2(bs)
+  match (rank(rmempty(bs)))
+    [c]  -> c
+  | c:_  -> winner2(elim(c, bs))
+
+let ballots = [['red, 'green],
+               ['blue],
+               ['green, 'red, 'blue],
+               ['blue, 'green, 'red],
+               ['green]]
+
+assert winner2(ballots) == 'green

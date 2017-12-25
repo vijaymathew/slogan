@@ -1,0 +1,33 @@
+// Encode and transmit a text string as a sequence of bits.
+function bin2int(bits)
+ fold_right(^(x, y) x + 2*y, 0, bits)
+
+function int2bin(i)
+| 0  -> []
+| n  -> mod(n, 2):int2bin(quotient(n, 2))
+
+function repeat(x) x:~repeat(x)
+
+function make8(bits)
+  take(8, append(bits, repeat(0)))
+
+let pappend  = partial(apply, append)
+let pstr2bin = partial(map, compose(make8, int2bin, char_to_integer))
+let encode   = compose(pappend, pstr2bin, string_to_list)
+
+function chop8(bits)
+| []  -> []
+| _   -> take(8, bits):chop8(drop(8, bits))
+
+let pit2c  = partial(map, compose(integer_to_char, bin2int))
+let decode = compose(list_to_string, pit2c, chop8)
+
+let channel  = identity
+let transmit = compose(decode, channel, encode)
+
+// test
+assert transmit("slogan is fun") == "slogan is fun"
+
+// More ideas:
+//  Implement tranmission error detection by addind a parity bit.
+//  Compress data using run-length encoding.
