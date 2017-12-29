@@ -1,3 +1,9 @@
+2017-12-29  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.5 minor features, bug fixes.
+	* src/core/package.scm: automatic generation of default package files.
+	* src/core/ilcodegen.scm: fixed variable name validation in `let` statements.
+
 2017-11-24  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
 
 	* v0.12.4 improved support for concurrent programming.
