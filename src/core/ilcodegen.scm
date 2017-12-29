@@ -375,7 +375,8 @@
               (begin
                 (tokenizer 'put sym)
                 (let-expr tokenizer))
-              (define-stmt tokenizer))))
+              (define-stmt tokenizer))
+            (define-stmt tokenizer)))
         (cond
          ((scm-not (valid-identifier? sym))
           (tokenizer 'put sym)
@@ -433,12 +434,12 @@
 (define (core-name-warn! name)
   (cond
    ((eq? name 'core)
-    (scm-display "warning: definition will shadow core module")
+    (scm-display "*** WARNING -- Definition will shadow module \"core\"")
     (scm-newline))
    ((core-name? name)
-    (scm-display "warning: redefining ")
+    (scm-display "*** WARNING -- Redefining \"")
     (scm-display name)
-    (scm-display " from core module")
+    (scm-display "\" from module \"core\"")
     (scm-newline))))
 
 (define (make-pattern-defines bindings)
