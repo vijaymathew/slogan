@@ -926,22 +926,20 @@
 
 (define (block-expr tokenizer #!optional (use-let #f))
   (let ((expr
-         (move-up-defs-in-block
-          (if (scm-not (scm-eq? (tokenizer 'peek) '*open-brace*))
-              (parser-error tokenizer "missing block start")
-              (begin (tokenizer 'next)
-                     (let loop ((expr (if use-let (scm-cons 'let (scm-cons '() '())) (scm-cons 'begin '())))
-                                (count 0))
-                       (let ((token (tokenizer 'peek)))
-                         (cond ((scm-eq? token '*close-brace*)
-                                (tokenizer 'next)
-                                (if (zero? count) (scm-append expr (scm-list *void*)) expr))
-                               ((eof-object? token)
-                                (parser-error tokenizer "unexpected end of input. missing closing brace?"))
-                               (else
-                                (loop (scm-append expr (scm-list (expression/statement tokenizer #f)))
-                                      (scm-+ 1 count)))))))))))
-    (assert-defs-in-block tokenizer expr)
+         (if (scm-not (scm-eq? (tokenizer 'peek) '*open-brace*))
+             (parser-error tokenizer "missing block start")
+             (begin (tokenizer 'next)
+                    (let loop ((expr (if use-let (scm-cons 'let (scm-cons '() '())) (scm-cons 'begin '())))
+                               (count 0))
+                      (let ((token (tokenizer 'peek)))
+                        (cond ((scm-eq? token '*close-brace*)
+                               (tokenizer 'next)
+                               (if (zero? count) (scm-append expr (scm-list *void*)) expr))
+                              ((eof-object? token)
+                               (parser-error tokenizer "unexpected end of input. missing closing brace?"))
+                              (else
+                               (loop (scm-append expr (scm-list (expression/statement tokenizer #f)))
+                                     (scm-+ 1 count))))))))))
     expr))
 
 (define (cmpr-expr tokenizer)
@@ -1639,7 +1637,7 @@
                    (begin (tokenizer 'next)
                           (check-if-reserved-name mod-name tokenizer))))
            (let ((mod-exports (mod-exports-list tokenizer))
-                 (mod-body (func-body-expr tokenizer '())))
+                 (mod-body (move-up-defs-in-block (func-body-expr tokenizer '()))))
              (merge-module mod-name mod-exports mod-body))))
         (else (namespace-def-expr tokenizer))))
 
