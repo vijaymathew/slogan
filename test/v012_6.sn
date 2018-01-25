@@ -1,0 +1,9 @@
+// iterator constructor
+function f(x)
+{ yield x + 1
+  yield x + 2 }
+
+let g = core.iterator(f(10));
+assert g() == 11
+assert g() == 12
+assert core.not(g())

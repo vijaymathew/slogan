@@ -813,6 +813,7 @@
 (define core-load_package load_package)
 (define core-init_package init_package)
 
+(define core-iterator iterator)
 (define core-is_iterator is_iterator)
 (define core-is_lpair is_lpair)
 (define core-do_times do_times)
@@ -1681,6 +1682,7 @@
     ((load_package) core-load_package)
     ((init_package) core-init_package)
 
+    ((iterator) core-iterator)
     ((is_iterator) core-is_iterator)
     ((is_lpair) core-is_lpair)
     ((do_times) core-do_times)
@@ -1796,7 +1798,7 @@
                             is_exact is_f32array is_f64array is_false is_file_info
                             is_finite is_fixnum is_flonum is_function
                             is_hashtable is_host_info is_inexact is_infinite is_integer
-                            is_iterator is_keyword_token is_list is_lpair is_monitor
+                            iterator is_iterator is_keyword_token is_list is_lpair is_monitor
                             is_mutex is_nan is_negative is_noncontinuable_exception
                             is_number is_odd is_pair is_positive is_prime
                             is_random_source is_rational is_reader is_real is_s16array

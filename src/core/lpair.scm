@@ -29,6 +29,17 @@
 
 (define next iter-next)
 
+(define (iterator iter)
+  (let ((move? #f))
+    (lambda ()
+      (cond
+       (iter
+        (if move?
+            (set! iter (iter-next iter))
+            (set! move? #t))
+        (scm-first iter))
+       (else #f)))))
+
 ;; Functions for working with sequences.
 ;; A sequence can be either a normal list, lazy-pair, an array
 ;; or any other object that implements the `first` and `rest`
