@@ -1,3 +1,9 @@
+2018-02-18  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
+
+	* v0.12.6 fixes related to language semantics, etc
+	* src/core/ilcodegen.scm: variable hoisting limited to compiler generated code.
+	* src/core/lpair.scm: reification of iterators as no-argument functions.
+
 2017-12-29  Vijay Mathew Pandyalakal  <vijay.the.lisper@gmail.com>
 
 	* v0.12.5 minor features, bug fixes.
