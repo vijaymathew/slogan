@@ -12,9 +12,9 @@ src="src/test_ffi.c"
 
 # build the shared library
 if [[ "$osname" == 'Linux' ]]; then
-    gcc -Wall -shared -fPIC -o $out $src
+    cc -Wall -shared -fPIC -o $out $src
 else # Darwin??
-    gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o $out $src
+    cc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o $out $src
 fi
 
 ../.././src/slogan -c "init"

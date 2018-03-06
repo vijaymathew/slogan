@@ -2,8 +2,8 @@
 
 rem The following settings are determined by the configure script.
 
-set C_COMPILER=gcc
-set C_PREPROC=gcc -E
+set C_COMPILER=clang
+set C_PREPROC=clang -E
 
 set FLAGS_OBJ=   -Wno-unused -Wno-write-strings -O1 -fno-math-errno -fno-strict-aliasing -fwrapv -fomit-frame-pointer -fPIC -fno-common 
 set FLAGS_DYN=   -bundle  -Wno-unused -Wno-write-strings -O1 -fno-math-errno -fno-strict-aliasing -fwrapv -fomit-frame-pointer -fPIC -fno-common   -flat_namespace -undefined suppress

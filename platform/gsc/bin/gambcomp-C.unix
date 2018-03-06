@@ -2,8 +2,8 @@
 
 # The following settings are determined by the configure script.
 
-C_COMPILER="gcc"
-C_PREPROC="gcc -E"
+C_COMPILER="clang"
+C_PREPROC="clang -E"
 
 FLAGS_OBJ="   -Wno-unused -Wno-write-strings -O1 -fno-math-errno -fno-strict-aliasing -fwrapv -fomit-frame-pointer -fPIC -fno-common "
 FLAGS_DYN="   -bundle  -Wno-unused -Wno-write-strings -O1 -fno-math-errno -fno-strict-aliasing -fwrapv -fomit-frame-pointer -fPIC -fno-common   -flat_namespace -undefined suppress"
