@@ -1,4 +1,4 @@
-;; Copyright (c) 2013-2017 by Vijay Mathew Pandyalakal, All Rights Reserved.
+;; Copyright (c) 2013-2018 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define (has-arg? arg args)
   (scm-memp (lambda (s) (string=? s arg)) args))

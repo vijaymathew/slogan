@@ -42,4 +42,4 @@ Please visit http://schemer.in/slogan/ for tutorials and detailed documentation 
 Slogan is under active development and can be considered beta quality.
 Please report bugs/issues at https://github.com/vijaymathew/slogan/issues.
 
-Copyright © 2013, 2014, 2015, 2016, 2017 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
+Copyright © 2013, 2014, 2015, 2016, 2017, 2018 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
