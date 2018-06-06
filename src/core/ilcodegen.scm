@@ -50,7 +50,7 @@
                (program-text (tokenizer 'program-text)))
       (if (scm-not (null? program-text))
           (if (scm-= n line-no)
-              (scm-cons (scm-car program-text) (highlighted-line (tokenizer 'column)))
+              (scm-cons (scm-car program-text) (highlighted-line (- (tokenizer 'column) 1)))
               (loop line-no (scm-+ n 1) (scm-cdr program-text)))
           #f))))
 
