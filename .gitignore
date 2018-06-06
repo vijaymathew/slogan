@@ -1,3 +1,5 @@
+packages/
+emacs/slogan-mode.elc
 platform/gsc/bin/gambcomp-C
 platform/gsc/bin/gambdoc        
 platform/gsc/gsc/libgambitgsc.a
@@ -9,6 +11,7 @@ platform/libffi-3.2.1/target/
 platform/libffi-3.2.1/Makefile
 platform/libffi-3.2.1/makefiles.out~
 platform/libffi-3.2.1/makefiles.sed~
+platform/libffi-3.2.1/x86_64-unknown-linux-gnu/
 src/slogan
 src/*.c
 src/*.o
