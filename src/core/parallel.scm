@@ -3,13 +3,29 @@
 
 (c-declare #<<c-declare-end
 
+#include <sys/wait.h>
 #include <unistd.h>
 #include <sched.h>
 
+static int call_waitpid(pid_t pid)
+{
+ /* Make sure the child process does not become a zombie.
+    Should be redundant for Linux 2.6+, where the disposition
+    of SIGCHLD is set to SIG_IGN by default, and such process does
+    not become zombies. */
+  int status;
+  pid_t r = waitpid(pid, &status, 0);
+  if (r == pid)
+    if (WIFEXITED(status)) return 1;
+    else return 2;
+  else if (r == 0) return 0;
+  else if (r < 0) return -1;
+}
 c-declare-end
 )
 
 (define call-fork (c-lambda () int "fork"))
+(define call-waitpid (c-lambda (int) int "call_waitpid"))
 
 (define proc-port-min 10000)
 (define proc-port-max 65535)
@@ -73,10 +89,12 @@ c-declare-end
    (lambda ()
      (close-port (process-in-channel pinfo))
      (close-port (process-out-channel pinfo))
-     (if (scm-not (zero? (process-info-pid pinfo)))
-         (let ((server-channels (process-info-server-channels pinfo)))
-           (close-port (proc-channel-stream (scm-car server-channels)))
-           (close-port (proc-channel-stream (scm-cdr server-channels)))))
+     (let ((pid (process-info-pid pinfo)))
+       (if (scm-not (zero? pid))
+	   (let ((server-channels (process-info-server-channels pinfo)))
+	     (close-port (proc-channel-stream (scm-car server-channels)))
+	     (close-port (proc-channel-stream (scm-cdr server-channels)))
+	     (call-waitpid pid))))
      #t)))
 
 (define (invoke-child-callback callback pinfo)
