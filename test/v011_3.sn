@@ -1,10 +1,11 @@
 record point2d(x:real, y:real)
 
-function magnitude(p)
+// magnitude
+function mag(p)
 | point2d(x, y) -> sqrt(expt(x, 2) + expt(y, 2))
 
 function distance(p1, p2)
-  magnitude(point2d(x = point2d_x(p1) - point2d_x(p2),
+  mag(point2d(x = point2d_x(p1) - point2d_x(p2),
                     y = point2d_y(p1) - point2d_y(p2)))
 
 record circle(center:point2d, radius:real)

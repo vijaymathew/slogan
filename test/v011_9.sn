@@ -145,7 +145,8 @@ module binomial_heap(is_empty, insert, find_min, delete_min)
   function rank(_) | r:_:_ -> r
   function root(_) | _:x:_ -> x
 
-  function link(t1, t2)
+  // link
+  function lnk(t1, t2)
   | [r:x1:c1, _:x2:c2] ->
     if (x1 < x2) r+1:x1:(t2:c1)
     else r+1:x2:(t1:c2)
@@ -154,7 +155,7 @@ module binomial_heap(is_empty, insert, find_min, delete_min)
   | [t, []] -> [t]
   | [t, t1:ts1] ->
     if (rank(t) < rank(t1)) t:ts
-    else ins_tree(link(t, t1), ts1)
+    else ins_tree(lnk(t, t1), ts1)
 
   function insert(x, ts) ins_tree(0:x:[], ts)
 
@@ -164,7 +165,7 @@ module binomial_heap(is_empty, insert, find_min, delete_min)
   | [x:xs, y:ys] ->
     if (rank(x) < rank(y)) x:merge(xs, ts2)
     else if (rank(y) < rank(x)) y:merge(ts1, ys)
-    else ins_tree(link(x, y), merge(xs, ys))
+    else ins_tree(lnk(x, y), merge(xs, ys))
 
   function remove_min_tree(ts)
   | [] -> core.raise('empty)

@@ -92,9 +92,9 @@ function inssort(xs, order) fold_right(partial(insert, order), [], xs)
 assert inssort([1, 10, 4, 20, 14], `<`) == [1, 4, 10, 14, 20]
 
 // Sets by unorderd lists
-function make_set(xs) |
+function new_set(xs) |
  [] -> []
- | x:xs -> x:make_set(remove(x, xs))
+ | x:xs -> x:new_set(remove(x, xs))
 
 function remove_from_set(e, xs) |
  [_, []] -> []
@@ -108,8 +108,8 @@ function add_to_set(e, xs)
 function union(xs, ys) fold_left(add_to_set, xs, ys)
 function intersect(xs, ys) filter(^(x) core.member(x, ys), xs)
 
-let s = make_set([1, 2, 3, 2, 1])
-let r = make_set([1, 4, 3, 1, 5])
+let s = new_set([1, 2, 3, 2, 1])
+let r = new_set([1, 4, 3, 1, 5])
 assert union(s, r) == [5, 4, 1, 2, 3]
 assert intersect(s, r) == [1, 3]
 
