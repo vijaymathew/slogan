@@ -1,4 +1,4 @@
-;; Copyright (C) 2013-2018 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
+;; Copyright (C) 2013-2019 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
 
 ;; Rebind fundamental Scheme functions used in the implementation of the
 ;; Slogan compiler to new names here, so a Slogan program can freely reuse these

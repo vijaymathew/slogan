@@ -1,4 +1,4 @@
-;; Copyright (C) 2013-2018 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
+;; Copyright (C) 2013-2019 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
 
 (define *major-version* 0)
 (define *minor-version* 12)

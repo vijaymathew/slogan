@@ -1,4 +1,4 @@
-;; Copyright (c) 2013-2018 by Vijay Mathew Pandyalakal, All Rights Reserved.
+;; Copyright (c) 2013-2019 by Vijay Mathew Pandyalakal, All Rights Reserved.
 
 (define char_is_eq char=?)
 (define char_is_lt char<?)
