@@ -67,6 +67,7 @@ module tree(make)
     function local_for_each(fn) tree_for_each(fn, tree)
     function local_map(fn) _make(tree_map_helper(fn, tree, empty))
 
+    // Complexity is O(n). TODO: Make this a O(logn) operation.
     function tree_remove(predic)
       _make(tree_filter_helper(complement(predic), tree, empty))
 
