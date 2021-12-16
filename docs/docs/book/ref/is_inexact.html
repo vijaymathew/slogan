@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_inexact)</title>
+  </head>
+
+  <body>
+    <h2>is_inexact</h2>
+
+    <div class="prog">
+      <pre><code>
+is_inexact(obj)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the object <code>obj</code> is an inexact number, <code><span class="pw">false</span></code>
+      otherwise. Raise an error is <code>obj</code> is not a valid number.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+is_inexact(1)
+<span class="comment">// false</span>
+
+is_inexact(-15/10)
+<span class="comment">// false</span>
+
+is_inexact(3.01)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="inexact.html">inexact</a></div>      
+      <div class="ref"><a href="is_number.html">is_number</a></div>
+      <div class="ref"><a href="is_exact.html">is_exact</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (file_info)</title>
+  </head>
+
+  <body>
+    <h2>file_info</h2>
+
+    <div class="prog">
+      <pre><code>
+file_info(path, <span class="pw">@optional</span> chase) 
+      </code></pre>
+    </div>
+
+    <p>Return a file-information record.</p>
+
+    <p>A file-information record is returned that contains the file's type,
+      the device number, the inode number, the mode (permission bits),
+      the number of links, the file's user id, the file's group id, the file's
+      size in bytes, the times of last-access, last-modification and last-change,
+      the attributes, and the creation time.</p>
+
+    <p>When <code>chase</code> is <code><span class="pw">false</span></code> (the default), symbolic links will not be chased, in other
+      words if path refers to a symbolic link the file-info procedure will return
+      information about the link rather than the file it links to.</p>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="file_info_attributes.html">file_info_attributes</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fladd/sub/mult/div/mod)</title>
+  </head>
+
+  <body>
+    <h2>fladd/sub/mult/div/mod</h2>
+
+    <div class="prog">
+      <pre><code>
+fladd(fl1, <span class="pw">@rest</span> ...)
+flsub(fl1, <span class="pw">@rest</span> ...) 
+flmult(fl1, <span class="pw">@rest</span> ...) 
+fldiv(fl1, fl2) 
+flmod(fl1, fl2) 
+      </code></pre>
+    </div>
+
+    <p>Return the result of performing the arithmetic operation on <code>fl1, ...</code> (or <code>fl1</code> and <code>fl2</code>).
+    Raise an error if an argument is not a <a href="is_flonum.html">flonum</a>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+fladd(12.2, 34.1)
+<span class="comment">// 46.3</span>
+
+fldiv(10., 3.)
+<span class="comment">// 3.3333333333333335</span>
+
+flmod(10., 3.)
+<span class="comment">// 1.</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="flround.html">flround</a></div>
+      <div class="ref"><a href="flmin.html">flmin</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

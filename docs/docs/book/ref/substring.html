@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (substring)</title>
+  </head>
+
+  <body>
+    <h2>substring</h2>
+
+    <div class="prog">
+      <pre><code>
+substring(s, start, end)
+      </code></pre>
+    </div>
+
+    <p>Return a copy of the string <code>s</code> from <code>start</code> (inclusive) to <code>end</code> (exclusive).</p>
+
+    <p><code>Start</code> and <code>end</code> must be exact nonnegative integers; <code>start</code> must be less than the
+      length of <code>s</code>, while <code>end</code> may be less than or equal to the length of <code>s</code>.
+      If <code>end &lt;= start</code> is <code><span class="pw">true</span></code>, a string of length zero is returned.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"hello, world"</span>          
+substring(s, 7, 9)
+<span class="comment">// wo</span>
+substring(s, 7, <a href="string_length.html">string_length</a>(s))
+<span class="comment">// world</span>
+
+s[7:9]
+<span class="comment">// wo</span>
+s[7:]
+<span class="comment">// world</span>
+s[:5]
+<span class="comment">// hello</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_at.html">string_at</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

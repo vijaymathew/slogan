@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (___call_fn)</title>
+  </head>
+
+  <body>
+    <h2>___call_fn</h2>
+
+    <div class="prog">
+      <pre><code>
+___call_fn(fn, args)
+      </code></pre>
+    </div>
+
+    <p>The <code>___call_fn</code> function enable C code to call any function implemented in Slogan. <code>___call_fn</code> take two arguments -
+      the Slogan function to call (<code>fn</code>) and its arguments. The arguments are passed as a single list. <code>___call_fn</code>
+      will return a <code><a href="index.html">___slogan_obj</a></code> which is the return value of the Slogan function.</p>
+
+    <h3>Examples:</h3>
+
+    <p>The following C program use <code>___call_fn</code> to invoke a Slogan function passed to it:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// call_fn_test.c</span>
+          
+<span class="pw">#include</span> &lt;stdio.h&gt;
+<span class="pw">#include</span> <span class="str">"slogan.h"</span>
+
+___slogan_obj call_slogan_fn(___slogan_obj *args)
+{
+  <span class="pw">int</span> error = 0;
+  ___slogan_obj result;
+  ___slogan_obj f = args[0];
+  ___ON_THROW(result = ___call_fn(f, ___pair(___fix(100), ___pair(___fix(200), ___NUL))), error = 1);
+  <span class="kw">if</span> (error == 1)
+    {
+      printf(<span class="str">"Slogan function raised error\n"</span>);
+      return <a href="index.html">___FAL</a>;
+    }
+  <span class="kw">return</span> result;
+}
+      </code></pre>
+    </div>
+
+    <p>This can be compiled to a shared library on Linux by,</p>
+
+      <div class="prog">
+        <pre><code>
+$ gcc -Wall -shared -fPIC -I ${SLOGAN_HOME}/src/include/-I ${SLOGAN_HOME}/platform/gsc/include \
+-o call_fn_test.so call_fn_test.c
+        </code></pre>
+      </div>
+      
+      <p>and on OS X by,</p>
+
+      <div class="prog">
+        <pre><code>
+$ gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -I ${SLOGAN_HOME}/src/include/ \
+-I ${SLOGAN_HOME}/platform/gsc/include -o call_fn_test.so call_fn_test.c
+        </code></pre>
+      </div>
+      
+    <p>After the shared library <code>call_fn_test.so</code> is generated, the function <code>call_slogan_fn</code> can
+      be invoked from Slogan as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> clib = <a href="../ref/ffi_open.html">ffi_open</a>(<span class="str">"./call_fn_test.so"</span>)
+<span class="kw">let</span> f = <a href="../ref/ffi_fn.html">ffi_fn</a>(clib, <span class="str">"call_slogan_fn"</span>)
+<a href="../ref/ffi_call_obj.html">ffi_call_obj</a>(f, #[add])
+<span class="comment">// 300</span>
+<a href="../ref/ffi_close.html">ffi_close</a>(clib)
+      </code></pre>
+    </div>
+    <hr></hr>
+    <p>
+      <a href="index.html">FFI Reference</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>
+    
+

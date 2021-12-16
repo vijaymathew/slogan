@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Advanced Flow Control</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">10</h1>
+    <h1 class="title">Advanced Flow Control</h1>
+
+    <p>The basic control flow expressions in Slogan are the <code><span class="kw">if</span></code> and <code><span class="kw">when</span></code>
+      conditions. Recursion and the imperative <code><span class="kw">for</span></code> loop construct also enable control
+      flow, but they depend on the conditional expressions for their implementation. Conditional expressions are important in another way &ndash;
+      they enable the implementation of a basic error handling mechanism. For example, this is how we may implement a (hypothetical)
+      function that tries to open a file:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> open_file(file_name)
+  <span class="kw">if</span> (<a href="ref/file_exists.html">file_exists</a>(file_name))
+    open_and_return_a_handle_to_the_file(file_name)
+  <span class="kw">else</span> <span class="pw">false</span>
+      </code></pre>
+    </div>
+
+    <p>The callers of this function should handle a case where the file is missing with an <code><span class="kw">if</span></code> expression:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> (f = open_file(<span class="str">"some_file"</span>))
+  <span class="kw">if</span> (f) do_something_to_the_file(f)
+  <span class="kw">else</span> <a href="ref/showln.html">showln</a>(<span class="str">"failed to open file"</span>)
+      </code></pre>
+    </div>
+
+    <p>This is the declarative way to deal with exceptional situations like trying to open a nonexistent file, dividing by zero etc.
+      But it is cumbersome and error prone to add checks throughout the program. An elegant alternative is to add an exception-handling
+      mechanism to the language. In the first section of this chapter, we will learn about exception-handling in Slogan. Later we will learn
+      how to design abstractions that can control program flow in any way imaginable!</p>
+    
+    <h2>10.1 Exceptions</h2>
+
+    <p>When an expression cannot be evaluated correctly, we often speak of "raising an error". But what should this statement exactly do? It should,
+      in a controlled way, transfer execution to another part of the program that knows how to deal with the error, without crashing the running
+      program. This part of the program that specializes in dealing with errors is known as the <em>exception handler</em>. While an error is thrown,
+      a value describing the error is passed to the exception handler.</p>
+
+    <p>Slogan's exception handling mechanism is designed around the <em>error confinement</em> principal which states that the error in a
+      <em>component</em> should be catchable at the component boundary. Outside the component, the error is either invisible or reported in a nice way.
+      That means raising an error will cause the program control to "jump" from inside the component to its boundary.
+      <a name="01-back"></a>This is a single operation, able to exit from arbitrarily many levels of nested context<a href="#01"><sup>1</sup></a>.
+
+    <p>In Slogan, the function <code><a href="ref/raise.html">raise</a></code> is the basic mechanism for raising exceptions. The
+      <code><span class="kw">try</span>-<span class="kw">catch</span></code> expression is used for handling raised exceptions.
+      <code><span class="kw">Try</span>-<span class="kw">catch</span></code> has the following general syntax:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">try</span>
+  expr
+<span class="kw">catch</span> (err)
+  handle_err_expr
+      </code></pre>
+    </div>
+
+    <p>The expression <code>expr</code> can raise an error by calling <code>raise()</code> with an arbitrary object as argument. This object
+      represents the error condition and is passed as argument to <code><span class="pw">catch</span></code>. The <code>handle_err_expr</code>
+      is an expression that should decide what to do about the error object.</p>
+
+    <p>As an example of using exceptions in practice, consider an implementation of
+      the <a href="https://en.wikipedia.org/wiki/Stack_(abstract_data_type)" target="_blank">stack data type</a>.
+      We can implement a stack on top of an array, the size of which is specified when the stack is created. An attempt to push
+      more items than the stack can hold will be blocked by raising an error. Similarly, an attempt to remove an item from an empty stack will also
+      raise an error.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_stack(size)
+  <span class="kw">let</span> (elems = <a href="ref/make_array.html">make_array</a>(size),
+       index = 0)
+  { <span class="kw">function</span> push(e)
+      <span class="kw">if</span> (index >= size)
+        raise(<span class="str">"too many elements"</span>)
+      <span class="kw">else</span>
+      { elems[index] = e
+        index = index + 1 }
+
+    <span class="comment">// Return the top element.</span>
+    <span class="kw">function</span> top()
+      <span class="kw">if</span> (index == 0)
+        raise(<span class="str">"empty stack"</span>)
+      <span class="kw">else</span> elems[index - 1]
+
+    <span class="comment">// Remove and return the top element.</span>
+    <span class="kw">function</span> pop()
+      <span class="kw">if</span> (index == 0)
+        raise(<span class="str">"empty stack"</span>)
+      <span class="kw">else let</span> (e = elems[index - 1])
+      { index = index - 1
+        e }
+
+    <span class="kw">^</span>(message)
+    | <span class="sym">'push</span> -> push
+    | <span class="sym">'top</span> -> top
+    | <span class="sym">'pop</span> -> pop
+    | _ -> raise(<span class="str">"invalid message"</span>) }
+      </code></pre>
+    </div>
+
+    <p>Any attempt to violate the invariants on a stack object will be prevented by the raising errors.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = make_stack(3)
+s.push(10)
+s.push(23)
+s.top()
+<span class="comment">// 23</span>
+s.pop()
+<span class="comment">// 23</span>
+s.pop()
+<span class="comment">// 10</span>
+s.pop()
+<span class="comment">//&gt; error: This object was raised: "empty stack"</span>
+        </code><pre>
+    </div>
+
+    <p>Using exception handlers, we can contain and deal with such exceptions in a cleaner way. The following function implements a "safer"
+      alternative to <code>pop</code> stack. It handles the error by logging it to the console and returning a default value to the caller:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> safe_pop(stack, <span class="pw">@optional</span> default)
+  <span class="kw">try</span>
+    stack.pop()
+  <span class="kw">catch</span> (err)
+  { showln(<span class="str">"stack error: "</span>, err)
+    default }
+
+safe_pop(s)
+<span class="comment">//&gt; stack error: empty stack
+// false</span>
+
+safe_pop(s, 10)
+<span class="comment">//&gt; stack error: empty stack
+// 10</span>
+
+s.push(100)
+safe_pop(s)
+<span class="comment">// 100</span>
+      </code></pre>
+    </div>
+
+    <p>Code that handles exceptions may not get enough information about the error, if that has been thrown by a call to <code>raise(obj)</code>.
+      The argument to <code>raise</code> can be an arbitrary object, it may not even be a string. So the exception handler should know how to
+      interpret the error object beforehand to do proper error logging and handling. The function <code><a href="ref/error.html">error</a></code>
+      can help make life easier for code that has to process information about errors.</p>
+
+    <p>Instead of raising an arbitrary object, the <code>error</code> function always raises an object of type <code>error-exception</code> record
+      which has a message field and a list of "argument" fields which can contain additional information about the error.</p>
+
+    <h3>10.1.1 Performing Cleanup</h3>
+
+    <p>A <code><span class="kw">try</span></code> expression can specify a <code><span class="kw">finally</span></code> clause which is always
+      executed, whether or not the expression raises an exception. This is useful when dealing with entities that are managed external to
+      the language runtime. With <code><span class="kw">finally</span></code>, we can guarantee that some "cleanup" action gets performed
+      on the entity, whether or not an exception occurs. An example of such an external entity is the <em>handle</em> to an open file, which is
+      a limited resource managed by the operating system. The program must make sure it returns this handle back to the
+      operating system by closing the file handle, even if an exception was raised while using (reading/writing) it.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> f = <span class="pw">false</span>          
+<span class="kw">try</span>
+{ f = <a href="ref/file_reader.html">file_reader</a>(<span class="str">"abc.txt"</span>)
+  <a href="ref/read_all_chars.html">read_all_chars</a>(f) }
+<span class="kw">catch</span> (err)
+  showln(<span class="str">"failed to read file - "</span>, err)
+<span class="kw">finally</span>
+  <span class="kw">when</span> (f)
+  { showln(<span class="str">"closing file..."</span>)
+    <a href="ref/close_reader.html">close_reader</a>(f) }
+      </code></pre>
+    </div>
+
+    <p>If you want the exception to be handled in an outer layer, you can omit the <code><span class="kw">catch</span></code> clause. This will cause the
+      exception to be re-raised, after the <code><span class="kw">finally</span></code> clause is executed.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> f = <span class="pw">false</span>          
+<span class="kw">try</span>
+{ f = file_reader(<span class="str">"abc.txt"</span>)
+  read_all_chars(f) }
+<span class="kw">finally</span>
+  <span class="kw">when</span> (f)
+  { showln(<span class="str">"closing file..."</span>)
+    close_reader(f) }
+      </code></pre>
+    </div>
+
+    <p>Mixing file operations and exception handling leads to lot of boilerplate code. Slogan provide abstractions that let us express
+      input/output operations in a concise, declarative style. The <code><a href="ref/call_with_stream.html">call_with_stream</a></code>
+      function is one such abstraction.</p>
+    
+    <h2>10.2 Abstracting Control Flow</h2>
+
+    <p>So far in this book we have discussed quite a few programming constructs that can control how the program flows - the
+      <code><span class="kw">if</span></code> and <code><span class="kw">when</span></code> expressions, the
+      <code><span class="kw">try</span>-<span class="kw">catch</span></code> expression, the <code><span class="kw">yield</span></code>
+      statement, the imperative <code><span class="kw">for</span></code> loop and so on. You might have encountered some or all of these
+      in other languages as well. Programming language designers will bake in those control structures they feel are the only ones
+      their users will ever need. When programmers talk about a language being "extensible" what they mean is that the language allows
+      them to define new data abstractions. Can a language be extensible in the sense that users can add new control structures to the
+      language? This is the question we are dealing with in this section.</p>
+
+    <p>A language with higher-order functions can define functions that behave like built-in control structures. For example,
+      the following program defines a function that behaves like the <code>while</code> loop found in most imperative programming languages:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> while(cond, body)
+  <span class="kw">when</span> (cond())
+  { body()
+    while(cond, body) }
+      </code></pre>
+    </div>
+
+    <p><code>While()</code> take two functions as arguments. The first one return <code><span class="pw">true</span></code> as long as a
+      particular condition holds. The second function is called if the condition holds and <code>while</code> is called again recursively,
+      creating the effect of a loop. Here is how we would use our new looping construct:<p>
+
+      <div class="prog">
+        <pre><code>
+<span class="kw">let</span> i = 0
+while (<span class="kw">^</span>() i < 5,
+       <span class="kw">^</span>() { showln(i); i = i + 1 })
+<span class="comment">//&gt; 0
+    1
+    2
+    3
+    4</span>
+        </code></pre>
+      </div>
+
+    <p>"Functional" control structures like this one have two immediate problems. First is that, they do not introduce new "syntax" to the language.
+      Invoking them are basically just function calls and building their function arguments can be verbose. The construct might be cleaner
+      and easier to use if users are allowed to type something like:</p>
+
+    <div class="prog">
+      <pre><code>
+while (i &lt; 5)
+{ showln(i)
+  i = i + 1 }
+      </code></pre>
+    </div>
+
+    <p>The second problem is that a function is not allowed to return to and execute code in an arbitrary position in the program. This flexibility is
+      required for implementing constructs like <code><span class="kw">try-catch</span></code> and <code><span class="kw">yield</span></code>. Slogan
+      exposes the ability to completely control the execution order of instructions as a first-class language entity. This will allow users to build
+      control structures that have the same power and expressiveness as the ones that are baked into the language.</p>
+
+    <h3>10.2.1 Continuations</h3>
+
+    <p>During the evaluation of an expression, Slogan needs to keep track of two things - (1) what to evaluate and (2) what to do with the value.
+      Consider the evaluation of <code><a href="ref/is_empty.html">is_empty</a>(x)</code> within the expression below.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">if</span> (is_empty(x))
+  <span class="sym">'empty</span>
+<span class="kw">else</span>
+  head(x)
+      </code></pre>
+    </div>
+
+    <p>Slogan has to first evaluate <code>is_empty(x)</code> and, based on the result, evaluate either <code>'empty</code> or <code>head(x)</code>.
+      "What to evaluate?" is <code>is_empty(x)</code> and "what to do with the value?" is to choose between <code>'empty</code> and
+      <code>head(x)</code> to evaluate next. The "what to do with the value?" is the <em>continuation</em> of the computation.</p>
+
+    <p>Slogan allows the continuation of any expression to be captured with the function <code><a href="ref/callcc.html">callcc</a></code> (for
+      <code>call_with_current_contiunuation</code>). <code>Callcc</code> must be passed a function <code>f</code> of one argument.
+      <code>Callcc</code> constructs a concrete representation of the current continuation and passes it to <code>f</code>. The continuation
+      itself is represented by a function <code>k</code>. Each time <code>k</code> is applied to a value, it returns the value to the
+      continuation of the <code>callcc</code> application. This value becomes, in essence, the value of the application of <code>callcc</code>.</p>
+
+    <p>If <code>f</code> returns without invoking <code>k</code>, the value returned by the function becomes the value of the application
+      of <code>callcc</code>.</p>
+
+    <p>Let us consider a few simple examples.</p>
+
+    <div class="prog">
+      <pre><code>
+callcc(<span class="kw">^</span>(k) 5 * 4)
+<span class="comment">// 20</span>
+callcc(<span class="kw">^</span>(k) 5 * k(4))
+<span class="comment">// 4</span>
+2 + callcc(<span class="kw">^</span>(k) 5 * k(4))
+<span class="comment">// 6</span>
+      </code></pre>
+    </div>
+
+    <p>In the first example, the continuation is captured and bound to <code>k</code>, which is never used. So the value is simply the product
+      of <code>5</code> and <code>4</code>. In the second, the continuation is invoked before the multiplication, so the value is the
+      value passed to the continuation, <code>4</code>. In the third, the continuation includes the addition by <code>2</code>; thus, the value
+      is the value passed to the continuation, <code>4</code>, plus <code>2</code>.</p>
+
+    <p>Here is a less trivial example, showing the use of <code>callcc</code> to provide a nonlocal exit from a recursion.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> product(xs)
+  callcc(
+    <span class="kw">^</span>(return)
+     <span class="kw">letfn</span> loop(xs = xs)
+       <span class="kw">if</span> (is_empty(xs)) 1
+       <span class="kw">else if</span> (is_zero(head(xs))) return(0)
+       <span class="kw">else</span> head(xs) * loop(tail(xs)))
+
+product([1, 2, 3, 4, 5])
+<span class="comment">// 120</span>
+product([1,2,3,0,4,5])
+<span class="comment">// 0</span>
+      </code></pre>
+    </div>
+
+    <p>The nonlocal exit allows <code>product</code> to return immediately, without performing the pending multiplications,
+      when a zero value is detected.</p>
+
+    <p>In the <a href="syntax.html">chapter</a> on designing new languages, we will complete our journey into building new control abstractions.
+      There we will implement a whole new sub-language in Slogan that will enable us to write
+      <a href="https://en.wikipedia.org/wiki/Nondeterministic_programming" target="_blank">nondeterministic programs</a>.</p>
+
+    <hr></hr>
+
+    <div class="note">
+      <p>
+        <sup><a name="01"></a><a href="#01-back">1</a></sup>In our case, "components" are mostly functions and "nested contexts" are
+        created by function calls.
+      </p>
+    </div>
+
+    <hr></hr>
+    <p align="center">
+      <a href="ffi.html">Next</a> | <a href="lazy.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

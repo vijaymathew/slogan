@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (setenv)</title>
+  </head>
+
+  <body>
+    <h2>setenv</h2>
+
+    <div class="prog">
+      <pre><code>
+setenv(var, <span class="pw">@optional</span> new_value)
+      </code></pre>
+    </div>
+
+    <p>Change the binding of the environment variable <code>var</code> to <code>new_value</code> which should be a string.
+      If <code>new_value</code> is not specified, the binding is removed. Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<a href="getenv.html">getenv</a>(<span class="str">"logs_folder"</span>, <span class="str">"./"</span>)
+<span class="comment">// ./</span>
+setenv(<span class="str">"logs_folder"</span>, <span class="str">"/logs/"</span>)
+getenv(<span class="str">"logs_folder"</span>, <span class="str">"./"</span>)
+<span class="comment">// /logs/</span>
+setenv(<span class="str">"logs_folder"</span>)
+getenv(<span class="str">"logs_folder"</span>, <span class="str">"./"</span>)
+<span class="comment">// ./</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="command_line.html">command_line</a></div>
+      <div class="ref"><a href="shell_command.html">shell_command</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

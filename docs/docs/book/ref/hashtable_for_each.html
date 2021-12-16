@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (hashtable_for_each)</title>
+  </head>
+
+  <body>
+    <h2>hashtable_for_each</h2>
+
+    <div class="prog">
+      <pre><code>
+hashtable_for_each(fn, ht)
+      </code></pre>
+    </div>
+
+    <p>For each entry in the <a href="make_hashtable.html">hash table</a> <code>ht</code>, call the function <code>fn</code> by passing it the key
+      and value as arguments. The order in which keys and values are visited is unspecified.</p>
+
+    <p>Return <code><span class="void.html">void</span></code>.</p>
+
+    <p>While a call to <code>hashtable_for_each</code> is being performed on <code>ht</code>, it is an error to call any of the following
+      procedures on <code>ht</code>: <code><a href="hashtable_at.html">hashtable_at</a></code>,
+      <code><a href="hashtable_set.html">hashtable_set</a></code>, <code>hashtable_for_each</code>,
+      <code><a href="hashtable_keys.html">hashtable_keys</a></code>, <code><a href="hashtable_values.html">hashtable_values</a></code> and
+      <code><a href="hashtable_entries.html">hashtable_entries</a></code>. It is also an error to compare for equality (directly or indirectly with
+      <code><a href="member.html">member</a></code>, <code><a href="assoc.html">assoc</a></code>, <code><a href="hashtable_at.html">hashtable_at</a></code>,
+      etc.) an object that contains <code>ht</code>. All these functions may cause the hash table to be reordered and resized.
+      This restriction allows a more efficient iteration over the key/value bindings.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> h = <a href="make_eq_hashtable.html">make_eq_hashtable</a>()
+<a href="hashtable_set.html">hashtable_set</a>(h, <span class="sym">'name</span>, <span class="str">"nemo"</span>)
+hashtable_set(h, <span class="sym">'age</span>, 1)
+hashtable_for_each(<span class="kw">^</span>(k, v) <a href="println.html">println</a>(k, <span class="str">": "</span>, v), h)
+<span class="comment">//&gt; name: nemo
+    age: 1          
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="hashtable_keys.html">hashtable_keys</a></div>
+      <div class="ref"><a href="hashtable_values.html">hashtable_values</a></div>      
+      <div class="ref"><a href="hashtable_entries.html">hashtable_entries</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

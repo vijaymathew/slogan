@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_messages_rewind)</title>
+  </head>
+
+  <body>
+    <h2>task_messages_rewind</h2>
+
+    <div class="prog">
+      <pre><code>
+task_messages_rewind(<span class="pw">@optional</span> remove_last_read)
+      </code></pre>
+    </div>
+
+    <p>Rewind the mailbox cursor of the current <a href="task.html">task</a> so that the next call to
+      <code><a href="task_messages_next.html">task_messages_next</a></code>
+      and <code><a href="task_receive.html">task_receive</a></code> will access the oldest message in the mailbox.
+      Additionally if <code>remove_last_read</code> is <code><span class="pw">true</span></code> the message most
+      recently accessed by a call to <code>task_messages_next</code> will be removed from
+      the mailbox. When <code>task_messages_next</code> has not been called since the last call to <code>task_receive</code> or
+      <code>task_messages_rewind</code>, a call to <code>task_messages_rewind</code> with <code>remove_last_read</code>
+      set to <code><span class="pw">true</span></code> only resets the mailbox cursor (no message is removed).</p>
+
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="task_send.html">task_send</a></div>      
+      <div class="ref"><a href="self.html">self</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

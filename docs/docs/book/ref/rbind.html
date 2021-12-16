@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (rbind)</title>
+  </head>
+
+  <body>
+    <h2>rbind</h2>
+
+    <div class="prog">
+      <pre><code>
+rbind(r, obj)
+      </code></pre>
+    </div>
+
+    <p>Bind the object <code>obj</code> to the <a href="rvar.html">reactive variable</a> <code>r</code>.</p>
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = <span class="kw">?</span>
+rbind(a, 100)
+<span class="kw">?</span>a
+<span class="comment">// 100</span>
+rget(a)
+<span class="comment">// 100</span>
+rbind(a, 200)
+<span class="comment">//&gt; error: cannot rebind reactive variable to a new value</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="rget.html">rget</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

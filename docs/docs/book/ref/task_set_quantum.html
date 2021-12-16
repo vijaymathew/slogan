@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_set_quantum)</title>
+  </head>
+
+  <body>
+    <h2>task_set_quantum</h2>
+
+    <div class="prog">
+      <pre><code>
+task_set_quantum(t, q)
+      </code></pre>
+    </div>
+
+    <p>Set the quantum of the <a href="task.html">task</a> <code>t</code> to the <a href="is_real.html">real</a> number <code>q</code>.
+      Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="task_quantum.html">task_quantum</a>(<a href="self.html">self</a>())
+<span class="comment">// 0.02</span>
+task_set_quantum(self(), 1.0)
+task_quantum(self())
+<span class="comment">// 1.0</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="task_base_priority.html">task_base_priority</a></div>
+      <div class="ref"><a href="task_priority_boost.html">task_priority_boost</a></div>  
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

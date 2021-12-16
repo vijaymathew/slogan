@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (position)</title>
+  </head>
+
+  <body>
+    <h2>position</h2>
+
+    <div class="prog">
+      <pre><code>
+position(obj, xs, <span class="pw">@key</span> start = 0, test = <a href="is_eq.html">is_eq</a>)
+      </code></pre>
+    </div>
+
+    <p>Compare each element in the list <code>xs</code> to <code>obj</code> using the predicate <code>test</code>.
+      The comparison begins at the index specified by <code>start</code>.</p>
+
+    <p>Return the index of <code>obj</code> in the <a href="list.html">list</a> <code>xs</code>.
+      Return <code><span class="pw">false</span></code> if <code>obj</code> is not found in the list.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+position(10, [1, 2, 10, 3])
+<span class="comment">// 2</span>
+
+position(<span class="str">"hi"</span>, [1, 2, <span class="str">"hi"</span>, 3])
+<span class="comment">// false</span>
+
+position(<span class="str">"hi"</span>, [1, 2, <span class="str">"hi"</span>, 3], test = <a href="is_equal.html">is_equal</a>)
+<span class="comment">// 2</span>
+
+position(<span class="str">"hi"</span>, [1, 2, <span class="str">"hi"</span>, 3], test = is_equal, start = 3)
+<span class="comment">// false</span>
+
+position(<span class="str">"hi"</span>, [1, 2, <span class="str">"hi"</span>, 3], test = is_equal, start = 2)
+<span class="comment">// 2</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="find.html">find</a></div>      
+      <div class="ref"><a href="member.html">member</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fx***)</title>
+  </head>
+
+  <body>
+    <h2>fx***</h2>
+
+    <div class="prog">
+      <pre><code>
+fxadd(fx1, <span class="pw">@rest</span> ...)
+fxsub(fx1, <span class="pw">@rest</span> ...) 
+fxmult(fx1, <span class="pw">@rest</span> ...) 
+fxdiv(fx1, fx2) 
+fxmod(fx1, fx2) 
+fxadd_wrap(fx1, <span class="pw">@rest</span> ...) 
+fxsub_wrap(fx1, <span class="pw">@rest</span> ...) 
+fxmult_wrap(fx1, <span class="pw">@rest</span> ...)
+      </code></pre>
+    </div>
+
+    <p>Return the result of performing the arithmetic operation on <code>fx1, ...</code> (or <code>fx1</code> and <code>fx2</code>).</p>
+
+    <p>When an ordinary fixnum addition, subtraction, or multiplication operation overflows,
+      an exception is raised. The functions with the <code>_wrap</code> suffix instead return a
+      wrapped-around result.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+fxadd(12, 34)
+<span class="comment">// 46</span>
+
+fxsub(<a href="greatest_fixnum.html">greatest_fixnum</a>(), 2)
+<span class="comment">// 2305843009213693949</span>
+
+fxadd(greatest_fixnum(), 2)
+<span class="comment">//&gt; error: FIXNUM overflow</span>
+
+fxadd_wrap(greatest_fixnum(), 2)
+<span class="comment">// -2305843009213693951</span>
+
+fxdiv(10, 3)
+<span class="comment">// 3</span>
+fxmod(10, 3)
+<span class="comment">// 1</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_fixnum.html">is_fixnum</a></div>
+      <div class="ref"><a href="fx_is_eq.html">fx_is_eq</a></div>      
+      <div class="ref"><a href="fxand.html">fxand</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

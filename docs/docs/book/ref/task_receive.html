@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_receive)</title>
+  </head>
+
+  <body>
+    <h2>task_receive</h2>
+
+    <div class="prog">
+      <pre><code>
+task_receive(<span class="pw">@optional</span> timeout, default)
+      </code></pre>
+    </div>
+
+    <p>Advance the mailbox cursor of the current task to the next message,
+      remove that message from the mailbox, rewind the mailbox cursor, and return the message.</p>
+    <p>When <code>timeout</code> is not specified, the current task will wait until a message is available in the
+      mailbox. When <code>timeout</code> is specified and <code>default</code> is not specified,
+      a <code>mailbox-receive-timeout-exception</code> object is raised if the timeout is reached before a
+      message is available. When <code>timeout</code> is specified and <code>default</code> is specified,
+      the value of <code>default</code> is returned if the timeout is reached before a message is available.</p>
+
+    <p><code>Timeout</code> can be an exact integer to indicate seconds or a fractional number to indicate sub-second precision.</p>
+
+    <p>The <code><span class="pw">!&lt;</span></code> operator has the same semantics as <code>task_receive</code> without <code>timeout</code> and
+      <code>default</code> specified.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> add2()
+  <span class="kw">letseq</span> (sender:n = task_receive())
+    <a href="task_send.html">task_send</a>(sender, n + 2)
+
+<span class="kw">let</span> adder = <a href="task.html">task</a>(add2)
+adder !> <a href="self.html">self</a>():10
+<span class="comment">// &lt;task&gt;:10</span>
+!&lt
+<span class="comment">// 12</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="task_messages_next.html">task_messages_next</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

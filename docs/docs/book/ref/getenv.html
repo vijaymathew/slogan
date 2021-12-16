@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (getenv)</title>
+  </head>
+
+  <body>
+    <h2>getenv</h2>
+
+    <div class="prog">
+      <pre><code>
+getenv(var, <span class="pw">@optional</span> default)
+      </code></pre>
+    </div>
+
+    <p>Return the value of the environment variable <code>var</code> of the current process. If no such environment variable is found and
+      <code>default</code> is provided, return <code>default</code>, otherwise raise an "Unbound OS environment variable" error.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+getenv(<span class="str">"logs_folder"</span>, <span class="str">"./"</span>)
+<span class="comment">// ./</span>
+<a href="setenv.html">setenv</a>(<span class="str">"logs_folder"</span>, <span class="str">"/logs/"</span>)
+getenv(<span class="str">"logs_folder"</span>, <span class="str">"./"</span>)
+<span class="comment">// /logs/</span>
+setenv(<span class="str">"logs_folder"</span>)
+getenv(<span class="str">"logs_folder"</span>, <span class="str">"./"</span>)
+<span class="comment">// ./</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="command_line.html">command_line</a></div>
+      <div class="ref"><a href="shell_command.html">shell_command</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

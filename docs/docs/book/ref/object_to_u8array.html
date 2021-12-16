@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (object_to_u8array)</title>
+  </head>
+
+  <body>
+    <h2>object_to_u8array</h2>
+
+    <div class="prog">
+      <pre><code>
+object_to_u8array(obj, <span class="pw">@optional</span> encoder = <a href="identity.html">identity</a>)
+      </code></pre>
+    </div>
+
+    <p>Return a <a href="u8array.html">byte array</a> that encodes the object <code>obj</code>.</p>
+    
+    <p>The optional <code>encoder</code> parameter is a function that take a single argument.
+      As the serializer walks through <code>obj</code>,
+      it calls <code>encoder</code> on each sub-object that is encountered.
+      The <code>encoder</code> is used to perform custom transformations on the sub-objects and thereby support custom encodings.</p>
+
+    <p>Some objects like <a href="task.html">tasks</a> and <a href="current_reader.html">streams</a> are non-serializable.
+      An <code>encoder</code> may be defined to serialize even such objects.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> e = object_to_u8array([1, <span class="str">"hi"</span>, 3])
+<a href="u8array_to_object.html">u8array_to_object</a>(e)
+<span class="comment">// [1, hi, 3]</span>
+
+<span class="kw">function</span> f(x) x * 100
+e = object_to_u8array(f)
+u8array_to_object(e)(10)
+<span class="comment">// 1000</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="byte_array_writer.html">byte_array_writer</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

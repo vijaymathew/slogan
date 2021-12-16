@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_subset)</title>
+  </head>
+
+  <body>
+    <h2>is_subset</h2>
+
+    <div class="prog">
+      <pre><code>
+is_subset(s1, s2)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the <a href="set.html">set</a> <code>s1</code> is a subset of set <code>s2</code>.</p>
+    Otherwise return <code><span class="pw">false</span></code>.</p>
+    
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+is_subset(#(1,2), #(2))
+<span class="comment">// false</span>
+is_subset(#(1,2), #(1,2))
+<span class="comment">// true</span>
+is_subset(#(1,2,3), #(1,2))
+<span class="comment">// false</span>
+is_subset(#(3), #(1,2))
+<span class="comment">// false</span>
+is_subset(#(2), #(1,2))
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_superset.html">is_superset</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

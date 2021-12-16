@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fxif)</title>
+  </head>
+
+  <body>
+    <h2>fxif</h2>
+
+    <div class="prog">
+      <pre><code>
+fxbit_count(fx1, fx2, fx3)
+      </code></pre>
+    </div>
+
+    <p>Return the the bitwise "if" of its arguments, all of which must be <a href="is_fixnum.html">fixnums</a>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+number_to_string(fxif(0b1001, 0b1111, 0b0101), 2)          
+<span class="comment">// 1101</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="fxand.html">fxand</a></div>
+      <div class="ref"><a href="fxbit_is_set.html">fxbit_is_set</a></div>
+      <div class="ref"><a href="fxshift.html">fxshift</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

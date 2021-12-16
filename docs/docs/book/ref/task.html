@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task)</title>
+  </head>
+
+  <body>
+    <h2>task</h2>
+
+    <div class="prog">
+      <pre><code>
+task(fn, @key args, suspended, name = <a href="void.html">void</a>, group)
+      </code></pre>
+    </div>
+
+    <p>Create and return a new task. The function <code>fn</code> is called in this task concurrently with the task that created it.
+      If specified, <code>args</code> must be a <a href="list.html">list</a> of objects. This list will be passed to <code>fn</code> as its arguments.
+      <code>Fn</code> should take as many arguments as there are elements in <code>args</code>.
+      The default value of <code>args</code> is <code><span class="pw">false</span></code>, which means
+      no arguments will be passed to <code>fn</code>.</p>
+
+    <p>If <code>suspended</code> is <code><span class="pw">true</span></code> the task is created in the suspended
+      state. It can be started later by calling the <a href="task_run.html">task_run</a> function.</p>
+
+    <p>If provided, <code>name</code> and <code>group</code> will identify the task's name and the <a href="task_group.html">group</a> it belongs to.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+task(<span class="kw">^</span>() <span class="kw">letfn</span> loop (i = 10)
+         { <a href="showln.html">showln</a>(i)
+           <a href="task_sleep.html">task_sleep</a>(2)
+           loop(i + 1) })
+<span class="comment">//> 10
+    11
+    12
+    13
+    14
+    15
+    16          
+    ...</span>
+
+<span class="comment">// passing arguments to the function executed by a task:</span>
+<span class="kw">function</span> show_range(start, end)
+  <span class="kw">letfn</span> loop (i = start)
+    <span class="kw">when</span> (i < end)
+    { showln(i)
+      task_sleep(2)
+      loop(i+1) }
+                                      
+task(show_range, args = [10, 15])
+<span class="comment">//&gt; 10
+    11
+    12
+    13
+    14</span>
+
+<span class="comment">/*
+Simple tasks that don't need arguments can be started by the spawn (!) operator.
+The expression that follow the operator will be evaluated in a new task.
+As an example, consider the following network server which just "echoes" the message sent by
+its client. It handles each client in a separate task. The client-handling logic is contained in
+the expression that follows the spawn (!) operator:
+*/</span>
+
+<span class="kw">let</span> s = <a href="tcp_server_stream.html">tcp_server_stream</a>(2020)
+
+<span class="kw">function</span> echo(client)
+{ showln(stream = client, <a href="read_line.html">read_line</a>(client))
+  <a href="flush_writer.html">flush_writer</a>(client) }
+  
+<span class="kw">letfn</span> loop (client = <a href="read.html">read</a>(s))
+{ !<a href="call_with_stream.html">call_with_stream</a>(client, echo)
+  loop(read(s)) }
+
+<span class="comment">// The following code can be used to test the echo server:</span>
+<span class="kw">let</span> c = <a href="tcp_client_stream.html">tcp_client_stream</a>(<span class="str">"localhost:2020"</span>)
+showln(stream = c, <span class="str">"hello"</span>)
+flush_writer(c)
+read_line(c)
+<span class="comment">//&gt; hello</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="self.html">self</a></div>
+      <div class="ref"><a href="task_run.html">task_run</a></div>
+      <div class="ref"><a href="task_sleep.html">task_sleep</a></div>
+      <div class="ref"><a href="task_yield.html">task_yield</a></div>
+      <div class="ref"><a href="task_join.html">task_join</a></div>            
+      <div class="ref"><a href="task_terminate.html">task_terminate</a></div>
+      <div class="ref"><a href="task_send.html">task_send</a></div>
+      <div class="ref"><a href="task_receive.html">task_receive</a></div>
+      <div class="ref"><a href="task_name.html">task_name</a></div>
+      <div class="ref"><a href="task_group.html">task_group</a></div>            
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

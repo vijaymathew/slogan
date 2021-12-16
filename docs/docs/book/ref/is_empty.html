@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_empty)</title>
+  </head>
+
+  <body>
+    <h2>is_empty</h2>
+
+    <div class="prog">
+      <pre><code>
+is_empty(xs)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if <code>xs</code> is the empty sequence, return <code><span class="pw">false</span></code>
+      if <code>xs</code> is anything else.</p>
+
+    <p>An empty sequence is represented by either the empty list (<code>[]</code>) or <code><span class="pw">false</span></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+is_empty([1, 2, 3])
+<span class="comment">// false</span>
+
+is_empty([])
+<span class="comment">// true</span>
+
+is_empty("hello")
+<span class="comment">// false</span>
+
+is_empty(false)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="list.html">list</a></div>
+      <div class="ref"><a href="length.html">length</a></div>
+      <div class="ref"><a href="rest.html">rest</a></div>
+      <div class="ref"><a href="tail.html">tail</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

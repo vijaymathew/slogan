@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - State and Modularity</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">7</h1>
+    <h1 class="title">State and Modularity</h1>
+
+    <h2>7.1 The State of the World</h2>
+    
+    <p>The world around us is populated by independent objects. If an object's behavior
+      is influenced by its history, then it is said to have <em>state</em>. For example, a bank account has state if it reports a new balance after
+      a successful withdrawal operation. The bank account we defined in the previous chapter do not have state, because the withdrawal operation
+      returned a new bank account instead of updating the current balance. This is not how bank accounts in the real world works!</p>
+
+    <p>To create bank account object that behave exactly like its real world counterpart, we need an operation that can change the value
+      associated with its local variable. Slogan provides the <em>assignment operator</em> for this purpose. Assignment is accomplished by the
+      statement:</p>
+
+    <div class="prog">
+      <pre><code>
+var = new_value
+      </code></pre>
+    </div>
+
+    <p>Using assignment, we will define a new bank account abstraction that support three fundamental operations &ndash; <code>balance</code> for
+      checking the current balance, <code>deposit</code> for adding money to the current balance and <code>withdraw</code> for getting money out of
+      the account.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_bank_account(balance)
+  <span class="pw">where</span> balance > 0
+{ <span class="kw">function</span> deposit(amount)
+    balance = balance + amount
+
+  <span class="kw">function</span> withdraw(amount)
+    <span class="pw">where</span> balance - amount > 0
+    balance = balance - amount
+    
+  <span class="kw">^</span>(message)
+  | <span class="sym">'balance</span> -> balance
+  | <span class="sym">'deposit</span> -> deposit
+  | <span class="sym">'withdraw</span> -> withdraw }
+      </code></pre>
+    </div>
+
+    <p>As it can now update its internal state, a single instance of bank account is able to keep track of the running balance over
+      a series of transactions:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> account = make_bank_account(100)
+account.deposit(10)
+account.balance
+<span class="comment">// 110</span>
+account.withdraw(80)
+account.balance
+<span class="comment">// 30</span>
+      </code></pre>
+    </div>
+
+    <p>Assignment helps a lot in improving the <em>modularity</em> of a system. To understand this better, consider a function that
+      adds the number <code>2</code> to its argument. For the purpose of reporting some metrics, it should also log the number of times
+      it was called. Without assignment, this is how we would define and use this function:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> add2(x, n)
+{ <a href="ref/showln.html">showln</a>(<span class="str">"add2: "</span>, n+1)
+  x+2:n+1 }
+
+<span class="kw">let</span> fn = 0
+<span class="kw">let</span> r:fn2 = add2(10, fn)
+<span class="comment">//> add2: 1</span>
+r
+<span class="comment">// 12</span>
+
+<span class="kw">let</span> r:fn3 = add2(21, fn2)
+<span class="comment">//> add2: 2</span>
+r
+<span class="comment">// 23</span>
+      </code></pre>
+    </div>
+
+    <p>The user of <code>add2</code> only cares about the result of calling the function, i.e <code>x</code> added with <code>2</code>.
+      But now he has to worry about the implementation details of <code>add2</code> and define extra variables to correctly keep track of the
+      metrics. If the caller is careless about the second argument, the metrics log will become wrong and useless.</p>
+
+    <p>The implementation of <code>add2</code> in not <em>modular</em> because it <em>leaks</em> its internals to other parts of the program.
+      Assignment allows us to easily fix the problem. We will maintain the count in a changing variable visible only to <code>add2</code>:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> add2 =
+  <span class="kw">let</span> (call_count = 0)
+    <span class="kw">function</span> (x)
+    { call_count = call_count + 1
+      showln(<span class="str">"add2: "</span>, call_count)
+      x + 2 }
+
+add2(10)
+<span class="comment">//> add2: 1</span>
+<span class="comment">// 12</span>
+
+add2(21)
+<span class="comment">//> add2: 2</span>
+<span class="comment">// 23</span>
+      </code></pre>
+    </div>
+    
+    <h3>7.1.1 The Costs of Assignment</h3>
+
+    <p>As we saw in the preceding section, assignment helps to model objects in the real world in a modular fashion. But this convenience
+      comes with a price. Once we introduce assignment, it becomes harder to reason about the functions we write. As long as we don't do assignments,
+      two invocations of the same function with the same arguments will produce the same result. In other words, functions without assignment are
+      computing <em>mathematical</em> functions with easily verifiable properties. This style of programming is known
+      as <em>functional programming</em>.</p>
+
+    <p>Consider a simple function that decrements a number by a given amount. Let us first write a <em>functional</em> version and
+      how see how simple reasoning techniques can be applied to verify its correctness.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_dec(balance)
+  <span class="kw">^</span>(amount) balance - amount
+      </code></pre>
+    </div>
+
+    <p>Does the function returned by <code>make_dec</code> work as expected? Is it possible to verify its correctness without actually running it?
+      For instance, consider the function returned by the call <code>make_dec(100)</code>:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> d = make_dec(100)
+      </code></pre>
+    </div>
+
+    <p>What will be the result of calling <code>d(20)</code> followed by a call to <code>d(45)</code>?
+      It will produce <code>80</code> and <code>55</code>. We can verify this by simply substituting the
+      variables <code>balance</code> and <code>amount</code> in the function body with their respective values. We can "expand" the function call
+      to the following steps:</p>
+
+    <div class="prog">
+      <pre><code>
+d(20)
+=&gt; balance - amount
+=&gt; 100 - 20
+=&gt; 80
+
+d(45)
+=&gt; balance - amount
+=&gt; 100 - 45
+=&gt; 55
+      </code></pre>
+    </div>
+
+    <p>We are able to substitute the variable names with their values because the variables are guaranteed not to change. In other words, they are
+      said to be <em>referentially transparent</em>.</p>
+
+    <p>Now let us look at a new version of the decrementor function that depend on assignment:</p>
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_dec(balance)
+  <span class="kw">^</span>(amount)
+  { balance = balance - amount
+    balance }
+      </code></pre>
+    </div>
+
+    <p>Will the simple reasoning based on value substitution work for this new implementation? Let us find out by manually
+      evaluating the same sequence of calls as before:</p>
+
+    <div class="prog">
+      <pre><code>
+d(20)
+=&gt; { balance = balance - amount; balance }
+=&gt; { balance = 100 - 20; 100 }
+=&gt; 100
+
+d(45)
+=&gt; { balance = balance - amount; balance }
+=&gt; { balance = 100 - 20; 100 }
+=&gt; 100
+      </code></pre>
+    </div>    
+
+    <p><a name="01-back"></a>Our reasoning is obviously wrong<sup><a href="#01">1</a></sup>. If we actually run the code, we will get <code>80</code>
+      and <code>35</code> as results. Once assignment is brought in we loose the ability to do such simple reasoning about functions. We can no
+      longer assume that a variable is just a name for a value. It now reflects on the underlying computer architecture. The variable has become
+      a reference to a location in the computer's memory, which can change. The programming model that makes extensive use of assignment is known
+      as <em>imperative programming</em>.</p>
+
+    <p>Assignment also affects the way how two objects are compared for equality. Without assignment two objects that were equal when they were
+      created continues to be so for the rest of their lives. This is because their internal state never changes. In fact, a smart compiler can even
+      optimize on storage by putting both objects at the same location in memory and doing a fast equality check by just comparing memory addresses.
+      But once we add assignment to the language, for any equality check to be reliable, the structure of both objects
+      has to be inspected.</p>
+
+    <p>Assignment tends to be an expensive operation in modern multi-core chips with multiple levels of caches. In functional programming
+      variables are initialized once and they never changes. This leads to efficient caching of frequently
+      accessed values at the hardware level. When a new value is assigned, the cached values has to be flushed and written back to the main memory.
+      This might make a computation with assignments costlier than a purely functional one.</p>
+    
+    <p>Assignment is also more susceptible to bugs because the order of doing assignments is important. The situation becomes more complicated
+      once we have multiple <a href="https://en.wikipedia.org/wiki/Thread_(computing)" target="_blank">threads of execution</a> in the same program.
+      Slogan provide elegant solutions for managing state in concurrent programs. This will be the topic of the next two chapters.</p>
+
+    <h2>7.2 Imperative Loops</h2>
+
+    <p>Earlier in this book, we learned how to do iterations with recursive function calls.
+      The named <code><span class="kw">letfn</span></code> construct is a generalization
+      on this to enable local iterations. The iterations we did so far were <em>functional</em> because they don't have to change state
+      to keep track of the loops boundary conditions. For example, consider the following loop. On each iteration, a new value is created and passed to
+      the recursive call to <code>loop</code>. No mutation of existing state is involved.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">letfn</span> loop (i = 0)
+  <span class="kw">when</span> (i &lt;= 2)
+  { showln(i)
+    loop(i + 1) }
+
+<span class="comment">//> 0
+    1
+    2</span>
+      </code></pre>
+    </div>
+
+    <p>If you have programmed in an imperative language like C or Java, you must be more familiar with writing this kind of iterations using the
+      <code>for</code> or <code>while</code> statements. Though both styles will work for simple loops like the one above,
+      some algorithms can be implemented
+      efficiently and cleanly only in an imperative style. Slogan provides the <code><span class="kw">for</span></code> looping construct to meet such
+      a requirement. The preceding example can be rewritten using <code><span class="kw">for</span></code> as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">for</span> (i = 0 <span class="pw">to</span> 2)
+  showln(i)
+
+<span class="comment">//> 0
+    1
+    2</span>
+      </code></pre>
+    </div>
+
+    <p>Counting downwards is accomplished by,</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">for</span> (i = 2 <span class="pw">downto</span> 0)
+  showln(i)
+
+<span class="comment">//> 2
+    1
+    0</span>
+      </code></pre>
+    </div>
+
+    <p>You are allowed to have explicit control over the looping counter and condition:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">for</span> (i = 5; i &lt; 15; i+3)
+  showln(i)
+
+<span class="comment">//> 5
+   8
+   11
+   14</span>
+      </code></pre>
+    </div>
+
+    <p>The <code><span class="kw">for</span></code> loop construct is an expression in Slogan. It returns the value of the last expression
+      evaluated in its body.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="kw">for</span> (j = 0, i = 5; i &lt; 15; i+3)
+{ j = j + i
+  j }
+
+s
+<span class="comment">// 38</span>
+      </code></pre>
+    </div>
+
+    <p>You can exit early from the loop by calling the <code><span class="pw">break</span></code> expression. This expression returns
+      <code><span class="pw">false</span></code> by default. <code><span class="pw">Break</span></code> can be asked to return another value,
+      by calling it like a function and passing the required value as argument.</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">for</span> (i = 0; i &lt; 10; i + 1)
+  <span class="kw">when</span> (i == 5) <span class="pw">break</span>
+<span class="comment">// false</span>
+
+<span class="kw">for</span> (i = 0; i &lt; 10; i + 1)
+  <span class="kw">when</span> (i == 5) <span class="pw">break</span>(i + 1)
+<span class="comment">// 6</span>
+      </code></pre>
+    </div>
+
+    <p>The <code><span class="pw">continue</span></code> expression allows control to return to the top of the loop. Just like
+      <code><span class="pw">break</span></code>, an optional argument can be passed to <code><span class="pw">continue</span></code>.
+      This will become the value of the loop if <code><span class="pw">continue</span></code> happens to be the last expression
+      evaluated in its body.</p>
+
+    <div class="pre">
+      <pre><code>
+<span class="kw">for</span> (j = 0, i = 0; i &lt; 10; i + 1)
+  <span class="kw">if</span> (<a href="ref/remainder.html">remainder</a>(i, 3) == 0) <span class="pw">continue</span>
+  <span class="kw">else</span> { j = j + i; j }
+<span class="comment">// false</span>
+
+<span class="kw">for</span> (j = 0, i = 0; i &lt; 10; i + 1)
+  <span class="kw">if</span> (remainder(i, 3) == 0) <span class="pw">continue</span>(j)
+  <span class="kw">else</span> { j = j + i; j }
+<span class="comment">// 27</span>
+
+<span class="kw">for</span> (j = 0, i = 0; i &lt; 10; i + 1)
+  <span class="kw">if</span> (remainder(i, 2) == 0) <span class="pw">continue</span>
+  <span class="kw">else</span> { j = j + i; j }
+<span class="comment">// 25</span>
+      </code></pre>
+    </div>
+
+    <p>If your style of programming demands more imperative control structures like the <code><span class="kw">for</span></code> loop, you can
+      add them to the language! We will figure out how to do this and more in the <a href="syntax.html">last chapter</a> of Part I.</p>
+    
+    <h2>7.3 Variations on a Theme</h2>
+
+    <p>Once we have assignment in our language, we also have mutable data structures. For instance, it is now possible to have functions that change
+      the values in the head or tail of a pair:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> p = 10:20
+p
+<span class="comment">// 10:20</span>
+
+<a href="ref/set_head.html">set_head</a>(p, 100)
+<a href="ref/set_tail.html">set_tail</a>(p, <a href="ref/head.html">head</a>(p) * <a href="ref/tail.html">tail</a>(p))
+p
+<span class="comment">// 100:2000</span>
+      </code></pre>
+    </div>
+
+    <p>Other data structures like lists, arrays and hash tables can also be mutated:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> xs = [10, 20, 30]
+xs[1] = xs[0] + xs[2]
+xs
+<span class="comment">// [10, 40, 30]</span>
+
+<span class="kw">let</span> ys = #[10, 20, 30]
+ys[1] = ys[1] * ys[2]
+ys
+<span class="comment">// #[10, 600, 30]</span>
+
+<span class="kw">let</span> zs = #{<span class="sym">'name</span>:<span class="sym">'alice</span>, <span class="sym">'age</span>:3}
+zs[<span class="sym">'age</span>] = 2
+zs;
+<span class="comment">// #{name: alice, age: 2}</span>
+
+<span class="comment">// for faster updates, use type-specific mutators/accessors
+// instead of the generic [] operator.</span>
+<a href="ref/list_set.html">list_set</a>(xs, 0, <span class="str">"hello"</span>)
+xs
+<span class="comment">// [hello, 40, 30]</span>
+
+<a href="ref/array_set.html">array_set</a>(ys, 0, \a)
+ys
+<span class="comment">// #[\a, 600, 30]</span>
+
+<a href="ref/hashtable_set.html">hashtable_set</a>(zs, <span class="sym">'name</span>, <span class="sym">'bob</span>)
+zs
+<span class="comment">// #{name: bob, age: 2}</span>
+      </code></pre>
+    </div>
+    
+    <h3>7.3.1 An Imperative Queue</h3>
+
+    <p>In this section, we will see how to define new mutable data structures. We will define a <em>queue</em>, a sequence in which items
+      are inserted at one end (called the <em>rear</em> of the queue) and deleted from the other end (the <em>front</em>). The queue data
+      structure will support the following operations:</p>
+
+    <div class="prog">
+      <pre><code>
+make_queue      &ndash; construct and return an empty queue
+front_queue     &ndash; select and return the first item in the queue
+insert_queue    &ndash; insert a new item at the rear of the queue
+delete_queue    &ndash; remove the first item in the queue
+is_empty_queue  &ndash; check if the queue is empty
+      </code></pre>
+    </div>
+
+    <p>These operations will internally use the following functions to access and modify the pointers to front and rear of the queue. Two lists
+      will represent the front and rear parts and they enable constant time lookup and insertion operations.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> front_ptr(queue) <a href="ref/head.html">head</a>(queue)
+<span class="kw">function</span> rear_ptr(queue) <a href="ref/tail.html">tail</a>(queue)
+<span class="kw">function</span> set_front_ptr(queue, item) <a href="ref/set_head.html">set_head</a>(queue, item)
+<span class="kw">function</span> set_rear_ptr(queue, item) <a href="ref/set_tail.html">set_tail</a>(queue, item)
+      </code></pre>
+    </div>
+
+    <p>The queue constructor return a pair of <a href="ref/is_empty.html">empty lists</a>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_queue() []:[]
+      </code></pre>
+    </div>
+
+    <p>A queue is considered empty if its front part is the empty list.</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> is_empty_queue(q) <a href="ref/is_empty.html">is_empty</a>(front_ptr(q))
+      </code></pre>
+    </div>
+
+    <p>Insertion should check for two conditions. If the queue is empty a list is created with the new item and both the front an rear pointers
+      point to this list. If the queue is not empty, the rear pointer is updated to point to this list. Then the rear pointer is "truncated"
+      to make sure the next insertion need not traverse all the elements in the queue.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> insert_queue(q, item)
+  <span class="kw">let</span> (new_entry = [item])
+    <span class="kw">if</span> (is_empty_queue(q))
+    { set_front_ptr(q, new_entry)
+      set_rear_ptr(q, new_entry) }
+    <span class="kw">else</span>
+    { set_tail(rear_ptr(q), new_entry)
+      set_rear_ptr(q, new_entry) }
+        </code><pre>
+    </div>
+
+    <p>To select the item at the front of the queue, we return the head of the pair indicated by the front pointer.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> front_queue(q)
+  <span class="kw">if</span> (is_empty_queue(q))          
+    <a href="ref/error.html">error</a>(<span class="str">"front called on an empty queue"</span>)
+  <span class="kw">else</span>
+    head(front_ptr(q))    
+      </code></pre>
+    </div>
+    
+    <p>To delete the item at the front of the queue, we merely modify the front pointer so that it now points at the second item in the queue.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> delete_queue(q)          
+  <span class="kw">if</span> (is_empty_queue(q))
+    <a href="ref/error.html">error</a>(<span class="str">"delete called on an empty queue"</span>)
+  <span class="kw">else</span>
+    set_front_ptr(q, tail(front_ptr(q)))
+      </code></pre>
+    </div>
+
+    <p>Now it's time to see the queue data structure in action!</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> q = make_queue()
+insert_queue(q, 1)
+insert_queue(q, 2)
+front_queue(q)
+<span class="comment">// 1</span>
+delete_queue(q)
+insert_queue(q, 3)
+front_queue(q)
+<span class="comment">// 2</span>
+delete_queue(q)
+front_queue(q)
+<span class="comment">// 3</span>
+      </code></pre>
+    </div>
+
+    <p>Each insert and delete operation mutates the internal state of the queue. An advantage of this is that, we are able to do all
+      operations in constant time. On the downside, we lose a version of the queue with an insert or delete operation. There is no way to "go back" and see
+      the contents of the queue at point past in time. We also cannot easily share this queue across simultaneously executing computations
+      (threads or tasks) without adding code for data synchronization. For applications that require these properties, we need a queue that is
+      immutable.</p>      
+      
+    <h3>7.3.2 A Functional Queue</h3>
+
+    <p>In the pure functional model that disallow assignments, the best we can do is to get amortized constant-time insert and delete operations.
+      That is, any sequence of <code>n</code> insert and delete operations takes a total time that is proportional to some constant times <code>n</code>.
+      Any individual operation might not be constant-time, however.</p>
+
+    <p>The functional queue is also represented as a pair of lists, one for the front and the other for the rear.
+      At any instant, the queue content is given by
+      <code><a href="ref/append.html">append</a>(front, <a href="ref/reverse.html">reverse</a>(rear))</code>.
+      An element is inserted by adding it to the head of <code>rear</code> and deleted by removing it from
+      the head of <code>front</code>. To make this representation work, each element in <code>rear</code> has to
+      be moved to <code>front</code> sooner or later. This should be done only occasionally, when <code>front</code>
+      becomes empty. Then <code>rear</code> is reversed and moved to <code>front</code>. The reverse takes time
+      proportional to the length of <code>rear</code>, i.e., to the number of elements it reverses. Each
+      element that goes through the queue is passed exactly once from <code>rear</code> to <code>front</code>.
+      Allocating the execution time of <code>reverse</code> to each element therefore gives a constant time per element.
+      This is why the queue is amortized.</p>
+
+    <p>Having described how our immutable queue works, let us move on to its implementation. The queue constructor needs to accept the
+      <code>front</code> and <code>rear</code> lists as optional arguments. This is because each insert and delete operation has to create
+      a new queue, instead of mutating the existing one. We will also define a helper function called
+      <code>check_queue</code> whose purpose is to reverse and move <code>rear</code> to <code>front</code> if <code>front</code>
+      is empty.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_queue(f = [], r = []) f:r
+          
+<span class="kw">function</span> check_queue(q)
+  <span class="kw">if</span> (<a href="ref/is_empty.html">is_empty</a>(front_ptr(q)))
+    make_queue(<a href="ref/reverse.html">reverse</a>(rear_ptr(q)))
+  <span class="kw">else</span> q
+      </code></pre>
+    </div>
+
+    <p>The <code>insert_queue</code> function adds the new item to the head of rear and makes sure the queue is ready to return the next item
+      from its <code>front</code>. Similarly, <code>delete_queue</code> also ensures the required invariant after removing the
+      head of <code>front</code>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> insert_queue(q, item)
+  check_queue(make_queue(front_ptr(q), item:rear_ptr(q)))
+
+<span class="kw">function</span> delete_queue(q)
+  check_queue(make_queue(<a href="ref/tail.html">tail</a>(front_ptr(q)), rear_ptr(q)))
+      </code></pre>
+    </div>
+
+    <p>The program below show operations on the queue. As this queue is immutable, we need to explicitly keep track of instances
+      to reach a desired final state.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> q = insert_queue(insert_queue(make_queue(), 1), 2)
+front_queue(q)
+<span class="comment">// 1</span>
+front_queue(delete_queue(insert_queue(delete_queue(q), 3)))
+<span class="comment">//3 </span>
+      </code></pre>
+    </div>
+
+    
+    <h2>7.4 Modules and Namespaces</h2>
+
+    <p>The functions that implemented the immutable queue has effectively over-written the imperative queue implementation. Is it possible to
+      have both implementations in the same program, while maintaining a single "protocol" for operations on queues? The obvious solution
+      is to implement the queues as two <a href="func.html">closures</a>, one imperative and the other
+      functional.</p>
+
+    <p>Slogan provide a convenient way to describe closure objects, without having to explicitly define and return a "message-handler" function.
+      This is accomplished by the <code><span class="kw">module</span></code> expression. A <code><span class="kw">module</span></code> definition
+      has the following syntax:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">module</span> &lt;name&gt; (&lt;export_list&gt;) &lt;definitions&gt;
+      </code></pre>
+    </div>
+
+    <p>The <code>export_list</code> contain the names from <code>definitions</code> that must be visible outside the module. These are essentially
+      the "messages" an instance of the module can respond to.</p>
+
+    <p>Let us define the imperative queue as a module:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">module</span> mutable_queue(make, is_empty:is_empty_queue,
+                     front, insert, delete)
+{ <span class="kw">function</span> front_ptr(queue) head(queue)
+  <span class="kw">function</span> rear_ptr(queue) tail(queue)
+  <span class="kw">function</span> set_front_ptr(queue, item) set_head(queue, item)
+  <span class="kw">function</span> set_rear_ptr(queue, item) set_tail(queue, item)          
+
+  <span class="kw">function</span> make() []:[]
+
+  <span class="kw">function</span> is_empty_queue(q) is_empty(front_ptr(q))
+
+  <span class="kw">function</span> insert(q, item)
+    <span class="kw">let</span> (new_entry = [item])
+      <span class="kw">if</span> (is_empty_queue(q))
+      { set_front_ptr(q, new_entry)
+        set_rear_ptr(q, new_entry) }
+      <span class="kw">else</span>
+      { set_tail(rear_ptr(q), new_entry)
+        set_rear_ptr(q, new_entry) }
+
+  <span class="kw">function</span> front(q)
+    <span class="kw">if</span> (is_empty_queue(q))          
+      error(<span class="str">"front called on an empty queue"</span>)
+    <span class="kw">else</span>
+      head(front_ptr(q))  
+
+  <span class="kw">function</span> delete(q)          
+    <span class="kw">if</span> (is_empty_queue(q))
+      error(<span class="str">"delete called on an empty queue"</span>)
+    <span class="kw">else</span>
+      set_front_ptr(q, tail(front_ptr(q))) }
+      </code></pre>
+    </div>
+
+    <p>The functions <code>make</code>, <code>is_empty_queue</code>, <code>front</code>, <code>insert</code>
+      and <code>delete</code> are exported and made visible to the consumers of the module. These names constitute the public <em>interface</em>
+      of the module. The functions <code>front_ptr</code>, <code>rear_ptr</code>,
+      <code>set_front_ptr</code> and <code>set_rear_ptr</code> are used in the implementation of the module and need not be published to
+      the outside world.</p>
+    
+    <p>Note that for all public functions, except for <code>is_empty_queue</code> we have omitted the <code>_queue</code> suffix.
+      This is because the module name makes the extra suffix redundant. We retained the suffix for <code>is_empty_queue</code> so that
+      it won't conflict with the <code>is_empty</code> built-in function used in its implementation. But note that we export
+      <code>is_empty_queue</code> as <code>is_empty</code>. This achieved by the export specification &ndash; <code>is_empty:is_empty_queue</code>.
+      The exported name will not conflict with the global <code>is_empty</code> because it is scoped by the module name.</p>
+
+    <p>This is how we would use the new <code>mutable_queue</code> module:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> mq = mutable_queue
+<span class="kw">let</span> q = mq.make()
+mq.insert(q, 1)
+mq.insert(q, 2)
+mq.front(q)
+<span class="comment">// 1</span>
+
+mq.delete(q)
+mq.insert(q, 3)
+mq.front(q)
+<span class="comment">// 2</span>
+
+mq.delete(q)
+mq.front(q)
+<span class="comment">// 3</span>
+      </code></pre>
+    </div>
+
+    <p><code>Modules</code> are first-class objects in Slogan. They can be assigned to variables, they can be passed as arguments to functions and
+      they can be dynamically created and returned from functions. This is why we could assign the shorter alias <code>mq</code> to refer to
+      the <code>mutable_queue</code> module.</p>
+
+    <p>We shall put the immutable queue into its own module as well:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">module</span> immutable_queue(make, is_empty:is_empty_queue,
+                       front, insert, delete)          
+{ <span class="kw">function</span> front_ptr(queue) head(queue)
+  <span class="kw">function</span> rear_ptr(queue) tail(queue)
+
+  <span class="kw">function</span> make(f = [], r = []) f:r
+          
+  <span class="kw">function</span> check(q)
+    <span class="kw">if</span> (is_empty(front_ptr(q)))
+      make(reverse(rear_ptr(q)))
+    <span class="kw">else</span> q
+
+  <span class="kw">function</span> is_empty_queue(q) is_empty(front_ptr(q))
+    
+  <span class="kw">function</span> front(q)
+    <span class="kw">if</span> (is_empty_queue(q))          
+      error(<span class="str">"front called on an empty queue"</span>)
+    <span class="kw">else</span> head(front_ptr(q))
+
+  <span class="kw">function</span> insert(q, item)
+    check(make(front_ptr(q), item:rear_ptr(q)))
+
+  <span class="kw">function</span> delete(q)
+    check(make(tail(front_ptr(q)), rear_ptr(q))) }
+      </code></pre>
+    </div>
+
+    <p>This is how we would use the <code>immutable_queue</code> module:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> imq = immutable_queue
+<span class="kw">let</span> q = imq.insert(imq.insert(imq.make(), 1), 2)
+imq.front(q)
+<span class="comment">// 1</span>
+imq.front(imq.delete(imq.insert(imq.delete(q), 3)))
+<span class="comment">// 3</span>
+      </code></pre>
+    </div>
+
+    <p>Now we have two separate queue modules that share a single protocol. How can we package these two together so that users can choose between
+      the mutable and immutable implementations as they wish? One way to do this is to put them into a "super" module as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">module</span> queue(mutable_queue, immutable_queue)
+{ <span class="kw">module</span> mutable_queue(...) { ... }
+  <span class="kw">module</span> immutable_queue(...) { ... } }
+      </code></pre>
+    </div>
+
+    <p>Another option is to make use of the <code><span class="kw">namespace</span></code> facility:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">namespace</span> queue
+{ <span class="kw">module</span> mutable_queue(...) { ... }
+  <span class="kw">module</span> immutable_queue(...) { ... } }
+      </code></pre>
+    </div>    
+
+    <p>All members in a <code><span class="kw">namespace</span></code> are public and are accessible via the <code>::</code> operator.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> mq = queue::mutable_queue
+<span class="kw">let</span> imq = queue::immutable_queue
+      </code></pre>
+    </div>
+
+    <p>The primary purpose of a namespace is to arrange modules and other namespaces into logical groups. Just like modules, namespaces are
+      first-class objects in Slogan.</p>
+    
+    <hr></hr>
+
+    <div class="note">
+      <p><sup><a name="01"></a><a href="#01-back">1</a></sup>We did not substitute <code>balance</code> before the assignment operator
+        because the expression <code>100 = 100 - 20</code> does not make sense and cannot be evaluated.</p>
+    </div>
+
+    <hr></hr>
+    <p align="center">
+      <a href="conc.html">Next</a> | <a href="func.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>
+

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Processing Text Files</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">14</h1>
+    <h1 class="title">Processing Text Files</h1>
+
+    <p><b>Part II</b> of this book present complete Slogan programs that perform useful real-world tasks.
+      These programs will also illustrate how to write good Slogan code.</p>
+
+    <p>The first program we study will demonstrate how to take textual data as input, do some processing
+      and output the result. This example is inspired by the <a href="https://en.wikipedia.org/wiki/AWK" target="_blank">AWK</a>
+      programming language which is an important component of the UNIX programming environment. The program we are going to develop
+      will read "records" from an input file and process each record by calling a function defined by the user. A record is defined as
+      a single line in the file, with each entry separated by spaces. As an example, the following listing shows a file (named <code>emp.dat</code>)
+      with five records. Each record has three elements: the name, hourly rate and total hours worked by an employee.</p>
+
+    <div class="prog">
+      <pre><code>
+Mark   45  12
+Susan  56  10
+Matt   67  14
+Jake   45   0
+Jones  34  15 
+      </code></pre>
+    </div>
+
+    <p>Our program will enable the user to generate a report of total wage payable to each employee by writing a function like this:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> action(name, hourly_rate, hours_worked)
+  <span class="kw">when</span>(hours_worked > 0)          
+    <a href="ref/showln.html">showln</a>(name, <span class="str">" "</span>, hourly_rate * hours_worked)          
+      </code></pre>
+    </div>
+
+    <p>To prepare the arguments for calling the <code>action</code> function, each line in the input file has to be processed as follows:</p>
+    <p>
+      <ol>
+        <li>Split the line into individual elements, using space as the delimiter.</li>
+        <li>If an element is in numeric format convert that to a number.</li>
+        <li>If an element represents a boolean literal (<code>true</code> or <code>false</code>), convert that into the corresponding boolean value.</li>
+        <li><a href="ref/apply.html">Apply</a> <code>action</code> to the elements.</li>
+      </ol>
+    </p>
+
+    <p>The algorithm described above is captured by the following <code>handle_lines</code> function:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> handle_lines()
+  <span class="kw">let</span> (line = <a href="ref/read_line.html">read_line</a>(input))
+    <span class="kw">when</span> (<a href="ref/not.html">not</a>(<a href="ref/is_eof_object.html">is_eof_object</a>(line)))
+    { <a href="ref/apply.html">apply</a>(action, <a href="ref/map.html">map</a>(parse_token, <a href="ref/string_split.html">string_split</a>(line)))
+      handle_lines() }
+      </code></pre>
+    </div>
+
+    <p><code>Handle_lines</code> call the utility <code>parse_token</code> to convert appropriate individual elements to numbers and boolean values:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> parse_token(t)
+  <span class="kw">if</span> (<a href="ref/char_is_numeric.html">char_is_numeric</a>(t[0]) || t[0] == \.)
+    <span class="kw">try</span> <a href="ref/string_to_number.html">string_to_number</a>(t)
+    <span class="kw">catch</span> (_) t
+  <span class="kw">else if</span> (t == <span class="str">"true"</span>) <span class="pw">true</span>
+  <span class="kw">else if</span> (t == <span class="str">"false"</span>) <span class="pw">false</span>
+  <span class="kw">else</span> t
+      </code></pre>
+    </div>
+
+    <p>As mentioned earlier, the logic to process each record is expressed by the <code>action</code> function defined by the user.
+      How can we load this user defined function into our data processor? One way is to let the user write this function as a Slogan script and pass
+      this script's name as a command line argument to the program. This script can then be dynamically loaded and evaluated. Thus all
+      definitions in the script are made available to the program. The following code snippet shows how to get the script name from
+      the command line, then load and evaluate it:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// ignore the first command line argument, which is the program's name.</span>
+<span class="kw">let</span> args = <a href="ref/rest.html">rest</a>(<a href="ref/command_line.html">command_line</a>())
+
+<span class="kw">if</span> (<a href="ref/is_empty.html">is_empty</a>(args))
+  <a href="ref/error.html">error</a>(<span class="str">"expected script name as command line argument"</span>)
+<span class="kw">else</span>
+  <a href="ref/reload.html">reload</a>(<a href="ref/first.html">first</a>(args))
+      </code></pre>
+    </div>
+
+    <p>The only thing that remains to be done is to initialize the global variable <code>input</code> to point to the data file. This file's name is also
+      accepted by the program as a command line argument. If no data file is specified by the user, <code>input</code> will default to the standard
+      input.</p>
+
+    <div class="prog">
+      <pre><code>
+args = rest(args)
+
+<span class="kw">let</span> input = <a href="ref/current_reader.html">current_reader</a>()
+<span class="kw">when</span> (not(is_empty(args)))
+  input = <a href="ref/file_reader.html">file_reader</a>(first(args))
+      </code></pre>
+    </div>
+
+    <p>That finishes our text file processor! The full listing of the program is available in the script <a href="code/awk.sn">awk.sn</a>.
+      This can be compiled into a stand-alone program by running the command:</p>
+
+    <div class="prog">
+      <pre><code>
+$ slogan -x awk          
+      </code></pre>
+    </div>
+
+    <p>User defined <code>action</code> functions can now be written as separate scripts and fed to this program along with the data file to process.
+      For example, we can save the original <code>action</code> function in a script called "myaction.sn" and run it on the "emp.dat" file.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// myaction.sn</span>          
+<span class="kw">function</span> action(name, rate_per_hour, total_hours)
+  <span class="kw">when</span> (total_hours > 0)
+    showln(name, <span class="str">" "</span>, rate_per_hour * total_hours)    
+      </code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>
+$ ./awk myaction.sn emp.dat
+<span class="comment">//> Mark 540
+    Susan 560
+    Matt 938
+    Jones 510</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 14.1.</b> &nbsp; Modify the data processor to accept multiple data files as input. This means the command line interface has
+      to be extended as: <code>./awk action.sn data1 data2 ...dataN</code>. The <code>action</code> function should be applied to records in each file
+      sequentially.</p>
+
+    <p><b>Exercise 14.2.</b> &nbsp; Make the name of the data file that is currently being processed available to the <code>action</code> function.</p>
+
+    <p><b>Exercise 14.3.</b> &nbsp; Update the <code>handle_lines</code> function to report invalid inputs with user-friendly messages
+      and make a clean exit.</p>
+
+    <p><b>Exercise 14.4.</b> &nbsp; The data processor can only deal with records where elements are separated by spaces. Change the program in such a way
+      that the delimiter character can be specified by the user.</p>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="ref/index.html">Next</a> | <a href="syntax.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

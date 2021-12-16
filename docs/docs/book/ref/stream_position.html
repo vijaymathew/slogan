@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (stream_position)</title>
+  </head>
+
+  <body>
+    <h2>stream_position</h2>
+
+    <div class="prog">
+      <pre><code>
+stream_position(s)
+      </code></pre>
+    </div>
+
+    <p>Return the current position of the <a href="current_reader.html">stream</a> <code>s</code>.</p>
+
+    <p>A stream may allow queries to determine its current position in the underlying
+      stream of bytes or characters. If so, <code>stream_position</code> returns the current position.
+      For binary streams, the position is always an exact nonnegative integer byte displacement
+      from the start of the byte stream. For textual streams, the representation of a position
+      is unspecified; it may not be an exact nonnegative integer and, even if it is, it may not
+      represent either a byte or character displacement in the underlying stream.</p>
+    <p>If <code>stream_position</code> is called on a stream that does not support it, an exception is raised.</p>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="stream_has_position.html">stream_has_position</a></div>
+      <div class="ref"><a href="set_stream_position.html">set_stream_position</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (path_normalize)</title>
+  </head>
+
+  <body>
+    <h2>path_normalize</h2>
+
+    <div class="prog">
+      <pre><code>
+path_normalize(path, <span class="pw">@optional</span> allow_relative, origin_directory) 
+      </code></pre>
+    </div>
+
+    <p>Take a <code>path</code> of a file or directory and returns its normalized path. The optional <code>origin_directory</code> parameter,
+      which defaults to the current working directory, is the directory used to resolve relative paths. All components of the paths <code>path</code>
+      and <code>origin_directory</code> must exist, except possibly the last component of <code>path</code>. A normalized path is a path
+      containing no redundant parts and which is consistent with the current structure of the filesystem. A normalized path of a directory
+      will always end with a path separator (i.e. '/', '\', or ':' depending on the operating system). The optional <code>allow_relative</code>
+      parameter, which defaults to <code><span class="pw">false</span></code>, indicates if the path returned can be expressed relatively
+      to <code>origin_directory</code>: a <code><span class="pw">false</span></code> requests an absolute path, the symbol
+      <code><span class="sym">'shortest</span></code> requests the shortest of the absolute and relative paths, and any other value
+      requests the relative path. The shortest path is useful for interaction with the user because short relative paths are
+      typically easier to read than long absolute paths.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+path_normalize(<span class="str">"../hello.txt"</span>)
+<span class="comment">// /users/me/projects/hello.txt</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="path_expand.html">path_expand</a></div>
+      <div class="ref"><a href="path_directory.html">path_directory</a></div>      
+      <div class="ref"><a href="current_directory.html">current_directory</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

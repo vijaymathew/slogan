@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (path_expand)</title>
+  </head>
+
+  <body>
+    <h2>path_expand</h2>
+
+    <div class="prog">
+      <pre><code>
+path_expand(path, <span class="pw">@optional</span> origin_directory) 
+      </code></pre>
+    </div>
+
+    <p>Take the <code>path</code> of a file or directory and return an expanded path, which is an absolute path when <code>path</code>
+      or <code>origin_directory</code> are absolute paths. The optional <code>origin_directory</code> parameter, which defaults to the
+      current working directory, is the directory used to resolve relative paths. Components of the paths <code>path</code>
+      and <code>origin_directory</code> need not exist.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+path_expand(<span class="str">"README.md"</span>)
+<span class="comment">// /users/me/projects/slogan/README.md</span>
+path_expand(<span class="str">"~/"</span>)
+<span class="comment">// /Users/vijaym/</span>
+path_expand(<span class="str">"README.md"</span>, <span class="str">"/tmp"</span>)
+<span class="comment">// /tmp/README.md</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="path_normalize.html">path_normalize</a></div>
+      <div class="ref"><a href="path_directory.html">path_directory</a></div>      
+      <div class="ref"><a href="current_directory.html">current_directory</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

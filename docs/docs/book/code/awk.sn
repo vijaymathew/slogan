@@ -1,0 +1,28 @@
+let args = rest(command_line())
+
+if (is_empty(args))
+  error("expected script name as command line argument")
+else
+  reload(first(args))
+
+args = rest(args)
+
+let input = current_reader()
+when (not(is_empty(args)))
+  input = file_reader(first(args))
+
+function parse_token(t)
+  if (char_is_numeric(t[0]) || t[0] == \.)
+     try string_to_number(t)
+     catch (_) t
+   else if (t == "true") true
+   else if (t == "false") false
+   else t
+
+function handle_lines()
+  let (line = read_line(input))
+    when (not(is_eof_object(line)))
+    { apply(action, map(parse_token, string_split(line)))
+      handle_lines() }
+
+handle_lines()

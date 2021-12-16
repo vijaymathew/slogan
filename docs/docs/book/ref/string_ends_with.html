@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_ends/starts_with)</title>
+  </head>
+
+  <body>
+    <h2>string_ends/starts_with</h2>
+
+    <div class="prog">
+      <pre><code>
+string_starts_with(s, prefix)
+string_ends_with(s, suffix)
+string_ci_starts_with(s, prefix)
+string_ci_ends_with(s, suffix)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the <a href="string.html">string</a> starts with or ends with the
+      <code>prefix</code>/<code>suffix</code>. Otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>The <code>string_ci_***</code> predicates will ignore the case of the strings being compared.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+string_starts_with(<span class="str">"hello, world"</span>, <span class="str">"hello"</span>)
+<span class="comment">// true</span>
+string_starts_with(<span class="str">"hello, world"</span>, <span class="str">"Hello"</span>)
+<span class="comment">// false</span>
+string_ci_starts_with(<span class="str">"hello, world"</span>, <span class="str">"Hello"</span>)
+<span class="comment">// true</span>
+string_ends_with(<span class="str">"hello, world"</span>, <span class="str">"ld"</span>)
+<span class="comment">// true</span>
+string_ends_with(<span class="str">"hello, world"</span>, <span class="str">"LD"</span>)
+<span class="comment">// false</span>
+string_ci_ends_with(<span class="str">"hello, world"</span>, <span class="str">"LD"</span>)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_index_of.html">string_index_of</a></div>      
+      <div class="ref"><a href="string_at.html">string_at</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

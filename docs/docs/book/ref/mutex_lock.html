@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (mutex_lock)</title>
+  </head>
+
+  <body>
+    <h2>mutex_lock</h2>
+
+    <div class="prog">
+      <pre><code>
+mutex_lock(m, @optional timeout = <span class="pw">false</span>, t = <a href="self.html">self</a>())
+      </code></pre>
+    </div>
+
+    <p>Lock the <a href="mutex.html">mutex</a> <code>m</code>. Return a boolean value.</p>
+
+    <p>If <code>m</code> is currently locked, the current <a href="task.html">task</a> waits until
+      <code>m</code> is unlocked, or until <code>timeout</code> is reached (if <code>timeout</code> is supplied).
+      If <code>timeout</code> is reached, <code>mutex_lock</code> returns <code><span class="pw">false</span></code>. Otherwise, the state of
+      <code>m</code> is changed as follows:</p>
+
+    <p>if <code>t</code> is <code><span class="pw">false</span></code>, <code>m</code> becomes locked/not-owned,
+        otherwise, if <code>t</code> is a task and it is terminated <code>m</code> becomes unlocked/abandoned,
+        otherwise <code>m</code> becomes locked/owned with <code>t</code> as the owner.</p>
+
+    <p>After changing the state of <code>m</code>, an <code>abandoned-mutex-exception</code> object
+      is raised if <code>m</code> was unlocked/abandoned before the state change,
+      otherwise <code>mutex_lock</code> returns <code><span class="pw">true</span></code>. It is not an error if <code>m</code> is owned
+      by the current task (but the current task will have to wait).</p>
+
+    <p>If provided, <code>timeout</code> should be an exact or inexact real number representing a relative time in seconds from the moment
+      <code>mutex_lock</code> was called.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// updating shared state without a data race:</span>          
+<span class="kw">let</span> x = 0
+<span class="kw">let</span> mx = mutex()
+
+<span class="kw">function</span> incx()
+{ <a href="mutex_lock.html">mutex_lock</a>(mx)
+  x = <a href="inc.html">inc</a>(x)
+  <a href="mutex_unlock.html">mutex_unlock</a>(mx) }
+
+<span class="pw">!</span>incx()
+<span class="pw">!</span>incx()
+x
+<span class="comment">// 2</span>          
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="mutex.html">mutex</a></div>
+      <div class="ref"><a href="mutex_unlock.html">mutex_unlock</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

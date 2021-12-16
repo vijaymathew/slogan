@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (list_directory)</title>
+  </head>
+
+  <body>
+    <h2>list_directory</h2>
+
+    <div class="prog">
+      <pre><code>
+list_directory(d, <span class="pw">@optional</span> ignore_hidden = <span class="pw">true</span>)
+      </code></pre>
+    </div>
+
+    <p>Return a <a href="list.html">list</a> of files in the directory <code>d</code>.</p>
+
+    <p><code>Ignore_hidden</code> controls whether hidden-files will be returned.
+      Under UNIX and Mac OS X hidden-files are those that start with a period (such as
+      '.', '..', and '.profile'). A setting of <code><span class="pw">false</span></code> will enumerate all the files.
+      A setting of <code><span class="pw">true</span></code> will only enumerate the files that are not hidden.
+      A setting of <code><span class="sym">'dot_and_dot_dot</span></code> will enumerate all the files except for the '.' and
+      '..' hidden files.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+list_directory(<span class="str">"./Projects/slogan"</span>)
+<span class="comment">// [ChangeLog, configure, emacs, example,
+    install, LICENSE, Makefile, packages, platform,
+    README.md, src, test, TODO]</span>
+
+list_directory(<span class="str">"./Projects/slogan"</span>, <span class="pw">false</span>)
+<span class="comment">// [., .., .git, .gitignore, ChangeLog,
+    configure, emacs, example, install, LICENSE, Makefile,
+    packages, platform, README.md, src, test, TODO]</span>
+
+list_directory(<span class="str">"./Projects/slogan"</span>, <span class="sym">'dot_and_dot_dot</span>)
+<span class="comment">// [.git, .gitignore, ChangeLog,
+    configure, emacs, example, install, LICENSE, Makefile,
+    packages, platform, README.md, src, test, TODO]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="delete_directory.html">delete_directory</a></div>
+      <div class="ref"><a href="create_directory.html">create_directory</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

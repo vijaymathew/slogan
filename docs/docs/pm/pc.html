@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+  <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right" >
+        <a href="./bd.html" title="Built-in Datatypes"
+           accesskey="N">next</a></li>
+      <li class="right" >
+        <a href="./gf.html" title="Moving Ahead"
+           accesskey="P">previous</a> |</li>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+  
+  <div id="site" class="site">
+    <div class="title"><h3>Program Control</h3></div>
+<p>This chapter introduce the syntactic forms and expressions for controlling the flow of programs. We start with the most fundamental
+  control operation - <a href="#fnapp">function application</a>. Then we will discuss <a href="#condeval">conditional evaluation</a>,
+  <a href="#recur">recursion and iteration</a>, <a href="#mapping">mapping and folding</a>,
+  <a href="#cont">continuations</a>, <a href="#deleval">delayed evaluation</a> and <a href="#asserts">assertions</a>.</p>
+
+<a name="fnapp"></a>
+<h4>Function Application</h4>
+<div class="highlight">
+  <pre><code><b>syntax: </b>f_expr(a_expr, ...)
+<b>returns: </b>the value of applying the function object `f_expr` to the values of `a_expr`, ...</code></pre>
+</div>
+
+<p><code>F_expr</code> must evaluate to produce a function object. The argument expressions <code>a_expr, ...</code> is evaluated one-by-one, 
+  sequentially. The arguments are evaluated from left to right.</p>
+  
+<div class="highlight">
+  <pre><code><b>function: </b>apply(f, x, ..., xs) 
+<b>returns: </b>the value of applying the function `f` to the arguments `x`, ... and 
+the elements of the list `xs`.</code></pre>
+</div>
+
+<p><code>apply</code> is useful when some or all of the arguments to be passed to a function are in a list, since it frees the 
+  programmer from explicitly destructuring the list.</p>
+
+<p>Examples:</p>
+<div class="highlight">
+  <pre><code>apply(add, [1, 2, 3]); 
+<span class="c">//=> 6</span>
+apply(min, 5, 1, 3, [6, 8, 2, 3, 5]); 
+<span class="c">//=> 1</span></code></pre>
+</div>
+
+<a name="condeval"></a>
+<h4>Conditionals</h4>
+<div class="highlight">
+  <pre><code><b>syntax: </b>if (test) consequent else alternative; 
+<b>syntax: </b>if (test) consequent;
+<b>syntax: </b>when (test) consequent;       
+<b>returns: </b>the value of consequent if test evaluates to true, the value of alternative
+if test evaluates to false.</code></pre>
+</div>
+
+<p><code>Test</code>, <code>consequent</code>, and <code>alternative</code> must be expressions. With the second form that has no <code>else</code>
+  clause, <code>false</code> is returned.</p>
+
+<p>The <code>alternative</code> can be another <code>if</code> expression allowing us to evaluate multiple tests</p>
+
+<p>Example:</p>    
+
+<div class="highlight">
+  <pre><code>function f(x) 
+  if (x < 0) ['minus, abs(x)]
+  else if (x > 0) ['plus, x]
+  else ['zero, x];
+
+f(0); 
+<span class="c">//=> [zero 0]</span>
+
+f(1); 
+<span class="c">//=> [plus 1]</span>
+
+f(-1); 
+<span class="c">//=> [minus 1]</span></code></pre>
+</div>
+
+    <p>Another important form of conditional expression is the <code>case</code> expression.</p>
+    
+<div class="highlight">
+  <pre><code><b>syntax: </b>case (expr)
+          clause1
+        | clause2
+        | ... ;
+      
+<b>returns: </b>value of the clause that matches `expr`.</code></pre>
+</div>
+
+<p>Each clause has the following form</p>
+<pre><code>key -> r_expr</code></pre>
+
+<p>Each <code>key</code> is a datum distinct from the other keys. The last clause may be in the above form or it may be an 
+  <code>else</code> clause of the form</p>
+<pre><code>else -> r_expr</code></pre>
+
+<p>The expression `expr` is evaluated and the result is compared against the keys of each clause in order. 
+  If a clause containing a matching key is found, the expression `r_expr` is evaluated and its value is returned.
+  A key is considered equal to `expr` if both of them point to the same location in memory.
+  The key can be a list of values, in which case, each element of the list is compared with `expr` for a match.
+  If none of the clauses contain a matching key and no <code>else</code> clause is present, then <code>false</code> is returned.</p>  
+
+<p>Examples:</p>
+<div class="highlight">
+  <pre><code>function f(x) 
+  case (x) 
+    1 -> 'odd
+  | 3 -> 'odd
+  | 0 -> 'even
+  | 2 -> 'even
+  | else -> 'out_of_range; 
+
+f(0); 
+<span class="c">//=> even</span>
+
+f(3); 
+<span class="c">//=> odd</span>
+
+f(4); 
+<span class="c">//=> out_of_range</span>
+
+function f(x) 
+  case (x) 
+    [1, 3, 5, 7, 9] -> 'odd
+  | [0, 2, 4, 6, 8] -> 'even
+  | else -> 'out_of_range; 
+
+f(0); 
+<span class="c">//=> even</span>
+
+f(3); 
+<span class="c">//=> odd</span>
+
+f(4); 
+<span class="c">//=> even</span></code></pre>
+</div>
+
+    <p><code>Match</code> is an extended version of <code>case</code> that can also have composite objects like strings and lists as
+      keys.</p>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>match(expr)
+          clause1
+        | clause2
+        | ... ;
+<b>returns: </b>value of the clause that matches `expr`.</code></pre>
+</div>
+
+<p>In addition to matching patterns, a match clause can also bind variables. A default pattern is specified using an underscore
+  (<code>_</code>) or the <code>else</code> clause. If none of the clauses match and no default pattern is present,
+  <code>match</code> will raise an error. As <code>match</code> bind variables, any symbolic constants used as keys or patterns must
+  be quoted.</p>
+
+<p>Examples:</p>
+
+<div class="highlight">
+  <pre><code>function color_code(c) 
+    match (c) 
+      "red" -> [255, 0, 0]
+    | "green" -> [0, 255, 0]
+    | "blue" -> [0, 0, 255]
+    | else -> 'unknown_color;
+
+color_code("red");
+<span class="c">//=> [255, 0, 0]</span>
+
+color_code("blu");
+<span class="c">//=> unknown_color</span>
+
+color_code("blue");
+<span class="c">//=> [0, 0, 255]</span>
+
+<span class="c">// Binding variables:</span>
+function f(xs) 
+  match (xs) 
+    [2, x, y] -> x + y
+  | [3, x, y, z] -> x + y + z; 
+
+f([2, 10, 20]); 
+<span class="c">//=> 30</span>
+
+f([3, 10, 20, 30]); 
+<span class="c">//=> 60</span>
+
+f([3, 10, 20]);
+<span class="c">//-> error: no_match_found</span>
+
+f([4, 10, 20, 30]); 
+<span class="c">//-> error: no_match_found</span>
+
+<span class="c">// Demonstrates how symbolic constants should be matched in `case` and `match`:</span>
+function f(msg) 
+  case (msg) 
+    hi -> 'hello
+  | bye -> 'see_you; 
+
+f('hi); 
+<span class="c">//=> hello</span>
+
+f('bye); 
+<span class="c">//=> see_you</span>
+
+function f(msg) 
+  match (msg) 
+    'hi -> 'hello
+  | 'bye -> 'see_you; 
+
+f('hi); 
+<span class="c">//=> hello</span>
+
+f('bye); 
+<span class="c">//=> see_you</span>
+
+<span class="c">// An implicit match on a function's arguments can be introduced by starting the function
+// body with a pipe (|). If there are multiple arguments, they will be packaged
+// into a list pattern.</span>
+
+function f(msg)
+  | 'hi -> 'hello
+  | 'bye -> 'see_you;
+
+f('hi); 
+<span class="c">//=> hello</span>
+
+f('bye); 
+<span class="c">//=> see_you</span>
+
+function g(a, b)
+  | [1, x] -> x * 100
+  | [2, x] -> x + 100;
+  
+g(1, 10);
+<span class="c">//=> 1000</span></code></pre>
+</div>
+
+    <p>The clauses in a <code>match</code> can take an optional <code>where</code> expressions that can be used to enforce more
+      control on how the pattern is matched.</p>
+
+    <p>Examples:</p>
+<div class="highlight">
+  <pre><code>match ([1, 2, 3]) 
+  [_, b, _] where b >= 10 -> 'hi
+| [_, b, _] where b >= 1 -> 'hello;
+<span class="c">//=> hello</span>
+
+match([1, 2, 3]) 
+  [_, b, _] where b >= 10 -> 'hi
+| [_, b, _] where b >= 3 -> 'hello; 
+<span class="c">//->error: no_match_found</span>
+
+match ([1, 20, 3]) 
+  [_, b, _] where b >= 10 -> 'hi
+| [_, b, _] where b >= 1 -> 'hello; 
+<span class="c">//=> hi</span></code></pre></div>
+
+    <p>Repetition of the same patterns can be avoided by using the special pattern variable `%`, which always refer
+      to the previous pattern checked.</p>
+    <p>Example:</p>
+<div class="highlight">
+  <pre><code>match ([1, 2, 3]) 
+  [_, b, _] where b >= 10 -> 'hi
+| % where b >= 1 -> 'hello; 
+<span class="c">//=> hello</span></code></pre></div>
+
+Multiple patterns can be matched for a single clause with the <em>or-pattern</em> syntax. In the following example,
+both the empty list and the single-element list will cause the function <code>find_first_stutter</code> to return <code>'none</code>.
+
+<div class="highlight">
+  <pre><code>function find_first_stutter(xs)
+| [] | [_] -> 'none 
+| x:y:xs -> if (x == y) x else find_first_stutter(y:xs);
+
+find_first_stutter([1,2,3,3,4])
+<span class="c">//=> 3</span>      
+find_first_stutter([1,2,3,4])
+<span class="c">//=> none</span></code></pre></div>
+
+<h5>Logical operations</h5>
+
+<div class="highlight">
+  <pre><code><b>fucntion:</b> not(obj)
+<b>returns: </b>`true` if `obj` is false, `false` otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax:</b> and(expr, ...)
+<b>returns: </b>false if one of `expr`s evaluates to false, the value of the last expression 
+or true otherwise. If no arguments are present, `and` will return true.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b> or(expr, ...) 
+<b>returns: </b>the value of the first expression that evaluates to a value other than false. 
+If no arguments are present, `or` will return false. Otherwise, each expression is
+evaluated until one that returns a non-false value.</code></pre></div>
+
+<a name="recur"></a>
+<h4>Recursion and iteration</h4>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>let name (var = expr, ...) body
+<b>returns: </b>value of `body`.</code></pre>
+</div>
+
+<p>This form of <code>let</code>, known as <em>named</em> <code>let</code>, is a general-purpose iteration construct. It is similar to the
+  normal <code>let</code> in binding the local variables and evaluating the body. In addition, the variable <code>name</code> is bound 
+  within the body to a function that may be called to recur or iterate; the arguments to the function become the new values of the 
+  local variables bound by <code>let</code>.</p>
+
+<p>The function <code>divisors</code> defined below use named let to compute the nontrivial divisors of a non-negative integer:</p>
+
+<div class="highlight">
+  <pre><code>function divisors(n) 
+  let loop (i = 2) 
+    if (i >= n) [] 
+    else if (is_integer(n / i)) i : loop(i + 1)
+    else loop(i + 1); 
+
+divisors(5);
+<span class="c">//=> []</span>
+
+divisors(32);
+<span class="c">//=> [2, 4, 8, 16]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>until(p, f, x) 
+<b>returns: </b>final value of applying `f` to `x`. 
+
+Apply the function `f` to `x` and compare the result `r` with the predicate `p`.
+If `p` is true, `r` is returned, otherwise pass `r` to a recursive call to `until`
+and repeat the cycle.
+
+<span class="c">// Example</span>
+until(is_prime, partial(`+`, 1), 1000);
+<span class="c">//=> 1009</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> do_times(n, f, @key from = 0, init)
+<b>returns: </b>final value of applying `f`, after calling it `n` times.
+
+The starting value of `n` is specified by the `from` keyword argument.
+`f` take three arguments - the current value of `n`, the value returned by
+the previous call to `f` and a function that can be called to exit from the
+loop prematurely. The initial value of the second argument is specified by
+the `init` keyword argument.
+
+<span class="c">// Examples:</span>
+do_times(5, ^(n, p, _) n + p, init = 0);
+<span class="c">//=> 10</span>
+
+do_times(5, ^(n, p, return) if (n == 4) return(p) else n + p, init = 0);
+<span class="c">//=> 6</span></code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>for (bindings; condition; post_expr) body
+<b>returns:</b> value of the last evaluation of `body`.
+
+`bindings` is a comma-separated list of variables declarations, similar to `letseq`.
+`body` is an expression that will be evaluated as long as `condition` evaluates to true.
+`post_expr` is evaluated after each evaluation of `body` and its value is assigned to the
+last variable in `bindings`.
+
+`bindings`, `condition` and `post_expr` are all optional. `condition` defaults to true and
+`post_expr` defaults to false.
+
+<span class="c">// Examples:</span>
+for (i = 0; i < 3; inc(i)) println(i);
+<span class="c">//-> 0
+     1
+     2</span>
+
+for (j = 1, i = 0; i < 3; {j = inc(j); inc(i)}) println(i*j);
+<span class="c">//-> 0
+     2
+     6</span>
+
+for (j = 0, i = j; i < 3; {j = inc(j); inc(i)}) i*j;
+<span class="c">//=> 4</span>
+
+for (;;) {showln("hi"); break};
+<span class="c">//-> "hi"</span>
+
+The `break` expression is used to return from a for loop prematurely. `break` can be called like
+single argument function. If called this way, `for` will evaluate to the value passed to `break`.
+`break` will return false by default.
+
+The `continue` statement is used to return control to the top of the for loop.
+
+<span class="c">// Examples:</span>
+for (i = 0; i < 10; inc(i)) if (i == 5) break else i;
+<span class="c">//=> false</span>                
+
+for (i = 0; i < 10; inc(i)) if (i == 5) break() else i;
+<span class="c">//=> false</span>
+for (i = 0; i < 10; inc(i)) if (i == 5) break(100) else i;
+<span class="c">//=> 100</span>                
+let x = 0;
+for (i = 0; i < 10; inc(i)) if (mod(i, 2) == 0) continue else x = i + x;
+x;
+<span class="c">//=> 25</span></code></pre></div>
+
+<a name="mapping"></a>
+<h5>Mapping and Folding</h5>
+<p>The functions presented in this section allow us to iterate over elements of sequences like lists, strings and arrays.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b> map(f, list1, ...) 
+<b>returns: </b>list of results of applying the function `f` to the corresponding elements of `list1, ....`.
+
+The lists `list1, ...` must be of the same length. `f` should accept as many arguments
+as there are lists, should return a single value, and should not mutate the lists.
+
+<span class="c">// Examples:</span>
+map(abs, [1, -2, 3, -4, 5]); 
+<span class="c">//=> [1, 2, 3, 4, 5]</span>
+      
+map(^(x, y) x * y, [1, 2, 3, 4, 5], [10, 20, 30, 40, 50]); 
+<span class="c">//=> [10, 40, 90, 160, 250]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>for_each(f, list1, ...) 
+<b>returns: </b>void
+
+`for_each` is similar to `map` except that it does not return a list of results.
+This is useful when we want to perform a side-effect using the elements in the lists.
+
+<span class="c">// Example:</span>
+let (same_count = 0) 
+{ for_each(^(x, y) if (x == y) same_count = same_count + 1, 
+           [1, 2, 3, 4, 5], [2, 3, 3, 4, 7]); 
+  same_count }; 
+<span class="c">//=> 2</span></pre></code>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>for_all(f, list1, ...) 
+<b>returns: </b>true if applying `f` to all the corresponding elements of
+`list1, ...` returns true, false otherwise.
+
+The lists `list1, ...` must be of the same length. `f` should accept as
+many arguments as there are lists and should not mutate the list arguments.
+
+<span class="c">// Examples:</span>
+for_all(is_symbol, ['a, 'b, 'c]); 
+<span class="c">//=> true</span>
+
+for_all(^(x, y, z) x + y == z, 
+        [1, 2, 3, 4], 
+        [1.2, 2.3, 3.4, 4.5], 
+        [2.2, 4.3, 6.5, 8.5]); 
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>exists(f, list1, ...) 
+<b>returns: </b>a truth value if applying `f` to the corresponding elements of `list1, ...`
+returns true at least once, false otherwise.
+
+`list1, ...` must be of the same length. `f` should accept as many arguments as there are
+lists and should not mutate the list arguments.
+
+<span class="c">// Examples:</span>
+exists(is_symbol, [1, \a, "hello"]);
+<span class="c">//=> false</span>
+
+exists(member, [1, 2, 3], [[3, 2], [2, 1], [1, 3]]); 
+<span class="c">//=> [2, 1]</span>
+
+exists(^(x, y, z) x + y == z, 
+       [1, 2, 3, 4], 
+       [1.2, 2.3, 3.4, 4.5], 
+       [2.2, 4.3, 6.5, 8.5]); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fold_left(f, init, lists, ...)
+
+The list arguments should all have the same length. `f` should accept one more argument than
+the number of list arguments and return a single value. It should not mutate the list arguments.
+
+`fold_left` returns `init` if the list arguments are empty. If they are not empty,
+`fold_left` applies `f` to `init` and the heads of `lists ...`, then recurs with the
+value returned by `f` in place of `init` and the tails of `lists ...`.
+
+<span class="c">// Examples:</span>
+fold_left(^(x, init) init + x * x, 0, [1, 2, 3, 4, 5]);
+<span class="c">//=> 55</span>
+
+fold_left(cons, [], [1,2,3,4]);
+<span class="c">//=> [4, 3, 2, 1]</span></code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fold_right(f, init, lists, ...)
+
+The list arguments should all have the same length. `f` should accept one more argument than
+the number of list arguments and return a single value. It should not mutate the list arguments.
+
+`fold_right` returns `init` if the list arguments are empty. If they are not empty,
+`fold_right` recurs with the tail of each list, then applies `f` to their heads and
+the result returned by the recursion.
+
+<span class="c">// Example:</span>
+fold_right(cons, [], [1,2,3,4]);
+<span class="c">//=> [1, 2, 3, 4]</span></code></pre></div>
+
+<div class="highlight">
+  <pre><code>function: fold(f, init, list_of_xs_1, ...) 
+
+This function is the same as `fold_left` except for the order in which arguments are passed to `f`.
+While `fold_left` passes `init` as the last argument, `fold` passes it as the first.
+
+<span class="c">// Examples:</span>
+fold_left(`-`, 0, [1, 2, 3, 4]); 
+<span class="c">//=> 2</span>
+
+fold(`-`, 0, [1, 2, 3, 4]); 
+<span class="c">//=> -10</span></code></pre></div>
+    
+<div class="highlight">
+  <pre><code><b>function: </b>array_map(f,  arrays, ...) 
+<b>returns: </b>array of results.
+
+Applies `f` to corresponding elements of `arrays, ...` and return an array of
+the resulting values. `arrays, ...` must be of the same length, and `f` should
+accept as many arguments as there are arrays and return a single value.
+
+<span class="c">// Example:</span>
+array_map(^(x, y) x * y, #[1, 2, 3, 4], #[10, 20, 30, 40]); 
+<span class="c">//=> #[10, 40, 90, 160]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>array_for_each(f,  array1, ...) 
+<b>returns: </b>void
+
+Similar to `array_map` except that it does not create and return an array of the resulting values.
+
+<span class="c">// Example:</span>
+let (same_count = 0) 
+{ array_for_each(^(x, y) if (x == y) same_count = same_count + 1, 
+                 #[1, 2, 3, 4, 5, 6],
+                 #[2, 3, 3, 4, 7, 6]); 
+  same_count }; 
+<span class="c">//=> 3</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_for_each(f,  str1, ...) 
+<b>returns: </b>void
+      
+Similar to `for_each` and `array_for_each` except that the arguments are strings.
+
+<span class="c">// Example:</span>
+let (ls = []) 
+{ string_for_each(^(a, b, c) ls = string(a, b, c) : ls, "abc", "===", "123"); 
+  reverse(ls) };
+<span class="c">//=> ["a=1", "b=2", "c=3"]</span></code></pre>
+</div>
+
+<a name="deleval"></a>
+<h4>Delayed Evaluation</h4>
+
+<div class="highlight">
+  <pre><code><b>operator: </b>~expr 
+<b>returns: </b>a promise.
+      
+<b>function: </b>force(promise) 
+<b>returns: </b>result of evaluating promise.
+
+The first time a promise created by `~` (delay) is forced (with `force`), it evaluates `expr`,
+"remembering" the resulting value. Thereafter, each time the promise is forced, it returns the
+remembered value instead of re-evaluating `expr`. In other words, the value of `expr`
+is <em>memoized</em> by `force`.
+
+<span class="c">// Example:</span>
+let x = 100000000000;
+let p = ~{showln("long computation...."); x * x};
+force(p);
+<span class="c">//-> long computation....
+//=> 10000000000000000000000</span>
+
+force(p);
+<span class="c">//=> 10000000000000000000000</span></code></pre>
+</div>
+
+<p><code>~</code> and <code>force</code> are typically used only in the absence of side effects, e.g., assignments, 
+  so that the order of evaluation is unimportant.</p>
+
+<p>The benefit of using <code>~</code> and <code>force</code> is that some amount of computation might be avoided altogether if it 
+  is delayed until absolutely required. Delayed evaluation may be used to construct conceptually infinite lists, or sequences.
+  (Lazy sequences are discussed in the <a href="./bd.html">next</a> chapter.)</p>
+
+<a name="cont"></a>
+<h4>Continuations</h4>
+<p>While evaluating an expression, Slogan keeps track of two things: the expression to evaluate and what to do with its value. Consider the
+  expression <code>x &lt; y</code> in the following program:</p>
+
+<pre><code>if (x &lt; y) say_hello() else say_goodbye();</code></pre>
+
+<p>The expression to evaluate is <code>x &lt; y</code> and &quot;what to do with its value&quot; is to make a decision on which of the
+  two functions - <code>say_hello</code> and <code>say_goodbye</code> - to call. The &quot;what to do with the value&quot; is called the
+  <em>continuation</em> of a computation. Thus, at any point during the evaluation of an expression, there is a continuation ready to complete, 
+  or at least continue, the computation from that point.</p>
+
+<p>The continuation of any expression can be captured with the function <code>callcc</code>. 
+  <code>Callcc</code> must be passed a function <code>p</code> of one argument. The current continuation itself is represented as a
+  function <code>k</code>. This function is passed to <code>p</code>. If <code>k</code> is applied to a value from within <code>p</code>, 
+  it returns the value to the continuation of the <code>callcc</code> application. This value becomes, in essence, the value of the 
+  application of <code>callcc</code>.
+  If <code>p</code> returns without invoking <code>k</code>, the value returned by the procedure becomes the value of the application of 
+  <code>callcc</code>. Consider these simple examples:</p>
+
+<div class="highlight">
+  <pre><code>2 + callcc(^(k) 3 + 4); 
+<span class="c">//=> 9</span>
+
+2 + callcc(^(k) k(3 + 4)); 
+<span class="c">//=> 9</span>
+
+2 + callcc(^(k) { k(10); k(3 + 4) }); 
+<span class="c">//=> 12</span>
+
+2 + callcc(^(k) k(3) + 4); 
+<span class="c">//=> 5</span></code></pre>
+</div>
+
+<p>In the first case, the continuation <code>k</code> is never used, allowing <code>callcc</code> to return <code>7</code>. In the second case,
+  the continuation is used but its effect is the same as the previous case. In the third case, the continuation is invoked two times. The first
+  call returns the value <code>10</code> to the continuation of the application of <code>callcc</code> and the second use of the continuation
+  is never reached. The fourth case is similar. Calling the continuation with the value <code>3</code> leads to the addition being ignored.</p>
+
+<p>Continuations can be used to implement advanced control structures. Here is an example of using continuations to implement the 
+  <code>return</code> statement found in most imperative languages: </p>
+
+<div class="highlight">
+  <pre><code>function product(xs) 
+  callcc(^(return) 
+           let loop (xs = xs, p = 1) 
+             if (is_empty(xs)) p 
+             else if (head(xs) == 0) return(p)
+             else loop(tail(xs), p * head(xs))); 
+
+product([1, 2, 3, 4, 5]); 
+<span class="c">//=> 120</span>
+
+product([1, 2, 3, 0, 4, 5]); 
+<span class="c">//=> 6</span></code></pre>
+</div>
+
+<p>The <code>return</code> continuation allows <code>product</code> to exit immediately upon seeing a zero, without performing the
+  remaining multiplications.</p>
+
+<p>Another use of continuations is to implement various forms of multitasking, like the coroutine implementation shown below:</p>
+
+<div class="highlight">
+  <pre><code>function a(k) 
+{ showln(1); 
+  callcc(k); 
+  showln(3) }; 
+
+function b(k) 
+{ showln(2); 
+  callcc(k) }; 
+
+a(b); 
+<span class="c">//-> 1
+     2
+     3</span></code></pre>
+</div>
+
+    <p>Some functions related to continuations and control flow and discussed below.</p>
+    
+<div class="highlight">
+  <pre><code><b>function: </b>dynamic_wind(in, body, out)
+<b>returns:</b> the result of evaluating `body`. `dynamic_wind` is useful for performing
+tasks that must be performed whenever control enters or leaves `body`, either normally or
+by continuation application. The three arguments - `in`, `body`, and `out` - must
+be functions that accept zero arguments. Before applying `body`, and each time `body`
+is entered subsequently by the application of a continuation created within `body`,
+the `in` function is applied. Upon normal exit from `body` and each 
+time `body` is exited by the application of a continuation created outside `body`,
+the `out` function is applied. Thus, it is guaranteed that `in` is invoked at
+least once. In addition, if `body` ever returns, `out` is invoked at least once.</code></pre>
+</div>
+
+
+<div class="highlight">
+  <pre><code><b>function:</b> values(@rest obj)
+<b>returns:</b> `obj`. The function `values` accepts any number of arguments and simply
+passes (returns) the arguments to its continuation.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>call_with_values(producer, consumer)
+<b>returns:</b> the value returned by `consumer`. Both `producer` and `consumer` must be functions.
+`call_with_values` applies `consumer` to the values returned by invoking `producer`
+without arguments.
+
+<span class="c">// Examples:</span>
+call_with_values(^values('a, 'b), ^(x, y) [y, x]);
+<span class="c">//=> [b a]</span>
+
+function a(x, y) values(y, x);
+call_with_values(^a(10, 20), ^(x, y) [x, y]);
+<span class="c">//=> [20, 10]</span></code></pre>
+</div>
+
+<a name="asserts"></a>
+<h4>Assertions</h4>
+
+<p>The <code>assert</code> statement is a powerful debugging tool. Using the <code>assert</code> statement you can tell the program
+  to test if an expression meets a condition and if not to raise an exception.</p>
+
+<div class="highlight">
+  <pre><code>assert 1 < 2; 
+assert 10 > 20; 
+<span class="c">//-> error: assertion_failed line: 1</span></code></pre></div>
+
+<p>`Assert` can be asked to print an alternate error message:</p>
+<div class="highlight">
+  <pre><code>assert 1 > 2, "We have a problem!"; 
+<span class="c">//-> error: We have a problem!</span></code></pre></div>
+
+<p>The following functions disable/enable assertions dynamically:</p>
+
+  <div class="highlight">
+    <pre><code><b>function: </b>disable_asserts()
+<b>function: </b>enable_asserts()        
+<b>returns: </b>void</code></pre>
+  </div>
+
+  <p>When assertions are disabled, failed assertions will all return `true`.</p>
+</div>
+</body>
+</html>

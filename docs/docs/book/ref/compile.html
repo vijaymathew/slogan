@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compile)</title>
+  </head>
+
+  <body>
+    <h2>compile</h2>
+
+    <div class="prog">
+      <pre><code>
+compile(script, <span class="pw">@key</span> assemble, exe, ld_options, cc_options, output, exception_handler)
+      </code></pre>
+    </div>
+
+    <p>Compile the Slogan source code <code>script</code> file into the intermediate language or machine code.</p>
+    <p>The code in intermediate language is suitable for interpretation by the Slogan interpreter while machine code
+      can be executed directly on hardware.</p>
+    <p>If <code>exe</code> is <code><span class="pw">true</span></code>, <code>script</code> is compiled to
+      produce a standalone executable.</p>
+    <p>If <code>assemble</code> is <code><span class="pw">true</span></code>, a dynamically loadable file of
+      machine instructions is generated from <code>script</code>.</p>
+    <p>If provided, <code>cc_options</code> must be a string that specifies additional command-line options
+      for the C compiler, which is used internally by Slogan for generating machine code.</p>
+
+    <p>If provided, <code>ld_options</code> must be a string that specifies additional command-line options
+      for the linker.</p>
+    <p>The name of the generated file may be customized using <code>output</code>.</p>
+    <p>If provided, <code>exception_handler</code> must be a function that takes a single argument.
+      If compilation raises an exception, this function will be called with the error object
+      as the argument.</p>
+
+    <p>Return <code><span class="pw">true</span></code> on success.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// hello.sn</span>
+<a href="showln.html">showln</a>(<span class="str">"hello, world"</span>)
+      </code></pre>
+    </div>
+
+    <p>The above script can be compiled into intermediate language representation by the call,</p>
+
+    <div class="prog">
+      <pre><code>
+compile(<span class="str">"hello"</span>)
+      </code></pre>
+    </div>
+
+    <p>The resulting <code>.scm</code> file can be <a href="load.html">loaded</a> and interpreted by the Slogan interpreter.</p>
+
+    <p>The script can be translated into a dynamically loadable machine code module by,</p>
+
+    <div class="prog">
+      <pre><code>
+compile(<span class="str">"hello"</span>, assemble = <span class="pw">true</span>)
+      </code></pre>
+    </div>
+
+    <p>The resulting machine code (or <em>object code</em>) file can be <a href="link.html">linked</a> into a Slogan program, including
+      the interpreter (the REPL).</p>
+
+    <p>If the target machine do not have the Slogan interpreter or runtime installed, you can generate a standalone executable that will run
+      directly on hardware:</p>
+
+    <div class="prog">
+      <pre><code>
+compile(<span class="str">"hello"</span>, exe = <span class="pw">true</span>)
+      </code></pre>
+    </div>    
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="load.html">load</a></div>
+      <div class="ref"><a href="link.html">link</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

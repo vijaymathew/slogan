@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (abort)</title>
+  </head>
+
+  <body>
+    <h2>abort</h2>
+
+    <div class="prog">
+      <pre><code>
+abort(obj)
+      </code></pre>
+    </div>
+
+    <p>Calls the current exception-handler with <code>obj</code> as argument. If the exception-handler returns, <code>abort</code>
+      will be tail-called with a noncontinuable-exception object, whose reason field is <code>obj</code>, as argument. Note that only
+      <code><span class="kw">trycc</span></code> allows the re-invocation of <code>abort</code>. An <code>abort</code> called from
+      a <code><span class="kw">try</span></code> will behave like a normal error.</p>
+    
+    <p>Return <code>void</code>.</p>
+      
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="callcc.html">callcc</a>(<span class="kw">^</span>(k)
+        <span class="kw">try</span> abort(<span class="sym">'hello</span>) 
+        <span class="kw">catch</span> (e) 
+        { showln(<span class="str">"caught: "</span>, e)
+          <span class="kw">if</span> (<a href="is_noncontinuable_exception.html">is_noncontinuable_exception</a>(e)) 
+            k(<a href="noncontinuable_exception_reason.html">noncontinuable_exception_reason</a>(e))
+          <span class="kw">else</span> 100 })
+<span class="comment">//> caught: hello
+// 100</span>
+
+callcc(<span class="kw">^</span>(k)
+        <span class="kw">trycc</span> abort(<span class="sym">'hello</span>) 
+        <span class="kw">catch</span> (e) 
+        { showln(<span class="str">"caught: "</span>, e); 
+          <span class="kw">if</span> (is_noncontinuable_exception(e)) 
+            k(noncontinuable_exception_reason(e))
+          <span class="kw">else</span> 100 })
+<span class="comment">//> caught: hello
+//> caught: [noncontinuable, reason:hello]
+// hello</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="error.html">error</a></div>
+      <div class="ref"><a href="raise.html">raise</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

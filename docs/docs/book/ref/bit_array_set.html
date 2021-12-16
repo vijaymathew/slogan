@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (bit_array_set)</title>
+  </head>
+
+  <body>
+    <h2>bit_array_set</h2>
+
+    <div class="prog">
+      <pre><code>
+bit_array_set(b, n)
+      </code></pre>
+    </div>
+
+    <p>Turn the <code>n<sup>th</sup></code> bit on in the <a href="bit_array.html">bit array</a> <code>b</code>. Return <a href="void.html">void</a>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> b = bit_array(1, 0, 0, 1, 1)
+b          
+<span class="comment">// #b[1, 0, 0, 1, 1]</span>
+
+bit_array_set(b, 1)
+b
+<span class="comment">// #b[1, 1, 0, 1, 1]</span>
+
+b[2] = true
+b
+<span class="comment">// #b[1, 1, 1, 1, 1]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="bit_array_clear.html">bit_array_clear</a></div>
+      <div class="ref"><a href="bit_array_set_all.html">bit_array_set_all</a></div>
+      <div class="ref"><a href="bit_array_clear_all.html">bit_array_clear_all</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (get_output_bytes)</title>
+  </head>
+
+  <body>
+    <h2>get_output_bytes</h2>
+
+    <div class="prog">
+      <pre><code>
+get_output_bytes(s)
+      </code></pre>
+    </div>
+
+    <p>Return the bytes written to the <a href="byte_array_writer.html">byte array output stream</a>
+      <code>s</code> as an <a href="u8array.html">u8array</a>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> b = byte_array_writer()
+<a href="write_byte.html">write_byte</a>(123, b)
+write_byte(105, b)
+get_output_bytes(b)
+<span class="comment">// #u8[123, 105]</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="get_output_string.html">get_output_string</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

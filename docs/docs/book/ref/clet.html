@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.let_)</title>
+  </head>
+
+  <body>
+    <h2>compiler.let_</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.let_(bindings, expr)
+compiler.letfn_(bindings, expr)
+compiler.letrec_(bindings, expr)
+compiler.named_let(n, bindings, expr)
+      </code></pre>
+    </div>
+
+    <p>Return the intermediate language code required to evaluate <code>body</code> in the context established by <code>bindings</code>.
+      <code>Bindings</code> must be a list of two-element lists that map symbolic identifiers to values.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="eval.html">eval</a>(compiler.letfn_([[<span class="sym">'a</span>, 1], [<span class="sym">'b</span>, 2]], <a href="ccall.html">compiler.call</a>(<span class="sym">'list</span>, [<span class="sym">'a</span>, <span class="sym">'b</span>])))
+<span class="comment">// [1, 2]</span>
+
+eval(compiler.let_([[<span class="sym">'a</span>, 1], [<span class="sym">'b</span>, <span class="sym">'a</span>]], compiler.call(<span class="sym">'list</span>, [<span class="sym">'a</span>, <span class="sym">'b</span>])))
+<span class="comment">// [1, 1]</span>
+
+<span class="comment">/* generate and evaluate the code below:
+letfn iter (i = 0)
+  when (i < 5)
+  { showln(i)
+    iter(inc(i)) }
+*/</span>            
+eval(compiler.named_let(<span class="sym">'iter</span>, [[<span class="sym">'i</span>, 0]],
+      <a href="cif.html">compiler.when_</a>(compiler.call(<span class="sym">'`&lt;`</span>, [<span class="sym">'i</span>, 5]),
+        <a href="cblock.html">compiler.block</a>([compiler.call(<span class="sym">'showln</span>, [<span class="sym">'i</span>]),
+                        compiler.call(<span class="sym">'iter</span>, [compiler.call(<span class="sym">'inc</span>, [<span class="sym">'i</span>])])]))))
+
+<span class="comment">//&gt; 0
+    1
+    2               
+    3
+    4</span>          
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

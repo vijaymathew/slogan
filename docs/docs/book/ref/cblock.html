@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.block)</title>
+  </head>
+
+  <body>
+    <h2>compiler.block</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.block(exprs)
+      </code></pre>
+    </div>
+
+    <p>Return the intermediate language code required for evaluating the list of expressions <code>exprs</code> sequentially as a single block of
+      code.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// { showln(123); showln(456) }</span>
+<a href="eval.html">eval</a>(compiler.block([<a href="ccall.html">compiler.call</a>(<span class="sym">'showln</span>, [123]),
+                     compiler.call(<span class="sym">'showln</span>, [456])]))
+<span class="comment">//&gt 123
+    456</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

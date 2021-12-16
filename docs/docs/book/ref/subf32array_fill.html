@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (subf32/f64array_fill)</title>
+  </head>
+
+  <body>
+    <h2>subf32/f64array_fill</h2>
+
+    <div class="prog">
+      <pre><code>
+subf32array_fill(a, start, end, f)
+subf64array_fill(a, start, end, f)          
+      </code></pre>
+    </div>
+
+    <p>Set the elements of the <a href="f32array.html">f32/f64array</a> <code>a</code>, beginning with index <code>start</code> (inclusive) and ending
+      with index <code>end</code> (exclusive) to the floating-point number <code>f</code>.</p>
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = #f64[1., 2., 3., 4., 5.]
+subf64array_fill(a, 2, 4, 100.32)
+a
+<span class="comment">// #[1., 2., 100.32, 100.32, 5.]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="array_fill.html">array_fill</a></div>
+      <div class="ref"><a href="subu8array_fill.html">subu8array_fill</a></div>      
+      <div class="ref"><a href="subf32array_move.html">subf32/f64array_move</a></div>
+      <div class="ref"><a href="f32subarray.html">f32/f64subarray</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

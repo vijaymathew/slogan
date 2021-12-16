@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (range)</title>
+  </head>
+
+  <body>
+    <h2>range</h2>
+
+    <div class="prog">
+      <pre><code>
+range(start, end, <span class="pw">@key</span> next = <a href="inc.html">inc</a>, compare = <a href="number_is_lteq.html">number_is_lteq</a>)
+      </code></pre>
+    </div>
+
+    <p>Return a list of values from <code>start</code> to <code>end</code> (both inclusive).
+      <code>Next</code> must be a function that when called with the current element added to the result, return the following element.
+      <code>Compare</code> is the predicate used to determine when to stop generating new elements.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+range(1, 10)
+<span class="comment">// [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span>
+range(\a, \k, next = ^(c) <a href="integer_to_char.html">integer_to_char</a>(<a href="char_to_integer.html">char_to_integer</a>(c) + 2), compare = <a href="char_is_lteq.html">char_is_lteq</a>)
+<span class="comment">// [\a, \c, \e, \g, \i, \k]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="list.html">list</a></div>
+      <div class="ref"><a href="enumerate.html">enumerate</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

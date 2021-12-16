@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (copy_list)</title>
+  </head>
+
+  <body>
+    <h2>copy_list</h2>
+
+    <div class="prog">
+      <pre><code>
+copy_list(xs)
+      </code></pre>
+    </div>
+
+    <p>Return an exact copy of the <a href="list.html">list</a> <code>xs</code>.</p>
+    
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> ys = [1, 2, 3]
+<span class="kw">let</span> xs = [10, ys, 20]
+<span class="kw">let</span> zs = copy_list(xs)
+set_head(zs, 100)
+xs
+<span class="comment">// [10, [1, 2, 3], 20]</span>
+zs
+<span class="comment">// [100, [1, 2, 3], 20]</span>
+set_head(ys, 200)
+xs
+<span class="comment">// [10, [200, 2, 3], 20]</span>
+ys
+<span class="comment">// [200, 2, 3]</span>
+zs
+<span class="comment">// [100, [200, 2, 3], 20]</span>
+      </code></pre>
+    </div>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

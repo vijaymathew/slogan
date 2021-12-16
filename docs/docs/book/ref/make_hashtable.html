@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (make_hashtable)</title>
+  </head>
+
+  <body>
+    <h2>make_hashtable</h2>
+
+    <div class="prog">
+      <pre><code>
+make_hashtable(hfn, eqp, <span class="pw">@optional<span> size)
+      </code></pre>
+    </div>
+
+    <p>Return a new hash table.</p>
+
+    <p>Hash tables represent sets of associations between arbitrary values. They serve essentially the same purpose as <a href="assoc.html">association lists</a>
+      but are typically much faster when large numbers of associations are involved. Hash table literals are written by enclosing pairs of
+      associations in a <code>#{}</code>, example &ndash; <code>#{<span class="sym">'name</span>:<span class="str">"nemo"</span>, <span class="sym">'age</span>:3}</code>. A hash table literal is internally constructed by calling <code><a href="make_equal_hashtable.html">make_equal_hashtable</a></code>.</p>
+
+    <p>The arguments <code>hfn</code> and <code>eqp</code> must be functions. If <code>size</code> is provided, it must be a nonnegative
+      <a href="exact.html">exact</a> integer indicating approximately how many elements the hash table should initially hold.
+      Hash tables grow as needed, but when the hash table grows it generally must rehash all of the
+      existing elements. Providing a nonzero size can help limit the amount of rehashing that must
+      be done as the table is initially populated.</p>
+
+    <p>The new hash table computes hash values using <code>hfn</code> and compare keys using <code>eqp</code>,
+      neither of which should modify the hash table. <code>Eqp</code> should compare two keys and return
+      <code><span class="pw">false</span></code> only if the two keys should be distinguished. <code>Hfn</code> should accept a key as an
+      argument and return a nonnegative exact integer value that is the same each time it is called
+      with arguments that <code>eqp</code> does not distinguish.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> h = make_hashtable(<a href="string_hash.html">string_hash</a>, <a href="string_is_eq.html">string_is_eq</a>)
+<a href="hashtable_set.html">hashtable_set</a>(h, <span class="str">"name"</span>, <span class="str">"mat"</span>)
+<a href="hashtable_at.html">hashtable_at</a>(h, <span class="str">"name"</span>)
+<span class="comment">// "mat"</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="make_eq_hashtable.html">make_eq_hashtable</a></div>      
+      <div class="ref"><a href="is_hashtable.html">is_hashtable</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

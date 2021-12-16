@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (path_***)</title>
+  </head>
+
+  <body>
+    <h2>path_***</h2>
+
+    <div class="prog">
+      <pre><code>
+path_extension(path) 
+path_strip_extension(path) 
+path_directory(path) 
+path_strip_directory(path) 
+path_strip_trailing_directory_separator(path) 
+path_volume(path) 
+path_strip_volume(path)           
+      </code></pre>
+    </div>
+
+    <p>Return the various components of <code>path</code>.</p>
+
+    <p>The function <code>path_volume</code> returns the file's volume (including the last path separator) or
+      the empty string if no volume is specified in the path. <code>Path_volume</code> and <code>path_strip_volume</code>
+      will be useful on platforms like Microsoft<sup>&reg;</sup> Windows<sup>&reg;</sup>, where paths can be specified with volumne, for e.g
+      "C:/tmp.txt" where "C:/" is the volume.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> p = <span class="str">"/user/me/projects/slogan/README.md"</span>
+path_extension(p)
+<span class="comment">// .md</span>
+path_strip_extension(p)
+<span class="comment">// /user/me/projects/slogan/README</span>
+path_directory(p)
+<span class="comment">// /user/me/projects/slogan/</span>
+path_strip_directory(p)
+<span class="comment">// README.md</span>
+path_strip_trailing_directory_separator(path_directory(p))
+<span class="comment">// /user/me/projects/slogan</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="path_expand.html">path_expand</a></div>
+      <div class="ref"><a href="path_normalize.html">path_normalize</a></div>
+      <div class="ref"><a href="current_directory.html">current_directory</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

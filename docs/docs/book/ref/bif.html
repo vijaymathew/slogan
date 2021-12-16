@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (bif)</title>
+  </head>
+
+  <body>
+    <h2>bif</h2>
+
+    <div class="prog">
+      <pre><code>
+bif(i1, i2, i3)
+      </code></pre>
+    </div>
+
+    <p>Return the bitwise "if" of its <a href="is_integer.html">integer</a> arguments.</p>
+
+    <p>The inputs are treated as if represented in two's complement, even if they are not
+      represented that way internally. For each bit set in <code>i1</code>, the corresponding bit of the result is taken from <code>i2</code>, and
+      for each bit not set in <code>i1</code>, the corresponding bit of the result is taken from <code>i3</code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="number_to_string.html">number_to_string</a>(bif(0b101010, 0b111000, 0b001100), 2)
+<span class="comment">// 101100</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="band.html">band</a></div>      
+      <div class="ref"><a href="bshift.html">bshift</a></div>
+      <div class="ref"><a href="is_bit_set.html">is_bit_set</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

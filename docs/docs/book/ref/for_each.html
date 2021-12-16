@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (for_each)</title>
+  </head>
+
+  <body>
+    <h2>for_each</h2>
+
+    <div class="prog">
+      <pre><code>
+for_each(fn, seq1, seq2, ...)
+      </code></pre>
+    </div>
+
+    <p>Apply the function <code>fn</code> to the corresponding elements of the sequences <code>seq1, seq2, ...</code>. In this way, <code>for_each</code>
+      is similar to <a href="map.html">map</a> except that it does not return a sequence of results. <code>Fn</code> is called for its side-effect.
+      The sequences, if finite, must be of the same length. <code>Fn</code> should accept as many arguments as there are sequences and should not
+      mutate them. <code>For_each</code> guarantees to perform the applications in sequence over the elements from left to right.</p>
+
+    <p>Return <code>void</code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> (same_count = 0) 
+{ for_each(<span class="kw">^</span>(x, y) <span class="kw">when</span> (x == y) same_count = same_count + 1, 
+           [1, 2, 3, 4, 5], [2, 3, 3, 4, 7]); 
+  same_count }
+<span class="comment">// 2</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="apply.html">apply</a></div>  
+      <div class="ref"><a href="map.html">map</a></div>
+      <div class="ref"><a href="for_all.html">for_all</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

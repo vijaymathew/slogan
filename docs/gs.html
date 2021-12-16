@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="dynamic_native_code : *scratch*" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="../stylesheets/stylesheet.css">
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/8.0/styles/default.min.css">
+    <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <title>Getting started with Slogan</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <section>
+        <h2>Getting started with Slogan</h2>
+        <p>The latest development code base of Slogan can be obtained from GitHub:</p>
+        <pre><code class="bash">$ git clone https://github.com/vijaymathew/slogan.git</code></pre>
+        <p>After cloning the repository, use these commands to compile and install Slogan:</p>
+        <pre><code class="bash">$ cd slogan
+$ ./configure-platform
+$ make
+$ sudo make install
+$ slogan</code></pre>    
+        <p>The last command will launch the Slogan REPL:</p>
+        <pre><code>slogan&gt;</code></pre>
+<!--        <p>The REPL is where you enter Slogan expressions and evaluate them to get results.</p>
+	<p>For more information on using Slogan, please see the documentation in the <code>"help"</code> sub-directory 
+	  of the code base.</p>
+
+	<h3>Simple programs you can try at the REPL</h3>
+	<p>Arithmetics:</p>
+	<pre><code class="js">&gt; 3 + 4;
+7
+&gt; 3 + 4 * 2;
+11
+&gt; (3 + 4) * 2;
+14
+&gt; (3 + 4) / 2;
+7/2
+&gt; (3 + 4) / 2.;
+3.5
+&gt; rational_to_real ((3 + 4) / 2);
+3.5</code></pre>
+	<p>Declaring and using variables: </p>
+	<pre><code class="ruby">&gt; <b>var</b> three = 3;
+&gt; three + 4 * 2;
+11</code></pre>
+	<p>Applying a function to all elements in a list: </p>
+	<pre><code class="ruby">&gt; map (<b>function</b> (x) x * 2, [0, 1, 2, 3, 4]);
+[0, 2, 4, 6, 8];
+&gt; map (<b>function</b> (x) x + x, [0, 1, 2, 3, 4]);
+[0, 2, 4, 6, 8];
+&gt; map (<b>function</b> (x, y) x + y, [0, 1, 2, 3, 4], [100, 101, 102, 103, 104]);
+[100, 102, 104, 106, 108]</code></pre>
+
+	<p>Comparing two objects for equality: </p>
+	<pre><code class="ruby">&gt; 10 == 10;
+true
+&gt; 10 == 10.;
+false
+&gt; 10.0 == 10.;
+true</pre></code>
+	<p>Comparing two objects for structural sameness:</p>
+	<pre><code class="ruby">&gt; var a = [0, 1, 2, 3, 4];
+&gt; var b = [0, 1, 2, 3, 4];
+&gt; a== b;
+false
+&gt; is_equal (a, b);
+true
+&gt; var sqr = <b>function</b> (x) x * 2;
+&gt; var add_self = <b>function</b> (x) x + x;
+&gt; map (sqr, a) == map (add_self, a);
+false
+&gt; is_equal (map (sqr, a), map (add_self, a));
+true</pre></code>
+
+	<p>Controlling variable scope with code blocks and let expressions:</p>
+
+	<pre><code class="ruby"> &gt; { <b>var</b> x = 10; <b>var</b> y = 100; x + y };
+110
+
+&gt; <b>let</b> x= 10, y = 100
+  x + y;
+110</code></pre>
+
+	<p>Simple string encryption and decryption:</p>
+
+	<pre><code class="ruby">&gt; <b>var</b> encrypt_string = <b>function</b> (s) string_map (<b>function</b> (c) integer_to_char (char_to_integer (c) + 1), s);
+&gt; <b>var</b> decrypt_string = <b>function</b> (s) string_map (<b>function</b> (c) integer_to_char (char_to_integer (c) - 1), s);
+&gt; encrypt_string ("hello, world");
+"ifmmp-!xpsme"
+&gt; decrypt_string ("ifmmp-!xpsme");
+"hello, world"</code></pre>
+	
+	<p>Applying an operation across elements in an array:</p>
+<pre><code class="ruby">&gt; <b>var</b> a = #[1, 2, 3];
+&gt; array_map (<b>function</b> (x) x *x, a);
+#[1, 4, 9]
+&gt; array_for_each (<b>function</b> (x) println (x * x), a);
+1
+4
+9</code></pre>
+
+	<p>Using a function as an object:</p>
+	<pre><code class="ruby">&gt; <b>var</b> counter = <b>function</b> (n)
+                  <b>function</b> (message)
+		    <b>case</b> message {
+		      !next: { n = n + 1; n }
+		      !prev: { n = n - 1; n }
+		      <b>else</b>: error ("invalid message. ", message)
+		  };
+&gt; <b>var</b> c5 = counter (5);
+&gt; <b>var</b> c0 = counter (0);
+&gt; c5.next;
+6
+&gt; c5.next;
+7
+&gt; c5.prev;
+6
+&gt; c0.next;
+1
+&gt; c0.next;
+2</code></pre>
+
+	<p>Grouping data with records:</p>
+	<pre><code class="ruby">&gt; <b>record</b> person (name, age);
+&gt; <b>var</b> p = person (name = "jane", age = 5);
+&gt; person_name (p);
+"jane"
+&gt; person_age (p);
+5</code></pre>
+<p>Adding a new control structure to the language with a macro:</p>
+<pre><code class="ruby">&gt; <b>macro</b> while (cond, body) {
+    <b>letrec</b> loop = <b>function</b> () {
+        if cond {
+            body;
+            loop ()
+        }
+    }
+    loop ()
+};
+
+&gt; <b>let</b> i = 0
+  while (i < 10, {
+      println (i);
+      i = i + 1
+  });
+
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9</code></pre>
+
+      </section>
+    </div>-->
+
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+	<div class="container"><a href="./index.html">./index</a></div>
+      </footer>
+    </div>
+
+  </body>
+</html>

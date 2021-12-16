@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Introduction</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">1</h1>
+    <h1 class="title">Introduction</h1>
+    <p><a href="../../index.html">Slogan</a> is a programming language designed for high-performance concurrent, networked applications.
+      It features first-class functions, lexical scoping and operations on structured data like strings, lists, arrays, sets and hash tables.
+      It allows users to dynamically create any number of concurrent tasks and to take full advantage of modern multi-core computers.
+      Its powerful data, control and syntactic abstraction capabilities makes Slogan a language whose extensibility is limited only by
+      your imagination.</p>
+
+    <p>Some of the ideals that guided the design of Slogan are explained in the following sections. After that we will have a general discussion on the
+      purpose and content of this book.</p>
+
+    <h2>1.1 Ideals of Language Design</h2>
+
+    <h3>1.1.1 A Dynamic Language</h3>
+
+    <p>Slogan is a dynamically and strongly typed language. This means Slogan has strict type rules that are enforced at runtime.
+      Dynamic typing enable programming in the widest possible variety of styles. Integration of software components developed and
+      compiled separately becomes a trivial matter. Dynamic typing makes it easy to turn ideas into executable programs at a fast pace.
+      Once developed and tested, a Slogan program can be compiled to efficient machine code that runs at full speed on the host platform.</p>
+
+    <h3>1.1.2 Support for Multiple Paradigms</h3>
+
+    <p>Designing a clear and concise solution to a problem requires selecting the right paradigm. This may be hard or even impossible in
+      languages that prefer one programming style over others. Slogan integrates many programming styles in a well-factored way.
+      The different paradigms are not stacked together haphazardly. Instead, they are integrated in a simple model
+      of function definition and application. Slogan treats functions as first-class entities. Just by mastering this single concept
+      a programmer can write functional, imperative or object-based programs.</p>
+
+    <p>This does not mean that you are limited to using only a fixed number of programming styles. Slogan allows you to design and build abstractions
+      to control the program's flow and syntax. So if you feel your favorite paradigm is missing from the language, go ahead and add it!
+      As a practical example, <a href="syntax.html">later in this book</a> we will show you how to transform Slogan into a language that
+      can perform <a href="https://en.wikipedia.org/wiki/Backtracking" target="_blank">backtracking</a> computations.</p>
+
+    <h3>1.1.3 Concurrency and Parallelism</h3>
+
+    <p>Concurrency is generally seen as difficult to get right, thanks to its inherent nondeterminism. Slogan have features that
+      enable the specification of concurrent computations in a declarative way. This makes it possible to apply simple and intuitive reasoning
+      techniques to concurrent programs. You can organize your concurrent and parallel programs as a collection of
+      <a href="https://en.wikipedia.org/wiki/Actor_model" target="_blank">message-passing components</a>.
+      More traditional concurrency with shared memory is also possible.</p>
+
+    <h3>1.1.4 Practicality</h3>
+
+    <p>Slogan is a practical language that is easy to learn and use. Slogan has all the required facilities
+      for integrating seamlessly with the outside world. There are full-featured libraries for communicating with other processes
+      running on the same machine or on the same network. The <a href="ffi.html">Foreign Function Interface</a> makes it possible
+      to call C library functions without special proxy code. The interpreter helps with fast development and debugging, while the compiler and the
+      <a href="dist.html">packaging system</a> enable software to be distributed as stand-alone executables or dynamically loadable libraries.</p>
+
+    <h2>1.2 About This Book</h2>
+
+    <p>This book is designed to help the reader learn how to program in Slogan. It is divided into three parts. PART I is a tutorial on the language.
+      Here all major language features are introduced and discussed with the help of suitable code examples. In PART II we build even larger programs
+      that demonstrate how the various features of the language can be effectively used to solve interesting and practical problems. PART III
+      is a detailed reference on the standard library and tools.</p>
+
+    <p>This is not an introductory book on programming. It's assumed that you are familiar with one or more languages like C,
+      Java, Python or Lisp. It is also assumed that you know how to use
+      the <a href="https://en.wikipedia.org/wiki/Command-line_interface" target="_blank">command-line interface</a> and tools usually associated
+      with UNIX like operating systems.</p>
+
+    <p>I hope you find great joy programming in Slogan!</p>
+
+    <hr></hr>
+
+    <p>
+      <div class="note">
+        <p>Please visit the <a href="http://schemer.in/slogan">Slogan website</a> to download and install Slogan.</p>
+      </div>
+    </p>
+
+    <hr></hr>
+    <p align="center">
+      <a href="tut.html">Next</a> | <a href="index.html">Contents</a>
+    </p>
+
+  </body>
+</html>

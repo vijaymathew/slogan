@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (ffi_fn)</title>
+  </head>
+
+  <body>
+    <h2>ffi_fn</h2>
+
+    <div class="prog">
+      <pre><code>
+ffi_fn(lib_handle, fn_name)
+      </code></pre>
+    </div>
+
+    <p>Return the handle to the C function named <code>fn_name</code> from the shared library represented
+      by <code>lib_handle</code>, <code><span class="pw">false</span></code> if the function is not found.</p>
+
+    <p><code>Lib_handle</code> must be an object returned by a successful call to <code><a href="ffi_open.html">ffi_open</a></code>.</p>
+    
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="ffi_call_void.html">ffi_call_void</a></div>
+      <div class="ref"><a href="../cref/call_fn.html">___call_fn</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

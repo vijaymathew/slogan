@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_is_***)</title>
+  </head>
+
+  <body>
+    <h2>string_is_***</h2>
+
+    <div class="prog">
+      <pre><code>
+string_is_eq(s1, <span class="pw">@rest</span>...)
+string_is_lt(s1, <span class="pw">@rest</span>...)
+string_is_gt(s1, <span class="pw">@rest</span>...)
+string_is_lteq(s1, <span class="pw">@rest</span>...)
+string_is_gteq(s1, <span class="pw">@rest</span>...)
+string_is_ci_eq(s1, <span class="pw">@rest</span>...)
+string_is_ci_lt(s1, <span class="pw">@rest</span>...)
+string_is_ci_gt(s1, <span class="pw">@rest</span>...)
+string_is_ci_lteq(s1, <span class="pw">@rest</span>...)
+string_is_ci_gteq(s1, <span class="pw">@rest</span>...)
+      </code></pre>
+    </div>
+
+    <p><a href="string.html">String</a> comparison functions. Return <code><span class="pw">true</span></code> if the relation holds,
+      <code><span class="pw">false</span></code> otherwise.</p>
+
+    <p>The <code>string_is_ci_***</code> predicates ignore the case of the strings being compared.</p>
+
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+string_is_eq(<span class="str">"hello"</span>, <span class="str">"HELLO"</span>)
+<span class="comment">// false</span>
+
+string_is_ci_eq(<span class="str">"hello"</span>, <span class="str">"HELLO"</span>)
+<span class="comment">// true</span>
+
+string_is_lteq(<span class="str">"abbcd"</span>, <span class="str">"abbcd"</span>)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_starts_with.html">string_starts_with</a></div>
+      <div class="ref"><a href="string_index_of.html">string_index_of</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

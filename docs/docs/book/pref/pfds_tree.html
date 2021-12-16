@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Packages Reference - pfds.tree</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">package: pfds</h1>
+    <h1 class="title">module: tree</h1>
+
+    <p>The <code>tree</code> module implements a persistent red-black tree that can be used
+      as a key-value store.
+      This module exports a single function <code>make</code> for creating a new tree.</p>
+
+    <h2>tree.make</h2>
+
+    <div class="prog">
+      <pre><code>
+tree.make(initial_entries = [])
+      </code></pre>
+    </div>
+
+    <p>Return a new balanced tree initialized with <code>initial_entries</code>, which should be
+      an empty list, or an association list or a hashtable. Each entry in <code>initial_entries</code>
+      will become a key-value entry in the new tree.</p>
+
+    <p>All keys in a tree must be of the same type and must implement the <code><a href="../ref/compare.html">compare</a></code>
+      generic function.</p>
+
+    <p>The new balanced tree is represented as a closure that can respond to the following messages:</p>
+
+    <div class="prog">
+      <pre><code>
+set(key, value)
+      </code></pre>
+    </div>
+    <p>Return a new tree with <code>key</code> mapped to <code>value</code>.</p>
+
+    <div class="prog">
+      <pre><code>    
+at(key, default = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+    <p>Return the value mapped to <code>key</code>.</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="../ref/ref.html">ref</a>(key)
+      </code></pre>
+    </div>
+    <p>Return the value mapped to <code>key</code>.</p>
+
+    <div class="prog">
+      <pre><code>
+for_each(fn)
+      </code></pre>
+    </div>
+    <p>Applies the function <code>fn</code> to each entry in the tree. <code>Fn</code>
+      should take two arguments - <code>key</code> and <code>value</code>. The return value of <code>fn</code> is
+      ignored.</p>
+
+    <div class="prog">
+      <pre><code>
+map(fn)
+      </code></pre>
+    </div>
+    <p>Applies the function <code>fn</code> to each entry in the tree. <code>Fn</code>
+      should take two arguments - <code>key</code> and <code>value</code> and return a new key-value pair. Return a new tree
+      with all the key-values returned by <code>fn</code>.</p>
+
+    <div class="prog">
+      <pre><code>
+remove(predic)
+      </code></pre>
+    </div>
+    <p>Return a new tree with all keys that does not satisfy the predicate removed. The function <code>predic</code>
+      must take two arguments - key and value.</p>
+
+    <div class="prog">
+      <pre><code>
+filter(predic)
+      </code></pre>
+    </div>
+    <p>Return a new tree with all keys that satisfy the predicate removed. The function <code>predic</code>
+      must take two arguments - key and value.</p>
+
+    <div class="prog">
+      <pre><code>
+delete(keys)
+      </code></pre>
+    </div>
+    <p>Return a new tree with all keys in the list <code>keys</code> removed.</p>
+
+    <div class="prog">
+      <pre><code>    
+select(keys)
+      </code></pre>
+    </div>
+    <p>Return a new tree with all keys not in the list <code>keys</code> removed.</p> 
+
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// initializing a tree from a hashtable:</span>
+<span class="kw">let</span> t = tree.make(#{1:100, 2:200, 3:300})
+t[2]
+<span class="comment">// 200</span>
+
+<span class="comment">// adding or updating an entry will return a new tree:</span>
+<span class="kw">let</span> t2 = t.set(4, 400)
+t2[4]
+<span class="comment">// 400</span>
+t[4]
+<span class="comment">// false</span>
+t.at(4, 4000)
+<span class="comment">// 4000</span>
+
+t2 = t.map(^(k, v) k*2:v*v)
+t2[6]
+<span class="comment">// 90000</span>
+t2[2]
+<span class="comment">// 10000</span>
+
+t2 = t.remove(^(k, _) <a href="../ref/is_odd.html">is_odd</a>(k))
+t2[1]
+<span class="comment">// false</span>
+t2[2]
+<span class="comment">// 200</span>
+
+<span class="comment">// creating a tree from an association list</span>
+t = tree.make(['name:'sam, 'age:20, 'salary:1500])
+t2 = t.select(['age, 'name])
+t2['salary]
+<span class="comment">false</span>
+t2['age]
+<span class="comment">20</span>
+      </code></pre>
+    </div>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="pfds.html">Index</a> |  <a href="index.html">Packages Index</a>
+    </p>
+    
+  </body>
+</html>

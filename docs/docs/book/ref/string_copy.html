@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_copy)</title>
+  </head>
+
+  <body>
+    <h2>string_copy</h2>
+
+    <div class="prog">
+      <pre><code>
+string_copy(s)
+      </code></pre>
+    </div>
+
+    <p>Return a new copy of the <a href="string.html">string</a> <code>s</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"hello"</span>
+<span class="kw">let</span> r = string_copy(s)
+<a href="string_set.html">string_set</a>(r, 1, \E)
+s
+<span class="comment">// hello</span>
+r
+<span class="comment">// hEllo</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="make_string.html">make_string</a></div>
+      <div class="ref"><a href="string_append.html">string_append</a></div>
+      <div class="ref"><a href="substring.html">substring</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

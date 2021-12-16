@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.function_)</title>
+  </head>
+
+  <body>
+    <h2>compiler.function_</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.function_(params, expr)
+      </code></pre>
+    </div>
+
+    <p>Return code in the intermediate language to create a function object.</p>
+
+    <p><code>Params</code> is the list of identifiers that will become the parameters to the function in the generated code.
+      <code>Expr</code> is the code that will be the body of the new function.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// dynamically generate and evaluate the function definition: `function f(a, b) a + b`</span>
+
+<span class="kw">let</span> f = <a href="eval.html">eval</a>(compiler.function_([<span class="sym">'a</span>, <span class="sym">'b</span>], <a href="ccall.html">compiler.call</a>(<span class="sym">'`+`</span>, [<span class="sym">'a</span>, <span class="sym">'b</span>])))
+
+f(10, 20)
+<span class="comment">// 30</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

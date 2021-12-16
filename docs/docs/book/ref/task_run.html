@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_run)</title>
+  </head>
+
+  <body>
+    <h2>task_run</h2>
+
+    <div class="prog">
+      <pre><code>
+task_run(t)
+      </code></pre>
+    </div>
+
+    <p>Make the suspended <a href="task.html">task</a> <code>t</code> runnable and return <code><a href="void.html">void</a></code>.
+      The function or expression associated with the task will be executed concurrently at an unspecified point of time in the future.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = task(<span class="kw">^</span>(x, y) <a href="showln.html">showln</a>(x + y), args = [10, 20], suspended = <span class="pw">true</span>)
+task_run(a) 
+<span class="comment">//> 30</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="task.html">task</a></div>
+      <div class="ref"><a href="task_base_priority.html">task_base_priority</a></div>
+      <div class="ref"><a href="task_quantum.html">task_quantum</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

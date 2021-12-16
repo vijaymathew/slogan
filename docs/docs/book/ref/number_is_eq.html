@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (number_is_***)</title>
+  </head>
+
+  <body>
+    <h2>number_is_***</h2>
+
+    <div class="prog">
+      <pre><code>
+number_is_eq(num1, ...) 
+number_is_lt(num1, ...)
+number_is_gt(num1, ...)
+number_is_lteq(num1, ...)
+number_is_gteq(num1, ...)
+      </code></pre>
+    </div>
+
+    <p>Compare an arbitary number of numeric values. Return <code><span class="pw">true</span></code> if the relation holds,
+      otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p><code>Number_is_eq</code> return <code><span class="pw">true</span></code> if all its arguments are equal.</p>
+
+    <p><code>Number_is_lt</code> return <code><span class="pw">true</span></code> if their arguments are monotonically increasing, i.e., each
+        argument is greater than the preceding ones.</p>
+
+    <p><code>Number_is_gt</code> return <code><span class="pw">true</span></code> if their arguments are monotonically decreasing, i.e., each
+      argument is less than the preceding ones.</p>
+
+    <p><code>Number_is_lteq</code> return <code><span class="pw">true</span></code> if their arguments are monotonically nondecreasing,
+      i.e., each argument is not less than the preceding ones.</p>
+
+    <p><code>Number_is_lteq</code> return <code><span class="pw">true</span></code> if its arguments are monotonically non-increasing.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+number_is_eq(7, 7)
+<span class="comment">// true</span>
+number_is_lteq(1, 2, 3, 3, 4, 5)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compare.html">compare</a></div>
+      <div class="ref"><a href="is_equal.html">is_equal</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

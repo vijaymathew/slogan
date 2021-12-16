@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (close_writer)</title>
+  </head>
+
+  <body>
+    <h2>close_writer</h2>
+
+    <div class="prog">
+      <pre><code>
+close_reader(s)
+      </code></pre>
+    </div>
+
+    <p>If the output <a href="current_reader.html">stream</a> <code>s</code> is not already closed, close it and
+      return <code><a href="is_void.html">void</a></code>.
+      Once a stream is closed, no more output operations may be performed on it.
+      Because the operating system may place limits on the number of file streams open at one time
+      or restrict access to an open file, it is good practice to close any file stream that will
+      no longer be used for input or output. Closing a stream that has already been closed has no effect.</p>
+
+    <p>Closing a string or byte array stream has no effect. As they consume no system resources, string
+      and byte array streams can be safely reclaimed by the garbage collector.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// writing a text file:</span>
+<span class="kw">let</span> f = <a href="file_writer.html">file_writer</a>(<span class="str">"hello.txt"</span>)
+<a href="write_chars.html">write_chars</a>(<span class="str">"hello, world"</span>, f)
+close_writer(f)
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="close_reader.html">close_reader</a></div>
+      <div class="ref"><a href="is_writer.html">is_writer</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

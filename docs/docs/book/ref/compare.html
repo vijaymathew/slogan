@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compare)</title>
+  </head>
+
+  <body>
+    <h2>compare</h2>
+
+    <div class="prog">
+      <pre><code>
+compare(obj1, obj2)
+      </code></pre>
+    </div>
+
+    <p>If <code>obj1</code> is less than <code>obj2</code>, return -1. If <code>obj1</code> is greater than <code>obj2</code>, returns 1.
+      If <code>obj1</code> is equal to <code>obj2</code>, returns 0.</p>
+
+    <p>For sequence objects like <a href="string.html">strings</a> and <a href="list.html">lists</a>, a lexicographical comparison is done.
+      First the first two items are compared, and if they differ this determines the outcome of the comparison; if they are equal,
+      the next two items are compared, and so on, until either sequence is exhausted. For strings, <a href="char_is_eq.html">character comparison</a>
+      is used, for lists and arrays <code>compare</code> is called recursively for each element and for numeric arrays number comparison
+      operators are used.</p>
+
+    <p><code>Compare</code> is a generic function by default and can be overridden for custom data types without
+      an explicit <code><span class="kw">declare</span> <span class="pw">generic</span></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s1 = <span class="str">"abcd"</span>
+<span class="kw">let</span> s2 = <span class="str">"xyz"</span>
+compare(s1, s2)
+<span class="comment">// -1</span>
+compare(s1, string_upcase(s2))
+<span class="comment">// 1</span>
+
+compare([1, 2, 3], [3, 2, 1])
+<span class="comment">// -1</span>
+compare([1, 2, 3], reverse([3, 2, 1]))
+<span class="comment">// 0</span>
+
+<span class="comment">// implementing the comparison operators for a custom type:</span>
+<span class="kw">record</span> point(x, y)
+
+<span class="kw">let</span> p1 = point(x = 10, y = 20)
+<span class="kw">let</span> p2 = point(x = 20, y = 30)
+p1 &lt; p2
+<span class="comment">//&gt; error: compare_not_supported</span>
+
+<span class="kw">function</span> pointc(p1)
+  <span class="kw">^</span>(msg)
+  | <span class="sym">'compare</span> -&gt; <span class="kw">^</span>(p2) compare(point_x(p1), point_x(p2))
+
+<span class="kw">let</span> pc1 = pointc(p1)
+pc1 &lt; p2
+<span class="comment">// true</span>
+pc1 &gt; p2
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_equal.html">is_equal</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

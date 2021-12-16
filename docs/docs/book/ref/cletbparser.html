@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.let_bindings_parser)</title>
+  </head>
+
+  <body>
+    <h2>compiler.let_bindings_parser</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.let_bindings_parser()
+      </code></pre>
+    </div>
+
+    <p>Return a parser for <code><span class="kw">let</span></code> bindings.</p>
+
+    <h3>Examples:</h3>
+
+    <p>The following program adds a new control strcuture to Slogan, similar to <code><span class="kw">let</span></code> expression.
+      The form is: <code>doit &lt;expression&gt; where (&lt;bindings&gt;)</code>. The <code>expression</code> will be evaluated in a context
+      where the variables introduced by <code>bindings</code> are visible. For parsing <code>bindings</code> the <code>let_bindings_parser</code>
+      function is used, instead of writing a custom parser.</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">declare</span> <span class="pw">macro</span>
+ <span class="pw">doit</span> $body <span class="pw">where</span> $bindings
+ => <a href="clet.html">compiler.let_</a>($bindings, $body),
+ [$bindings:compiler.let_bindings_parser]
+
+<span class="pw">doit</span> a + b <span class="pw">where</span> (a = 100, b = 200)
+<span class="comment">// 300</span> 
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

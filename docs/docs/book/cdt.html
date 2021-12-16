@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Composite Data Types</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">5</h1>
+    <h1 class="title">Composite Data Types</h1>
+
+    <p>The preceding chapter discussed basic data types that serve as building blocks or <em>atoms</em> of large Slogan programs.
+      This chapter is about <em>composite</em> data types, which are molecules created by combining
+      the basic data types in various ways. Some of the data types we discuss here are pairs, lists, arrays, hash tables, sets and records.
+      <a name="01-back"></a>Pairs, lists and arrays are also known as <em>aggregate</em> types because they are concatenations
+      of other values.<sup><a href="#01">1</a></sup></p>
+
+    <h2>5.1 Pairs</h2>
+
+    <p>Suppose you are writing a program that deals with GPS coordinates. A GPS coordinate consists of two real numbers &ndash; one for
+      latitude and the other for longitude. You can always use two separate variables for these, but your program will lack the ability to express
+      the concept of <em>location</em> as a concrete entity. Without this ability, functions in your program will have to accept and
+      "interpret" two distinct numbers as representing a single location.</p>
+
+    <p>Let us tackle the problem of giving the GPS coordinate a concrete representation. We need a mechanism to glue together two real numbers
+      into a single value. Slogan's <em>pair</em> data type is ideal for this purpose. <a name="02-back"></a>A pair can be
+      constructed either by calling the <code><a href="ref/pair.html">pair</a></code> function or by using the colon (<code>:</code>)
+      operator<sup><a href="#02">2</a></sup>.
+      Here are the coordinates of two cities of the world, encoded as
+      <a href="https://en.wikipedia.org/wiki/Decimal_degrees" target="_blank">decimal degrees</a>:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> new_york_coords = pair(40.7166638, -74.0)
+<span class="kw">let</span> bangalore_coords = 12.97160:77.59456
+
+new_york_coords
+<span class="comment">// 40.7166638:-74.0</span>
+bangalore_coords
+<span class="comment">// 12.9716:77.59456</span>
+      </code></pre>
+    </div>
+
+    <p>The values in a pair can be accessed in two ways. The first method is to use the <code><a href="ref/head.html">head</a></code> and
+      <code><a href="ref/tail.html">tail</a></code> functions.</p>
+
+    <div class="prog">
+      <pre><code>
+head(bangalore_coords)
+<span class="comment">// 12.9716</span>
+tail(bangalore_coords)
+<span class="comment">// 77.59456</span>
+      </code></pre>
+    </div>
+
+    <p>If you want to bind both members in a pair to new variables, it is more convenient to use the data destructuring mechanism built-into
+      the <code><span class="kw">let</span></code> statement. The variable part of a <code><span class="kw">let</span></code> can be
+      a "pattern". If the internal structure of the value on the right-hand side of the assignment matches this pattern,
+      values inside the structure will be bound to variables in the pattern.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> ny_lat:ny_long = new_york_coords
+ny_lat
+<span class="comment">// 40.7166638</span>
+ny_long
+<span class="comment">// -74.0</span>
+      </code></pre>
+    </div>
+
+    <p>If you want to bind only certain elements in the structure, just replace the variable name with an underscore (<code>_</code>) in the pattern:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> _:bng_long = bangalore_coords
+bng_long
+<span class="comment">// 77.59456</span>
+      </code></pre>
+    </div>
+
+    <p>Now that we have a suitable representation for GPS coordinates, it is a good idea to hide the details of this representation under
+      suitable functions.
+      This will enable the rest of the code to deal with <em>location</em> or coordinates as an abstract idea. Basically we need three functions &ndash;
+      a <em>constructor</em> to build coordinates out of two real numbers and two <em>selectors</em> for accessing the individual parts of the
+      location. If we ever decide to use a different internal representation, only these three functions need to change. This is because the rest
+      of the code create and access coordinates through these functions and does not make any assumptions about how they are really represented in
+      memory. This way we add a thin layer of <em>data abstraction</em> to our program.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_coords(lat, long) lat:long
+<span class="kw">function</span> latitude(coord) head(coord)
+<span class="kw">function</span> longitude(coord) tail(coord)
+      </code></pre>
+    </div>
+
+    <p>As the constructors and selectors are not doing nothing much on their own, the following definitions are also possible, in which
+    they become just aliases for <code>pair</code>, <code>head</code> and <code>tail</code>:</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> make_coords = pair
+<span class="kw">let</span> latitude = head
+<span class="kw">let</span> longitude = tail
+      </code></pre>
+    </div>
+
+    <p>Let us try using the new abstractions:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> new_york_coords = make_coords(40.7166638, -74.0)
+<span class="kw">let</span> bangalore_coords = make_coords(12.97160, 77.59456)
+latitude(new_york_coords)
+<span class="comment">// 40.7166638</span>
+longitude(bangalore_coords)
+<span class="common">// 77.59456</span>
+      </code></pre>
+    </div>
+
+    <p>Any new functions that we write need not be bothered about the fact that we represent coordinates with pairs. As an example, we will
+      write a function that prints the <a href="http://mathforum.org/sarah/hamilton/ham.degrees.html" target="_blank">DMS</a> value of a
+      coordinate object.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> show_dms(coord)
+{ show_dms_component(latitude(coord))
+  <a href="ref/show.html">show</a>(<span class="str">"  "</span>)
+  show_dms_component(longitude(coord))
+  <a href="ref/newline.html">newline</a>() }
+
+<span class="kw">function</span> show_dms_component(dd_component)
+  show(<a href="ref/floor.html">floor</a>(dd_component), <span class="str">"d "</span>,
+       floor(<a href="ref/mod.html">mod</a>(dd_component * 60, 60)), <span class="str">"m "</span>,
+       mod(<a href="ref/abs.html">abs</a>(dd_component) * 3600, 60), <span class="str">"s "</span>)
+      
+<span class="comment">// Usage:</span>
+show_dms(bangalore_coords)
+<span class="comment">//&gt; 12.0d 58.0m 17.760000000002037s   77.0d 35.0m 40.41600000002654s </span>
+show_dms(new_york_coords)
+<span class="comment">//&gt; 40.0d 42.0m 59.98967999999877s   -74.0d 0.0m 0.0s</span>
+      </code></pre>
+    </div>
+    
+    <h2>5.2 Lists</h2>
+
+    <p>The values glued together by a pair need not be primitives. They can be other pairs, for instance. This enables us to build
+      hierarchical data structures like the one shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> tree = (1:(2:3:(4:5)))
+head(tree)
+<span class="comment">// 1</span>
+head(tail(tree))
+<span class="comment">// 2</span>
+tail(tail(tree))
+<span class="comment">// 3:4:5</span>
+      </code></pre>
+    </div>
+
+    <p>The basic sequence obtained by chaining together pairs are known as a list. A <em>proper list</em> will be terminated by a value that
+      represents the empty sequence. In Slogan this value is represented by <code>[]</code>. There are various ways you could build a proper list.
+      Some of these methods are illustrated here:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// pairs terminated by an empty list ([]), is a proper list.</span>
+1:2:3:4:5:[]  
+<span class="comment">// [1, 2, 3, 4, 5]</span>
+
+<span class="comment">// a list literal can also be constructed by enclosing comma-separated values in []:</span>
+[\a, \e, \i, \o, \u]
+<span class="comment">// [\a, \e, \i, \o, \u]</span>
+
+<span class="comment">// another way to build a proper list is to call the `list` function:</span>
+<a href="ref/list.html">list</a>(1, 2, <span class="str">"hello"</span>, 3)
+<span class="comment">// [1, 2, hello, 3]</span>
+      </code></pre>
+    </div>
+
+    <p>A list of pairs can be used as a table to lookup information. The lookup function can treat the head of each pair as the <code>key</code>
+      to find the associated data.</p>
+
+<div class="prog">
+  <pre><code>
+<span class="kw">let</span> price_list = [<span class="sym">'orange</span>:80, <span class="sym">'apple</span>:120, <span class="sym">'grapes</span>:72]
+
+<a href="ref/assq.html">assq</a>(<span class="sym">'apple</span>, price_list)
+<span class="comment">// apple:120</span>
+assq(<span class="sym">'mango</span>, price_list);
+<span class="comment">// false</span>
+
+<span class="kw">function</span> calculate_price(fruit, kg)
+{ <span class="kw">let</span> entry = assq(fruit, price_list)
+  <span class="kw">when</span> (entry) tail(entry) * kg }
+
+calculate_price(<span class="sym">'apple</span>, 2)
+<span class="comment">// 240</span>
+calculate_price(<span class="sym">'grapes</span>, 5)
+<span class="comment">// 360</span>
+calculate_price(<span class="sym">'mango</span>, 5)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <p>If the lookup-keys are of a complex type like string, list or large integers, <code>assq</code> won't work. We need a function that
+      inspects the structure of the key for equality. The function <code><a href="ref/assoc.html">assoc</a></code> is defined for this purpose.
+      <code>Assoc</code> uses the <code><a href="ref/is_equal.html">is_equal</a></code> predicate, which is mapped to
+      the <code>==</code> operator, to do the equality check.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> person = [<span class="str">"name"</span>: <span class="str">"nemo"</span>, <span class="str">"age"</span>: 1]
+assoc(<span class="str">"name"</span>, person)
+<span class="comment">// name:nemo</span>
+assoc(<span class="str">"age"</span>, person)
+<span class="comment">// age:1</span>
+assq(<span class="str">"age"</span>, person)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <p>The next program demonstrates some useful functions that can be applied on lists:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> xs = [10, 3, 45, 8, 9]
+<a href="ref/length.html">length</a>(xs)
+<span class="comment">// 5</span>
+length(xs) == <a href="ref/count.html">count</a>(xs)
+<span class="comment">// true</span>
+<a href="ref/at.html">at</a>(xs, 2)
+<span class="comment">// 45</span>
+xs[2]
+<span class="comment">// 45</span>
+xs[1:3]
+<span class="comment">// [3, 45]</span>
+xs[:3]
+<span class="comment">// [10, 3, 45]</span>
+<a href="ref/reverse.html">reverse</a>(xs)
+<span class="comment">// [9, 8, 45, 3, 10]</span>
+<a href="ref/sort.html">sort</a>(xs)
+<span class="comment">// [3, 8, 9, 10, 45]</span>
+
+<span class="comment">// comparisons</span>
+[1, 2, 3] == [1, 2, 3]
+<span class="comment">// true</span>
+[1, 2, 3] <> [4, 5, 6]
+<span class="comment">// true</span>
+[1, 2, 3] < [4, 5, 6]
+<span class="comment">// true</span>
+[1, 2, 3] > [4, 5, 6]
+<span class="comment">// false</span>
+[1, 2, 3] >= [1, 2, 3]
+<span class="comment">// true</span>
+
+<span class="comment">// membership checks</span>
+<a href="ref/memq.html">memq</a>(3, xs)
+<span class="comment">// [3, 45, 8, 9]</span>
+memq(10, xs)
+<span class="comment">// [10, 3, 45, 8, 9]</span>
+memq(1, xs)
+<span class="comment">// false</span>
+
+<span class="kw">let</span> ys = [<span class="str">"a"</span>, <span class="str">"list"</span>, <span class="str">"of"</span>, <span class="str">"strings"</span>, [<span class="str">"and"</span>, <span class="str">"lists"</span>]]
+<span class="comment">// memq won't work because it uses `is_eq`</span>
+memq(<span class="str">"of"</span>, ys)
+<span class="comment">// false</span>
+
+<span class="comment">// use `member` instead</span>
+<a href="ref/member.html">member</a>(<span class="str">"of"</span>, ys)
+<span class="comment">// [of, strings, [and, lists]]</span>
+member([<span class="str">"and"</span>, <span class="str">"lists"</span>], ys)
+<span class="comment">// [[and, lists]]</span>
+member([<span class="str">"and"</span>, <span class="str">"list"</span>], ys)
+<span class="comment">// false</span>
+
+<span class="kw">function</span> is_vowel(c)
+  memq(c, [\a, \e, \i, \o, \u])
+
+is_vowel(\a)
+<span class="comment">// [\a, \e, \i, \o, \u]</span>
+is_vowel(\o)
+<span class="comment">// [\o, \u]</span>
+is_vowel(\k)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <h3>5.2.1 List Comprehensions</h3>
+
+    <p>A <em>list comprehension</em> is a notational convenience for constructing lists from other lists. It has the following general syntax:</p>
+
+    <div class="prog">
+      <pre><code>
+[out_expr | var_expr &lt;- input_list <span class="pw">where</span> filter_expr, ...]
+      </code></pre>
+    </div>
+
+    <p><code>Out_expr</code> constructs each element in the output list. <code>Var_expr</code> assign values to
+      variables used in <code>out_expr</code>. Each value is "extracted" from an input list. The <code>where_clause</code> is
+      optional and is used to filter values extracted from the input list.</p>
+
+    <p>Some examples of using list comprehensions are shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+[x * x | x &lt;- [1, 2, 3, 4, 5]]
+<span class="comment">// [1, 4, 9, 16, 25]</span>
+
+[i : j | i &lt;- <a href="ref/range.html">range</a>(1, 5), j &lt;- range(i, 5) <span class="pw">where</span> <a href="ref/is_even.html">is_even</a>(i)]
+<span class="comment">// [2:2, 2:3, 2:4, 2:5, 4:4, 4:5]</span>
+
+<span class="kw">function</span> triads(n)
+{ <span class="kw">let</span> elems = range(1, n);
+  [[x, y, z] | x &lt;- elems,
+               y &lt- elems,
+               z &lt- elems <span class="pw">where</span> x * x + y * y == z * z] }
+
+triads(15)
+<span class="comment">// [[3, 4, 5], [4, 3, 5], [5, 12, 13], [6, 8, 10],
+    [8, 6, 10], [9, 12, 15], [12, 5, 13], [12, 9, 15]]</span>
+
+<span class="kw">function</span> concat(xss) [x | xs &lt;- xss, x &lt;- xs]
+concat([[1, 2, 3], [4, 5, 6]])
+<span class="comment">// [1, 2, 3, 4, 5, 6]</span>
+      </code></pre>
+    </div>
+    <h2>5.3 Arrays</h2>
+
+    <p>Arrays are fixed-length sequences that provide constant-time, position-based lookup for elements. If fast lookups are required you should
+      always prefer an array over a list because a list can only provide sequential access to its members. Just like for lists,
+      there are multiple ways to create and initialize arrays:</p>
+
+    <div class="prog">
+      <pre><code>
+#[1, 2, 3]
+<span class="comment">// #[1, 2, 3]</span>
+<a href="ref/array.html">array</a>(<span class="str">"hello"</span>, <span class="str">"world"</span>)
+<span class="comment">// #[hello, world]</span>
+<span class="kw">let</span> xs = <a href="ref/make_array.html">make_array</a>(5)
+xs
+<span class="comment">// #[false, false, false, false, false]</span>
+<a href="ref/array_set.html">array_set</a>(xs, 0, 120)
+array_set(xs, 2, <span class="str">"hi"</span>)
+xs
+<span class="comment">// #[120, false, hi, false, false]</span>
+xs[0]
+<span class="comment">// 120</span>
+<span class="kw">let</span> ys = #[1, 2, 3, 4, 5]
+ys[2:4]
+<span class="comment">// #[3, 4]</span>
+      </code></pre>
+    </div>
+
+    <h3>5.3.1 Type specific arrays</h3>
+
+    <p>Slogan provide arrays for storing and accessing specific numeric types. For example, the byte-array is optimized for bytes. There are
+      also arrays for 16bit/32bit/64bit signed/unsigned integers and 32bit/64bit floating-point numbers. The type of an array literal is specified
+      by an identifier after the <code>#</code> sign. For example <code>#u8</code> means an array of unsigned bytes and <code>#s32</code> means
+      an array of signed 32bit integers.</p>
+
+    <div class="prog">
+      <pre><code>
+#u8[1, 34, 250][1]
+<span class="comment">// 34</span>
+
+<span class="comment">// precision of elements may vary based on architecture:</span>
+#f32[1.0, 34.114, 250.12][1]
+<span class="comment">// 34.11399841308594</span>
+      </code></pre>
+    </div>
+
+    <p>Another useful type-specific array are <a href="ref/bit_array.html">bit_arrays</a>.
+      They are designed to efficiently store and retrieve bit-encoded information.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> flags = #b[1, 0, 1, 1]
+flags[0]
+<span class="comment">// true</span>
+flags[1]
+<span class="comment">// false</span>
+<a href="ref/bit_array_clear.html">bit_array_clear</a>(flags, 2)
+flags
+<span class="comment">// #b[1, 0, 0, 1]</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 5.1.</b> &nbsp; Read about the <a href="https://en.wikipedia.org/wiki/High_color" target="_blank">16 bit color encoding scheme</a>,
+      where the red and blue components are encoded using 5 bits and the green component is encoded in 6 bits. Implement a function,
+      <code>make_color</code> that takes the red, green and blue components as arguments and return the encoded color value as a bit-array.
+      Also write selectors for decoding the color object into individual red, green and blue values.</p>
+    
+    <h4>Bloom Filter</h4>
+
+    <p>A <a href="https://en.wikipedia.org/wiki/Bloom_filter" target="_blank">bloom filter</a> is a data structure that can quickly test if an
+      element is a member of a set. A bloom filter is basically a large bit-array. An element is added to the bloom filter by first converting
+      it into a bunch of integers called <a href="https://en.wikipedia.org/wiki/Hash_function" target="_blank">hashes</a> and then using those
+      as indices to be turned-on in the bit-array. Membership check also happens similarly - if all the bits at the hashes of the element are on,
+      it is a member of the set. Bloom filters are space efficient because elements are reduced to a few bits and stored. They are ideal when fast
+      lookups against a huge set is required and a false positive result is not catastrophic. An example application is in the domain of crawling
+      and indexing web pages. A crawler has to retrieve and index millions or even billion of pages. When it encounters a new URL, it has to quickly
+      figure out if that URL was already crawled or not. Bloom filter is an ideal data structure here because it is space efficient, fast and
+      rarely re-crawling a page need not be a big deal.</p>
+
+    <p>Let us go straight into the implementation of the bloom filter. Note that we make use of the hash functions built into Slogan. A production
+      quality bloom filter will require <a href="https://github.com/Baqend/Orestes-Bloomfilter#hash-functions" target="_blank">better</a>
+      hashing techniques.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_bloom_filter(size)
+  <a href="ref/make_bit_array.html">make_bit_array</a>(size)
+
+<span class="comment">/* Return two hashes for the string `entry`.
+   The first is generated using the built-in `string_hash`
+   function. The second hash is generated by converting
+   `entry` into a list of integers and then hashing that list. 
+*/</span>
+<span class="kw">function</span> hash_entry(entry, size)
+{ <span class="kw">let</span> h1 = <a href="ref/string_hash.html">string_hash</a>(entry)
+  <span class="comment">// we haven't talked about `map` yet, but we will soon!</span>
+  <span class="kw">let</span> h2 = <a href="ref/string_hash.html">equal_hash</a>(<a href="ref/map.html">map</a>(<a href="ref/char_to_integer.html">char_to_integer</a>, <a href="ref/string_to_list.html">string_to_list</a>(entry)))
+  <a href="ref/remainder.html">remainder</a>(h1, size):remainder(h2, size) }
+
+<span class="comment">/* Add an entry to the bloom filter.
+   The bits at the positions identified by the hashes
+   are turned on. 
+*/</span>
+<span class="kw">function</span> bloom_filter_set(b, entry)
+{ <span class="kw">let</span> h1:h2 = hash_entry(entry, <a href="ref/bit_array_length.html">bit_array_length</a>(b))
+  <a href="ref/bit_array_set.html">bit_array_set</a>(b, h1)
+  bit_array_set(b, h2) }
+
+<span class="comment">/* Return true if `entry` is a member of the bloom filter.
+   Both bits identified by the hashes must be on.
+*/</span>
+<span class="kw">function</span> bloom_filter_test(b, entry)
+{ <span class="kw">let</span> h1:h2 = hash_entry(entry, bit_array_length(b))
+  b[h1] && b[h2] }
+      </code></pre>
+    </div>
+
+    <p>Here is our tiny bloom filter in action:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> b = make_bloom_filter(1000)
+bloom_filter_set(b, <span class="str">"hello"</span>)
+bloom_filter_set(b, <span class="str">"helLO"</span>)
+bloom_filter_set(b, <span class="str">"hello world"</span>)
+
+bloom_filter_test(b, <span class="str">"hello"</span>)
+<span class="comment">// true</span>
+bloom_filter_test(b, <span class="str">"helLO"</span>)
+<span class="comment">// true</span>
+bloom_filter_test(b, <span class="str">"hello world"</span>)
+<span class="comment">// true</span>
+bloom_filter_test(b, <span class="str">"hello, world"</span>)
+<span class="comment">// false</span>
+bloom_filter_test(b, <span class="str">"HelLO"</span>)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+      
+    <h2>5.4 Hash Tables</h2>
+
+    <p>The <a href="ref/make_hashtable.html">hash table</a> is one of the most ingenious and versatile of all data structures. It is an unordered collection of key/value pairs
+      in which all the keys are distinct, and the value associated with a given key can be retrieved, updated, or removed using a constant
+      number of key comparisons on the average, no matter how large the hash table.</p>
+
+    <p>The simplest way to create a hash table is to write down it as pairs enclosed in <code>#{}</code>. The head of a pair is treated as key
+      and the tail becomes the associated value.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> ages = #{<span class="str">"alice"</span>:10, <span class="str">"bob"</span>:8, <span class="str">"eve"</span>:12}
+ages[<span class="str">"alice"</span>]
+<span class="comment">// 10</span>
+ages[<span class="str">"eve"</span>] = ages[<span class="str">"eve"</span>] + 2
+ages[<span class="str">"eve"</span>]
+<span class="comment">// 14</span>
+ages[<span class="str">"olivia"</span>]
+<span class="comment">// false</span>
+
+<span class="comment">// return a default value for a missing key</span>
+<a href="ref/hashtable_at.html">hashtable_at</a>(ages, <span class="str">"olivia"</span>, 7)
+<span class="comment">// 7</span>
+<a href="ref/hashtable_keys.html">hashtable_keys</a>(ages)
+<span class="comment">// #[alice, eve, bob]</span>
+<a href="ref/hashtable_values.html">hashtable_values</a>(ages)
+<span class="comment">// #[10, 14, 8]</span>
+      </code></pre>
+    </div>
+    
+    <h2>5.5 Sets</h2>
+
+    <p>A <a href="ref/set.html">set</a> stores an unordered sequence of objects without duplicates. It is an implementation of the mathematical concept
+      of <a href="https://en.wikipedia.org/wiki/Finite_set" target="_blank">finite sets</a>.
+      Unlike most other collection types, rather than retrieving a specific element from a set, one typically tests a value for
+      membership in a set. A set literal is written by enclosing the objects in <code>#()</code>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s1 = #(1, 2, 3, 4)
+<span class="kw">let</span> s2 = #(3, 4, 5, 6)
+<a href="ref/is_set_member.html">is_set_member</a>(s1, 2)
+<span class="comment">// true</span>
+is_set_member(s1, 5)
+<span class="comment">// false</span>
+<a href="ref/set_difference.html">set_difference</a>(s1, s2)
+<span class="comment">// #(1, 2)</span>
+set_difference(s2, s1)
+<span class="comment">// #(5, 6)</span>
+<a href="ref/set_intersection.html">set_intersection</a>(s1, s2)
+<span class="comment">// #(3, 4)</span>
+<a href="ref/set_union.html">set_union</a>(s1, s2)
+<span class="comment">// #(1, 2, 3, 4, 5, 6)</span>
+<a href="ref/is_subset.html">is_subset</a>(#(1, 2), #(1, 2, 3, 4))
+<span class="comment">// true</span>
+<a href="ref/is_superset.html">is_superset</a>(#(1, 2), #(1, 2, 3, 4))
+<span class="comment">// false</span>
+is_superset(#(1, 2, 3, 4), #(1, 2))
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+    
+    <h2>5.6 Records</h2>
+
+    <p>Records are a means for defining new, distinct types. The <code><span class="kw">record</span></code> statement is used to introduce a new
+      custom type. Its general syntax is shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">record</span> &lt;name&gt; (&lt;member01&gt <span class="pw">where</span> &lt;pre-condition&gt;, &lt;member02&gt; ...)
+      </code></pre>
+    </div>
+
+    <p>For a new record type, Slogan automatically generates a constructor and selector/modifier functions for accessing and updating its members.</p>
+    <p>The following program shows how a simple record can be defined and used.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">record</span> employee(name, salary, dept)
+<span class="kw">let</span> e1 = employee(name = <span class="str">"alice"</span>, salary = 3400, dept = <span class="str">"ENG"</span>)
+<span class="kw">let</span> e2 = employee(name = <span class="str">"bob"</span>, salary = 4500, dept = <span class="str">"FIN"</span>)
+
+e1
+<span class="comment">// #&lt;employee #4 name: "alice" salary: 3400 dept: "ENG"&gt;</span>
+e2
+<span class="comment">// #&lt;employee #5 name: "bob" salary: 4500 dept: "FIN"&gt;</span>
+
+employee_name(e1)
+<span class="comment">// alice</span>
+employee_dept(e2)
+<span class="comment">// FIN</span>
+employee_set_salary(e1, 3600)
+e1
+<span class="comment">// #&lt;employee #4 name: "alice" salary: 3600 dept: "ENG"&gt;</span>
+      </code></pre>
+    </div>
+
+    <p>One problem with the auto-generated constructor is that it won't do any data integrity checks. For instance, you are allowed to
+      create an employee with an invalid salary:</p>
+
+    <div class="prog">
+      <pre><code>
+employee(name = <span class="str">"nemo"</span>, salary = <span class="str">"#@@@#@@$"</span>, dept = <span class="str">"ENG"</span>)
+<span class="comment">#&ltemployee #6 name: "nemo" salary: "#@@@#@@$" dept: "ENG"&gt;</span>
+      </code></pre>
+    </div>
+
+    <p>The optional <code><span class="pw">where</span></code> clause allows us to specify data validation rules for record values. Let us
+      redefine the <code>employee</code> record with some condition checks.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">record</span> employee(name   <span class="pw">where</span> <a href="ref/is_string.html">is_string</a>(name),
+                salary <span class="pw">where</span> <a href="ref/is_integer.html">is_integer</a>(salary)
+                             && salary &gt; 1500
+                             && salary &lt; 10000,
+                dept   <span class="pw">where</span> is_string(dept))
+
+employee(name = <span class="str">"nemo"</span>, salary = <span class="str">"#@@@#@@$"</span>, dept = <span class="str">"ENG"</span>)
+<span class="comment">//> error: precondition_failed, #@@@#@@$</span>
+employee(name = <span class="str">"nemo"</span>, salary = 230, dept = <span class="str">"ENG"</span>)
+<span class="comment">//> error: precondition_failed, 230</span>
+employee(name = <span class="str">"nemo"</span>, salary = 2300, dept = <span class="str">"ENG"</span>)
+<span class="comment">// #&lt;employee #7 name: "nemo" salary: 2300 dept: "ENG"&gt;
+      </code></pre>
+    </div>
+
+    <h2>5.7 Patterns of Data</h2>
+
+    <p>Slogan has the ability to take apart data structures and do pattern matching on them. A pattern match expression has the following general form:</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">match</span> (value)
+  pattern_1 -> result_1
+| pattern_2 -> result_2          
+| ...
+      </code></pre>
+    </div>
+
+    <p>If <code>value</code> does not match any of the listed patterns, a <code>no_match_found</code> <a href="ref/error.html">error</a> is raised.</p>
+    
+    <p>Let us begin our exploration of pattern matching with the help of a few simple examples. Later we will see how this facility can lead to
+      the clean and concise specification of a non-trivial algorithm.</p>
+
+    <p>Our first example re-implements a function from Slogan <code>core</code> - the <code><a href="ref/length.html">length</a></code>
+      function that return the number of elements in a list.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> length(xs)
+  <span class="kw">match</span>(xs)
+    [] -> 0        
+  | h:t -> 1 + length(t)
+      </code></pre>
+    </div>
+
+    <p>Our definition of <code>length</code> does a pattern destructuring on its argument. If the pattern matches an empty list,
+      <code>0</code> is returned. If the pattern matches a head and a tail pair, the length is <code>1</code> added to the length of tail.</p>
+
+    <p>We can write this function more compactly, by eliminating the explicit declaration of <code><span class="kw">match</span></code>.
+      We also do not need to bind the <code>h</code> variable because we don't use it. This can be replaced by the <code>_</code>
+      wildcard character.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> length(xs)
+| [] -> 0        
+| _:t -> 1 + length(t)
+      </code></pre>
+    </div>
+
+    <p>Pattern matching can be done on any data type with a literal representation - numbers, strings, lists, arrays, hash tables, sets and so on.
+      A few more examples follows:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> factorial(n)
+| 0 -> 1
+| _ -> n * factorial(n-1)
+
+factorial(10)
+<span class="comment">// 3628800</span>
+factorial(3)
+<span class="comment">//6</span>
+
+<span class="comment">// Evaluate arithmetic expressions in the
+// format #{operation: [expr1, expr2]}, where `operation`
+// is one of the four symbols - 'add, 'sub, 'mul and 'div.
+// An expression can also be a numeric literal.</span>  
+<span class="kw">function</span> calculate(expr)
+| #{<span class="sym">'add</span>: [e1, e2]}    -> calculate(e1) + calculate(e2)
+| #{<span class="sym">'sub</span>: [e1, e2]}    -> calculate(e1) - calculate(e2)
+| #{<span class="sym">'mul</span>: [e1, e2]}    -> calculate(e1) * calculate(e2)
+| #{<span class="sym">'div</span>: [e1, e2]}    -> calculate(e1) / calculate(e2)
+| e <span class="pw">where</span> <a href="ref/is_number.html">is_number</a>(e) -> e
+
+calculate(#{<span class="sym">'add</span>: [#{<span class="sym">'mul</span>: [10, 20]}, 500]})
+<span class="comment">// 700</span>
+calculate(#{'sub: [100, 20]})
+<span class="comment">// 80</span>
+calculate(#{'sub: [100, <span class="str">"ok"</span>]})
+<span class="comment">//> error: no_match_found</span></code></pre></div>
+
+    <p>The <code>calculate</code> function makes use of the <code><span class="pw">where</span></code> guard in the last pattern to make sure that
+      the value that gets bound to the variable is a number.</p>
+
+    <p><a name="03-back"></a>In addition to the built-in data structures, user defined records can also
+      be destructured:<sup><a href="#03">3</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">record</span> circle(radius)
+<span class="kw">record</span> rectangle(width, length)
+    
+<span class="kw">function</span> area(shape)
+| circle(radius) -> 3.14159 * (radius * radius)
+| rectangle(width, length) -> width * length
+
+area(circle(radius = 10.34))
+<span class="comment">// 335.88497980399995</span>
+area(rectangle(width=20, length=52.78))
+<span class="comment">// 1055.6</span>
+      </code></pre>
+    </div>
+
+    <p>A record pattern match can refer members by position. This is achieved by prefixing the member name by the <code>@</code> character.
+      (This means record members are not allowed to start with the <code>@</code> character). Let us rewrite the <code>area</code> function
+      by destructuring the record members by position:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> area(shape)
+| circle(@r) -> 3.14159 * (@r * @r)
+| rectangle(@w, @l) -> @w * @l
+      </code></pre>
+    </div>
+
+    <p>If a function with an implicit match takes more than one parameter, all the arguments should be packaged into a list and passed to the
+      pattern matcher:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> f(a, b)
+| [1, b] -> b * 10
+| [2, b] -> b * 100
+
+f(1, 2)
+<span class="comment">// 20</span>
+f(2, 2)
+<span class="comment">// 200</span>
+      </code></pre>
+    </div>
+
+    <p>Slogan support <code>or-patterns</code>, which is a feature that allows us to collapse multiple clauses with identical right-hand sides
+      into a single clause:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> f(xs)
+| [a, b]
+| #[a, b]
+| #(a, b) -> a * b
+
+f([10, 20])
+<span class="comment">// 200</span>
+
+f(#[10, 20])
+<span class="comment">// 200</span>
+          
+f(#(10, 20))
+<span class="comment">// 200</span></code></pre></div>
+
+    <p>Repetition of the same pattern can be avoided by using the special pattern variable <code>%</code>, which always refer to the previous
+      pattern checked.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">match</span> ([1, 2, 3]) 
+  [_, b, _] <span class="pw">where</span> b >= 10 -&gt; <span class="sym">'hi</span>
+| %         <span class="pw">where</span> b &gt;= 1  -&gt; <span class="sym">'hello</span>
+<span class="comment">// hello</span>
+      </code></pre>
+    </div>
+
+    <h3>5.7.1 A self-balancing search tree</h3>
+    
+    <p>Now that we have covered the basics, let us write some code that exploits the true expressive power of pattern matching!
+      We are going to implement a data structure that is often flagged as "advanced" in text books. This is the
+      <a href="https://en.wikipedia.org/wiki/Red%E2%80%93black_tree" target="_blank">red-black tree</a> - one of the most popular
+      of all balanced binary trees.</p>
+
+    <p>In a red-black tree every node is colored either red or black and it satisfies the following two balance invariants:</p>
+    <p><ol>
+        <li>No red node has a red child.</li>
+        <li>Every path from the root to an empty node contains the same number of black nodes.</li>
+    </ol></p>
+    <p>These invariants guarantee that the longest possible path in the tree is not longer than
+      the shortest possible path times two. (The longest path has alternating red and black nodes and the shortest path has only black nodes.)</p>
+    <p>These invariants are enforced while inserting a new node, using a <code>balance</code> function. This function re-configures
+      all possible black-red-red paths into a red-black-black path. The black-red-red paths can occur in four configurations,
+      depending on whether the red node is a left or right child. The rewrite required is the same in all cases. Pattern matching makes it possible
+      to write the <code>balance</code> function in a compact, declarative style:</p>
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> balance(color, t, z, d) 
+| [<span class="sym">'b</span>, [<span class="sym">'r</span>,[<span class="sym">'r</span>,a,x,b],y,c], z, d] 
+| [<span class="sym">'b</span>, [<span class="sym">'r</span>,a,x,[<span class="sym">'r</span>,b,y,c]], z, d] 
+| [<span class="sym">'b</span>, a, x, [<span class="sym">'r</span>,[<span class="sym">'r</span>,b,y,c],z,d]] 
+| [<span class="sym">'b</span>, a, x, [<span class="sym">'r</span>,b,y,[<span class="sym">'r</span>,c,z,d]]]
+    -> [<span class="sym">'r</span>,[<span class="sym">'b</span>,a,x,b],y,[<span class="sym">'b</span>,c,z,d]]
+| _ -> [color, t, z, d]
+      </code></pre>
+    </div>
+
+    <p>The complete code for the red-black tree is available for <a href="./code/rbt.sn">download</a>.
+      For a detailed description of a red-black tree structure similar
+      to the one presented here, please see the book "Purely functional data structures" by Chris Okasaki.</p>
+
+    <hr></hr>
+    
+    <div class="note">
+      <p><sup><a name="01"></a><a href="#01-back">1</a></sup>By that definition, a string is also an aggregate data type because
+        it is essentially an array of characters. We treated it as a basic data type because of its importance in performing many
+        useful tasks, like searching for patterns in textual data.</p>
+    </div>
+
+    <div class="note">
+      <p><sup><a name="02"></a><a href="#02-back">2</a></sup>Pairs can be made out of any expressions. For e.g, the expression <code>1 + 2:100</code>
+        will create the pair <code>3:100</code>. Keep in mind that function call expressions tends to bind tightly to the right. So if you want to glue
+        the two expressions <code>1 + <a href="ref/inc.html">inc</a>(1)</code> and <code>100</code> into a pair, the first expression
+        must be enclosed in parenthesis, as in, <code>(1 + inc(1)):100</code>. This will result in the pair <code>3:100</code> as expected.</p>
+    </div>
+
+    <div class="note">
+      <p><sup><a name="03"></a><a href="#03-back">3</a></sup>Pattern based destructuring can be performed on user-defined composite types as well.
+        Slogan allows you to define your own composites that behave like lists and hash tables.
+        This will be the subject of a <a href="lazy.html">later chapter</a>.</p>
+    </div>    
+
+    <hr></hr>
+    <p align="center">
+      <a href="func.html">Next</a> | <a href="bdt.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,6 @@
+// Connect to the time server, running on the same machine
+let client = tcp_client_stream("localhost", port_number = 2121)
+showln(stream = client, "GET TIME")
+flush_writer(client)
+showln(read_line(client))
+close_stream(client)

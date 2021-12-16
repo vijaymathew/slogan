@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (ffi_open)</title>
+  </head>
+
+  <body>
+    <h2>ffi_open</h2>
+
+    <div class="prog">
+      <pre><code>
+ffi_open(libname)
+      </code></pre>
+    </div>
+
+    <p>Return an object representing a "handle" to the shared library file named <code>libname</code>, <code><span class="pw">false</span></code> 
+      if the shared library could not be loaded.</p>
+    
+    <h3>Examples:</h3>
+
+    <p>Imagine we want our Slogan program to call the function defined in the following C program:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// test.c</span>
+          
+<span class="pw">#include</span> &lt;stdio.h&gt;
+<span class="pw">#include</span> "<a href="../cref/index.html">slogan.h</a>"
+  
+<a href="../cref/index.html">___slogan_obj</a> say_hello(___slogan_obj *args)
+{
+  ___slogan_obj message;
+  char *s = <span class="str">"hello from C!"</span>;
+  char *p;
+  <a href="../cref/slogan_obj_to_char.html">___slogan_obj_to_charstring</a>(args[0], &p);
+  printf(<span class="str">"Slogan says \"</span>%s\<span class="str">"\n"</span>, p);
+      
+  <a href="../cref/charstring_to_slogan_obj.html">___charstring_to_slogan_obj</a>(s, &message);
+  <span class="kw">return</span> message;
+}
+      </code></pre>
+    </div>
+
+    <p>This can be compiled to a shared library on Linux by,</p>
+
+      <div class="prog">
+        <pre><code>
+$ gcc -Wall -shared -fPIC -I ${SLOGAN_HOME}/src/include/-I ${SLOGAN_HOME}/platform/gsc/include \
+-o test.so test.c
+        </code></pre>
+      </div>
+      
+      <p>and on OS X by,</p>
+
+      <div class="prog">
+        <pre><code>
+$ gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -I ${SLOGAN_HOME}/src/include/ \
+-I ${SLOGAN_HOME}/platform/gsc/include -o test.so test.c
+        </code></pre>
+      </div>
+      
+    <p>After the shared library <code>test.so</code> is generated, the function <code>say_hello</code> can be invoked from Slogan as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> clib = ffi_open(<span class="str">"./test.so"</span>)
+<span class="kw">let</span> f = <a href="ffi_fn.html">ffi_fn</a>(clib, <span class="str">"say_hello"</span>)
+<a href="ffi_call_void.html">ffi_call_obj</a>(f, #[<span class="str">"hello from Slogan"</span>])
+<span class="comment">//&gt; Slogan says "hello from Slogan"
+// hello from C!</span>
+<a href="ffi_close.html">ffi_close</a>(clib)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

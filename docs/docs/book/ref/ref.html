@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (ref)</title>
+  </head>
+
+  <body>
+    <h2>ref</h2>
+
+    <div class="prog">
+      <pre><code>
+ref(s, i, <span class="pw">@optional</span> default = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Return the element at index <code>i</code> from the sequence <code>s</code>. If the index is out of bounds, return <code>default</code>.</p>
+
+    <p><code>Ref</code> and <code><a href="ref_set.html">ref_set</a></code> are generic functions that can be overridden by a user-defined object.
+      <a href="string.html">Strings</a>, <a href="list.html">lists</a>, <a href="array.html">arrays</a> and <a href="make_hashtable.html">hash tables</a>
+      implement them by default. Any object that implement these functions automatically starts working with the <code>[]</code> syntax.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"heLLo, world"</span>
+ref(s, 10)
+<span class="comment">// \l</span>
+s[11]
+<span class="comment">// \d</span>
+
+ref(#{<span class="str">"one"</span>:1, <span class="str">"two"</span>:2}, <span class="str">"abc"</span>, 100)
+<span class="comment">// 100</span>
+ref(#{<span class="str">"one"</span>:1, <span class="str">"two"</span>:2}, <span class="str">"one"</span>)
+<span class="comment">// 1</span>
+
+<span class="comment">// overriding ref and ref_set for a custom sequence:</span>
+<span class="kw">function</span> make_coll(xs)
+  <span class="kw">let</span> (len = array_length(xs)
+       coll_ref = <span class="kw">^</span>(index) xs[index]
+       coll_ref_set = <span class="kw">^</span>(index, value) xs[index] = value)
+    <span class="kw">^</span>(msg)
+    | <span class="sym">'first</span> -&gt; <span class="kw">when</span> (len > 0) array_at(xs, 0)
+    | <span class="sym">'rest</span> -&gt; <span class="kw">when</span> (len > 1) make_coll(subarray(xs, 1, len))
+    | <span class="sym">'count</span> -&gt; len
+    | <span class="sym">'ref</span> -&gt; coll_ref
+    | <span class="sym">'ref_set</span> -&gt; coll_ref_set
+
+<span class="kw">let</span> b = make_coll(#[10, 20, 30])
+b[0]
+<span class="comment">// 10</span>
+b[1] = 100
+b[1]
+<span class="comment">// 100</span>
+ref(b, 2)
+<span class="comment">// 30</span>
+ref_set(b, 2, 200)
+b[2]
+<span class="comment">// 200</span>
+
+<span class="comment">// an object that responds to `ref` can be destructred as a list or a hash table:</span>
+<span class="kw">let</span> [x, y, z] = b
+x + y + z
+<span class="comment">// 310</span>
+
+<span class="kw">let</span> #{0:i, 2:j, 1:k} = b;
+[i, j, k]
+<span class="comment">// [10, 200, 100]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="ref_set.html">ref_set</a></div>
+      <div class="ref"><a href="contains.html">contains</a></div>      
+      <div class="ref"><a href="first.html">first</a></div>
+      <div class="ref"><a href="rest.html">rest</a></div>
+      <div class="ref"><a href="count.html">count</a></div>
+      <div class="ref"><a href="at.html">at</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

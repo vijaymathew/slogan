@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (do_times)</title>
+  </head>
+
+  <body>
+    <h2>do_times</h2>
+
+    <div class="prog">
+      <pre><code>
+do_times(n, fn, <span class="pw">@key</span> from = 0, init)
+      </code></pre>
+    </div>
+
+    <p>Return the final value of the function <code>fn</code>, after calling it <code>n</code> times.</p>
+
+    <p>The starting value of <code>n</code> is specified by the <code>from</code> keyword argument.
+      <code>Fn</code> take three arguments - the current value of <code>n</code>, the value returned by
+      the previous call to <code>fn</code> and a function that can be called to exit from the
+      loop prematurely. The initial value of the second argument is specified by
+      the <code>init</code> keyword argument.</p>
+
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+do_times(5, <span class="kw">^</span>(n, p, _) n + p, init = 0)
+<span class="comment">// 10</span>
+
+do_times(5, <span class="kw">^</span>(n, p, return) <span class="kw">if</span> (n == 4) return(p) <span class="kw">else</span> n + p, init = 0);
+<span class="comment">// 6</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="until.html">until</a></div>
+      <div class="ref"><a href="callcc.html">callcc</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

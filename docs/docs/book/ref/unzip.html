@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (unzip)</title>
+  </head>
+
+  <body>
+    <h2>unzip</h2>
+
+    <div class="prog">
+      <pre><code>
+unzip(pairs)
+      </code></pre>
+    </div>
+
+    <p>Return a <a href="pair.html">pair</a> of <a href="list.html">lists</a>.</p>
+
+    <p>The head of the result will have all heads from <code>pairs</code> and its tail will contain
+      all tails from <code>pairs</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> ys = unzip([1:<span class="str">"one"</span>, 2:<span class="str">"two"</span>, 3:<span class="str">"three"</span>])
+<a href="head.html">head</a>(ys)
+<span class="comment">// [1, 2, 3]</span>
+<a href="tail.html">tail</a>(ys)
+<span class="comment">// ["one", "two", "three"]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="zip.html">zip</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

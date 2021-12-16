@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fxbit_is_set)</title>
+  </head>
+
+  <body>
+    <h2>fxbit_is_set</h2>
+
+    <div class="prog">
+      <pre><code>
+fxbit_is_set(fx, i)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the <code>i<sup>th</sup></code> bit of the
+      <a href="is_fixnum.html">fixnum</a> <code>fx</code> is set, otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>The index <code>i</code> must be nonnegative. It is taken as a zero-based index for the bits in the two's complement
+      representation of <code>fx</code>, with the sign bit virtually replicated an infinite number of positions to the left.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+fxbit_is_set(5, 0)
+<span class="comment">// true</span>
+fxbit_is_set(5, 1)
+<span class="comment">// false</span>
+fxbit_is_set(5, 2)
+<span class="comment">// true</span>
+fxbit_is_set(-5, 8)
+<span class="comment">// true</span>
+fxbit_is_set(5, 8)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="fxbit_count.html">fxbit_count</a></div>
+      <div class="ref"><a href="fxlength.html">fxlength</a></div>
+      <div class="ref"><a href="fxshift.html">fxshift</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

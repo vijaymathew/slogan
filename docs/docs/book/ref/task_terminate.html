@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_terminate)</title>
+  </head>
+
+  <body>
+    <h2>task_terminate</h2>
+
+    <div class="prog">
+      <pre><code>
+task_terminate(t)
+      </code></pre>
+    </div>
+
+    <p>Causes an abnormal termination of the task <code>t</code>. If <code>t</code> is not already terminated,
+      all <a href="mutex.html">mutexes</a> owned by it become unlocked/abandoned and a <code>terminated-exception</code> object is stored in its
+      <code>end-exception</code> field. If <code>t</code> is the current task, <code>task_terminate</code> does not return.
+      The actual termination of <code>t</code> will occur at some point between the calling of <code>task_terminate</code>
+      and a finite time in the future.</p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="task.html">task</a></div>
+      <div class="ref"><a href="task_join.html">task_join</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

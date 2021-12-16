@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (time)</title>
+  </head>
+
+  <body>
+    <h2>time</h2>
+
+    <div class="prog">
+      <pre><code>
+time(expr)
+      </code></pre>
+    </div>
+
+    <p>Return the result of <a href="eval.html">evaluating</a> the expression <code>expr</code>.</p>
+
+    <p>As a side effect <code>time</code> displays a message on the standard output which indicates how
+      long the evaluation took (in real time and cpu time), how much time was spent in the
+      garbage collector, how much memory was allocated during the evaluation and how many
+      minor and major page faults occurred.</p>
+
+    <p><code>Time</code> is a special function implemented in the compiler, and cannot be rebound to a new object.</p>
+      
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="process_times.html">process_times</a></div>
+      <div class="ref"><a href="cpu_time.html">cpu_time</a></div>      
+      <div class="ref"><a href="real_time.html">real_time</a></div>
+      <div class="ref"><a href="now.html">now</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

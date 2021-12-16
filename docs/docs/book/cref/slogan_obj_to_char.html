@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (___slogan_obj_to_*)</title>
+  </head>
+
+  <body>
+    <h2>___slogan_obj_to_*</h2>
+
+    <div class="prog">
+      <pre><code>
+___slogan_obj_to_char(s, t)
+___slogan_obj_to_uchar(s, t)
+___slogan_obj_to_int(s, t)
+___slogan_obj_to_uint(s, t)
+___slogan_obj_to_long(s, t)
+___slogan_obj_to_ulong(s, t)
+___slogan_obj_to_longlong(s, t)
+___slogan_obj_to_float(s, t)
+___slogan_obj_to_double(s, t)
+___slogan_obj_to_charstring(s, t)
+___slogan_obj_to_nonnull_charstring(s, t)
+___slogan_obj_to_void_pointer(s, t)
+      </code></pre>
+    </div>
+
+    <p>These are C macros defined in <code>slogan.h</code>. The <code><a href="index.html">___slogan_obj</a></code> object <code>s</code> is converted to
+      a C <code>int</code>, <code>unsigned int</code>, <code>float</code>, <code>double</code> or <code>char*</code> and stored in
+      <code>t</code> which should be the address of a C variable of the appropriate type.</p>
+
+    <p>Please see <code><a href="../ref/ffi_open.html">ffi_open</a></code> for example code.</p>
+
+
+    <hr></hr>
+    <p>
+      <a href="index.html">FFI Reference</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>
+    
+

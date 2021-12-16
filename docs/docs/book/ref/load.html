@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (load)</title>
+  </head>
+
+  <body>
+    <h2>load</h2>
+
+    <div class="prog">
+      <pre><code>
+load(script, <span class="pw">@optional</span> force_compile)
+      </code></pre>
+    </div>
+
+    <p>Load the object code file named <code>script.oN</code>. If it is not found look for the file <code>script.sn</code>,
+      compile it to intermediate language and load it into the runtime system.</p>
+
+    <p>If <code>force_compile</code> is <code><span class="pw">true</span></code>, the file <code>script.sn</code> is compiled even if a previous version
+      of the intermediate file exists.</p>
+
+    <p>Return the name of the compiled script file.</p>
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// hello.sn</span>
+<a href="showln.html">showln</a>(<span class="str">"hello, world"</span>)
+      </code></pre>
+    </div>
+
+    <p>The above script can be compiled into intermediate language representation and loaded into the current program by,</p>
+
+    <div class="prog">
+      <pre><code>
+load(<span class="str">"hello"</span>)
+      </code></pre>
+    </div>
+
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="reload.html">reload</a></div>
+      <div class="ref"><a href="compile.html">compile</a></div>
+      <div class="ref"><a href="link.html">link</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

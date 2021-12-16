@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (call_with_values)</title>
+  </head>
+
+  <body>
+    <h2>call_with_values</h2>
+
+    <div class="prog">
+      <pre><code>
+call_with_values(producer, consumer)
+      </code></pre>
+    </div>
+
+    <p>Apply the function <code>consumer</code> to the values returned by invoking <code>producer</code> without arguments.
+      Return the value returned by <code>consumer</code>.</p>
+
+    <h3>Examples:</h3>
+    <div class="prog">
+      <pre><code>
+call_with_values(<span class="kw">^</span><a href="values.html">values</a>(<span class="sym">'a</span>, <span class="sym">'b</span>), <span class="kw">^</span>(x, y) [y, x])
+<span class="comment">// [b, a]</span>
+
+<span class="comment">// `call_with_values` creates a continuation that
+// can accept an arbitrary number of arguments.</span>
+<span class="kw">let</span> k = <span class="pw">false</span>
+call_with_values(<span class="kw">^</span><a href="callcc.html">callcc</a>(<span class="kw">^</span>(kk) { k = kk; values(10, 20, 300)}), <a href="list.html">list</a>)
+<span class="comment">// [10, 20, 300]</span>
+k(1, 2, 3)
+<span class="comment">// [1, 2, 3]</span>
+k(1, 2, 3, 4)
+<span class="comment">// [1, 2, 3, 4]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="apply.html">apply</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

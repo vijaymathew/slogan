@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (shell_command)</title>
+  </head>
+
+  <body>
+    <h2>shell_command</h2>
+
+    <div class="prog">
+      <pre><code>
+shell_command(cmd, <span class="pw">@optional</span> capture)
+      </code></pre>
+    </div>
+
+    <p>Call up the shell to execute the command <code>cmd</code>, which must be a string.
+      If <code>capture</code> is <code><span class="pw">true</span></code>, return a pair consisting of the exit status of the shell in the
+      head field, and the captured output in the tail field. Otherwise, return the exit status of the command.</p>
+
+    <p>Be advised that the shell that is used, and consequently the syntax of command, depends on the operating system.
+      On Unix, the shell <code>/bin/sh</code> is usually invoked.</p>
+    
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> r = shell_command(<span class="str">"date"</span>)
+<span class="comment">//&gt; Tue Jun  7 10:16:02 IST 2016</span>
+r
+<span class="comment">// 0</span>
+r = shell_command(<span class="str">"date"</span>, <span class="pw">true</span>)
+r
+<span class="comment">// 0:Tue Jun  7 10:16:07 IST 2016</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="command_line.html">command_line</a></div>
+      <div class="ref"><a href="getenv.html">getenv</a></div>
+      <div class="ref"><a href="exit.html">exit</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (call_with_stream)</title>
+  </head>
+
+  <body>
+    <h2>call_with_stream</h2>
+
+    <div class="prog">
+      <pre><code>
+call_with_stream(s, fn)
+      </code></pre>
+    </div>
+
+    <p>Call the function <code>fn</code> with the input or output <a href="current_reader.html">stream</a> <code>s</code> as its only argument.
+      If <code>fn</code> returns normally, close <code>s</code> and return the value of <code>fn</code>.
+      If <code>fn</code> throws an error, close <code>s</code> and re-throw the error.</p>
+
+    <p>The stream represented by <code>s</code> is not automatically closed if a <a href="callcc.html">continuation</a> created outside of <code>fn</code>
+      is invoked, since it is possible that another continuation created inside of <code>fn</code> will be invoked
+      at a later time, returning control to <code>fn</code> and expecting that <code>s</code> is still open.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// write a file:</span>
+call_with_stream(<a href="file_writer.html">file_writer</a>(<span class="str">"abc"</span>), <span class="kw">^</span>(s) <a href="println.html">println</a>(stream = s, <span class="str">"hello, world"</span>))
+<span class="comment">// read it back:</span>
+call_with_stream(<a href="file_reader.html">file_reader</a>(<span class="str">"abc"</span>), <span class="kw">^</span>(s) <a href="read_line.html">read_line</a>(s))
+<span class="comment">// hello world</span>
+      </code></pre>
+    </div>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

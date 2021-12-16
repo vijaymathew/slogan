@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_base_priority)</title>
+  </head>
+
+  <body>
+    <h2>task_base_priority</h2>
+
+    <div class="prog">
+      <pre><code>
+task_base_priority(t)
+      </code></pre>
+    </div>
+
+    <p>Return the base priority of the <a href="task.html">task</a> <code>t</code>. The priority of a task is represented by a
+      <a href="is_real.html">real</a> number.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+task_base_priority(<a href="self.html">self</a>())
+<span class="comment">// 0.</span>
+<a href="task_set_base_priority.html">task_set_base_priority</a>(self(), 5.5)
+task_base_priority(self())
+<span class="comment">// 5.5</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="task_quantum.html">task_quantum</a></div>
+      <div class="ref"><a href="task_priority_boost.html">task_priority_boost</a></div>  
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

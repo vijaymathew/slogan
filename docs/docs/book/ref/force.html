@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (force)</title>
+  </head>
+
+  <body>
+    <h2>force</h2>
+
+    <div class="prog">
+      <pre><code>
+force(p)
+      </code></pre>
+    </div>
+
+    <p>Return the result of evaluating the promise <code>p</code>. A promise is created by <em>delaying</em> the evaluation of
+      an object with the <code>delay</code> (<code><span class="pw">~</span></code>) operator.</p>
+
+    <p>The first time a promise created by <code><span class="pw">~</span></code> is forced, it evaluates the delayed expression and its value is returned.
+      <code>Force</code> also caches this value. Thereafter, each time the promise is forced, it returns the
+      cached value instead of re-evaluating the expression. In other words, the value of the expression
+      is <a href="https://en.wikipedia.org/wiki/Memoization" target="_blank">memoized</a> by <code>force</code>.</p>
+
+    <p><code><span class="pw">~</span></code> and <code>force</code> are typically used only in the absence of side effects, e.g., assignments, so
+      that the order of evaluation is unimportant.</p>
+
+    <p>The benefit of using <code><span class="pw">~</span></code> and <code>force</code> is that some amount of computation might be avoided altogether if
+      it is delayed until absolutely required. Delayed evaluation may be used to construct conceptually infinite lists, or sequences.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> x = 10000000000000000000000
+<span class="kw">let</span> p = <span class="pw">~</span>{ showln(<span class="str">"long computation..."</span>); x }
+force(p)
+<span class="comment">//&gt long computation...
+// 10000000000000000000000</span>
+
+force(p)
+<span class="comment">// 10000000000000000000000</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="first.html">first</a></div>
+      <div class="ref"><a href="rest.html">rest</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

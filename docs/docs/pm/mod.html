@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+  <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right" >
+        <a href="./io.html" title="Input and Output"
+           accesskey="N">next</a></li>
+      <li class="right" >
+        <a href="./bd.html" title="Built-in Datatypes"
+           accesskey="P">previous</a> |</li>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+  
+  <div id="site" class="site">
+    <div class="title"><h3>Modularity</h3></div>
+
+    <p>Two related language features assist us in designing and organizing large programs -
+      <a href="#closures">closures</a>, <a href="#modules">modules</a> and <a href="#namespaces">namespaces</a>.</p>
+
+<a name="closures"></a>
+<h4>Closures</h4>
+
+<p>A closure (also lexical closure or function closure) is a function or reference to a function together with an environment - a table 
+  storing a reference to each of the non-local variables (free variables) of that function. A closure enables a function to access 
+  those non-local variables even when invoked outside its immediate lexical scope.</p>
+
+<p>The following program defines a closure that contain an environment with a binding for an integer variable and a function that
+  increments this variable on each invocation: </p>
+
+<div class="highlight">
+  <pre><code>function counter(n) 
+^{ n = n + 1; 
+   n };
+
+let a = counter(0); 
+let b = counter(10); 
+a(); 
+<span class="c">//=> 1</span>
+b(); 
+<span class="c">//=> 11</span></code></pre>
+</div>
+
+<p>Closures can be used to implement <em>objects</em> that respond to <em>messages</em>. This is achieved by making the closure to accept
+  a symbolic argument. The following program defines an object:</p>
+
+<div class="highlight">
+  <pre><code>function make_kid(name, age) 
+^(message)
+ | 'name? -> name
+ | 'age? -> age;
+
+let a = make_kid("sam", 10); 
+let b = make_kid("susan", 8); 
+a('name?); 
+<span class="c">//=> sam</span>
+a('age?); 
+<span class="c">//=> 10</span>
+b('name?); 
+<span class="c">//=> susan</span>
+b('age?); 
+<span class="c">//=> 8</span></code></pre>
+</div>
+
+<p>We can also use the <em>dot-notation</em> to pass "messages" to a closure:</p>
+
+<div class="highlight">
+  <pre><code>a.name?;
+<span class="c">//=> sam</span>
+b.age?;
+<span class="c">//=> 8</span></code></pre>
+</div>
+
+<p>In addition to local variables, a closure can refer to local functions as well. Consider an updated version of <code>counter</code>
+  that is extended with the ability to reset itself to a specified value:</p>
+
+<div class="highlight">
+  <pre><code>function counter(n)
+{ function reset(new_n) if (new_n >= 0) n = new_n; 
+
+  ^(@optional message) 
+  | 'reset -> reset
+  | _ -> { n = n + 1; 
+           n }}; 
+
+let a = counter(10); 
+a(); 
+<span class="c">//=> 11</span>
+a(); 
+<span class="c">//=> 12</span>
+a.reset(0); 
+a(); 
+<span class="c">//=> 1</span>
+a(); 
+<span class="c">//=> 2</span></code></pre>
+</div>
+
+<a name="modules"></a>
+<h4>Modules</h4>
+
+    <p>A <em>module</em> is a logical grouping of related definitions. Modules are first-class objects - they can be passed as arguments to functions
+      and functions can create and return new modules. </p>
+    <p>A module statement has the following form:</p>
+
+<div class="highlight">
+  <pre><code>module &lt;module_name&gt; (&lt;exported_names&gt;) &lt;module_body&gt;;</code></pre></div>
+    <p><em>Exported_names</em> is a comma separated list of identifiers. These identifiers must refer to top-level definitions in <em>module_body</em>.
+      From outside the module, an exported name is accessed using the notation `<code>module_name.exported_name</code>`.
+      Here is an example module that define three names and export two of them:</p>
+
+<div class="highlight">
+<pre><code>module abc (a, c)
+{ function a(x) sqrt(x);
+  let b = 3.14;
+  function c(y) y * y * b };</code></pre></div>
+
+<p>The functions a and c are accessible from outside the module:</p>
+
+<div class="highlight">
+<pre><code>abc.a(100);
+<span class="c">//=> 10</span>
+abc.c(10);
+<span class="c">//=> 314.</span>
+abc.b;
+<span class="c">//-> error: name_not_found b</span></code></pre></div>
+
+<p>Local bindings may be introduced for module names for easier and faster access to them:</p>
+
+<div class="highlight">
+<pre><code>let a, c = abc.a, abc.c;
+a(100);
+<span class="c">//=> 10</span>
+c(10);
+<span class="c">//=> 314.</span></code></pre></div>
+
+<p>A module may choose to export a definition using a different name. In the following program, the definition of <em>c</em> is exported with
+the more descriptive name <em>area</em>:</p>
+
+<div class="highlight">
+<pre><code>module abc (a, area:c)
+{ function a(x) sqrt(x);
+  let b = 3.14;
+  function c(y) y * y * b };
+
+abc.area(1000);
+<span class="c">//=> 3140000.</span>
+abc.c(10);
+<span class="c">//->error: name_not_found c</span></code></pre></div>
+
+<h5>Exporting all names (with exclusions)</h5>
+    <p>All names defined in a module can be exported using a `_` as shown below:</p>
+<div class="highlight">
+  <pre><code>module m(_)
+{ function f(x) x * 10
+  function g(x) x + 10
+  function h(x) x };
+
+m.f(2);
+<span class="c">//=> 20</span>
+m.g(2);
+<span class="c">//=> 12</span>
+m.h(2);
+<span class="c">//=> 2</span></code></pre></div>
+
+    <p>If some of the names needs to be excluded, they must be specified in a list after the `_`:</p>
+    <div class="highlight">
+  <pre><code>module m(_, [g])
+{ function f(x) x * 10
+  function g(x) x + 10
+  function h(x) x };
+
+m.f(2);
+<span class="c">//=> 20</span>
+m.g(2);
+<span class="c">//-> error: name_not_found</span>
+m.h(2);
+<span class="c">//=> 2</span></code></pre></div>
+
+<a name="namespaces"></a>
+<h4>Namespaces</h4>
+
+  <p>A namespace group definitions under a common name prefix. The following program shows a namespace with two definitions - a function
+    named <code>f</code> and a variable named <code>g</code>.</p>
+
+  <div class="highlight">
+    <pre><code>namespace abc
+{ function f(x) x*2
+  let g = 100 }</code></pre></class>
+
+<p>All top-level definitions in a namespace can be accessed by prefixing the definition by <code>namespace_name::</code>. Namespaces also satisfy
+  the interface for hashtables for accessing values. So their members can be destructured and accessed by <code>let</code> statements and <code>letseq</code>
+  expressions.</p>
+
+  <div class="highlight">
+    <pre><code>abc::f(10)
+<span class="c">//=> 20</span>
+abc::g
+<span class="c">//=> 100</span>
+
+<span class="c">// bind namespace variable to globals:</span>
+let #{f, g} = abc
+f(100)
+<span class="c">//=> 200</span>
+g * 20
+<span class="c">//=> 2000</span>
+
+<span class="c">// bind namespace variable and rename them:</span>
+let #{'f:ff, 'g:gg} = abc
+ff(100)
+<span class="c">//=> 200</span>
+gg * 20
+<span class="c">//=> 2000</span>
+
+<span class="c">// a less preferred way to access namespace members:</span>
+abc['f](10)
+<span class="c">//=> 20</span></code></pre></div>
+
+<p>Namespace and modules offer similar functionality but their internal representations and access mechanisms are different.
+  Which one to prefer is largely a matter of personal taste. Large collections of definitions are normally grouped under a namespace.
+  Modules are ideal for interacting with a smaller, well-defined interface. Note that a namespace can define and export a module and a module
+  can export a namespace. Examples of both are shown below:</p>
+
+<div class="highlight">
+  <pre><code>namespace n
+{ module m(a)
+   function a() 'hello }
+
+(n::m).a()
+<span class="c">//=> hello</span>
+
+module m (xyz)
+  namespace xyz
+  { function b() 'hi }
+
+m.xyz::b();
+<span class="c">//=> hi</span></code></pre></div>
+
+  </div>
+</body>
+</html>

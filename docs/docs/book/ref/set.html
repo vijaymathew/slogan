@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (set)</title>
+  </head>
+
+  <body>
+    <h2>set</h2>
+
+    <div class="prog">
+      <pre><code>
+set(obj)
+      </code></pre>
+    </div>
+
+    <p>Return a set initialized with the elements in the object <code>obj</code>. <code>Obj</code> must be either a set,
+      a <a href="list.html">list</a>, an <a href="array.html">array</a>, a <a href="string.html">string</a> or
+      a <a href="make_hashtable.html">hash table</a>. If <code>obj</code> is a hash table, each key-value pair will become an entry in the set.</p>
+
+    <p>A set stores an unordered sequence of objects without duplicates. It is an implementation of the mathematical concept
+      of a <a href="https://en.wikipedia.org/wiki/Finite_set" target="_blank">finite set</a>.
+      Unlike most other collection types, rather than retrieving a specific element from a set, one typically tests a value for membership in a set.
+      A set literal is written by enclosing the objects in <code>#()</code>, example: <code>#(1, 2, 3, 4, 5)</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+set(#{1:2, 3:4}) <span class="comment">// hash table -&gt; set</span>
+<span class="comment">// #(1:2, 3:4)</span>
+
+set("hello, world") <span class="comment">// string -&gt; set</span>
+<span class="comment">// #(\,,\o,\e,\w,\r,\h,\d,\l,\space)</span>
+
+set([1,2,3,2,3,4]) <span class="comment">// list -&gt; set</span>
+<span class="comment">// #(1,2,3,4)</span>
+
+set(#[1,2,3,2,3,4]) <span class="comment">// array -&gt; set</span>
+<span class="comment">// #(1,2,3,4)</span>
+
+set(#(1,2,3,2,3,4)) <span class="comment">// set -&gt; set</span>
+<span class="comment">// #(1,2,3,4)</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="make_set.html">make_set</a></div>
+      <div class="ref"><a href="set_length.html">set_length</a></div>
+      <div class="ref"><a href="is_set.html">is_set</a></div>
+      <div class="ref"><a href="is_set_member.html">is_set_member</a></div>
+      <div class="ref"><a href="set_difference.html">set_difference</a></div>
+      <div class="ref"><a href="set_intersection.html">set_intersection</a></div>
+      <div class="ref"><a href="set_union.html">set_union</a></div>
+      <div class="ref"><a href="is_superset.html">is_superset</a></div>
+      <div class="ref"><a href="is_subset.html">is_subset</a></div>
+      <div class="ref"><a href="set_to_list.html">set_to_list</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

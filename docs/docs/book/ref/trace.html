@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (trace)</title>
+  </head>
+
+  <body>
+    <h2>trace</h2>
+
+    <div class="prog">
+      <pre><code>
+trace(fn1, ...)
+      </code></pre>
+    </div>
+
+    <p>Starts tracing calls to the functions <code>fn1, ...</code>. When a traced function is called, a line containing the
+      function and its arguments is displayed (using the function call expression syntax of the intermediate language).
+      The line is indented with a sequence of vertical bars which indicate the nesting depth of the function's
+      <a href="callcc.html">continuation</a>. After the vertical bars is a greater-than sign which indicates that
+      the evaluation of the call is starting.</p>
+
+    <p>When a traced function returns a result, it is displayed with the same indentation as the call but without the greater-than sign.
+      This makes it easy to match calls and results (the result of a given call is the value at the same indentation as the
+      greater-than sign). If a traced function F1 performs a tail call to a traced function F2, then F2 will use the same
+      indentation as F1. This makes it easy to spot tail calls. The special handling for tail calls is needed to preserve
+      the space complexity of the program (i.e. tail calls are implemented even when they involve traced procedures).</p>
+
+    <p>When no argument is passed to <code>trace</code>, a <a href="list.html">list</a> of functions currently being traced is returned. Otherwise
+      returns <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> factorial(n)
+  <span class="kw">if</span> (n == 1) 1
+  <span class="kw">else</span> n * factorial(n-1)	  
+
+trace(factorial)
+
+factorial(6)
+<span class="comment">| &gt; (factorial 6)
+| | &gt; (factorial 5)
+| | | &gt; (factorial 4)
+| | | | &gt; (factorial 3)
+| | | | | &gt; (factorial 2)
+| | | | | | &gt; (factorial 1)
+| | | | | | 1
+| | | | | 2
+| | | | 6
+| | | 24
+| | 120
+| 720
+720  
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="untrace.html">untrace</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

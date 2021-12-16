@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_fixnum)</title>
+  </head>
+
+  <body>
+    <h2>is_fixnum</h2>
+
+    <div class="prog">
+      <pre><code>
+is_fixnum(obj)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if <code>obj</code> is a fixnum,
+      otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>Fixnums represent exact integers within a closed range [-2<sup>w-1</sup>, 2<sup>w-2</sup> - 1], where <code>w</code> is the fixnum width.
+      The implementation-specific value of <code>w</code> can be determined via the function
+      <code><a href="fixnum_width.html">fixnum_width</a></code>, and the endpoints of
+      the range may be determined via the functions <code><a href="least_fixnum.html">least_fixnum</a></code> and
+      <code><a href="greatest_fixnum.html">greatest_fixnum</a></code>.</p>
+    
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+is_fixnum(greatest_fixnum())
+<span class="comment">// true</span>
+
+is_fixnum(greatest_fixnum() + 1)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_flonum.html">is_flonum</a></div>
+      <div class="ref"><a href="is_number.html">is_number</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (bit_array_is_all_set)</title>
+  </head>
+
+  <body>
+    <h2>bit_array_is_all_set</h2>
+
+    <div class="prog">
+      <pre><code>
+bit_array_is_all_set(b)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if all bits are on in the <a href="bit_array.html">bit array</a> <code>b</code>,
+      return <code><span class="pw">false</span></code> otherwise.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> b = #b[0, 1, 1, 0, 1]
+bit_array_is_all_set(b)
+<span class="comment">// false</span>
+<a href="bit_array_set_all.html">bit_array_set_all</a>(b)
+bit_array_is_all_set(b)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="bit_array_is_any_set.html">bit_array_is_any_set</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

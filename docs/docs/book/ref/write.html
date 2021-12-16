@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (write)</title>
+  </head>
+
+  <body>
+    <h2>write</h2>
+
+    <div class="prog">
+      <pre><code>
+write(obj, stream = <a href="current_reader.html">current_writer</a>())
+      </code></pre>
+    </div>
+
+    <p>Write the compiled (or internal) representation of the object <code>obj</code> to the output-stream.
+      Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+write([1, 2, 3])
+<span class="comment">//&gt; (1 2 3)</span>
+write(<span class="str">"hello, world"</span>)
+<span class="comment">//&gt; "hello, world"</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="display.html">display</a></div>
+      <div class="ref"><a href="show.html">show</a></div>
+      <div class="ref"><a href="println.html">print</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

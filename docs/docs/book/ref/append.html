@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (append)</title>
+  </head>
+
+  <body>
+    <h2>append</h2>
+
+    <div class="prog">
+      <pre><code>
+append(@rest list1, ..., obj)
+      </code></pre>
+    </div>
+
+    <p>Return a new list consisting of the elements of the first list followed by the elements of the second list,
+      the elements of the third list, and so on. The new list is made from new pairs for all arguments but the last;
+      the last (which need not be a list) is merely placed at the end of the new structure. Raise an error
+      if all but the last argument are not lists.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+append()
+<span class="comment">// []</span>
+append([1, 2, 3], [4, 5, 6])
+<span class="comment">// [1, 2, 3, 4, 5, 6]</span>
+append([1, 2, 3], [4, 5, 6], 7)
+<span class="comment">// 1:2:3:4:5:6:7</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="list.html">list</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

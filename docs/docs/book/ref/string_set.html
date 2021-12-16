@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_set)</title>
+  </head>
+
+  <body>
+    <h2>string_set</h2>
+
+    <div class="prog">
+      <pre><code>
+string_set(s, i, c)
+      </code></pre>
+    </div>
+
+    <p>Change the <code>i</code><sup>th</sup> element of the <a href="string.html">string</a> <code>s</code> to the <a href="is_char.html">character</a>
+      <code>c</code>. Return <code><a href="void.html">void</a></code>.</p>
+    <p>The index <code>i</code> must be an exact nonnegative integer less than the length of <code>s</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"hello"</span>
+string_set(s, 1, \E)
+s
+<span class="comment">// hEllo</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_at.html">string_at</a></div>
+      <div class="ref"><a href="string_fill.html">string_fill</a></div>      
+      <div class="ref"><a href="make_string.html">make_string</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

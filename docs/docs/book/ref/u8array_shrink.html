@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (u8/s8/u16/s16/u32/s32/u64/s64array_shrink)</title>
+  </head>
+
+  <body>
+    <h2>u8/s8/u16/s16/u32/s32/u64/s64array_shrink</h2>
+
+    <div class="prog">
+      <pre><code>
+u8array_shrink(a, n)
+s8array_shrink(a, n)
+u16array_shrink(a, n)
+s16array_shrink(a, n)
+u32array_shrink(a, n)
+s32array_shrink(a, n)
+u64array_shrink(a, n)
+s64array_shrink(a, n)
+      </code></pre>
+    </div>
+
+    <p>Reduces the size of the <a href="u8array.html">integer array</a> <code>a</code> to <code>n</code>.</p>
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = #u8[110, 221, 87, 88]          
+u8array_shrink(a, 2)
+a
+<span class="comment">// #u8[110, 221]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="subu8array.html">subu8/s8/u16/s16/u32/s32/u64/s64array</a></div>      
+      <div class="ref"><a href="u8array_append.html">u8/s8/u16/s16/u32/s32/u64/s64array_append</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

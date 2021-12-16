@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_set_member)</title>
+  </head>
+
+  <body>
+    <h2>is_set_member</h2>
+
+    <div class="prog">
+      <pre><code>
+is_set_member(s, obj)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the object <code>obj</code> is a member of the <a href="set.html">set</a> <code>s</code>.
+      Otherwise, return <code><span class="pw">false</span></code>.</p>
+    
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+is_set_member(#(1, 2, 3), 2)
+<span class="comment">// true</span>
+is_set_member(#(1, 2, 3), 4)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_subset.html">is_subset</a></div>      
+      <div class="ref"><a href="set_union.html">set_union</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

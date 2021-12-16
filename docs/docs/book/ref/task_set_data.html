@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_set_data)</title>
+  </head>
+
+  <body>
+    <h2>task_set_data</h2>
+
+    <div class="prog">
+      <pre><code>
+task_set_data_boost(t, obj)
+      </code></pre>
+    </div>
+
+    <p>Set the arbitrary data associated with the <a href="task.html">task</a> <code>t</code> to the object <code>obj</code>.
+      Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="task_data.html">task_data</a>(<a href="self.html">self</a>())
+<span class="comment">// false</span>
+task_set_data(self(), 100)
+task_data(self())
+<span class="comment">// 100</span>
+      </code></pre>
+    </div>    
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="task_base_priority.html">task_base_priority</a></div>
+      <div class="ref"><a href="task_name.html">task_name</a></div>  
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

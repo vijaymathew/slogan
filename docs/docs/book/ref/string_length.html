@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_length)</title>
+  </head>
+
+  <body>
+    <h2>string_length</h2>
+
+    <div class="prog">
+      <pre><code>
+string_length(s)
+      </code></pre>
+    </div>
+
+    <p>Return the number of <a href="is_char.html">characters</a> in the <a href="string.html">string</a> <code>s</code>.</p>
+
+    
+    <h3>Examples:</h3>
+
+    <p>By default <code>string_length</code> will return the number of bytes that make up the string:</p>
+    
+    <div class="prog">
+      <pre><code>
+string_length("hello, world")
+<span class="comment">// 12</span>          
+string_length("您好世界")
+<span class="comment">// 12</span>
+      </code></pre>
+    </div>
+
+    <p>If character input is set to a particular character encoding, <code>string_length</code> will count and
+      report the number of characters <em>encoded</em> into a string. For example, if the REPL is started with the
+      <a href="../cmdline.html">command line option</a>
+      <code>-:t8,-8</code>, which set both the terminal and standard input to UTF-8 encoding, we get the following results:</p>
+
+    <div class="prog">
+      <pre><code>
+string_length("hello, world")
+<span class="comment">// 12</span>          
+string_length("您好世界")
+<span class="comment">// 4</span>
+      </code></pre>
+    </div>
+    
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="count.html">count</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

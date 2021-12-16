@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Packages Reference - pfds.heap</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">package: pfds</h1>
+    <h1 class="title">module: heap</h1>
+
+    <p>The <code>heap</code> module implements an immutable <a href="https://en.wikipedia.org/wiki/Priority_queue" target="_blank">priority queue</a>.
+      This module exports a single function <code>make</code> for creating a priority queue.</p>
+
+    <h2>heap.make</h2>
+
+    <div class="prog">
+      <pre><code>
+heap.make(init_seq = [])
+      </code></pre>
+    </div>
+
+    <p>Return a new priority queue initialized with the values from the sequence <code>init_seq</code>, which can be
+      any object that implements the <code><a href="../ref/first.html">first</a></code> and <code><a href="../ref/rest.html">rest</a></code>
+      generic functions. The elements added to the priority queue should be of the same type and must implement
+      <code><a href="../ref/compare.html">compare</a></code>.</p>
+
+    <p>The new priority queue is represented as a closure that can respond to the following messages:</p>
+
+    <div class="prog">
+      <pre><code>
+head()
+      </code></pre>
+    </div>
+    <p>Return the minimum value in the queue. Raise an error if the queue is empty.</p>
+
+    <div class="prog">
+      <pre><code>    
+tail()
+      </code></pre>
+    </div>
+    <p>Return a new queue with the minimum value removed. Raise an error if the queue is empty.</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="../ref/first.html">first</a>
+      </code></pre>
+    </div>
+    <p>Return the minimum value in the priority queue. Raise an error if the queue is empty.</p>
+
+    <div class="prog">
+      <pre><code>    
+<a href="../ref/first.html">rest</a>
+      </code></pre>
+    </div>
+    <p>Return a new priority queue with the minimum value removed. Return <code><span class="pw">false</span></code> if the queue is empty.</p>
+
+    <div class="prog">
+      <pre><code>
+cons(x)
+      </code></pre>
+    </div>
+    <p>Return a new priority queue with the element <code>x</code> added.</p>
+
+    <div class="prog">
+      <pre><code>
+is_empty()
+      </code></pre>
+    </div>
+<p>Return <code><span class="pw">true</span></code> if the priority queue is empty,
+  return <code><span class="pw">false</span></code> otherwise.</p>    
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> q = heap.make([100, 2, 340])
+q.head()
+<span class="comment">// 2</span>
+q.tail().head()
+<span class="comment">// 100</span>
+q = q.cons(0)
+first(q)
+<span class="comment">// 0</span>
+      </code></pre>
+    </div>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="pfds.html">Index</a> |  <a href="index.html">Packages Index</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (ceiling)</title>
+  </head>
+
+  <body>
+    <h2>ceiling</h2>
+
+    <div class="prog">
+      <pre><code>
+ceiling(r)
+      </code></pre>
+    </div>
+
+    <p>Return the integer closest to the real <code>r</code> toward <a href="inf.html">positive infinity</a>.
+      If <code>r</code> is <a href="is_infinite.html">infinite</a> or <a href="is_nan.html">NaN</a>,
+      <code>ceiling</code> will return <code>r</code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+ceiling(1.2)
+<span class="comment">// 2.</span>
+ceiling(2/3)
+<span class="comment">// 1</span>
+ceiling(<a href="inf.html">inf</a>)
+<span class="comment">// +inf.0</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="floor.html">floor</a></div>  
+      <div class="ref"><a href="abs.html">abs</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

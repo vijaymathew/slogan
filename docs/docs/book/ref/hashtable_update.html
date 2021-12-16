@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (hashtable_update)</title>
+  </head>
+
+  <body>
+    <h2>hashtable_update</h2>
+
+    <div class="prog">
+      <pre><code>
+hashtable_update(ht, key, fn, default)
+      </code></pre>
+    </div>
+
+    <p>Apply the function <code>f</code> to the value associated with <code>key</code> in the <a href="make_hashtable.html">hash table</a> <code>ht</code>,
+      or to <code>default</code> if no value is associated with <code>key</code>. If <code>fn</code> returns, <code>key</code> is
+      associated with the value returned by <code>fn</code>, replacing the old association.</p>
+
+    <p><code>Key</code> should be of an appropriate type for the hash and equivalence functions used by the hash table.
+      The function <code>fn</code> should accept one argument, should return one value, and should not modify the hash table.</p>
+
+    <p><code>Hashtable_update</code> return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> ht = #{1:2, 3:4}
+hashtable_update(ht, 1, <span class="kw">^</span>(x) x * 100)
+ht
+<span class="comment">// #{1: 200, 3: 4}</span>
+hashtable_update(ht, 5, <span class="kw">^</span>(x) x * 100, 6)
+ht
+<span class="comment">// #{5: 600, 1: 200, 3: 4}</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="hashtable_set.html">hashtable_set</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

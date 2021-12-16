@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Basic Data Types</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">4</h1>
+    <h1 class="title">Basic Data Types</h1>
+
+    <p>Data types in Slogan falls into three categories - <em>basic types</em>, <em>composite types</em> and
+      <em>user-defined types</em>. Basic types, the topic of this chapter, include numbers, characters, strings,
+      symbols and boolean. Composite types are more complex because they are formed by combining values of several simpler ones.
+      Arrays, pairs, lists, hash tables, sets and records are examples of composite types.
+      Slogan also allow the definition of new types that conform to user-specified interfaces.</p>
+
+    <h2>4.1 Numbers</h2>
+    <p>Slogan classifies numbers as integers, rational, real and complex. This classification is hierarchical, in that all integers are
+      rational, all rational numbers are real, and all real numbers are complex. Orthogonal to these categories, a number is also either <em>exact</em> or
+      <em>inexact</em>. In most cases, computations that involve an inexact number will produce an inexact result. One exception to this rule is
+      multiplying an inexact number with the exact <code>0</code>, which will produce an exact number. Operations that mathematically produce
+      irrational numbers for some rational arguments (e.g., <code><a href="ref/sqrt.html">sqrt</a></code>) may produce inexact results even for exact
+      arguments.<p>
+
+      <p><a name="01-back"></a>There are predicates<sup><a href="#01">1</a></sup> that can be used to determine the specific type of a number.</p>
+
+          <div class="prog">
+            <pre><code>
+<a href="ref/is_integer.html">is_integer</a>(123)
+<span class="comment">// true</span>
+<a href="ref/is_real.html">is_real</a>(123)
+<span class="comment">// true</span>
+is_real(1/23)
+<span class="comment">// true</span>
+is_integer(1/23)
+<span class="comment">// false</span>
+<a href="ref/is_number.html">is_number</a>(1/23)
+<span class="comment">// true</span>
+is_number(123)
+<span class="comment">// true</span>
+<a href="ref/is_rational.html">is_rational</a>(1/23)
+<span class="comment">// true</span>
+            </code></pre>
+          </div>
+        
+    <p>Exact integer and rational arithmetic is supported to arbitrary precision; the size of an integer or of the denominator or
+      numerator of a ratio is limited only by system storage constraints.</p>
+    
+    <p>Slogan numbers are written in a straightforward manner not much different from ordinary conventions for writing numbers. An exact
+      integer is normally written as a sequence of numerals preceded by an optional sign. For example, <code>3</code>, <code>+19</code>,
+      <code>-100000</code>, and <code>208423089237489374</code> all represent exact integers.</p>
+
+    <p>An exact rational number is normally written as two sequences of numerals separated by a slash (<code>&#47;</code>) and preceded by an
+      optional sign. For example, <code>3&#47;4</code>, <code>-6&#47;5</code>, and <code>1&#47;1208203823</code> are all exact rational numbers.
+      A ratio is reduced immediately to lowest terms when it is read and may in fact reduce to an exact integer.</p>
+
+    <p>Inexact real numbers are normally written in either floating-point or scientific notation. Floating-point notation consists of a
+      sequence of numerals followed by a decimal point and another sequence of numerals, all preceded by an optional sign.
+      Scientific notation consists of an optional sign, a sequence of numerals, an optional decimal point followed by a second
+      string of numerals, and an exponent; an exponent is written as the letter e followed by an optional sign and a sequence of
+      numerals. For example, <code>1.0</code> and <code>-200.0</code> are valid inexact integers, and <code>1.5</code>, <code>0.034</code>,
+      <code>-10e-10</code> and <code>1.5e-5</code> are valid inexact rational numbers. The exponent is the power of ten by which the
+      number preceding the exponent should be scaled, so that <code>2e3</code> is equivalent to <code>2000.0</code>.</p>
+
+    <p>Exact and inexact real numbers are written as exact or inexact integers or rational numbers; no provision is made in the syntax
+      of Slogan numbers for non-rational real numbers, i.e., irrational numbers.</p>
+
+    <p>The exactness of a numeric representation may be overridden by preceding the constant by either <code>0e</code> or <code>0i</code>.
+      <code>0e</code> forces the number to be exact, and <code>0i</code> forces it to be inexact. For example, <code>1</code>, <code>0e1</code>,
+      <code>1/1</code>, <code>0e1/1</code>, <code>0e1.0</code>, and <code>0e1e0</code> all represent the exact integer
+      <code>1</code>, and <code>0i3/10</code>, <code>0.3</code>, <code>0i0.3</code>, and <code>3e-1</code> all represent the inexact
+      rational <code>0.3</code>.</p>
+
+      <div class="prog">
+        <pre><code>    
+<a href="ref/is_exact.html">is_exact</a>(123 * 100)
+<span class="comment">// true</span>
+is_exact(123 * 100.0)
+<span class="comment">// false</span>
+<a href="ref/is_inexact.html">is_inexact</a>(123 * 100.0)
+<span class="comment">// true</span>
+1 == 1.0
+<span class="comment">// false</span>
+1 == 0e1.0
+<span class="comment">// true</span>
+<a href="ref/inexact.html">inexact</a>(1) == 1.0
+<span class="comment">// true</span>
+0i1 == 1.0
+<span class="comment">// true</span>
+0i1 == <a href="ref/exact.html">exact</a>(1.0)
+<span class="comment">// false</span>
+        </code></pre>
+      </div>
+      
+    <p>Numbers are written by default in base 10, although the special prefixes <code>0b</code> (binary), <code>0o</code> (octal),
+      <code>0d</code> (decimal), and <code>0x</code> (hexadecimal) can be used to specify base 2, base 8, base 10, or base 16.
+      For radix 16, the letters a through f or A through F serve as the additional numerals required to express digit values 10
+      through 15. For example, <code>0b10101</code> is the binary equivalent of <code>21<sub>10</sub></code>, <code>0o72</code> is the octal
+      equivalent of <code>58<sub>10</sub></code>, and <code>0xC7</code> is the hexadecimal equivalent of <code>199<sub>10</sub></code>.
+      Numbers written in floating-point and scientific notations are always written in base 10.</p>
+    
+    <p>Underscores may be added to a number to improve readability. For example, the integer <code>1234567</code> could be formatted
+      as <code>1_23_4567</code>.</p>
+    
+    <p>Complex number literals takes the form <code>R+Ii</code>, where <code>R</code> is the real part and <code>I</code> is
+      the imaginary part. E.g: <code>3+7i</code>.<p>
+
+    <p>There are functions that corresponds to the arithmetic and comparison operators. These functions can accept an arbitrary number of arguments.</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/add.html">add</a>(1,2,3,4,5)
+<span class="comment">// 15</span>
+<a href="ref/number_is_eq.html">number_is_lt</a>(1,2,3,4,5)
+<span class="comment">// true</span>
+number_is_lt(1,2,3,40,5)
+<span class="comment">// false</span>
+number_is_lt(1,2,3,4,4)
+<span class="comment">// false</span>
+<a href="ref/number_is_eq.html">number_is_lteq</a>(1,2,3,4,4)
+<span class="comment">// true</span>
+<a href="ref/mult.html">mult</a>(20, 30, 40)
+<span class="comment">// 24000</span>
+      </code></pre>
+    </div>
+
+  <h3>4.1.1 Bitwise Operations</h3>
+
+    <p>In this section we will discuss functions that perform bitwise binary operations on integers.
+      Some of the most useful of these functions are listed below:</p>
+    
+    <table>
+      <tbody>
+        <tr><td class="name"><a href="ref/band.html">band</a></td><td class="desc">bitwise AND</td></tr>
+        <tr><td class="name"><a href="ref/bior.html">bior</a></td><td class="desc">bitwise inclusive OR</td></tr>
+        <tr><td class="name"><a href="ref/bxor.html">bxor</a></td><td class="desc">bitwise exclusive OR</td></tr>
+        <tr><td class="name"><a href="ref/bnot.html">bnot</a></td><td class="desc">bitwise NOT</td></tr>
+        <tr><td class="name"><a href="ref/bshift.html">bshift</a></td><td class="desc">left/right arithmetic shift</td></tr>
+        <tr><td class="name"><a href="ref/is_bit_set.html">is_bit_set</a></td><td class="desc">predicate to test bit by position</td></tr>
+      </tbody>
+    </table>
+
+    <p>If the number of bits to shift is negative, <code>bshift</code> performs a right-shift. Otherwise, the bits are shifted left.</p>
+
+    <p>Bitwise operations assume that integer are represented in two's complement, even if they are not represented that way internally.</p>
+
+    <p><a name="02-back"></a>The following program show how to interpret an integer as a compact set of
+      independent bits.<sup><a href="#02">2</a></sup> Note that we make use of only the first 32 bits of the
+      integer, while the underlying value may have more bits. To view the binary representation of an integer,
+      the built-in <code><a href="ref/number_to_string.html">number_to_string</a></code> function is called. It takes an optional second argument
+      that specifies the base in which the result string should be formatted. To get a binary formatted string,
+      we have to pass <code>2</code> here.</p>
+
+      <div class="prog">
+        <pre><code>
+<span class="kw">function</span> turn_bit_on(bits, i)
+  <span class="kw">if</span> (i <= 31) bior(bits, bshift(1, i))
+  <span class="kw">else</span> bits
+
+<span class="kw">let</span> a, b = turn_bit_on(0, 31), turn_bit_on(0, 31)
+
+number_to_string(a, 2)
+<span class="comment">// 10000000000000000000000000000000</span>
+number_to_string(b, 2)
+<span class="comment">// 10000000000000000000000000000000</span>
+
+a = turn_bit_on(turn_bit_on(a, 1), 5)
+b = turn_bit_on(turn_bit_on(b, 1), 2)
+
+number_to_string(a, 2)
+<span class="comment">// 10000000000000000000000000100010</span>
+number_to_string(b, 2)
+<span class="comment">// 10000000000000000000000000000110</span>
+
+number_to_string(band(a, b), 2) <span class="comment">// intersection</span>
+<span class="comment">// 10000000000000000000000000000010</span>
+
+number_to_string(bior(a, b), 2) <span class="comment">// union</span>
+<span class="comment">// 10000000000000000000000000100110</span>
+
+<a href="ref/is_bit_set.html">is_bit_set</a>(a, 1) <span class="comment">// membership test</span>
+<span class="comment">// true</span>
+is_bit_set(a, 10)
+<span class="comment">// false</span>
+        </code></pre>
+      </div>
+      
+      <h3>4.1.2 Fixnums</h3>
+
+    <p>Fixnums represent exact integers within a closed range [-2<sup>w-1</sup>, 2<sup>w-2</sup> - 1], where <code>w</code> is the fixnum width.
+      The implementation-specific value of <code>w</code> can be determined via the function
+      <code><a href="ref/fixnum_width.html">fixnum_width</a></code>, and the endpoints of
+      the range may be determined via the functions <code><a href="ref/least_fixnum.html">least_fixnum</a></code> and
+      <code><a href="ref/greatest_fixnum.html">greatest_fixnum</a></code>.</p>
+
+    <p>The names of arithmetic procedures that operate only on fixnums begin with the prefix "fx" to set them apart from their generic counterparts.
+      The following example demonstrates some of the most useful operations on fixnums:</p>
+    
+    <div class="prog">
+      <pre><code>
+<a href="ref/fxadd.html">fxadd</a>(1, 21)
+<span class="comment">// 22</span>
+fxadd(1, greatest_fixnum())
+<span class="comment">//&gt; error: FIXNUM overflow</span>
+
+<a href="ref/fx_is_eq.html">fx_is_eq</a>(1, 1)
+<span class="comment">// true</span>
+fx_is_gt(1, 2)
+<span class="comment">// false</span>
+fx_is_gt(10, 2)
+<span class="comment">// true</span>
+fx_is_lteq(10, 2)
+<span class="comment">// false</span>
+fx_is_lteq(10, 10)
+<span class="comment">// true</span>
+fxsub(20, 32)
+<span class="comment">// -12</span>
+fxmult(20, 32)
+<span class="comment">// 640</span>
+fxdiv(20, 32)
+0
+fxdiv(20, 2)
+<span class="comment">// 10</span>
+      </code></pre>
+    </div>
+
+    <p>Bit and shift operations on fixnums assume that fixnums are represented in two's complement, even if they are not represented
+      that way internally.</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/number_to_string.html">number_to_string</a>(<a href="ref/fxand.html">fxior</a>(4294967296, <a href="ref/fxshift.html">fxshift</a>(1, 2)), 2)
+<span class="comment">// 100000000000000000000000000000100</span>
+number_to_string(fxior(4294967296, fxshift(fxshift(1, 2), -3)), 2)
+<span class="comment">// 100000000000000000000000000000000</span>
+        </code></pre>
+    </div>
+
+    <h3>Flonums</h3>
+
+    <p><a href="ref/is_flonum.html">Flonums</a> are inexact real numbers. Implementations typically use the IEEE double-precision
+      floating-point representation for flonums. Flonum-specific function names begin with the prefix "fl" to set them
+      apart from their generic counterparts.</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/fladd.html">fladd</a>(1.2, 4.5)
+<span class="comment">// 5.7</span>
+flmult(1.2, 4.5)
+<span class="comment">// 5.3999999999999995</span>
+<a href="ref/fl_is_eq.html">fl_is_eq</a>(0, 0.)
+<span class="comment">//&gt; error: (Argument 1) FLONUM expected</span>
+fl_is_eq(0., 0.)
+<span class="comment">// true</span>
+fl_is_lt(-1., 0.)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h2>4.2 Characters</h2>
+
+    <p><a href="ref/is_char.html">Characters</a> are atomic objects representing letters, digits, special symbols
+      such as <code>$</code> or <code>#</code>, and
+      certain non-graphic control characters such as <code>space</code> and <code>newline</code>. Characters literals are written
+      with the <code>\</code> prefix. For example, the character literal <code>A</code> will be represented in Slogan source code
+      as <code>\A</code>.</p>
+
+    <p>The following are special literals that represent non-graphic characters:</p>
+
+    <div class="prog">
+      <pre><code>
+\newline
+\return
+\tab
+\space
+\backspace
+\alarm
+\vtab
+\esc
+\delete
+\nul
+      </code></pre>
+    </div>
+    
+    <p>Any Unicode character may be written with the syntax '\xhh', '\uhhhh' or '\Uhhhhhhhh' where n consists of two, four or eight
+      hexadecimal digits representing a valid Unicode scalar value.</p>
+
+    <p>All the comparison operators are overloaded to work with characters:</p>
+
+    <div class="prog">
+      <pre><code>
+\A == \A
+<span class="comment">// true</span>
+\A == \a
+<span class="comment">// false</span>
+\A == <a href="ref/char_upcase.html">char_upcase</a>(\a)
+<span class="comment">// true</span>
+\c > \b
+<span class="comment">// true</span>
+        </code></pre>
+      </div>
+
+    <p>There are many predicates useful for finding information about characters and for comparing them:</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/is_char.html">is_char</a>(\A)
+<span class="comment">// true</span>
+is_char(65)
+<span class="comment">// false</span>
+is_char(integer_to_char(65))
+<span class="comment">// true</span>
+<a href="ref/char_is_numeric.html">char_is_numeric</a>(\2)
+<span class="comment">// true</span>
+<a href="ref/char_is_alphabetic.html">char_is_alphabetic</a>(\e)
+<span class="comment">// true</span>
+<a href="ref/char_is_lower_case.html">char_is_lower_case</a>(\e)
+<span class="comment">// true</span>
+<a href="ref/char_is_eq.html">char_is_eq</a>(\a, \a) <span class="comment">// `==` optimized to work with characters</span>
+<span class="comment">// true</span>
+char_is_lteq(\a, \b) <span class="comment">// `<=` optimized to work with characters</span>
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <p>Let us write a new predicate for characters which return <code><span class="pw">true</span></code> if its argument is a vowel.
+      This function will also introduce you to the <code><span class="kw">case</span></code> expression.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> is_vowel(c)
+  <span class="kw">case</span> (c)
+    \a -> <span class="pw">true</span>
+  | \e -> <span class="pw">true</span>
+  | \i -> <span class="pw">true</span>
+  | \o -> <span class="pw">true</span>
+  | \u -> <span class="pw">true</span>
+  | <span class="kw">else</span> -> <span class="pw">false</span>
+        </code><pre>
+    </div>
+
+    <p><code><span class="kw">Case</span></code> evaluates an expression and compares its value to those in a list of <em>clauses</em>.
+      This comparison is done using the <code><a href="ref/is_eq.html">is_eq</a></code>
+      function which basically checks if two values are stored in the same location in memory. On a successful match, the value of the clause is
+      returned. An optional <code><span class="kw">else</span></code> can be defined to return a default value if all matches fail.</p>
+
+    <p>Multiple clauses that return the same value can be compressed into a single <a href="ref/list.html">list</a>. In <code>is_vowel</code>
+      the <code><span class="kw">else</span></code> can also be omitted because
+      the default value of <code><span class="kw">case</span></code> is <code><span class="pw">false</span></code>. These two points leads
+      to the following rewrite of the function:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> is_vowel(c)
+  <span class="kw">case</span> (c) [\a, \e, \i, \o, \u] -> <span class="pw">true</span>
+
+<span class="comment">// Usage:</span>
+is_vowel(\o)
+<span class="comment">// true</span>
+is_vowel(\b)
+<span class="comment">// false</span>
+is_vowel(\a)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+    
+    <h2>4.3 Strings</h2>
+
+    <p>A <a href="ref/string.html">string</a> is a sequence of characters enclosed in double-quotes.
+      Slogan supports the <a href="http://unicode.org" target="_blank">Unicode</a>
+      standard. That means, Slogan strings can represent scripts from all of the world's written languages.
+      The following are examples of valid string literals:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="str">&quot;hello, world&quot;</span>
+
+<span class="comment">// a string may span multiple lines.</span>
+<span class="str">&quot;this is a really
+long message...&quot;</span>
+
+<span class="str">&quot;ἐγὼ εἰμί&quot;</span>
+      </code></pre>
+    </div>
+
+    <p>Double-quotes inside a string must be escaped by a backslash.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="str">&quot;he said: \"hello, there\"&quot</span>
+<span class="comment">// he said: "hello there"</span>
+      </pre></code>
+    </div>
+
+    <p>A list of all escape characters that can appear in string literal and their purpose is listed below:</p>
+
+    <div class="prog">
+      <pre><code>
+\n    newline
+\t    tab
+\r    return
+\\    backslash
+\b    backspace
+\a    alarm
+\v    vertical-tab
+\&quot;    double-quote
+\e    escape
+\d    delete
+\0    nul
+\u    unicode character encoded in 4 hexadecimal digits
+\x    unicode character encoded in 2 hexadecimal digits
+\U    unicode character encoded in 8 hexadecimal digits
+      </code></pre>
+    </div>
+
+    <p>Let us familiarize ourselves with some useful operations on strings:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"For all its power, the computer is a harsh taskmaster."</span>
+
+<span class="comment">// accessing individual characters by index:</span>
+<a href="ref/string_at.html">string_at</a>(s, 2)
+<span class="comment">// \r</span>
+s[2]
+<span class="comment">// \r</span>
+
+<span class="comment">// splicing or extracting sub-strings:</span>
+<a href="ref/substring.html">substring</a>(s, 4, 17)
+<span class="comment">// all its power</span>
+s[4:17]
+<span class="comment">// all its power</span>
+s[4:]
+<span class="comment">// all its power, the computer is a harsh taskmaster.</span>
+s[:17]
+<span class="comment">// For all its power</span>
+<a href="ref/string_length.html">string_length</a>(s[:17])
+<span class="comment">// 17</span>
+
+<span class="comment">/* `count` is more generic than `string_length`, it can
+   also find the length of other "collections" of data, like arrays and lists. */</span>
+<a href="ref/count.html">count</a>(s)
+<span class="comment">// 54</span>
+
+<span class="comment">// searching:</span>
+<a href="ref/string_index_of.html">string_index_of</a>(s, <span class="str">","</span>)
+<span class="comment">// 17</span>
+string_index_of(s, <span class="str">"computer"</span>)
+<span class="comment">// 23</span>
+
+<a href="ref/string_append.html">string_append</a>(<span class="str">"abc"</span>, <span class="str">"def"</span>, <span class="str">"xyz"</span>)
+<span class="comment">// abcdefxyz</span>
+
+<span class="comment">// split the string at commas and spaces: </span>
+<a href="ref/string_split.html">string_split</a>(s, [\,, \space])
+<span class="comment">// [For, all, its, power, the, computer, is, a, harsh, taskmaster.]</span>
+<a href="ref/strings_join.html">strings_join</a>(<span class="str">"-"</span>, string_split(s, [\,, \space]))
+<span class="comment">// For-all-its-power-the-computer-is-a-harsh-taskmaster.</span>
+
+<span class="comment">// comparisons</span>
+<a href="ref/string_is_eq.html">string_is_eq</a>(<span class="str">"abc"</span>, <span class="str">"abc"</span>)
+<span class="comment">// true</span>
+<span class="str">"abc"</span> == <span class="str">"abc"</span>
+<span class="comment">// true</span>
+string_is_eq(<span class="str">"aBC"</span>, <span class="str">"abc"</span>)
+<span class="comment">// false</span>
+string_is_ci_eq(<span class="str">"aBC"</span>, <span class="str">"abc"</span>)
+<span class="comment">// true</span>
+string_is_lt("abc", "xyz")
+<span class="comment">// true</span>
+<span class="str">"abc"</span> < <span class="str">"xyz"</span>
+<span class="comment">// true</span>
+<span class="str">"abc"</span> >= <span class="str">"abc"</span>
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h2><a name="symbols"></a>4.4 Symbols</h2>
+
+    <p>Symbols are used for a variety of purposes as symbolic names in Slogan programs. Symbol constants are written by prefixing identifiers
+      with the quote mark (<code>'</code>). All characters valid in identifiers can be used in symbols. Symbols with spaces and special characters
+      are written by enclosing the symbol in tick (<code>`</code>) quotes. The following are all valid symbols:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="sym">'abc
+'$abc
+'`abc def`
+'`abc+def`</span>
+      </code></pre>
+    </div>
+
+    <p>Strings could be used for most of the same purposes, but an important characteristic of symbols makes comparisons for equality
+      much more efficient. This is because two symbols with the same sequence of characters are stored in the same memory location. This
+      makes it possible to test them for equality with the <code><a href="ref/is_eq.html">is_eq</a></code> function,
+      which does a fast check if its arguments point to
+      the same location in memory. On the other hand, effective string comparisons always require checking each character in both strings.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = <span class="str">"hello"</span>
+<span class="kw">let</span> b = <span class="str">"hello"</span>
+
+<span class="comment">// `==` will compare each character in both strings</span>
+a == b
+<span class="comment">// true</span>
+
+<span class="comment">// so does `string_is_eq`</span>
+string_is_eq(a, b)
+<span class="comment">// true</span>
+
+<span class="comment">/* `is_eq` only checks of two objects belong to the same
+   location in memory */</span>
+is_eq(a, b)
+<span class="comment">// false</span>
+is_eq(a, a)
+<span class="comment">// true</span>
+
+<span class="comment">// In contrast to strings, two symbols made of the same sequence of characters
+// can be efficiently compared for equality just by checking their memory locations.</span>
+<span class="kw">let</span> x = <span class="sym">'hello</span>
+<span class="kw">let</span> y = <span class="sym">'hello</span>
+<span class="kw">let</span> z = <span class="sym">'Hello</span>
+
+is_eq(x, y)
+<span class="comment">// true</span>
+is_eq(x, z)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <p>It is possible to construct new symbols from strings and to convert symbols to strings:</p>
+
+    <div class="prog">
+      <pre><code>
+is_eq(<span class="sym">'hello</span>, <a href="ref/string_to_symbol.html">string_to_symbol</a>(<span class="str">"hello"</span>))
+<span class="comment">// true</span>
+<span class="str">"hello"</span> == <a href="ref/symbol_to_string.html">symbol_to_string</a>(<span class="sym">'hello</span>)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <hr></hr>
+    
+      <div class="note">
+        <p><sup><a name="01"></a><a href="#01-back">1</a></sup>A <em>predicate</em> is a function that answers a question with a
+          <code><span class="pw">true</span></code> or <code><span class="pw">false</span></code> value.</p>
+      </div>
+      
+      <div class="note">
+        <p><sup><a name="02"></a><a href="#02-back">2</a></sup>Slogan has a composite type <code>bitarray</code> that can
+          represent bitmaps of arbitrary sizes. This type will be introduced in the <a href="cdt.html">next</a> chapter.</p>
+      </div>
+
+    <hr></hr>
+    <p align="center">
+      <a href="cdt.html">Next</a> | <a href="elem.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+  </body>
+</html>
+      

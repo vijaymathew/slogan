@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (array_for_each)</title>
+  </head>
+
+  <body>
+    <h2>array_for_each</h2>
+
+    <div class="prog">
+      <pre><code>
+array_for_each(fn, a1, <span class="pw">@rest</span>...)
+      </code></pre>
+    </div>
+
+    <p>The function <code>fn</code> is applied to each element of the <a href="array.html">arrays</a> <code>a1, ...</code>. <code>Fn</code> must accept
+      as many arguments as there are arrays. The arrays must be of the same length.</p>
+    <p>Return <a href="void.html">void</a>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+array_for_each(<span class="kw">^</span>(x, y) <a href="showln.html">showln</a>(x * y), #[1, 2, 3], #[4, 5, 6])
+<span class="comment">//-&gt; 4 
+     10
+     18</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="array_map.html">array_map</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

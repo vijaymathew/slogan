@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (first)</title>
+  </head>
+
+  <body>
+    <h2>first</h2>
+
+    <div class="prog">
+      <pre><code>
+first(s)
+      </code></pre>
+    </div>
+
+    <p>Return the first element of the sequence <code>s</code>. If <code>s</code> is not a valid sequence, return
+      <code><span class="pw">false</span></code>.</p>
+
+    <p>The related functions, <code>second</code>, <code>third</code>, <code>fourth</code>, <code>fifth</code>,
+      <code>sixth</code>, <code>seventh</code>, <code>eighth</code>, <code>ninth</code> and <code>tenth</code>
+      returns respectively the second, third, fourth, fifth, sixth, seventh, eighth, ninth, and tenth 
+      elements of the sequence <code>s</code>, and returns <code><span class="pw">false</span></code> if <code>s</code> is not a valid sequence.</p>
+
+    <p><code>First</code>, <a href="rest.html"><code>rest</code></a> and <code><a href="count.html">count</a></code> are generic functions
+      recognized by the language. A user-defined object can respond to these messages and start behaving like a sequence.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> ints(n) n:<span class="pw">~</span>ints(n + 1) <span class="comment">// an infinite sequence of integers</span>
+<span class="kw">let</span> s = ints(0)
+
+first(s)
+<span class="comment">// 0</span>
+second(s)
+<span class="comment">// 1</span>
+tenth(s)
+<span class="comment">// 9</span>
+
+<span class="comment">// a custom sequence</span>
+<span class="kw">function</span> make_bag(xs)
+  <span class="kw">let</span> (len = array_length(xs))
+    <span class="kw">^</span>(msg)
+    | <span class="sym">'first</span> -> <span class="kw">when</span> (len > 0) array_at(xs, 0)
+    | <span class="sym">'rest</span> -> <span class="kw">when</span> (len > 1) make_bag(subarray(xs, 1, len))
+    | <span class="sym">'count</span> -> len
+
+<span class="kw">let</span> b = make_bag(#[10, 20, 30])
+first(b)  
+<span class="comment">// 10</span>
+<a href="nth.html">nth</a>(2, b)
+<span class="comment">// 30</span>
+<a href="count.html">count</a>(b)
+<span class="comment">// 30</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="rest.html">rest</a></div>
+      <div class="ref"><a href="head.html">head</a></div>
+      <div class="ref"><a href="tail.html">tail</a></div>
+      <div class="ref"><a href="nth.html">nth</a></div>
+      <div class="ref"><a href="nth_tail.html">nth_tail</a></div>
+      <div class="ref"><a href="count.html">count</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

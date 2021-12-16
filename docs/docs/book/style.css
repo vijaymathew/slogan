@@ -1,0 +1,251 @@
+body {
+    padding-left: 100px;
+    font-family: Palatino, "Palatino LT STD", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    font-size: 18px;
+}
+
+h1, h2, h3 {
+    margin: 0px;
+    color: #191919;
+}
+
+h1 {
+    padding-bottom: 20px;
+    font-weight: bold;
+}
+
+h1.sitename {
+    padding-top: 30px;
+    padding-bottom: 5px;
+    font-weight: bold;
+}
+
+h1.chapter {
+    padding-bottom: 5px;
+    font-weight: bold;
+    border-bottom: 5px double #191919;
+    text-align: right;
+    width: 70%;
+}
+
+h1.title {
+    padding-top: 10px;
+    padding-bottom: 30px;
+    font-weight: bold;
+    text-align: right;
+    width: 70%;
+}
+
+h1.book_title {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    font-weight: bold;
+    font-size: 42px;
+    text-align: left;
+    width: 70%;
+}
+
+h2 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-weight: bold;
+}
+
+h3 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+h4 {
+    padding-top: 10px;
+    padding-bottom: 0px;
+}
+
+li.head {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+li.section {
+    padding-top: 10px;
+}
+
+li {
+    padding-bottom: 5px;
+}
+
+p {
+    line-height: 1.4em;
+    color: #000000;
+    width: 70%;
+}
+
+p.firstslogan {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-left: 0px;
+}
+
+p.firstsite {
+    padding-top: 30px;
+}
+
+hr {
+    border-top: 1px solid #191919;
+    width: 70%;
+    float: left;
+}
+
+hr.maintext {
+    border-top: 1px solid #191919;
+    width: 85%;
+    float: left;
+}
+
+sup {
+    position: relative;
+    bottom: 0.1em;
+    color: #191919;
+    font-size: 65%;
+}
+
+sub {
+    bottom: 0.5em;
+    color: #191919;
+    font-size: 55%;
+}
+
+div {
+    line-height: 1.4em;
+    color: #000000;
+}
+
+div.note {
+    width: 100%;
+    font-size: 80%;
+    text-align: left;
+}
+
+div.prog {
+    width: 70%;
+    float: center;
+    padding-left: 10px;
+    background: #f5f5f5;
+    color: #191919;
+}
+
+div.progmain {
+    width: 520px;
+    height: 350px;
+    float: left;
+    background: #f5f5f5;
+    color: #191919;
+    position: relative;
+}
+
+pre {
+    font-family: monaco, Consolas, "Lucida Console", monospace;
+    font-size: 14px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 400;
+    line-height: 18.5714px;
+}
+
+span.comment {
+    font-style: italic;
+    color: #909090;
+}
+
+span.kw {
+    font-weight: bold;
+    color: #006633;
+}
+
+span.pw {
+    font-weight: normal;
+    color: #228b22;
+}
+
+span.str {
+    color: #b22222;
+}
+
+span.sym {
+    color: #800000;
+}
+
+.credits {
+    font-style: italic;
+    text-align: right;
+}
+
+a {
+    text-decoration: none;
+    color: #4169e1;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+div.ref {
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 15px;
+    color: #4169e1;
+    padding-right: 10px;
+}
+
+td.desc {
+    width: 80%;
+    text-align: left;
+}
+
+td.name {
+    text-align: left;
+    padding-right: 30px;
+}
+
+.big {
+    font-size: 350%;
+    font-weight: bold;
+}
+
+div.snippet {
+    float: right;
+    width: 55%;
+    overflow: auto;
+}
+
+.slide {
+    display: none;
+}
+
+div.nav {
+    float: right;
+    position: absolute;
+    top: 320px;
+    right: 10px;
+    width: 30px;
+    overflow: auto;
+    overflow-x: hidden;
+}
+
+.navbut {
+    cursor: pointer;
+    color: #a9a9a9;
+    text-decoration: none !important;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    outline: 0;
+}
+
+.navbut_next {
+    padding-left: 100px;
+}
+
+a.mainlink {
+    font-size: 20px;
+    color: gray;
+    font-weight: bold;
+}

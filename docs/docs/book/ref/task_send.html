@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_send)</title>
+  </head>
+
+  <body>
+    <h2>task_send</h2>
+
+    <div class="prog">
+      <pre><code>
+task_send(t, msg) 
+      </code></pre>
+    </div>
+
+    <p>Sends the message <code>msg</code> asynchronously to the task <code>t</code>. Return <code><a href="void.html">void</a></code>.</p>
+
+    <p>Message sending is also achieved with the <code>!&gt;</code> operator which has the syntax:</p>
+
+    <div class="prog">
+      <pre><code>
+t !&gt; msg          
+      </code></pre>
+    </div>
+
+    <p>Unlike the <code>task_send</code> function the <code>!&gt;</code> operator returns the message that was sent.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> add2()
+  <span class="kw">letseq</span> (sender:n = <a href="task_receive.html">task_receive</a>())
+    task_send(sender, n + 2)
+
+<span class="kw">let</span> adder = <a href="task.html">task</a>(add2)
+adder !> <a href="self.html">self</a>():10
+<span class="comment">// &lt;task&gt;:10</span>
+task_receive()
+<span class="comment">// 12</span>
+      </code></pre>
+    </div>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (set_current_exception_handler)</title>
+  </head>
+
+  <body>
+    <h2>set_current_exception_handler</h2>
+
+    <div class="prog">
+      <pre><code>
+set_current_exception_handler(fn)
+      </code></pre>
+    </div>
+
+    <p>Set the current exception handler function to <code>fn</code> and return <code><a href="void.html">void</a></code>.</p>
+
+    <p><code>Fn</code> takes a single argument that represent the exception currently being handled.</p> 
+
+    <p>Return <code>void</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">/*
+The current exception handler is not active in the REPL.
+To test this functions you should compile a script.
+For example, compile the following scripts, run the executables and see how changing the
+current exception handler affect the way error is reported:*/</span>
+
+<span class="comment">// test1.sn</span>
+1 / 0
+
+<span class="comment">// Compile test1.sn to a standalone executable:</span>
+slogan&gt; <a href="compile.html">compile</a>(<span class="str">"test1"</span>, exe = <span class="pw">true</span>)
+
+<span class="comment">// Run from the OS shell:</span>
+$ ./test1 
+<span class="comment">//&gt; *** ERROR -- Divide by zero
+(/ 1 0)</span>
+
+
+<span class="comment">// test2.sn</span>
+set_current_exception_handler(<span class="kw">^</span>(ex) showln(<span class="str">"ERROR CAUGHT!!"</span>, ex))
+1 / 0
+
+<span class="comment">// Compile test2.sn to a standalone executable:</span>
+slogan&gt; compile(<span class="str">"test2"</span>, exe = <span class="pw">true</span>)
+
+<span class="comment">// Run from the OS shell:</span>
+$ ./test2
+<span class="comment">//&gt; "ERROR CAUGHT!!"#&lt;divide-by-zero-exception #2&gt;</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="raise.html">raise</a></div>  
+      <div class="ref"><a href="error.html">error</a></div>
+      <div class="ref"><a href="abort.html">abort</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

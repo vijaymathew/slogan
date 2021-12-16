@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_for_each)</title>
+  </head>
+
+  <body>
+    <h2>string_for_each</h2>
+
+    <div class="prog">
+      <pre><code>
+string_for_each(fn, s1, <span class="pw">@rest</span>, ...)
+      </code></pre>
+    </div>
+
+    <p>The function <code>fn</code> is called for each <a href="is_char.html">character</a> in the <a href="string.html">strings</a>
+      <code>s1, ...</code>. </p>
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+
+    <p><code>Fn</code> should accept as many arguments as there are strings. It is called only for its side-effect.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> (s = <a href="make_string.html">make_string</a>(10), i = 0) 
+{ string_for_each(<span class="kw">^</span>(c, d) { <a href="string_set.html">string_set</a>(s, i, c)
+                            string_set(s, i + 1, d)
+                            i = i + 2 }, 
+                  <span class="str">"hello"</span>, <span class="str">"world"</span>)
+  s }
+<span class="comment">// hweolrllod</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_map.html">string_map</a></div>
+      <div class="ref"><a href="for_each.html">for_each</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

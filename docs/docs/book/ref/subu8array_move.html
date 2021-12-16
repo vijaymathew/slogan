@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (subu8/s8/u16/s16/u32/s32/u64/s64array_move)</title>
+  </head>
+
+  <body>
+    <h2>subu8/s8/u16/s16/u32/s32/u64/s64array_move</h2>
+
+    <div class="prog">
+      <pre><code>
+subu8array_move(a, start, end, dst, dst_start)
+subs8array_move(a, start, end, dst, dst_start)
+subu16array_move(a, start, end, dst, dst_start)
+subs16array_move(a, start, end, dst, dst_start)
+subu32array_move(a, start, end, dst, dst_start)
+subs32array_move(a, start, end, dst, dst_start)
+subu64array_move(a, start, end, dst, dst_start)
+subs64array_move(a, start, end, dst, dst_start)
+      </code></pre>
+    </div>
+
+    <p>Replace part of the contents of the <a href="u8array.html">integer array</a> <code>dst</code> with part of the contents
+      of <code>a</code>. It copies elements from <code>a</code>, beginning with index <code>start</code> (inclusive) and ending with
+      index <code>end</code> (exclusive) to <code>dst</code> beginning at index <code>dst_start</code> (inclusive).</p>
+
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = #u8[1, 2, 3, 4, 5]
+<span class="kw">let</span> b = #u8[0, 0, 0, 0, 0]          
+subu8array_move(a, 2, 4, b, 0)
+b
+<span class="comment">// #u8[3, 4, 0, 0, 0]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="u8array_copy.html">u8/s8/u16/s16/u32/s32/u64/s64array_copy</a></div>
+      <div class="ref"><a href="subu8array_fill.html">subu8/s8/u16/s16/u32/s32/u64/s64array_fill</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

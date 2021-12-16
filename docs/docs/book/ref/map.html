@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (map)</title>
+  </head>
+
+  <body>
+    <h2>map</h2>
+
+    <div class="prog">
+      <pre><code>
+map(fn, seq1, seq2, ...)
+      </code></pre>
+    </div>
+
+    <p>Apply the function <code>fn</code> to corresponding elements of the sequences <code>seq1</code>, <code>seq2 ...</code> and return a sequence of
+      the resulting values. The sequences, if finite, must be of the same length. <code>Fn</code> should accept as many arguments as there are
+      sequences, should return a single value, and should not mutate the sequences.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+map(<a href="abs.html">abs</a>, [1, -2, 3, -4, 5])
+<span class="comment">// [1, 2, 3, 4, 5]</span>
+
+map(`<a href="mult.html">*</a>`, [1, 2, 3, 4], [8, 7, 6, 5])
+<span class="comment">// [8, 14, 18, 20]</span>
+
+<span class="comment">// mapping over infinite sequences:</span>
+<span class="kw">function</span> seq1(i) i:<span class="pw">~</span>seq1(i+1)
+<span class="kw">function</span> seq2(i) i:<span class="pw">~</span>seq2(i+2)
+
+<span class="kw">let</span> xs = seq1(10)
+<span class="kw">let</span> ys = seq2(20)
+<span class="kw">let</span> zs = map(<a href="add.html">add</a>, xs, ys)
+<a href="first.html">first</a>(zs)
+<span class="comment">// 30</span>
+<a href="first.html">second</a>(zs)
+<span class="comment">// 33</span>
+<a href="nth.html">nth</a>(10, zs)
+<span class="comment">// 60</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="apply.html">apply</a></div>  
+      <div class="ref"><a href="for_each.html">for_each</a></div>
+      <div class="ref"><a href="for_all.html">for_all</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

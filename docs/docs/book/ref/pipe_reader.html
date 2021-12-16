@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (pipe_reader/writer/stream)</title>
+  </head>
+
+  <body>
+    <h2>pipe_reader/writer/stream</h2>
+
+    <div class="prog">
+      <pre><code>
+pipe_reader(path, arguments = [], environment, directory, stdin_redirection = <span class="pw">true</span>,
+            stdout_redirection = <span class="pw">true</span>, stderr_redirection, pseudo_terminal,
+            show_console = <span class="pw">true</span>, transcoder)
+pipe_writer(path, arguments = [], environment, directory, stdin_redirection = <span class="pw">true</span>, 
+            stdout_redirection = <span class="pw">true</span>, stderr_redirection, pseudo_terminal,
+            show_console = <span class="pw">true</span>, transcoder)      
+pipe_stream(path, arguments = [], environment, directory, stdin_redirection = <span class="pw">true</span>, 
+            stdout_redirection = <span class="pw">true</span>, stderr_redirection, pseudo_terminal, 
+            show_console = <span class="pw">true</span>, transcoder)
+      </code></pre>
+    </div>
+
+    <p>Return a <a href="current_reader.html">stream</a> that can be used to communicate with an operating system process.</p>
+
+    <p><code>Path</code> indicates the location of the executable program in the filesystem.</p>
+
+    <p><code>Direction</code> should be one of the symbols <code><span class="sym">'input_output</span></code>,
+      <code><span class="sym">'input</span></code> or <code><span class="sym">'output</span></code>.
+      Defaults to <code><span class="sym">'input_output</span></code>.</p>
+
+    <p><code>Arguments</code> a list of strings. Indicates the string arguments that are passed to the program.
+      The default value of this setting is the empty list (i.e. no arguments).</p>
+
+    <p><code>Environment</code> should be a list of strings. Indicates the set of environment variable bindings
+      that the process receives. Each element of the list is a string of the form "VAR=VALUE",
+      where VAR is the name of the variable and VALUE is its binding. When environment is false,
+      the process inherits the environment variable bindings of its parent process.
+      The default value of this setting is <code><span class="pw">false</span></code>.</p>
+
+    <p><code>Directory</code> indicates the current working directory of the process. When directory is <code><span class="pw">false</span></code>,
+      the process uses the value of <code><a href="current_directory.html">current_directory</a>()</code>.
+      The default value of this setting is <code><span class="pw">false</span></code>.</p>
+
+    <p><code>Stdin_redirection</code> should be either <code><span class="pw">true</span></code> or
+      <code><span class="pw">false</span></code>. Indicates how the standard input of the
+      process is redirected. A setting of <code><span class="pw">true</span></code> will redirect the standard input from the pipe-stream
+      (i.e. what is written to the pipe-stream will be available on the standard input).
+      A setting of <code><span class="pw">false</span></code> will leave the standard input as-is, which typically results in input coming
+      from the console. The default value of this setting is <code><span class="pw">true</span></code>.</p>
+
+    <p><code>Stdout_redirection</code> should be either <code><span class="pw">true</span></code> or <code><span class="pw">false</span></code>.
+      Indicates how the standard output of the process is redirected. A setting of <code><span class="pw">true</span></code> will redirect
+      the standard output to the pipe-stream (i.e. all output to standard output can be read from the pipe-stream).
+      A setting of <code><span class="pw">false</span></code> will leave the standard output as-is, which typically results in the
+      output going to the console. The default value of this setting is <code><span class="pw">true</span></code>.</p>
+
+    <p><code>Stderr_redirection</code> should be either <code><span class="pw">true</span></code> or <code><span class="pw">false</span></code>.
+      Indicates how the standard error of the process is redirected. A setting of true will redirect the standard error to the
+      pipe-stream (i.e. all output to standard error can be read from the pipe-stream).
+      A setting of <code><span class="pw">false</span></code> will leave the standard error as-is, which typically results in error
+      messages being output to the console. The default value of this setting is <code><span class="pw">false</span></code>.</p>
+
+    <p><code>Pseudo_terminal</code> should be either <code><span class="pw">true</span></code> or <code><span class="pw">false</span></code>.
+      This setting applies to UNIX. It indicates what type of device will be bound to the process' standard input and standard output.
+      A setting of <code><span class="pw">true</span></code> will use a pseudo-terminal device (this is a device that behaves like
+      a tty device even though there is no real terminal or user directly involved). A setting of
+      <code><span class="pw">false</span></code> will use a pair of pipes. The difference is important for programs which behave
+      differently when they are used interactively, for example shells. The default value of this
+      setting is <code><span class="pw">false</span></code></p>.
+
+    <p><code>Show_console</code> should be either <code><span class="pw">true</span></code> or <code><span class="pw">false</span></code>.
+      It controls whether the process' console window will be hidden or visible. The default value of this setting is
+      <code><span class="pw">true</span></code> (i.e. show the console window).</p>
+
+    <p><code>Transcoder</code>, if present, must be a <a href="transcoder.html">transcoder</a> object, and this function returns a
+      textual stream whose transcoder is <code>transcoder</code>.</p>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="read_char.html">read_char</a></div>
+      <div class="ref"><a href="read_byte.html">read_byte</a></div>
+      <div class="ref"><a href="write_char.html">write_char</a></div>
+      <div class="ref"><a href="write_byte.html">write_byte</a></div>
+      <div class="ref"><a href="close_stream.html">close_stream</a></div>
+      <div class="ref"><a href="pipe_process_pid.html">pipe_process_pid</a></div>
+      <div class="ref"><a href="pipe_process_status.html">pipe_process_status</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

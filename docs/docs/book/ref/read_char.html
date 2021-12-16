@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (read_char)</title>
+  </head>
+
+  <body>
+    <h2>read_char</h2>
+
+    <div class="prog">
+      <pre><code>
+read_char(s = <a href="current_reader.html">current_reader</a>())
+      </code></pre>
+    </div>
+
+    <p>Return the next <a href="is_char.html">character</a> from textual input <a href="current_reader.html">stream</a> <code>s</code>.
+      If the stream has no more characters left, return the <a href="eof_object.html">end-of-file object</a>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> f = <a href="file_reader.html">file_reader</a>(<span class="str">"README.md"</span>)
+<span class="kw">letfn</span> loop (c = read_char(f), cs = [])
+  <span class="kw">if</span> (<a href="is_eof_object.html">is_eof_object</a>(c)) <a href="reverse.html">reverse</a>(cs)
+  <span class="kw">else</span> loop(read_char(f), c:cs)
+<span class="comment">// [a list of characters...]</span>
+<a href="close_reader.html">close_reader</a>(f)  
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="read_n_chars.html">read_n_chars</a></div>
+      <div class="ref"><a href="read_all_chars.html">read_all_chars</a></div>      
+      <div class="ref"><a href="read_byte.html">read_byte</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

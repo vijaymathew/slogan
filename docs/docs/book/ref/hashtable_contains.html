@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (hashtable_contains)</title>
+  </head>
+
+  <body>
+    <h2>hashtable_contains</h2>
+
+    <div class="prog">
+      <pre><code>
+hashtable_contains(ht, k)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if an association for the key <code>k</code> exists in
+      <a href="make_hashtable.html">hash table</a> <code>ht</code>, otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> ht = #{1:100, 2:200}
+hashtable_contains(ht, 2)
+<span class="comment">// true</span>
+hashtable_contains(ht, 200)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="hashtable_keys.html">hashtable_keys</a></div>
+      <div class="ref"><a href="hashtable_at.html">hashtable_at</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

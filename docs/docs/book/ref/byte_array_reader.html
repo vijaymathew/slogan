@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (byte_array_reader)</title>
+  </head>
+
+  <body>
+    <h2>byte_array_reader</h2>
+
+    <div class="prog">
+      <pre><code>
+byte_array_reader(ba, <span class="pw">@key</span> transcoder)
+      </code></pre>
+    </div>
+
+    <p>Return a new <a href="current_reader.html">input stream</a> that will draw its input from the <a href="u8array.html">byte array</a> <code>ba</code>.</p>
+
+    <p>The byte array must be an array of unsigned bytes. If <code>transcoder</code> is present, it must be a
+      <a href="transcoder.html">transcoder</a> object and <code>byte_array_reader</code> will return
+      a textual input stream which will be decoded with <code>transcoder</code>. Otherwise, a binary input stream is returned.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> br = byte_array_reader(#u8[123, 100, 125])
+<a href="read_byte.html">read_byte</a>(br)
+<span class="comment">// 123</span>
+<a href="read_n_bytes.html">read_n_bytes</a>(2, br)
+<span class="comment">// #u8[100, 125]</span>
+
+<span class="kw">let</span> br = byte_array_reader(#u8[104, 101, 108, 108, 111], transcoder = transcoder(<span class="sym">'ASCII</span>))
+<a href="read_char.html">read_char</a>(br)
+<span class="comment">// \h</span>
+<a href="read_n_chars.html">read_n_chars</a>(4, br)
+<span class="comment">// ello</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="byte_array_writer.html">byte_array_writer</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

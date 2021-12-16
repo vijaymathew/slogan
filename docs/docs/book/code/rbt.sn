@@ -1,0 +1,52 @@
+/* 
+An purely-functional implementation of the red-black tree data structure.
+
+Usage:
+
+let rbt = red_black_tree
+let t = rbt.put(0, 'abc)
+for_each(^(i) t = rbt.put(i, i*100, t), range(1, 1000))
+
+rbt.get(0, t)
+// abc
+rbt.get(125, t)
+// 12500
+rbt.get(23, t)
+// 2300
+rbt.get(997, t)
+// 99700
+rbt.get(1322, t)
+// false
+*/
+
+module red_black_tree(get, put)
+{ function get(x, t)
+  | [_, 'empty] -> false
+  | [x, [_,a,y,b]] ->
+    match (y)
+      k:v ->           
+       if (x < k) get(x, a)
+       else if (k < x) get(x, b)
+       else v
+
+  function balance(color, t, z, d) 
+  | ['b, ['r,['r,a,x,b],y,c], z, d] 
+  | ['b, ['r,a,x,['r,b,y,c]], z, d] 
+  | ['b, a, x, ['r,['r,b,y,c],z,d]] 
+  | ['b, a, x, ['r,b,y,['r,c,z,d]]]
+      -> ['r,['b,a,x,b],y,['b,c,z,d]]
+  | _ -> [color, t, z, d]
+
+  function insert(x, s)
+  { function ins(rs)
+    | 'empty -> ['r,'empty,x,'empty]
+    | [color,a,y,b] ->
+      match([x,y])
+        [kx:_, ky:_] ->
+        if (kx < ky) balance(color, ins(a), y, b)
+        else if (ky < kx) balance(color, a, y, ins(b))
+        else s;
+      match(ins(s)) [_,a,y,b] -> ['b,a,y,b] }
+
+  function put(key, value, s = 'empty) insert(key:value, s) }
+  

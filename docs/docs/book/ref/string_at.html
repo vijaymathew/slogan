@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_at)</title>
+  </head>
+
+  <body>
+    <h2>string_at</h2>
+
+    <div class="prog">
+      <pre><code>
+string_at(s, n)
+      </code></pre>
+    </div>
+
+    <p>Return the <code>n</code><sup>th</sup> element of <a href="string.html">string</a> <code>s</code>, where
+      <code>0 &lt;= n &lt <a href="string_length.html">string_length</a>(s)</code>.</p>
+    <p>Raise an error if <code>s</code> is not a string or if <code>n</code> is not a valid index.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"hello"</span>
+string_at(s, 1)
+<span class="comment">// \e</span>
+
+s[1]
+<span class="comment">// \e</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_set.html">string_set</a></div>      
+      <div class="ref"><a href="ref.html">ref</a></div>
+      <div class="ref"><a href="strings_at.html">strings_at</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

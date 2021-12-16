@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (disable_function_contracts)</title>
+  </head>
+
+  <body>
+    <h2>disable_function_contracts</h2>
+
+    <div class="prog">
+      <pre><code>
+disable_function_contracts()          
+      </code></pre>
+    </div>
+
+    <p>Disable checks for function pre/post conditions. Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> f(x) <span class="pw">where</span> <a href="is_number.html">is_number</a>(x) -&gt; <a href="is_string.html">is_string</a>(%)
+  <a href="string_append.html">string_append</a>(<span class="str">"hello "</span>, <a href="number_to_string.html">number_to_string</a>(x))
+
+f(10)
+<span class="comment">// hello 10</span>
+f(<span class="sym">'abc</span>)
+<span class="comment">//&gt; error: precondition_failed, f, (is_number x)</span>
+
+disable_function_contracts()
+f(<span class="sym">'abc</span>)
+<span class="comment">//&gt; error: (Argument 1) NUMBER expected
+//&gt; (number->string 'abc)</span>
+      </code></pre>
+    </div>
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="enable_function_contracts.html">enable_function_contracts</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

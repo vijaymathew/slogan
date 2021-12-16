@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (transcoder)</title>
+  </head>
+
+  <body>
+    <h2>transcoder</h2>
+
+    <div class="prog">
+      <pre><code>
+transcoder(codec, <span class="pw">@optional</span> eol_style = <span class="sym">'crlf</span>, error_handling_mode = <span class="sym">'ignore</span>)
+      </code></pre>
+    </div>
+
+    <p>Return a transcoder encapsulating <code>codec</code>, <code>eol_style</code>, and <code>error_handling_mode</code>.</p>
+
+    <p>In many cases, the underlying <a href="current_reader.html">stream</a> is organized as a sequence of bytes, but these bytes may
+      have to be treated as encodings for
+      <a href="is_character.html">characters</a>. In this case, a textual stream may be created with a transcoder to decode bytes to
+      characters (for input) or encode characters to bytes (for output). A transcoder encapsulates a codec that determine how characters are
+      represented as bytes.</p>
+
+    <p><code>Codec</code> must be one of:
+
+      <table width="75%">
+        <tr><td><span class="sym">'ISO_8859_1</span></td><td class="desc">ISO-8859-1 character encoding. Each character is encoded by a single byte.
+            Only Unicode characters with a code in the range 0 to 255 are allowed.</td></tr>
+        <tr><td><span class="sym">'ASCII</span></td><td>ASCII character encoding. Each character is encoded by a single byte.
+            In principle only Unicode characters with a code in the range 0 to 127 are allowed but most types of streams treat this exactly
+            like ISO-8859-1.</td></tr>
+        <tr><td><span class="sym">'UTF_8</span></td><td>UTF-8 character encoding. Each character is encoded by a sequence of one to four bytes.
+            The minimum length UTF-8 encoding is used. If a BOM is needed at the beginning of the stream then it must be explicitly written.</td></tr>
+        <tr><td><span class="sym">'UTF_16</span></td><td>UTF-16 character encoding. Each character is encoded by one or two 16 bit integers
+            (2 or 4 bytes). The 16 bit integers may be encoded using little-endian encoding or big-endian encoding. If the stream is a reader and
+            the first two bytes read are a BOM ("Byte Order Mark" character with hexadecimal code <code>FEFF</code>) then the BOM will be discarded
+            and the endianness will be set accordingly, otherwise the endianness depends on the operating system and how the Slogan runtime was compiled.
+            If the stream is writer then a BOM will be output at the beginning of the stream and the endianness depends on the operating system
+            and how the Slogan runtime was compiled.</td></tr>
+        <tr><td><span class="sym">'UTF_16LE</span></td><td>UTF-16 character encoding with little-endian endianness. It is like UTF-16 except
+            the endianness is set to little-endian and there is no BOM processing. If a BOM is needed at the beginning of the stream then it must
+            be explicitly written.</td></tr>
+        <tr><td><span class="sym">'UTF_16BE</span></td><td>UTF-16 character encoding with big-endian endianness. It is like UTF-16LE except the
+            endianness is set to big-endian.</td></tr>
+        <tr><td><span class="sym">'UCS_2</span></td><td>UCS-2 character encoding. Each character is encoded by a 16 bit integer (2 bytes).
+          The 16 bit integers may be encoded using little-endian encoding or big-endian encoding. If the stream is reader and the first two bytes
+          read are a BOM ("Byte Order Mark" character with hexadecimal code <code>FEFF</code>) then the BOM will be discarded and the endianness
+          will be set accordingly, otherwise the endianness depends on the operating system and how the Slogan runtime was compiled. If the
+          stream is a writer then a BOM will be output at the beginning of the stream and the endianness depends on the operating system
+          and how the Slogan runtime was compiled.</td></tr>
+        <tr><td><span class="sym">'UCS_2LE</span></td><td>UCS-2 character encoding with little-endian endianness. It is like UCS-2 except the
+            endianness is set to little-endian and there is no BOM processing. If a BOM is needed at the beginning of
+            the stream then it must be explicitly written.</td></tr>
+        <tr><td><span class="sym">'UCS_2BE</span></td><td>UCS-2 character encoding with big-endian endianness. It is like UCS-2LE except
+            the endianness is set to big-endian.</td></tr>
+        <tr><td><span class="sym">'UCS_4</span></td><td>UCS-4 character encoding. Each character is encoded by a 32 integer (4 bytes).
+            The 32 bit integers may be encoded using little-endian encoding or big-endian encoding. If the stream is a reader and the first four
+            bytes read are a BOM ("Byte Order Mark" character with hexadecimal code <code>FEFF</code>) then the BOM will be discarded and
+            the endianness will be set accordingly, otherwise the endianness depends on the operating system and how the Slogan runtime was compiled.
+            If the stream is a writer then a BOM will be output at the beginning of the stream and the endianness depends on the
+            operating system and how the Slogan runtime was compiled.</td></tr>
+        <tr><td><span class="sym">'UCS_4LE</span></td><td>UCS-4 character encoding with little-endian endianness. It is like UCS-4
+            except the endianness is set to little-endian and there is no BOM processing. If a BOM is needed at the beginning of the stream
+            then it must be explicitly written.</td></tr>
+        <tr><td><span class="sym">'UCS_4BE</span>.</td><td>UCS-4 character encoding with big-endian endianness. It is like UCS-4LE except
+            the endianness is set to big-endian.</td></tr>
+      </table>
+
+    <p>In addition to the above these codecs are also supported: <code>UTF / UTF-fallback-ASCII / UTF-fallback-ISO-8859-1
+        / UTF-fallback-UTF-16 / UTF-fallback-UTF-16LE / UTF-fallback-UTF-16BE</code>. These encodings combine the UTF-8 and UTF-16 encodings.
+      When one of these character encodings is used for an output port, characters will be encoded using the UTF-8 encoding. The first character,
+      if there is one, is prefixed with a UTF-8 BOM (the three byte sequence EF BB BF in hexadecimal). When one of these character encodings is
+      used for an input stream, the character encoding depends on the first few bytes. If the first bytes of the stream are a UTF-16LE BOM
+      (FF FE in hexadecimal), or a UTF-16BE BOM (FE FF in hexadecimal), or a UTF-8 BOM (EF BB BF in hexadecimal), then the BOM is discarded
+      and the remaining bytes of the stream are decoded using the corresponding character encoding. If a BOM is not present, then the stream
+      is decoded using the fallback encoding specified. The encoding UTF is a synonym for UTF-fallback-UTF-8. Note that the UTF character encoding
+      for input will correctly handle streams produced using the encodings UTF, UTF-8, UTF-16, ASCII, and if an explicit BOM is output,
+      the encodings UTF-16LE, and UTF-16BE.</p>
+
+
+    <p><code>Eol_style</code> determines how line endings are recognized. Supported eol styles are:</p>
+
+    <table>
+      <tr><td><span class="sym">'lf</span></td><td class="desc">line-feed character</td></tr>
+      <tr><td><span class="sym">'cr</span></td><td>carriage-return character</td></tr>
+      <tr><td><span class="sym">'crlf</span></td><td>carriage return followed by line feed</td></tr>
+      <tr><td><span class="sym">'none</span></td><td>no line endings are recognized</td><tr>
+    </table>
+
+    <p>In addition to the <code>codec</code> and <code>eol_style</code>, a transcoder encapsulates just one other
+      piece of information: an error-handling mode that determine what happens if a decoding
+      or encoding error occurs, i.e., if a sequence of bytes cannot be converted to a character
+      with the encapsulated codec in the input direction or a character cannot be converted to
+      a sequence of bytes with the encapsulated codec in the output direction. The error-handling
+      mode should be one of <span class="sym">'ignore</span>, <span class="sym">'raise</span> and <span class="sym">'replace</span>.
+      If the error-handling mode is <span class="sym">'ignore</span>, the offending sequence of bytes or the
+      character is ignored. If the error-handling mode is <span class="sym">'raise</span>, an exception with condition
+      type i/o-decoding or i/o-encoding is raised; in the input direction, the stream is positioned
+      beyond the sequence of bytes. If the error-handling mode is <span class="sym">'replace</span>, a replacement
+      character or character encoding is produced. In the input direction the replacement character
+      is <code>U+FFFD</code>, while in the output direction the replacement is either the encoding of
+      <code>U+FFFD</code> for unicode codecs or the encoding of the question-mark character (?)
+      for other codecs.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> t = transcoder(<span class="sym">'UTF_8</span>, <span class="sym">'lf</span>, <span class="sym">'raise</span>)
+<a href="transcoder_xxx.html">transcoder_codec</a>(t)
+<span class="comment">// UTF_8</span>
+<a href="transcoder_xxx.html">transcoder_eol_style</a>(t)
+<span class="comment">// lf</span>
+<a href="transcoder_xxx.html">transcoder_error_handling_mode</a>(t)
+<span class="comment">// raise</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_reader.html">file_reader</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

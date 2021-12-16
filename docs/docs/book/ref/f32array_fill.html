@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (f32/f64array_fill)</title>
+  </head>
+
+  <body>
+    <h2>f32/f64array_fill</h2>
+
+    <div class="prog">
+      <pre><code>
+f32array_fill(fs, f)
+f64array_fill(fs, f)
+      </code></pre>
+    </div>
+
+    <p>Set all elements in the <a href="f32array.html">f32/f64array</a> to the value <code>f</code>.
+      Return <code><a href="void.html">void</a></code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> fs = #f32[10.21, 45.62]           
+f32array_fill(fs, 100.00)
+fs
+<span class="comment">// #f32[100.00, 100.00]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="subf32array_fill.html">subf32/f64array_fill</a></div>
+      <div class="ref"><a href="array_fill.html">array_fill</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

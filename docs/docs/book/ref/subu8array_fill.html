@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (subu8/s8/u16/s16/u32/s32/u64/s64array_fill)</title>
+  </head>
+
+  <body>
+    <h2>subu8/s8/u16/s16/u32/s32/u64/s64array_fill</h2>
+
+    <div class="prog">
+      <pre><code>
+subu8array_fill(a, start, end, fill)
+subs8array_fill(a, start, end, fill)
+subu16array_fill(a, start, end, fill)
+subs16array_fill(a, start, end, fill)
+subu32array_fill(a, start, end, fill)
+subs32array_fill(a, start, end, fill)
+subu64array_fill(a, start, end, fill)
+subs64array_fill(a, start, end, fill)
+      </code></pre>
+    </div>
+
+    <p>Similar to <code><a href="u8array_fill.html">u8/s8/u16/s16/u32/s32/u64/s64array_fill</a></code>,
+      but only the elements from <code>start</code> (inclusive) to <code>end</code> (exclusive) are replaced with <code>fill</code>.</p>
+
+    <p>Return <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = #u8[1, 2, 3, 4, 5]
+subu8array_fill(a, 2, 4, 10)
+a
+<span class="comment">// #u8[1, 2, 10, 10, 5]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="u8array_copy.html">u8/s8/u16/s16/u32/s32/u64/s64array_copy</a></div>
+      <div class="ref"><a href="subu8array_move.html">subu8/s8/u16/s16/u32/s32/u64/s64array_move</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

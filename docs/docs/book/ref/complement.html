@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (complement)</title>
+  </head>
+
+  <body>
+    <h2>complement</h2>
+
+    <div class="prog">
+      <pre><code>
+complement(fn)
+      </code></pre>
+    </div>
+
+    <p>Return a function that accept the same arguments as the function <code>fn</code>, has the same effects,
+      if any, and returns the opposite truth value.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> is_not_number = complement(<a href="is_number.html">is_number</a>)
+is_not_number(<span class="str">"abc"</span>)
+<span class="comment">// true</span>
+is_not_number(123)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="partial.html">partial</a></div>
+      <div class="ref"><a href="compose.html">compose</a></div>
+      <div class="ref"><a href="mapfn.html">mapfn</a></div>
+      <div class="ref"><a href="identity.html">identity</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

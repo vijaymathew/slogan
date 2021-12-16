@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (current_reader/writer/error_stream)</title>
+  </head>
+
+  <body>
+    <h2>current_reader/writer/error_stream</h2>
+
+    <div class="prog">
+      <pre><code>
+current_reader()
+current_writer()
+current_error_stream()
+      </code></pre>
+    </div>
+
+    <p>Return the the current input/output/error streams.</p>
+
+    <p>These function return streams that are attached to a process's standard input, standard output,
+      and standard error streams.</p>
+
+    <p>All input and output operations are performed through objects called streams. A stream is a pointer into a (possibly infinite)
+      stream of data (often a file), an opening through which programs may draw bytes or characters from the stream or place bytes or
+      characters into the stream. A stream may be an input stream, an output stream, or both simultaneously.</p>
+
+    <p>There are initially three streams: the current input stream, current output stream, and current error stream, which are textual
+      streams connected to the process's standard input, standard output, and standard error streams. Several ways to open new streams are provided.</p>
+
+    <p>If one of the input operations is asked to read from a stream that has reached the end of a finite stream, it returns the
+      <a href="is_eof_object.html">eof</a> (end-of-file) object.</p>
+
+    <p>Streams are either binary or textual. A binary stream allows a program to read or write <a href="u8array.html">8-bit unsigned bytes</a>,
+      or "octets," from or to the underlying stream. A textual stream allows a program to read or write <a href="is_character.html">characters</a>.</p>
+
+    <p>A stream may be buffered for efficiency, to eliminate the overhead of a call into the operating system for each byte or character.
+      Three standard buffer modes are supported: block, line, and none. With block buffering, input is drawn from a stream and output
+      is sent to the stream in chunks of some implementation-dependent size. With line buffering, buffering is performed on a
+      line-by-line basis or on some other implementation-dependent basis. Line buffering is typically distinguished from block buffering only
+      for textual output streams; there are no line divisions in binary streams, and input is likely to be drawn from a stream as
+      it becomes available. With buffer-mode none, no buffering is performed, so output is sent immediately to the stream and input
+      is drawn only as needed.</p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="transcoder.html">transcoder</a></div>
+      <div class="ref"><a href="file_reader.html">file_reader</a></div>
+      <div class="ref"><a href="file_writer.html">file_writer</a></div>
+      <div class="ref"><a href="byte_array_reader.html">byte_array_reader</a></div>
+      <div class="ref"><a href="byte_array_writer.html">byte_array_writer</a></div>
+      <div class="ref"><a href="string_reader.html">string_reader</a></div>
+      <div class="ref"><a href="string_writer.html">string_writer</a></div>      
+      <div class="ref"><a href="pipe_reader.html">pipe_reader</a></div>
+      <div class="ref"><a href="pipe_writer.html">pipe_writer</a></div>
+      <div class="ref"><a href="tcp_server_stream.html">tcp_server_stream</a></div>
+      <div class="ref"><a href="tcp_client_stream.html">tcp_client_stream</a></div>
+      <div class="ref"><a href="bits_reader.html">bits_reader</a></div>
+      <div class="ref"><a href="bits_writer.html">bits_writer</a></div>
+      <div class="ref"><a href="stream_tokenizer.html">stream_tokenizer</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

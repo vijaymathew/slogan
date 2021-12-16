@@ -1,0 +1,3462 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+  <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right" >
+        <a href="./mod.html" title="Modularity"
+           accesskey="N">next</a></li>
+      <li class="right" >
+        <a href="./pc.html" title="Program Control"
+           accesskey="P">previous</a> |</li>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+  
+  <div id="site" class="site">
+    <div class="title"><h3>Built-in Datatypes</h3></div>
+
+    <p>This chapter contain detailed descriptions on the following datatypes:</p>
+    <p>
+      <ul>
+        <li><a href="#lists">Pairs</a></li>
+        <li><a href="#lists">Lists</a></li>
+        <li><a href="#assocs">Association lists</a></li>
+        <li><a href="#nums">Numbers</a></li>
+        <li><a href="#bools">Booleans</a></li>
+        <li><a href="#void">Void</a></li>
+        <li><a href="#chars">Characters</a></li>
+        <li><a href="#strings">Strings</a></li>
+        <li><a href="#symbols">Symbols</a></li>
+        <li><a href="#arrays">Arrays</a></li>
+        <li><a href="#htabs">Hashtables</a></li>
+        <li><a href="#sets">Sets</a></li>
+      </ul>
+    </p>
+    
+    <p>We will also cover <a href="#listcomps">list comprehension</a>, <a href="#lseqs">lazy sequences</a>,
+      <a href="#iters">iterators</a>, <a href="#bytearrays">bytearrays</a> and <a href="#bitarrays">bitarrays</a>.</p>
+
+    <p>But before all that, we discuss functions that test two objects for equality.</p>
+
+<h4>Equivalence</h4>
+<div class="highlight">
+  <pre><code><b>function: </b> is_eq(obj1, obj2) 
+<b>returns: </b>true if `obj1` and `obj2` are identical, false otherwise.
+      
+Two objects are considered identical if they internally reference to the same memory location.
+is_eq can efficiently check for pointer equivalence of symbols and allocated objects like pairs,
+arrays, and record instances. is_eq cannot be used to compare numbers reliably.
+Slogan may use different objects internally for representing two big-integers that has the
+same value.
+
+<span class="c">// Examples:</span>
+is_eq('a, 'b);
+<span class="c">//=> false</span>
+
+is_eq('a, 'a);
+<span class="c">//=> true</span>
+
+is_eq(\a, \a);
+<span class="c">//=> true</span>
+
+is_eq(10, 10); 
+<span class="c">//=> true</span>
+
+is_eq(38492948403840248034824037496494864917349749247947249749327482479, 
+      38492948403840248034824037496494864917349749247947249749327482479); 
+<span class="c">//=> false</span></code></pre>
+</div>
+      
+<div class="highlight">
+  <pre><code><b>function: </b>is_eqv(obj1, obj2) 
+<b>returns: </b>true if `obj1` and `obj2` are equivalent, false otherwise.
+
+is_eqv is similar to is_eq except that it return true for two numbers that are
+considered equal by the predicate number_is_eq. There is one exception for this rule though.
+is_eqv will return false for `is_eqv(+0.0, -0.0)`, whereas number_is_eq will return
+true. This provides a way to distinguish between positive and negative zeros.
+
+<span class="c">// Example:</span>
+is_eqv(38492948403840248034824037496494864917349749247947249749327482479, 
+       38492948403840248034824037496494864917349749247947249749327482479); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_equal(obj1, obj2) 
+<b>returns: </b>true if `obj1` and `obj2` have the same structure and contents, false otherwise.
+
+Two objects are equal if each of their constituent parts are equal according to is_eqv.
+The equals operator (==) have the same behavior as is_equal and the not-equals operator (<>)
+have the same behavior as `not(is_equal(a, b))`.
+
+`is_equal` is a generic function by default and can be overridden for custom datatypes without an
+explicit `declare generic`.
+  
+<span class="c">// Examples:</span>  
+is_equal([1, 2, [3, 4]], [1, 2, [3, 4]]); 
+<span class="c">//=> true</span>
+
+[1, 2, [3, 4]] == [1, 2, [3, 4]]; 
+<span class="c">//=> true</span>
+    
+is_equal("hello", "hello"); 
+<span class="c">//=> true</span>
+
+is_equal("hello", "hEllo"); 
+<span class="c">//=> false</span>
+
+not(is_equal("hello", "hEllo")); 
+<span class="c">//=> true</span>
+
+"hello" <> "hEllo";
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>compare(obj1, obj2) 
+<b>returns: </b><em>see description below.</em>
+
+If `obj1` is less than `obj2`, returns -1.
+If `obj1` is greater than `obj2`, returns 1.
+If `obj1` is equal to `obj2`, returns 1.
+
+For sequence objects like strings and lists, a <em>lexicographical</em> comparison is done.
+First the first two items are compared, and if they differ this determines the outcome of
+the comparison; if they are equal, the next two items are compared, and so on, until either
+sequence is exhausted. For strings, character comparison is used, for lists and arrays
+`compare` is called recursively for each element and for numeric arrays number comparison
+operators are used.
+
+`compare` is a generic function by default and can be overridden for custom datatypes without
+an explicit `declare generic`.
+
+<span class="c">// Example:</span>
+record point(x, y);
+let p1 = point(x = 10, y = 20);
+let p2 = point(x = 20, y = 30);
+p1 < p2;
+<span class="c">//-> error: compare_not_supported #<point #2 x: 10 y: 20> #<point #3 x: 20 y: 30> </span>
+
+function pointc(p1) ^(msg) | 'compare -> ^(p2) compare(point_x(p1), point_x(p2));
+let pc1 = pointc(p1);
+pc1 < p2;
+<span class="c">//=> true</span>
+pc1 > p2;
+<span class="c">//=> false</span></code></pre></div>
+
+<a name="lists"></a>
+<h4>Pairs and lists</h4>
+<p>The pair is the most fundamental of all datastructures in Slogan. The most common use for pairs is to build lists, which are ordered 
+  sequences of pairs linked one to the next by the tail field. The elements of the list occupy the heads of the pairs. 
+  The tail of the last pair in a proper list is the empty list - []. The tail of the last pair in an improper list can be anything 
+  other than the empty list. Pairs are also used to build datastructures like trees and simple lookup tables (known as <em>association lists</em>).</p>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>obj1:obj2
+<b>syntax: </b>obj:
+<b>function: </b>pair(obj1, obj2)
+<b>returns: </b>a new pair whose head is `obj1` and tail is `obj2`. 
+
+The form `obj:` will return the pair `obj:void`. void is an object that has no printed
+representation. This form is useful for specifying spliced indices into lists and arrays.
+
+<span class="c">// Examples:</span>
+pair(3, 4);
+<span class="c">//=> 3:4</span>
+
+pair(3, pair(4, 5)); 
+<span class="c">//=> 3:4:5</span>
+
+pair(3, 4:(5:[]));
+<span class="c">//=> [3, 4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_pair(obj) 
+<b>returns: </b>true if `obj` is a pair, false otherwise.
+
+<span class="c">// Examples:</span>
+is_pair([]); 
+<span class="c">//=> false</span>
+
+is_pair([1]);
+<span class="c">//=> true</span>
+
+is_pair(1:2);
+<span class="c">//=> true</span>
+
+is_pair([1, 2, 'a]); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>head(p) 
+<b>returns: </b>the head of the pair `p`, false if `p` is not a pair.
+
+<b>function: </b>tail(p) 
+<b>returns: </b>the tail of the pair `p`, false if `p` is not a pair.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>car(p) 
+<b>returns: </b>the head of the pair `p`.
+
+<b>function: </b>cdr(p) 
+<b>returns: </b>the tail of the pair `p`.
+
+car and cdr will raise an error if `p` is not a pair object.</code></pre>
+</div>
+  
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_head(p, obj) 
+Changes the head of the pair `p` to point to `obj`, returns void.
+
+<b>function:</b> set_tail(p, obj) 
+Changes the tail of the pair `p` to point to `obj`, returns void.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>[obj, ...]
+<b>function: </b>list(obj, ...) 
+<b>returns: </b>a list with elements `obj, ....`.
+
+<b>function: </b>list_of(obj, n) 
+<b>returns:</b> a list with `n` copies of `obj`.
+
+<span class="c">// Examples:</span>
+list(); 
+<span class="c">//=> []</span>
+
+list(1, 2, 3);
+<span class="c">//=> [1, 2, 3]</span>
+
+list_of("hello", 3);
+<span class="c">//=> ["hello", "hello", "hello"]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>lst[index]
+<b>returns: </b>the value at `index` from the list `lst`. if `index` is out-of-range, returns false.
+if `index` is a pair of integers, returns the sublist in that range.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>lst[index] = obj
+<b>returns: </b>void
+
+`lst` is destructively updated by changing the element at `index` to `obj`.
+raises an error if `index` is out of bounds.
+
+<span class="c">// Examples:</span>
+let a = [1,2,3,4,5];
+a[1];
+<span class="c">//=> 2</span>
+
+a[1:3];
+<span class="c">//=> [2, 3]</span>
+
+a[10:23];
+<span class="c">//=> []</span>
+
+a[1:];
+<span class="c">//=> [2, 3, 4, 5]</span>
+
+a[:1];
+<span class="c">//=> [1]</span>
+
+a[:3];
+<span class="c">//=> [1, 2, 3]</span>
+
+a[3] = 100;
+a;
+<span class="c">//=> [1, 2, 3, 100, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_empty(obj) 
+<b>returns: </b>true if `obj` is the empty list `[]`, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_list(obj) 
+<b>returns: </b>true if `obj` is a proper list, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>length(lst)
+<b>function: </b>count(lst)      
+<b>returns:</b> the number of elements in the list `lst`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>at(lst, n) 
+<b>returns:</b> the n<sup>th</sup> (zero based) element in the list `lst`.
+
+`at` will throw an error if `n` is not in `0 <= n < length(lst)`.
+
+<span class="c">// Example:</span>
+at(["this", "is", "a", "list", "of", "strings"], 3);
+<span class="c">//=> "list"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>list_tail(lst, n) 
+<b>returns: </b>the n<sup>th</sup> (zero based) tail of the list `lst`.
+
+`list_tail` will throw an error if `n` is not in `0 <= n < length(lst)`.
+
+<span class="c">// Example:</span>                                                           
+list_tail([1,2,3,4,5], 3);
+<span class="c">//=> [4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>drop(n, lst) 
+<b>returns: </b>a new list with the first `n` elements removed from the list `lst`.
+
+<span class="c">// Examples:</span>
+drop(3, [1, 2, 3, 4, 5]); 
+<span class="c">//=> [4, 5]</span>
+
+drop(30, [1, 2, 3, 4, 5]); 
+<span class="c">//=> []</span>
+
+drop(0, [1, 2, 3, 4, 5]); 
+<span class="c">//=> [1, 2, 3, 4, 5]</span>
+
+drop(-3, [1, 2, 3, 4, 5]); 
+<span class="c">//=> [1, 2, 3, 4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>take(n, lst) 
+<b>returns:</b> a new list with the first `n` elements from the list `lst`.
+
+<span class="c">// Examples:</span>
+take(3, [1, 2, 3, 4, 5]); 
+<span class="c">//=> [1, 2, 3]</span>
+
+take(30, [1, 2, 3, 4, 5]); 
+<span class="c">//=> [1, 2, 3, 4, 5]</span>
+
+take(0, [1, 2, 3, 4, 5]); 
+<span class="c">//=> []</span>
+
+take(-3, [1, 2, 3, 4, 5]); 
+<span class="c">//=> []</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>take_while(p, lst) 
+<b>returns: </b>the longest prefix of elements from `lst` that satisfy the predicate `p`.
+
+<span class="c">// Example:</span>
+take_while(is_positive, [1, 2, 3, -4, 5]);
+<span class="c">//=> [1, 2, 3]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>drop_while(p, lst) 
+<b>returns: </b>the suffix of `lst` remaining after removing elements that satisfy the predicate `p`.
+
+<span class="c">// Example:</span>
+drop_while(is_positive, [1, 2, 3, -4, 5]);
+<span class="c">//=> [-4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>append(list1, ..., obj) 
+<b>returns: </b>the concatenation of the lists.
+
+append returns a new list consisting of the elements of the first list followed by
+the elements of the second list, the elements of the third list, and so on. The new list
+is made from new pairs for all arguments but the last, which need not be a list,
+is merely placed at the end of the new structure.
+
+<span class="c">// Examples:</span>
+append();
+<span class="c">//=> []</span>
+
+append([1, 2], [3]); 
+<span class="c">//=> [1, 2, 3]</span>
+
+append([1, 2], 3);
+<span class="c">//=> 1 : 2 : 3</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> reverse(lst)
+<b>returns: </b>a new list with the elements of `lst` in the reverse order.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>memq(obj, lst) 
+<b>function: </b>memv(obj, lst) 
+<b>function: </b>member(obj, lst) 
+<b>returns: </b>the first tail of `lst` whose head is equivalent to `obj`, or false.
+
+The equivalence test for memq is is_eq, for memv is_eqv, and for member is_equal.
+
+<span class="c">// Examples:</span>
+memq(2, [1, 2, 3, 4, 5]);
+<span class="c">//=> [2, 3, 4, 5]</span>
+
+memq("hi", [1, 2, "hi", 4, 5]);
+<span class="c">//=> false</span>
+
+member("hi", [1, 2, "hi", 4, 5]);
+<span class="c">//=> ["hi", 4, 5]</span>
+
+memq(\a, [1, 2, \a, 4, 5]);
+<span class="c">//=> [\a, 4, 5]</span>
+
+memq(1020032003209020020020, [1, 2, 1020032003209020020020, 4, 5]);
+<span class="c">//=> false</span>
+
+memv(1020032003209020020020, [1, 2, 1020032003209020020020, 4, 5]);
+<span class="c">//=> [1020032003209020020020, 4, 5]</span>
+
+member(1020032003209020020020, [1, 2, 1020032003209020020020, 4, 5]);
+<span class="c">[1020032003209020020020, 4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>memp(f, lst)
+<b>returns: </b>the first tail of `lst` for whose head the function `f` returns true, or false.
+
+`f` should accept one argument and return a single value. It should not modify `lst`.
+
+<span class="c">// Examples:</span>
+memp(is_odd, [1, 2, 3, 4, 5]); 
+<span class="c">//=> [1, 2, 3, 4, 5]</span>
+
+memp(is_even, [1, 2, 3, 4, 5]);
+<span class="c">//=> [2, 3, 4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> remq(obj, lst) 
+<b>function: </b>remv(obj, lst) 
+<b>function: </b>remove(obj, lst) 
+<b>returns: </b>a list containing the elements of `lst` with all occurrences of `obj` removed.
+
+The equivalence test for remq is is_eq, for remv is_eqv, and for remove is_equal.
+
+<span class="c">// Examples:</span>
+remq(1, [1, 2, 1, 3]);
+<span class="c">//=> [2, 3]</span>
+
+remv(1020032003209020020020, [1020032003209020020020, 2, 1020032003209020020020, 3]);
+<span class="c">//=> [2, 3]</span>
+
+remove([1,2,3], [[1,2,3], [4,5,6], [1,2,3]]);
+<span class="c">//=> [[4, 5, 6]]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>remp(f, lst)
+<b>returns: </b>a list of the elements of `lst` for which the funtion `f` returns false.
+
+`f` should accept one argument and return a single value. It should not modify `lst`.
+
+<span class="c">// Example:</span>
+remp(is_odd, [1, 2, 3, 4, 5]);
+<span class="c">//=> [2, 4]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>filter(f, lst) 
+<b>returns: </b>a list of the elements of `lst` for which `f` returns true.
+
+`f` should accept one argument and return a single value. It should not modify `lst`.
+
+<span class="c">// Example:</span>
+filter(is_odd, [1, 2, 3, 4, 5]);
+<span class="c">//=> [1, 3, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> partition(f, lst) 
+<b>returns:</b> a pair of two lists. the first list contain the elements of `lst` for which 
+`f` returned true and the second list contain the elements of `lst` for which `f` returned false.
+
+`f` should accept one argument and return a single value. It should not modify `lst`.
+The elements of the returned lists appear in the same order as they appeared in the original list.
+
+<span class="c">// Example:</span>
+match(partition(is_odd, [1, 2, 3, 4, 5]))
+  os:es -> showln("odds=", os, ", evens=", es);
+<span class="c">//-> odds=[1, 3, 5], evens=[2, 4]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>sublist(lst, start = 0, end = length(lst)) 
+<b>returns: </b>a copy of the subsequence of the list `lst` bounded by `start` (inclusive)
+and `end` (exclusive).
+
+<span class="c">// Examples:</span>
+sublist([1,2,3,4,5], 1, 3);
+<span class="c">//=> [2, 3]</span>
+
+sublist([1,2,3,4,5], 1);
+<span class="c">//=> [2, 3, 4, 5]</span>
+
+sublist([1,2,3,4,5], 1, 3);
+<span class="c">//=> [2, 3]</span>
+
+sublist([1,2,3,4,5], 1, 30);
+<span class="c">//=> [2, 3, 4, 5]</span>
+
+sublist([], 1, 30);
+<span class="c">//=> []</span>
+
+sublist([1,2,3,4,5], -1, 30);
+<span class="c">//=> [1, 2, 3, 4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>range(start, end, next_f = inc, compare_f = number_is_lteq)
+<b>returns: </b>a list with the sequence of values from `start` to `end` (both inclusive).
+
+<span class="c">// Examples:</span>
+
+range(1, 5); 
+<span class="c">//=> [1, 2, 3, 4, 5]</span>
+
+range(\a, \h, ^(c) integer_to_char(inc(char_to_integer(c))), char_is_lteq); 
+<span class="c">//=> [\a, \b, \c, \d, \e, \f, \g, \h]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>find(f, lst) 
+<b>returns: </b>the first element in `lst` for which `f` returns true. If no such element, false.
+
+`f` should accept one argument and return a single value. It should not modify `lst`.
+If a program must distinguish between finding false in the list and finding no
+element at all, `memp` should be used instead.
+
+<span class="c">// Examples:</span>
+find(is_even, [1, 2, 3, 4, 5]); 
+<span class="c">//=> 2</span>
+
+find(is_even, [1, 3, 5]); 
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> position(obj, lst, @key start = 0, test = is_eq) 
+<b>returns:</b> the index of `obj` in the list `lst`, false if `obj` is not found in the list.
+
+<span class="c">// Examples:</span>
+position(10, [1, 2, 10, 3]);
+<span class="c">//=> 2</span>
+
+position(10, [1, 2, 10, 3]);
+<span class="c">//=> 2</span>
+
+position("hi", [1, 2, "hi", 3]);
+<span class="c">//=> false</span>
+
+position("hi", [1, 2, "hi", 3], test = is_equal);
+<span class="c">//=> 2</span>
+
+position("hi", [1, 2, "hi", 3], test = is_equal, start = 3);
+<span class="c">//=> false</span>
+
+position("hi", [1, 2, "hi", 3], test = is_equal, start = 2);
+<span class="c">//=> 2</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> copy_list(lst) 
+<b>returns: </b>an exact copy of `lst`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> zip(alst, blst) 
+<b>returns:</b> a list that contains the corresponding pairs from `alst` and `blst`.
+
+<span class="c">// Examples:</span>
+zip([1, 2, 3], [4, 5, 6]); 
+<span class="c">//=> [1:4, 2:5, 3:6]</span>
+
+zip([1, 2, 3], [4, [5, 6]]);
+<span class="c">//=> [1:4, [2, 5, 6]]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> zip_with(f, alst, blst) 
+<b>returns: </b>a list that contains the results of applying the function `f` to the 
+corresponding pairs from `alst` and `blst`.
+
+<span class="c">// Example:</span>
+zip_with(`+`, [1, 2, 3], [4, 5, 6]);
+<span class="c">//=> [5, 7, 9]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> unzip(pairs) 
+<b>returns:</b> a pair of lists.
+
+The head of the returned pair will all heads from `pairs` and its tail will contain
+all tails from `pairs`.
+
+<span class="c">// Example:</span>
+let ys = unzip([1:"one", 2:"two", 3:"three"]);
+head(ys);
+<span class="c">//=> [1, 2, 3]</span>
+tail(ys);
+<span class="c">//=> ["one", "two", "three"]</span></code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> sort(lst, @optional test, type) 
+<b>returns:</b> a list containing the elements of `lst` sorted according to `test`.
+
+`test` must be a function that take two arguments and return true if its first argument must
+precede its second in the sorted list. Duplicate elements are not removed. The default value of
+`test` is number_is_lt which compares two numeric values.
+`type` specifies the sorting algorithm to use. In the current implementation `type` can take
+two values: 'quick for "quicksort" and 'merge for "mergesort".
+
+<span class="c">// Examples:</span>
+sort([3, 4, 2, 1, 2, 5]); 
+<span class="c">//=> [1, 2, 2, 3, 4, 5]</span>
+
+list_to_string(sort(string_to_list("hello"), char_is_lt, 'merge)); 
+<span class="c">//=> "ehllo"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> quicksort(lst, @optional test)
+<b>function:</b> mergesort(lst, @optional test) 
+<b>returns:</b> a list containing the elements of `lst` sorted according to `test`.</code></pre>
+</div>
+
+<a name="listcomps"></a>
+<h5>List Comprehension</h5>
+<p>A list comprehension is a notational convenience for constructing lists from other lists.</p>
+<p>Example:</p>
+
+<div class="highlight">
+  <pre><code>[x * x | x <- [1, 2, 3, 4, 5]]; 
+<span class="c">//=> [1, 4, 9, 16, 25]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>[out_expr | var_expr where_clause, ...]
+
+`out_expr` constructs each element in the output list. `var_expr ...` assign values 
+variables used in `out_expr`. Each value is "extracted" from a list that follows the
+"extractor" operator (&lt;-). `where_clause` is optional and is used to filter values
+that go into the variable in `var_expr`.</code></pre>
+</div>
+<p>More examples:</p>
+
+<div class="highlight">
+  <pre><code>[i : j | i <- range(1, 5), j <- range(i, 5) where is_even(i)]; 
+<span class="c">//=> [2:2, 2:3, 2:4, 2:5, 4:4, 4:5]</span>
+
+function triads(n) 
+  let (elems = range(1, n)) 
+    [[x, y, z] | x <- elems, y <- elems, z <- elems where x * x + y * y == z * z]; 
+
+triads(15); 
+<span class="c">//=> [[3, 4, 5], [4, 3, 5], [5, 12, 13], [6, 8, 10], 
+      [8, 6, 10], [9, 12, 15], [12, 5, 13], [12, 9, 15]]</span>
+
+function concat(xss) [x | xs <- xss, x <- xs]; 
+concat([[1, 2, 3], [4, 5, 6]]); 
+<span class="c">//=> [1, 2, 3, 4, 5, 6]</span></code></pre>
+</div>
+
+<a name="assocs"></a>
+<h5>Association lists</h5>
+
+<p>An association list is a proper list whose elements are pairs of the form <code>key:value</code>.</p>
+
+<div class="highlight">
+  <pre><code><b>function:</b> assq(obj, lst) 
+<b>function: </b>assv(obj, lst) 
+<b>function: </b>assoc(obj, lst) 
+<b>returns: </b>first element of `lst` whose head is equivalent to `obj`, or false.
+
+The equivalence test for assq is is_eq, for assv is_eqv, and for assoc is_equal.
+
+<span class="c">// Examples:</span>
+assq('b, ['a:1, 'b:2, 'c:3]);  
+<span class="c">//=> b:2</span>
+
+assoc("b", ["a":1, "b":2, "c":3]); 
+<span class="c">//=> "b":2</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>assp(f, lst) 
+<b>returns: </b>the first element in `lst` for whose head `f` returns true, or false.
+
+The argument `lst` must be an association list. `f` should accept one argument and return
+a single value. It should not modify lst.
+
+<span class="c">// Examples:</span>
+assp(is_odd, [1:'a, 2:'b]);
+<span class="c">// => 1:a</span>
+
+assp(is_even, [1:'a, 2:'b]);
+<span class="c">//=> 2:b</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>get(lst, obj, default = false) 
+<b>returns: </b>tail of first element of `lst` whose head is equivalent to `obj`, or `default`.
+
+<span class="c">//Examples: </span>
+get([1:2, 3:4], 1);
+<span class="c">//=> 2</span>
+
+get([1:2, 3:4], 5);
+<span class="c">//=> false</span>
+
+get([1:2, 3:4], 5, 6);
+<span class="c">//=> 6</span></code></pre>
+</div>
+
+<a name="lseqs"></a>
+<h5>Lazy pairs</h5>
+
+<p>A lazy pair (also known as a lazy sequence) consists of a value in its head and a "promise" to produce more values in its tail.
+  A lazy pair literal is created by combining the pair and delay operators.</p>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b> obj1:~expr
+<b>retruns: </b>A lazy pair with `obj1` in its head and a promise to evaluate `expr` in its tail.</code></pre>
+  </div>
+
+<p>The functions that work with lazy pairs are described below.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>first(s)
+<b>returns: </b>the first element of `s`, false if `s` is not a valid sequence.
+
+<b>function: </b>rest(s)
+<b>returns: </b>the tail of `s`, false if `s` is not a valid sequence.
+
+<span class="c">// Example:</span>
+function ints(n) n:~ints(n + 1); 
+let s = ints(0);
+s;
+<span class="c">//=> 0:&lt;promise&gt;</span>
+
+first(s); 
+<span class="c">//=> 0</span>
+
+s = rest(s);
+first(s); 
+<span class="c">//=> 1</span>
+
+Both `first` and `rest` are generic functions recognized at the language level.
+Any user-defined object can override them, as shown in the following program.
+
+<span class="c">// Example:</span>
+function make_bag(xs)
+  let (len = array_length(xs))
+    ^(msg)
+    | 'first -> when (len > 0) array_at(xs, 0)
+    | 'rest -> when (len > 1) make_bag(subarray(xs, 1, len))
+    | 'count -> len
+
+let b = make_bag(#[10, 20, 30])
+first(b)  
+<span class="c">//=> 10</span>
+first(rest(b))
+<span class="c">//=> 20</span>
+nth(2, b)
+<span class="c">//=> 30</span>
+count(b)
+<span class="c">//=> 3</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>nth(n , s)
+<b>returns: </b>the `n`<sup>th</sup> element of `s`, false if `s` is not a valid sequence.
+
+<span class="c">// Example: </span>
+nth(100, s);
+<span class="c">//=> 101</span></pre></code>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>nth_tail(n , s)
+<b>returns: </b>the `n`<sup>th</sup> tail of the `s`, false if `s` is not a valid sequence.
+
+<span class="c">// Example: </span>
+nth_tail(100, s);
+<span class="c">//=> 101:&lt;promise&gt;</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b> second(s)
+<b>function: </b> third(s)
+<b>function: </b> fourth(s)
+<b>function: </b> fifth(s)
+<b>function: </b> sixth(s)
+<b>function: </b> seventh(s)
+<b>function: </b> eighth(s)
+<b>function: </b> ninth(s)
+<b>function: </b> tenth(s) 
+<b>returns: </b>respectively the second, third, fourth, fifth, sixth, seventh, eighth, ninth, and tenth 
+elements of the sequence `s`, false if `s` is not a valid sequence.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>accumulate(f, obj, s)
+<b>returns: </b>the sequence formed by applying `f` to `obj` and the tails of the sequence `s`.
+
+<span class="c">// Example:</span>
+function ints(n) when (n < 10) n:~ints(n+1);
+let s = ints(1);
+s = accumulate(`+`, 0, s);
+<span class="c">//=> 1:&lt;promise&gt;</span>
+second(s);
+<span class="c">//=> 3</span>
+third(s);
+<span class="c">//=> 6</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>enumerate(start, end, compare_f = number_is_lteq, next_f = inc)
+<b>returns: </b>a sequence with the values from `start` to `end` (both inclusive by default).
+
+<span class="c">// Example:</span>
+let s = enumerate(1, 5);
+s;
+<span class="c">//=> 1:&lt;promise&gt;</span>
+fourth(s);
+<span class="c">//=> 4</span>
+fifth(s);
+<span class="c">//=> 5</span>
+
+let s = enumerate(1, 5, `<`);
+fifth(s);
+<span class="c">//=> false</span>
+fourth(s);
+<span class="c">//=> 4</span>
+
+let s = enumerate(1, 5, `<`, ^(x) x + 2);
+fourth(s);
+<span class="c">//=> false</span>
+second(s);
+<span class="c">//=> 3</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>realize(n, s)
+<b>returns: </b>a pair with the first `n` elements of the sequence `s` in its head
+         and the rest of `s` in its tail.
+
+<span class="c">// Example:</span>
+let xs = ints(10)
+realize(5, xs)
+<span class="c">//=> [10, 11, 12, 13, 14]:15:&lt;promise&gt;</span></code></pre></div>
+
+<a name="iters"></a>
+<h5>Iterators</h5>
+<p>The <code>yield</code> statement is used to define <em>generator</em> functions that behaves like a lazy sequence of values.
+  A sequence generated by <code>yield</code> is known as an <em>iterator</em>.</p>
+
+<div class="highlight">
+  <pre><code><span class="c">// Example:</span>
+function ints()
+  let loop (i = 1) 
+  { yield i ;
+    loop (i + 1) };
+
+let iter = ints(); 
+first(iter); 
+<span class="c">//=> 1</span>
+iter = rest(iter); 
+let iter_2 = map(^(x) x + x , iter); 
+first(iter_2); 
+<span class="c">//=> 4</span>
+iter_2 = rest(iter_2); 
+first(iter_2); 
+<span class="c">//=> 6</span></code></pre></div>
+
+<p>Remember that moving forward an iterator will destructively change the current position in the iterator object.
+  A function that generates an iterator should not call itself recursively. Instead use a <code>named let</code>
+  as shown in the example.</p>
+
+<p>Lists, lazy pairs and iterators together form the "sequence" type in Slogan. In addition to the functions defined for lazy pairs
+the following functions are defined to work with all sequences: `map`, `for_each`, `take`, `drop`, `take_while`, `drop_while` and `filter`.</p>
+
+<a name="nums"></a>
+<h4>Numbers</h4>
+<p>Numbers are classified as integers, rational numbers, real numbers, or complex numbers. This classification is hierarchical, 
+  in that all integers are rational, all rational numbers are real, and all real numbers are complex.</p>
+
+<p>A number may also be classified as <em>exact</em> or <em>inexact</em>, depending upon the quality of operations used to derive 
+  the number and the inputs to these operations. Most operations on numbers are exactness preserving: if given exact operands they 
+  return exact values, and if given inexact operands or a combination of exact and inexact operands they return inexact values.</p>
+
+<p>Exact integer and rational arithmetic is supported to arbitrary precision; the size of an integer or of the denominator or numerator of 
+  a ratio is limited only by system storage constraints. Although other representations are possible, inexact numbers are represented by 
+  floating-point numbers supported by the host computer's hardware or by system software.</p>
+
+<p>Numbers are written in a straightforward manner not much different from ordinary conventions for writing numbers. An exact 
+  integer is normally written as a sequence of numerals preceded by an optional sign. For example, <code>3</code>, <code>+19</code>, 
+  <code>-100000</code>, and <code>208423089237489374</code> all represent exact integers. Underscores (<code>_</code>) may be added 
+  to a numeric constant to increase readability. For example, the integer <code>150000</code> may be written as <code>1_50_000</code> 
+  or <code>150_000</code>.</p>
+
+<p>An exact rational number is normally written as two sequences of numerals separated by a slash (<code>/</code>) and preceded by an optional 
+  sign. For example, <code>3/4</code>, <code>-6/5</code>, and <code>1/1208203823</code> are all exact rational numbers. A ratio is 
+  reduced immediately to lowest terms when it is read and may even get reduced to an exact integer.</p>
+
+<p>Inexact real numbers are normally written in either floating-point or scientific notation. Floating-point notation consists of a 
+  sequence of numerals followed by a decimal point and another sequence of numerals, all preceded by an optional sign. Scientific notation 
+  consists of an optional sign, a sequence of numerals, an optional decimal point followed by a second string of numerals, and an exponent; 
+  an exponent is written as the letter <code>e</code> followed by an optional sign and a sequence of numerals. For example, <code>1.0</code> 
+  and <code>-200.0</code> are valid inexact integers, and <code>1.5</code>, <code>0.034</code>, <code>-10e-10</code> and <code>1.5e-5</code> 
+  are valid inexact rational numbers. The exponent is the power of ten by which the number preceding the exponent should be scaled, so that 
+  <code>2e3</code> is equivalent to <code>2000.0</code>.</p>
+
+<p>The exactness of a numeric representation may be overridden by preceding the constant by either <code>0e</code> or <code>0i</code>. 
+  <code>0e</code> forces the number to be exact, and <code>0i</code> forces it to be inexact. For example, <code>1</code>, <code>0e1</code>, 
+  <code>1/1</code>, <code>0e1/1</code>, <code>0e1.0</code>, and <code>0e1e0</code> all represent the exact integer <code>1</code>, and 
+  <code>0i3/10</code>, <code>0.3</code>, <code>0i0.3</code>, and <code>3e-1</code> all represent the inexact rational <code>0.3</code>.</p>
+
+<p>Numbers are written by default in base <code>10</code>, although the special prefixes <code>0b</code> (binary), <code>0o</code> (octal), 
+  <code>0d</code> (decimal), and <code>0x</code> (hexadecimal) can be used to specify base 2, base 8, base 10, or base 16. For radix 16, 
+  the letters <code>a</code> through <code>f</code> or <code>A</code> through <code>F</code> serve as the additional numerals required to 
+  express digit values <code>10</code> through <code>15</code>. For example, <code>0b10101</code> is the binary equivalent of 
+  <code>21<sub>10</sub></code>, <code>0o72</code> is the octal equivalent of <code>58<sub>10</sub></code>, and <code>0xC7</code> 
+  is the hexadecimal equivalent of <code>199<sub>10</sub></code>. 
+  Numbers written in floating-point and scientific notations are always written in base 10.</p>
+
+<p>Complex number literals are written using the syntax `R+Ii`, where `R` is the real part and `I` is the imaginary part. E.g: `3+7i`.</p>
+
+<p>If both are present, the exactness prefix must appear before the radix prefix.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_number(obj) 
+<b>returns:</b> true if `obj` is a number, false otherwise.
+
+<b>function:</b> is_complex(obj) 
+<b>returns:</b> true if `obj` is a complex number, false otherwise.
+
+<b>function:</b> is_real(obj) 
+<b>returns:</b> true if `obj` is a real number, false otherwise.
+
+<b>function:</b> is_rational(obj) 
+<b>returns:</b> true if `obj` is a rational number, false otherwise.
+
+<b>function:</b> is_integer(obj) 
+<b>returns:</b> true if `obj` is an integer, false otherwise.
+
+These number types form a hierarchy: any integer is rational, any rational is real,
+any real is complex, and any complex is numeric.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_exact(num)
+<b>returns: </b>true if `num` is exact, false otherwise.
+
+<span class="c">// Examples:</span>
+is_exact(1);
+<span class="c">//=> true</span>
+
+is_exact(-15/10);
+<span class="c">//=> true</span>
+
+is_exact(3.01);
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_inexact(num)
+<b>returns: </b>true if `num` is inexact, false otherwise.
+
+<span class="c">// Examples:</span>
+is_inexact(1);
+<span class="c">//=> false</span>
+
+is_inexact(-15/10);
+<span class="c">//=> false</span>
+
+is_inexact(3.01);
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_to_number(s, @optional radix)
+<b>returns: </b>the number represented by the string `s`, or false.
+
+The number is interpreted in `radix`, which must be an exact integer in the set {2, 8, 10, 16}.
+If not specified, `radix` defaults to 10. Any radix specifier within the
+string, e.g., 0x, overrides the radix argument.
+
+<span class="c">// Examples:</span>
+string_to_number("3.4e3"); 
+<span class="c">//=> 3400.</span>
+
+string_to_number("0x-2e2", 10); 
+<span class="c">//=> -738</span>
+
+string_to_number("0x-2e2", 16); 
+<span class="c">//=> -738</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>number_to_string(num, @optional radix)
+<b>returns: </b>an external representation of `num` as a string.
+
+The number is expressed in `radix`, which must be an exact integer in the set {2, 8, 10, 16}.
+If not specified, radix defaults to 10. In any case, no radix specifier appears in the resulting string.
+
+<span class="c">// Examples:</span>
+number_to_string(220/9); 
+<span class="c">//=> "220/9"</span>
+
+number_to_string(220/9, 16); 
+<span class="c">//=> "dc/9"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> number_is_eq(num1, ...) 
+
+<b>function:</b> number_is_lt(num1, ...)
+<b>function:</b> &lt;(num1, ...)      
+
+<b>function:</b> number_is_gt(num1, ...)
+<b>function:</b> &gt;(num1, ...)
+
+<b>function:</b> number_is_lteq(num1, ...)
+<b>function:</b> &lt;=(num1, ...)
+
+<b>function:</b> number_is_gteq(num1, ...)
+<b>function:</b> &gt;=(num1, ...)
+
+<b>returns:</b> true if the relation holds, false otherwise.
+
+number_is_eq return true if its arguments are equal.
+number_is_lt and &lt; return true if their arguments are monotonically increasing, i.e., each
+argument is greater than the preceding ones.
+
+number_is_gt and &gt; return true if their arguments are monotonically decreasing, i.e., each
+argument is less than the preceding ones.
+
+number_is_lteq and &lt;= return true if their arguments are monotonically nondecreasing,
+i.e., each argument is not less than the preceding ones.
+
+number_is_lteq and &gt;= return true if its arguments are monotonically non-increasing.
+
+&lt;, &gt;, &lt;= and &gt;= are commonly used in the infix operator position with two arguments.
+
+<span class="c">// Examples: </span>
+number_is_eq(7, 7); 
+<span class="c">//=> true</span>
+`<=`(1, 2, 3, 3, 4, 5);
+<span class="c">//=> true</span>        
+number_is_lteq(1, 2, 3, 3, 4, 5);
+<span class="c">//=> true</span>
+
+<span class="c">// Numeric comparisions using infix syntax:</span>
+1 < 2;
+<span class="c">//=> true</span>
+2 == 3 - 1;
+<span class="c">//=> true</span>
+2 <> 2 + 1;
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>add(num1, ...) 
+<b>function:</b> +(num1, ...)
+<b>returns: </b>the sum of `num1, ...`.
+
+`+` is commonly used as an infix operator with two argumens.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>sub(num1, num2, ...) 
+<b>function:</b> -(num1, num2, ...)
+<b>returns: </b>the difference between `num1` and the sum of `num2, ....`
+
+`-` is commonly used as an infix operator with two argumens.
+
+<b>syntax: </b>-num
+<b>returns:</b> the additive inverse of `num`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>mult(num1, ...) 
+<b>function:</b> *(num1, ...)
+<b>returns: </b>the product of `num1, ...`.
+
+`*` is commonly used as an infix operator with two argumens.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>div(num1, num2, ...) 
+<b>function:</b> /(num1, num2, ...)
+<b>returns: </b>the result of dividing `num1` by the product of `num2, ....`.
+
+`/` is commonly used as an infix operator with two argumens.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>inc(n) 
+<b>returns: </b>the result of adding 1 to `n`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> dec(n) 
+<b>returns:</b> the result of subtracting 1 from `n`.
+</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_zero(num) 
+<b>returns:</b> true if `num` is zero, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_positive(num) 
+<b>returns:</b> true if `num` is greater than zero, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_negative(num)
+<b>returns:</b> true if `num` is less than zero, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_even(num) 
+<b>returns:</b> true if `num` is even, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_odd(num) 
+<b>returns: </b>true if `num` is odd, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_prime(num) 
+<b>returns:</b> true if `num` is a prime number, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_finite(num) 
+<b>returns:</b> true if `num` is finite, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_infinite(num) 
+<b>returns:</b> true if `num` is infinite, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_nan(num) 
+<b>returns:</b> true if `num` is NaN, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> quotient(int1, int2) 
+<b>returns:</b> the integer quotient of `int1` and `int2`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> remainder(int1, int2) 
+<b>returns:</b> the integer remainder of `int1` and `int2`. The result has the same sign as `int1`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> modulo(int1, int2) 
+<b>returns:</b> the integer remainder of `int1` and `int2`. The result has the same sign as `int2`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> quo(real1, real2) 
+<b>returns:</b> the real quotient of `real1` and `real2`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> rem(real1, real2) 
+<b>returns:</b> the real remainder of `real1` and `real2`. The result has the same sign as `real1`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> mod(real1, real2) 
+<b>returns:</b> the real remainder of `real1` and `real2`. The result has the same sign as `real2`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> truncate(real) 
+<b>returns:</b> the integer closest to `real` toward zero.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> floor(real) 
+<b>returns:</b> the integer closest to `real` toward negative infinity.
+If `real` is infinity or NaN, floor returns `real`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> ceiling(real) 
+<b>returns:</b> the integer closest to `real` toward positive infinity.
+If `real` is infinity or NaN, ceiling returns `real`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>round(real) 
+<b>returns: </b>the integer closest to `real`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>abs(real) 
+<b>returns: </b>the absolute value of `real`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> max(real1,  ...) 
+<b>returns:</b> the maximum of `real1, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> min(real1,  ...) 
+<b>returns:</b> the minimum of `real1, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> gcd(int1,  ...) 
+<b>returns:</b> the greatest common divisor of `int1, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> lcm(int1,  ...) 
+<b>returns:</b> the least common multiple of `int1, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> expt(num1,  num2) 
+<b>returns:</b> `num1` raised to the `num2` power.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> inexact(num) 
+<b>returns:</b> an inexact representation of `num`.
+
+<span class="c">// Examples:</span>
+inexact(3); 
+<span class="c">//=> 3.</span>
+
+inexact(-1/4); 
+<span class="c">//=> -.25</span>
+
+inexact(expt(10, 20)); 
+<span class="c">//=> 1e20</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> exact(num) 
+<b>returns:</b> an exact representation of `num`.
+
+<span class="c">// Examples:</span>
+exact(3.0);
+<span class="c">//=> 3</span>
+
+exact(-.25); 
+<span class="c">//=> -1/4</span>
+
+exact(1e20);
+<span class="c">//=> 100000000000000000000</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> rationalize(real1, real2) 
+<b>returns:</b> the simplest rational number that differs from `real1` by no more than `real2`.
+
+<span class="c">// Examples:</span>
+rationalize(3/10, 1/10);
+<span class="c">//=> 1/3</span>
+
+rationalize(.3, 1/10);
+<span class="c">//=> .3333333333333333</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>numerator(num) 
+<b>returns: </b>the numerator of `num`.
+
+<span class="c">// Examples:</span>
+numerator(2/3); 
+<span class="c">//=> 2</span>
+
+numerator(-2.25);
+<span class="c">//=> -9.0</span>
+
+numerator(10); 
+<span class="c">//=> 10</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> denominator(num) 
+<b>returns:</b> the denominator of `num`.
+
+<span class="c">// Examples:</span>
+denominator(0); 
+<span class="c">//=> 1</span>
+
+denominator(10); 
+<span class="c">//=> 1</span>
+
+denominator(2/3); 
+<span class="c">//=> 3</span>
+
+denominator(-2.25); 
+<span class="c">//=> 4.0</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> rectangular(r, i) 
+<b>returns:</b> a complex number with real component `r` and imaginary component `i`.
+
+<b>function: </b>polar(m, a) 
+<b>returns: </b>a complex number with magnitude `m` and angle `a`.
+
+<span class="c">// Examples:</span>
+rectangular(-2, 7); 
+<span class="c">//=> -2+7i</span>
+
+rectangular(2/3, -1/2); 
+<span class="c">//=> 2/3-1/2i</span>
+
+polar(2, 0); 
+<span class="c">//=> 2</span>
+
+polar(2.0, 0.0); 
+<span class="c">//=> 2.0+0.0i</span></code></pre>
+</div>
+
+<p>Note that complex number literals that contain fractions should be written using inexact numbers. For example,
+the literal that represent `2/3-1/2i` should be written as `2/3-0.5i`.</p>
+
+<div class="highlight">
+  <pre><code><b>function:</b> real_part(num) 
+<b>function:</b> imag_part(num) 
+<b>returns:</b> the real/imaginary component of the complex number `num`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> angle(num) 
+<b>function:</b> magnitude(num) 
+<b>returns:</b> the angle/magnitude part of the complex number `num`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> sqrt(num) 
+<b>returns:</b> the principal square root of `num`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> exp(num) 
+<b>returns:</b> e to the `num` power.
+See <a href="https://en.wikipedia.org/wiki/E_(mathematical_constant)">https://en.wikipedia.org/wiki/E_(mathematical_constant)</a></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> log(num) 
+<b>returns:</b> the natural logarithm of `num`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> logb(num1, num2) 
+<b>returns:</b> the base-`num2` logarithm of `num1`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> sin(num) 
+<b>function:</b> cos(num) 
+<b>function:</b> tan(num) 
+<b>returns:</b> the sine, cosine or tangent of `num`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> asin(num) 
+<b>function:</b> acos(num) 
+<b>function:</b> atan(num, @optional num1) 
+<b>returns:</b> the arc sine, arc cosine or arc tangent of num.
+
+When passed a single complex argument `num`, atan returns the arc tangent of `num`.
+When passed two real arguments, atan is equivalent to `^(y x) angle(rectangular(x y))`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> bnot(int) 
+<b>function:</b> band(int_a, int_b) 
+<b>function:</b> bior(int_a, int_b) 
+<b>function:</b> bxor(int_a, int_b) 
+<b>returns:</b> the bitwise not, and, inclusive or, or exclusive or of `int`, `int_a` and `int_b`.
+
+The inputs are treated as if represented in two's complement, even if they are not
+represented that way internally.
+
+<span class="c">// Examples:</span>
+bnot(0); 
+<span class="c">//=> -1</span>
+
+bnot(3); 
+<span class="c">//=> -4</span>
+
+band(0b01101, 0b00111); 
+<span class="c">//=> 5</span>
+
+bior(0b01101, 0b00111); 
+<span class="c">//=> 15</span>
+
+bxor(0b01101, 0b00111); 
+<span class="c">//=> 10</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> bif(int1, int2, int3)
+<b>returns:</b> the bitwise "if" of its arguments.
+
+The inputs are treated as if represented in two's complement, even if they are not
+represented that way internally.
+For each bit set in `int1`, the corresponding bit of the result is taken from `int2`, and
+for each bit not set in `int1`, the corresponding bit of the result is taken from `int3`.
+
+<span class="c">// Example:</span>
+bif(0b101010, 0b111000, 0b001100); 
+<span class="c">//=> 44</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> bit_count(int)
+<b>returns:</b> the number of bits set in `int`.
+
+For nonnegative inputs, bit_count returns the number of bits set in the two's complement
+representation of `int`. For negative inputs, it returns a negative number whose magnitude
+is one greater than the number of bits not set in the two's complement representation of `int`.
+
+<span class="c">// Examples:</span>
+bit_count(0b00000); 
+<span class="c">// => 0</span>
+
+bit_count(0b00001); 
+<span class="c">// => 1</span>
+
+bit_count(0b10101); 
+<span class="c">// => 3</span>
+
+bit_count(-1); 
+<span class="c">// => -1</span>
+
+bit_count(-2); 
+<span class="c">// => -2</span>
+
+bit_count(-4); 
+<span class="c">// => -3</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> blength(int)
+<b>returns:</b> the number of bits set in `int`.
+
+This function returns the number of bits of the smallest two's complement representation
+of `int`, not including the sign bit for negative numbers. For 0 blength will return 0.
+
+<span class="c">// Examples:</span>
+blength(4); 
+<span class="c">//=> 3</span>
+blength(-6); 
+<span class="c">//=> 3</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function:</b> first_bit_set(int)
+<b>returns:</b> the index of the least significant bit set in `int`.
+
+The input is treated as if represented in two's complement, even if it is not
+represented that way internally.
+
+<span class="c">// Examples: </span>
+first_bit_set(0b00000); 
+<span class="c">//=> -1</span>
+
+first_bit_set(0b00001); 
+<span class="c">//=> 0</span>
+
+first_bit_set(0b01100); 
+<span class="c">//=> 2</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function:</b> is_bit_set(int, index) 
+<b>returns:</b> true if the bit at `index` of `int` is set, false otherwise.
+    
+The two's complement representation of a nonnegative number conceptually extends to the left
+(toward more significant bits) with an infinite number of zero bits, and the two's complement
+representation of a negative number conceptually extends to the left with an infinite
+number of one bits.
+
+<span class="c">// Examples:</span>
+is_bit_set(0b01011, 0); 
+<span class="c">//=> true</span>
+
+is_bit_set(0b01011, 2); 
+<span class="c">//=> false</span>
+
+is_bit_set(-1, 0); 
+<span class="c">//=> true</span>
+
+is_bit_set(-1, 20); 
+<span class="c">//=> true</span>
+
+is_bit_set(-3, 1); 
+<span class="c">//=> false</span>
+
+is_bit_set(0, 5000); 
+<span class="c">//=> false</span>
+
+is_bit_set(-1, 5000); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function:</b>is_any_bits_set(int1, int2)
+<b>returns:</b> true if the bitwise and of `int1` and `int2` is different from zero, false otherwise.
+
+<span class="c">// Examples:</span>
+is_any_bits_set(0b0010, 0b1110);
+<span class="c">//=> true</span>
+
+is_any_bits_set(0b0010, 0b1100);
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_all_bits_set(int1, int2)
+<b>returns: </b>true if the bitwise and of `int1` and `int2` is equal to `int1`, false otherwise.
+
+<span class="c">// Examples:</span>
+is_all_bits_set(0b0010, 0b0010);
+<span class="c">//=> true</span>
+
+is_all_bits_set(0b0010, 0b0100);
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>copy_bit_field(int1, start, end, int2)
+<b>returns: </b>`int1` with n bits from `start` (inclusive) to `end` (exclusive)
+replaced by the low-order n bits of `int2`. 
+
+<span class="c">// Examples:</span>
+copy_bit_field(0b10000, 0, 3, 0b10101); 
+<span class="c">//=> 21</span>
+
+copy_bit_field(0b10000, 1, 3, 0b10101); 
+<span class="c">//=> 18</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>bshift(int, n)
+<b>returns: </b>the result of arithmetically shifting `int` by `n` bits.
+
+If `n` is negative, the bits are shifted right. Otherwise, the bits are shifted left.
+
+<span class="c">// Examples:</span>
+bshift(-64, -3); 
+<span class="c">//=> -8</span>
+
+bshift(-64, 3); 
+<span class="c">//=> -512</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>rotate_bit_field(int1, start, end, int2)
+<b>returns: </b>the result of shifting the bits of `int1` from the bit `start` (inclusive)
+through bit `end` (exclusive) left by `mod(int2, end - start)` bits, with the bits shifted out 
+of the range inserted at the bottom end of the range.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>reverse_bit_field(int1, start, end)
+<b>returns: </b>the result of reversing the bits of `int1` from the bit `start` (inclusive) through 
+the bit `end` (exclusive).</code></pre>
+</div>
+
+<h5>Fixnums</h5>
+<p>Fixnums represent exact integers in the fixnum range, which is required to be a closed range 
+  <code>[-2<sup>w-1</sup>, 2<sup>w-2</sup> - 1]</code>, where <code>w</code> (the fixnum width) is at least <code>24</code>. 
+  The platform-specific value of <code>w</code> may be determined via the function <code>fixnum_width</code>, and the 
+  endpoints of the range may be determined via the functions <code>least_fixnum</code> and <code>greatest_fixnum</code>.</p>
+
+<p>The names of arithmetic functions that operate only on fixnums begin with the prefix &quot;fx&quot; to set them apart from 
+  their generic counterparts.</p>
+
+<div class="highlight">
+<pre><code><b>function: </b>least_fixnum() 
+<b>function: </b>greatest_fixnum() 
+<b>returns: </b>the most negative or most positive fixnum supported by the platform.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fixnum_width() 
+<b>returns: </b>the platform dependent fixnum width.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_fixnum(obj) 
+<b>returns: </b>true is `obj` is a fixnum, false otherwise.
+
+<span class="c">// Examples:</span>
+is_fixnum(greatest_fixnum()); 
+<span class="c">//=> true</span>
+
+is_fixnum(greatest_fixnum() + 1); 
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fx_is_eq(fx1, ...) 
+<b>function: </b>fx_is_lt(fx1, ...) 
+<b>function: </b>fx_is_gt(fx1, ...) 
+<b>function: </b>fx_is_lteq(fx1, ...) 
+<b>function: </b>fx_is_gteq(fx1, ...) 
+<b>returns: </b>true if the relatiion holds, false otherwise.
+
+fx_is_eq returns true if its arguments are equal.
+fx_is_lt returns true if its arguments are monotonically increasing, i.e., each
+argument is greater than the preceding ones.
+fx_is_gt returns true if its arguments are monotonically decreasing.
+fx_is_lteq returns true if its arguments are monotonically nondecreasing, i.e., each
+argument is not less than the preceding ones.
+fx_is_gteq returns true if its arguments are monotonically non-increasing.
+
+These functions will raise an error if an argument is not a fixnum.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxadd(fx1, ...) 
+<b>function: </b>fxsub(fx1, ...) 
+<b>function: </b>fxmult(fx1, ...) 
+<b>function: </b>fxdiv(fx1, fx2) 
+<b>function: </b>fxmod(fx1, fx2) 
+<b>function: </b>fxadd_wrap(fx1, ...) 
+<b>function: </b>fxsub_wrap(fx1, ...) 
+<b>function: </b>fxmult_wrap(fx1, ...)
+<b>returns: </b>the result of performing the arithmetic operation on `fx1, ...` (or `fx1` and `fx2`).
+
+When an ordinary fixnum addition, subtraction, or multiplication operation overflows,
+an exception is raised. The functions with the `_wrap` suffix instead return a
+wrapped-around result.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fx_is_zero(fx) 
+<b>function: </b>fx_is_positive(fx) 
+<b>function: </b>fx_is_negative(fx)
+<b>returns: </b>true if `fx` is zero, greater than zero or less than zero, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fx_is_even(fx) 
+<b>function: </b>fx_is_odd(fx) 
+<b>returns: </b>true if `fx` is even/odd, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fxmin(fx1, ...) 
+<b>function: </b>fxmax(fx1, ...) 
+<b>returns: </b>the minimum/maximum of `fx1, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fxnot(fx) 
+<b>function: </b>fxand(fx1, ...) 
+<b>function: </b>fxior(fx1, ...) 
+<b>function: </b>fxxor(fx1, fx2) 
+<b>returns: </b>the bitwise not/and/inclusive or/exclusive or of `fx, fx1, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxif(fx1, fx2, fx3) 
+<b>returns: </b>the bitwise "if" of its arguments.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxbit_count(fx) 
+<b>returns: </b>the number of bits set in the two's complement representation of `fx`.
+
+For negative inputs, fxbit_count returns a negative number whose magnitude is one greater
+than the number of bits not set in `fx`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxlength(fx) 
+<b>returns: </b>the number of bits of the smallest two's complement representation of `fx`.
+(does not include the sign bit for negative numbers).</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxfirst_bit_set(fx)
+<b>returns: </b>the index of the least significant bit set in `fx`. If `fx` is 0, returns -1.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxbit_is_set(fx, i)
+<b>returns: </b>true if bit `i` of `fx` is set, false otherwise.
+
+`i` must be nonnegative. It is taken as a zero-based index for the bits in the two's complement
+representation of `fx`, with the sign bit virtually replicated an infinite number of
+positions to the left.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fxshift(fx, i)
+<b>function: </b>fxshift_left(fx, i)
+<b>function: </b>fxshift_right(fx, i)
+<b>function: </b>fxshift_wrap(fx, i)
+<b>function: </b>fxshift_left_wrap(fx, i)
+<b>function: </b>fxshift_right_wrap(fx, i)
+<b>function: </b>fxlshift_right_wrap(fx, i)
+<b>returns: </b>`fx` arithmetically/logically shifted left/right by `i`.
+
+For all functions except fxshift and fxshift_wrap, `i` must be non-negative.
+If `i` is non-negative, it must be less than the value of fixnum_width().
+If `i` is negative, fxshift returns the result of arithmetically shifting `fx` right by `i` bits.
+Otherwise, fxshift returns the result of shifting `fx` left by `i` bits.</code></pre>
+</div>
+
+<h5>Flonums</h5>
+<p>Flonums represent inexact real numbers represented using the IEEE double-precision floating-point representation for flonums.</p>
+<p>Flonum-specific function names begin with the prefix &quot;fl&quot; to set them apart from their generic counterparts.</p>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_flonum(obj)
+<b>returns: </b>true if `obj` is a flonum, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>fl_is_eq(fl1, ...)
+<b>function: </b>fl_is_lt(fl1, ...)
+<b>function: </b>fl_is_gt(fl1, ...)
+<b>function: </b>fl_is_lteq(fl1, ...)
+<b>function: </b>fl_is_gteq(fl1, ...)
+<b>returns: </b>true if the relation holds, false otherwise.
+
+fl_is_eq return true if its arguments are equal.
+fl_is_lt return true if its arguments are monotonically increasing, i.e., each
+argument is greater than the preceding ones.
+fl_is_gt return true if its arguments are monotonically decreasing.
+fl_is_lteq return true if its arguments are monotonically nondecreasing, i.e., each
+argument is not less than the preceding ones.
+fl_is_gteq return true if its arguments are monotonically non-increasing.
+When passed only one argument, each of these predicates returns true.
+
+Comparisons involving NaNs always return false.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fl_is_zero(fl)
+<b>function: </b>fl_is_positive(fl)
+<b>function: </b>fl_is_negative(fl)
+<b>returns: </b>true if fl is zero/greater than zero/less than zero, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fl_is_integer(fl)
+<b>returns: </b>true if `fl` is an integer, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fl_is_finite(fl)
+<b>function: </b>fl_is_infinite(fl)
+<b>function: </b>fl_is_nan(fl)
+<b>returns: </b>true if `fl` is finite/infinite/NaN, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fl_is_even(fl)
+<b>function: </b>fl_is_odd(fl)
+<b>returns: </b>true if `fl` is even or odd, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flmin(fl1, ...)
+<b>function: </b>flmax(fl1, ...)
+<b>returns: </b>the minimum or maximum of `fl1 ...`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fladd(fl1, ...)
+<b>function: </b>flsub(fl1, ...)
+<b>function: </b>flmult(fl1, ...)
+<b>function: </b>fldiv(fl1, fl2)
+<b>function: </b>flmod(fl1, fl2)
+<b>returns: </b>the result of the arithmetic operation on `fl1, fl, ...`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flround(fl)
+<b>returns: </b>the integer closest to `fl`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fltruncate(fl)
+<b>returns: </b>the integer closest to `fl` towards zero.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flfloor(fl)
+<b>returns: </b>the integer closest to `fl` towards negative infinity.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flceiling(fl)
+<b>returns: </b>the integer closest to `fl` towards positive infinity.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flnumerator(fl)
+<b>function: </b>fldenominator(fl)
+<b>returns: </b>the numerator or denominator of `fl`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flabs(fl)
+<b>returns: </b>the absolute value of `fl`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flexp(fl)
+<b>returns: </b>e to the `fl` power.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fllog(fl)
+<b>function: </b>fllogb(fl, fl_b)
+<b>returns: </b>the natural of base fl_b logarithm of `fl`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flsin(fl)
+<b>function: </b>flcos(fl)
+<b>function: </b>fltan(fl)
+<b>function: </b>flasin(fl)
+<b>function: </b>flacos(fl)
+<b>function: </b>flatan(fl)
+<b>returns: </b>the sine/cosine/tangent/arc sine/arc cosine/arc tangent of `fl`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flatan(fl1, fl2)
+<b>returns: </b>the arc tangent of `fl1/fl2`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flsqrt(fl)
+<b>returns: </b>the principle square root of `fl`.
+</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>flexpt(fl1, fl2)
+<b>returns: </b>`fl1` raised to the `fl2` power.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>fixnum_to_flonum(fx)
+<b>returns: </b>the flonum representation closest to `fx`.</code></pre>
+</div>
+
+<h5>Special Variables</h5>
+
+<div class="highlight">
+<pre><code><b>variable: </b>inf
+<b>value: </b>positive infinity (+inf.0).</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>variable: </b>_inf
+<b>value: </b>negative infinity (-inf.0).</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>variable: </b>nan
+<b>value: </b>NaN (+nan.0).</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>variable: </b>zero
+<b>value: </b>positive zero (+0.0).</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>variable: </b>_zero
+<b>value: </b>negative zero (-0.0).</code></pre>
+</div>
+
+<h5>Pseudo random numbers</h5>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_integer(n)
+<b>returns: </b>a pseudo random exact integer in the range 0 to n - 1.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_real()
+<b>returns: </b>a pseudo random inexact real between, but not including, 0 and 1.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_byte_array(n)
+<b>returns: </b>a byte array of length `n` containing pseudo random exact integers in the range 0 to 255.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function:</b> default_random_source()
+<b>returns: </b>the random source object which is used by the random_integer, random_real and
+random_byte_array functions.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_source()
+<b>returns: </b>a new random source object initialized to a predetermined state.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_random_source(obj)
+<b>returns: </b>true if `obj` is a random source object, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_source_state(rs)
+<b>returns: </b>an array containing the state of the random source `rs`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_source_set_state(rs, s)
+<b>returns: </b>void
+
+Sets the state of the random source `rs` to `s` which must be an array returned
+by random_source_state.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_source_randomize(rs)
+<b>function: </b>random_source_pseudo_randomize(rs, i , j)
+<b>returns: </b>void
+
+Change the state of the random source object `rs`. random_source_randomize sets the
+random source object to a state that depends on the current time (which for typical
+uses can be considered to randomly initialize the state).
+random_source_pseudo_randomize sets the random source object to a state that is determined
+only by the current state and the nonnegative exact integers `i` and `j`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>random_source_for_integers(rs)
+<b>function: </b>random_source_for_reals(rs, @optional precision)
+<b>function: </b>random_source_for_byte_arrays(rs)
+<b>returns: </b>a function for generating pseudo random exact integers, inexact reals or 
+byte arrays using the random source object `rs`.
+
+For random_source_for_reals, the optional parameter precision specifies an upper bound on the
+minimum amount by which two generated pseudo-random numbers can be separated.
+
+<span class="c">// Example: </span>
+let rs = random_source(); 
+let ri = random_source_for_integers(rs); 
+let rr = random_source_for_reals(rs); 
+let ra = random_source_for_byte_arrays(rs); 
+
+ri(10); 
+<span class="c">//=> 8</span>
+
+ri(10); 
+<span class="c">//=> 2</span>
+
+rr(); 
+<span class="c">//=> .7342236104231586</span>
+
+rr(); 
+<span class="c">//=> .8162050798467028</span>
+
+ra(10); 
+<span class="c">//=> #u8[53, 192, 40, 176, 200, 53, 29, 202, 3, 85]</span>
+
+ra(10); 
+<span class="c">//=> #u8[134, 119, 240, 127, 113, 8, 182, 120, 138, 103]</span></code></pre>
+</div>
+
+<a name="bools"></a>
+<h4>Booleans</h4>
+<p>While every object except <code>false</code> is counted as true, Slogan has a dedicated constant <code>true</code> 
+  for use when a value of an expression should convey nothing more than that it is true.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_boolean(obj) 
+<b>returns: </b>true if `obj` is either true or false, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_true(obj)
+<b>returns: </b>true if `obj` evaluates to the constant true value.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_false(obj)
+<b>returns: </b>true if `obj` evaluates to the constant false value.</code></pre>
+</div>
+
+<a name="void"></a>
+<h4>Void</h4>
+
+<p>The <code>void</code> object has no printed representation. It is often used as a return value for functions called only for 
+  their side-effects.</p>
+
+<div class="highlight">
+<pre><code><b>function: </b>void()
+<b>returns: </b>the void object.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>is_void(obj)
+<b>returns: </b>true if `obj` is the void object.</code></pre>
+</div>
+
+<a name="chars"></a>
+<h4>Characters</h4>
+<p>Characters are atomic objects representing letters, digits, special symbols such as $ or _, and certain non-graphic control 
+  characters such as space and newline. Characters literals have the <code>\</code> prefix. The written character 
+  representation of the letter <code>A</code>, for example, is <code>\A</code>. </p>
+
+<p>The following are special literals that represent non-graphic characters:</p>
+
+<ul>
+  <li>\newline</li>
+  <li>\return</li>
+  <li>\tab</li>
+  <li>\backspace</li>
+  <li>\alarm</li>
+  <li>\vtab</li>
+  <li>\esc</li>
+  <li>\delete</li>
+  <li>\nul</li>
+</ul>
+
+<p>Any Unicode character may be written with the syntax '\xhh', '\uhhhh' or '\Uhhhhhhhh' where <code>n</code> consists of two, four 
+  or eight hexadecimal digits representing a valid Unicode scalar value.</p>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_char(obj) 
+<b>returns:</b> true if `obj` is a character, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>char_is_eq(char1, ...)
+<b>function: </b>char_is_lt(char1, ...)
+<b>function: </b>char_is_gt(char1, ...)
+<b>function: </b>char_is_lteq(char1, ...)
+<b>function: </b>char_is_gteq(char1, ...)
+<b>function: </b>char_is_ci_eq(char1, ...)
+<b>function: </b>char_is_ci_lt(char1, ...)
+<b>function: </b>char_is_ci_gt(char1, ...)
+<b>function: </b>char_is_ci_lteq(char1, ...)
+<b>function: </b>char_is_ci_gteq(char1, ...)
+<b>returns: </b>true if the relation holds, false otherwise.
+
+The `char_is_ci_***` predicates ignores the case of the characters being compared.
+
+<span class="c">// Example:</span>
+char_is_eq(\a, \A); 
+<span class="c">//=> false</span>
+
+char_is_ci_eq(\a, \A); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>char_is_alphabetic(char)
+<b>function: </b>char_is_numeric(char)
+<b>function: </b>char_is_whitespace(char)
+<b>returns: </b>true if the `char` is a letter, digit or whitespace, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>char_is_lower_case(char)
+<b>function: </b>char_is_upper_case(char)
+<b>returns: </b>true if the `char` is lower case/upper case, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>char_upcase(char)
+<b>function: </b>char_downcase(char)
+<b>returns: </b>the upper case/lower case counterpart of `char`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>char_to_integer(char)
+<b>returns: </b>the Unicode scalar value of `char` as an exact integer.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>integer_to_char(n)
+<b>returns: </b>the character corresponding to the Unicode scalar value `n`.</code></pre>
+</div>
+
+<a name="strings"></a>
+<h4>Strings</h4>
+<p>Strings are sequences of characters and are often used as containers for blocks of text. A string is 
+  written as a sequence of characters enclosed in double quotes, e.g., <code>&quot;hi there&quot;</code>. A double quote may be introduced into a 
+  string by preceding it by a backward slash, e.g., <code>&quot;two \&quot;quotes\&quot; within&quot;</code>. 
+  A backward slash may also be included 
+  by preceding it with a backward slash, e.g., <code>&quot;a \\slash&quot;</code>. Various special characters can be 
+  inserted with other two-character 
+  sequences, e.g., <code>\n</code> for newline, <code>\r</code> for carriage return, and <code>\t</code> for tab. Any Unicode character
+  may be inserted with the syntax <code>\xhh</code>, <code>\uhhhh</code> or <code>\Uhhhhhhhh</code> where <code>h</code> consists of two, 
+  four or eight hexadecimal digits and represents a valid Unicode scalar value.</p>
+
+<p>Strings are indexed by exact nonnegative integers, and the index of the first element of any string is <code>0</code>. The highest 
+  valid index for a given string is one less than its length.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_string(obj) 
+<b>returns:</b> true if `obj` is a string, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_is_eq(string1, ...)
+<b>function: </b>string_is_lt(string1, ...)
+<b>function: </b>string_is_gt(string1, ...)
+<b>function: </b>string_is_lteq(string1, ...)
+<b>function: </b>string_is_gteq(string1, ...)
+<b>function: </b>string_is_ci_eq(string1, ...)
+<b>function: </b>string_is_ci_lt(string1, ...)
+<b>function: </b>string_is_ci_gt(string1, ...)
+<b>function: </b>string_is_ci_lteq(string1, ...)
+<b>function: </b>string_is_ci_gteq(string1, ...)
+<b>returns: </b>true if the relation holds, false otherwise.
+
+The `string_is_ci_***` predicates ignores the case of the strings being compared.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_starts_with(string, prefix)
+<b>function: </b>string_ends_with(string, suffix)
+<b>function: </b>string_ci_starts_with(string, prefix)
+<b>function: </b>string_ci_ends_with(string, suffix)
+<b>returns: </b>true if `string` starts with/ends with the `prefix`/`suffix`, false otherwise.
+
+The `string_ci_***` predicates ignores the case of the strings being compared.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string(char1, ...)
+<b>returns: </b>a string containing the characters `char1 ...`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>make_string(n, char = \nul)
+<b>returns: </b>a string of length `n`.
+
+If `char` is supplied, the string is filled with `n` occurrences of `char`.
+
+<span class="c">// Example:</span>
+make_string(5);
+<span class="c">//=> "\0\0\0\0\0"</span>
+make_string(5, \y); 
+<span class="c">//=> "yyyyy"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_length(string)
+<b>function: </b>count(string)      
+<b>returns: </b>the number of characters in `string`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_at(string, n)
+<b>returns: </b>the `n`<sup>th</sup> element of `string`.
+
+`n` must be an exact nonnegative integer less than the length of `string`.
+Note the returned value is the n<sup>th</sup> byte in `string`, not the n<sup>th</th> character,
+because the UTF-8 encoding of a non-ASCII code point requires two or more bytes.
+
+<span class="c">// Example:</span>
+string_at("hello", 1); 
+<span class="c">//=> \e</span></code></pre>
+</div>
+
+
+<div class="highlight">
+<pre><code><b>function: </b>string_set(string, n, b)
+<b>returns: </b>void
+
+Changes the `n`<sup>th</sup> byte of `string` to `b`.
+`n` must be an exact nonnegative integer less than the length of `string`.
+
+<span class="c">// Example:</span>
+let s = "hello"; 
+string_set(s, 1, \E); 
+s;
+<span class="c">//=> "hEllo"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>string[index]
+<b>returns: </b>if `index` is an integer, the byte at `index`.
+if `index` is a pair of integers, a string that contains the bytes in that range.      
+
+if `index` is out of bounds, an error is raised.
+
+<span class="c">// Examples:</span>
+let s = "hello, world";
+s[3];
+<span class="c">//=> \l</span>
+s[1:5];
+<span class="c">//=> "ello"</span>
+s[3:];
+<span class="c">//=> "lo, world"</span>
+slogan> s[:3];
+<span class="c">//=> "hel"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>string[index] = b
+<b>returns:</b> void
+
+destructively sets the byte at `index` to `b`, raises an error if `index` is out of bounds.
+
+<span class="c">// Example:</span>
+s;
+<span class="c">//=> "hello, world"</span>
+s[3] = \L;
+s[2] = \L;
+s;
+<span class="c">//=> "heLLo, world"</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>strings_at(strings, n)
+<b>returns: </b>a list of the `n`<sup>th</sup> bytes of all strings in the list strings.
+
+`n` must be an exact nonnegative integer less than the length of all `strings`.
+
+<span class="c">// Example:</span>
+strings_at(["hello", "icon"], 0); 
+<span class="c">//=> [\h, \i]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_replace_all(string, char1, char2)
+<b>returns:</b> a new string with all occurences of `char1` in string replaced with `char2`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_copy(string)
+<b>returns: </b>a new copy of string.
+
+<span class="c">// Example:</span>
+let s = "hello";
+let r = string_copy(s); 
+string_set(r, 1, \E); 
+s;
+<span class="c">//=> "hello"</span>
+r;
+<span class="c">//=> "hEllo"</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_append(string1, ...)
+<b>returns:</b> a new string formed by concatenating the `string1 ...`.
+
+<span class="c">// Example:</span>
+string_append("abc", "def"); 
+<span class="c">//=> "abcdef"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>substring(string, start, end)
+<b>returns: </b>a copy of `string` from `start` (inclusive) to `end` (exclusive).
+
+`start` and `end` must be exact nonnegative integers; `start` must be less than the
+length of `string`, while `end` may be less than or equal to the length of `string`.
+If `end <= start` is true, a string of length zero is returned.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_fill(string, char)
+<b>returns: </b>void
+
+sets every character in `string` to `char`.
+
+<span class="c">// Example:</span>
+let s = "hello";
+string_fill(s, \a);
+s;
+<span class="c">//=> "aaaaa"</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_upcase(string)
+<b>function: </b>string_downcase(string)
+<b>function: </b>string_titlecase(string)
+<b>returns: </b>the upper-case/lower-case/title-case equivalent of `string`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function:</b> string_ltrim(string)
+<b>function:</b> string_rtrim(string)
+<b>function:</b> string_trim(string)
+<b>returns:</b> a new copy of `string` with whitespaces removed from its left,
+right or both left and right.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_map(f, string1, string2, ...)
+<b>returns: </b>a new string with characters returned by the function `f`.
+
+`f` should accept as many arguments as there are strings and return a single character.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_for_each(f, string1, string2, ...)
+<b>returns: </b>void.
+
+string_for_each is similar to string_map except for the fact that `f` is called
+for its side-effect.
+
+<span class="c">// Example:</span>
+let (s = make_string(10), i = 0) 
+{ string_for_each(^(c, d) { string_set(s, i, c); 
+                            string_set(s, i + 1, d); 
+                            i = i + 2 }, 
+                  "hello", "world"); 
+  s }; 
+<span class="c">//=> "hweolrllod"</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_split(string, @optional delim = \space, include_empty = false)
+<b>returns: </b>a list of strings that contain the parts of `string`.
+
+`delim` can be a character, a list of characters or a predicate that accepts a character as its
+sole argument. If `include_empty` is true empty parts are also included in the result.
+
+If `delim` is a character, `string` is split at each position where `delim` occurs.
+
+<span class="c">// Examples:</span>
+string_split("hello, world");
+<span class="c">//=> ["hello,", "world"]</span>
+string_split("hello, world", \,);
+<span class="c">//=> ["hello", " world"]</span>
+string_split("hello,, world", \,);
+<span class="c">//=> ["hello", " world"]</span>
+string_split("hello,, world", \,, true);
+<span class="c">//=> ["hello", "", "  world"]</span>
+
+If `delim` is a list of characters, `string` is split at each position where one of those
+characters occur.
+
+<span class="c">// Examples:</span>
+string_split("1;2.3,4.5;6", [\;, \., \,]);
+<span class="c">//=> ["1", "2", "3", "4", "5", "6"]</span>
+string_split("1;2.3,4.5;6", [\;, \,]);
+<span class="c">//=> ["1", "2.3", "4.5", "6"]</span>
+
+If `delim` is a function, each character in `string` is send to `delim`.
+If `delim` returns true for a character, `string` is split at that point and that part is
+added to the result list.
+
+<span class="c">// Examples:</span>
+string_split("hello world"); 
+<span class="c">//=> ["hello", "world"]</span>
+string_split("hello world", ^(c) char_is_eq(c, \l)); 
+<span class="c">//=> ["he", "o wor", "d"]</span>
+string_split("hello world", ^(c) char_is_eq(c, \l), true); 
+<span class="c">//=> ["he", "", "o wor", "d"]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>strings_join(infix, strings)
+<b>returns: </b>a new string that was created by appending each string in the list `strings` with `infix`.
+
+<span class="c">// Example: </span>
+strings_join("-", ["abc", "123", "def"]); 
+<span class="c">//=> "abc-123-def"</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_to_list(string)
+<b>returns: </b>a list of the characters in `string`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>list_to_string(list)
+<b>returns:</b> a string of the characters in `list`.
+
+<span class="c">// Examples:</span>
+string_to_list("hello");
+<span class="c">//=> [\h, \e, \l, \l, \o]</span>
+list_to_string(string_to_list("hello")) == "hello";
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function:</b> string_to_u8array(string)
+<b>returns:</b> the bytes in the string as an byte-array.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>u8array_to_string(byte-array)
+<b>returns:</b> a string initialized from the bytes in the byte-array.
+
+<span class="c">// Examples:</span>
+string_to_u8array("hello");
+<span class="c">//=> #u8[104, 101, 108, 108, 111]</span>
+u8array_to_string(#u8[65, 66, 67]);
+<span class="c">//=> "ABC"</span></code></pre></div>
+
+<div class="highlight">
+<pre><code><b>function: </b>to_string(obj)
+<b>returns:</b> a string representation of the generic object `obj`.
+
+`to_string` is a generic function by default and can be overridden for
+custom datatypes without an explicit `declare generic`.</code></pre></div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_index_of(string, substr, offset = 0)
+<b>returns:</b> the index of `substr` within `string` or -1.
+
+<span class="c">// Examples:</span>
+string_index_of("hello, world", "ll");
+<span class="c">//=> 2</span>
+string_index_of("hello, world", "0");
+<span class="c">//=> -1</span>
+string_index_of("hello, world", "o");
+<span class="c">//=> 4</span>
+string_index_of("hello, world", "o", 5);
+<span class="c">//=> 8</span></code></pre></div>
+
+<a name="symbols"></a>
+<h4>Symbols</h4>
+<p>Symbols are used for a variety of purposes as symbolic names in Slogan programs. Strings could be used for most of the same purposes, 
+  but an important characteristic of symbols makes comparisons for equality much more efficient. Two symbols with the same name are
+  identical in the sense of <code>is_eq</code>. This is so because two symbols with the same sequence of characters are always stored
+  in the same location in memory.</p>
+<p>Symbol constants are written by prefixing identifiers with the quote mark (<code>'</code>). All characters valid in identifiers can
+  be used in symbols. Symbols with spaces and special characters are written by enclosing the symbol in tick (<code>`</code>) quotes.</>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_symbol(obj) 
+<b>returns: </b>true if `obj` is a symbol, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>string_to_symbol(string)
+<b>returns: </b>a symbol whose name is `string`.
+
+<span class="c">// Example:</span>
+is_eq('hello, string_to_symbol("hello")); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>symbol_to_string(symbol)
+<b>returns: </b>the name of `symbol` as a string.
+
+<span class="c">// Example: </span>
+symbol_to_string('`hello world!`);
+<span class="c">//=> "hello world!"</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>gensym(prefix = 'g)
+<b>returns: </b>a new uninterned symbol.
+
+Uninterned symbols are guaranteed to be distinct from the symbols created in
+program source code or generated by functions like `read` and `string_to_symbol`.
+`prefix` is a symbol that will be used as the prefix for the generated symbol.
+
+<span class="c">// Examples:</span>
+gensym();
+<span class="c">//=> g0</span>
+gensym('me);
+<span class="c">//me1</span></code></pre></div>
+
+<a name="arrays"></a>
+<h4>Arrays</h4>
+
+<p>An array literal looks similar to a list literal, except that the opening bracket is preceded by a hash (<code>#</code>).
+  For example, an array consisting of the elements <code>1</code>, <code>2</code>, and <code>3</code> will be written as <code>#[1, 2, 3]</code>.</p>
+
+<div class="highlight">
+<pre><code><b>function: </b>array(obj1, ...)
+<b>returns: </b>an array of the objects `obj1 ...`.
+
+<span class="c">// Examples:</span>
+array(); 
+<span class="c">//=> #[]</span>
+array(1, 2, 3); 
+<span class="c">//=> #[1, 2, 3]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>make_array(d, fill = false)
+<b>returns:</b> an array of dimension `d`.
+
+`d` can be either an exact nonnegative integer or a list of exact nonnegative integers.
+All the elements of the array is inistalized to the value `fill`.
+
+<span class="c">// Examples:</span>
+make_array(5); 
+<span class="c">//=> #[false, false, false, false, false]</span>
+make_array(5, 'hello); 
+<span class="c">//=> #[hello, hello, hello, hello, hello]</span>
+make_array([2, 3], 'hello); 
+<span class="c">//=> #[#[hello, hello, hello], #[hello, hello, hello]]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_array(obj) 
+<b>returns:</b> true if `obj` is an array, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>array_length(array)
+<b>function: </b>count(array)      
+<b>returns: </b>the number of elements in `array`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function:</b> array_at(array, index)
+<b>function:</b> array_ref(array, index)      
+<b>syntax: </b>array[index]      
+<b>returns:</b> the element at the (zero-based) `index` position of `array`.
+
+array_at and [] will raise an "Out of range" error if `index < 0 or index >= array_length(array)`.
+For `array_ref`, `index` can also be a list of integers that indicates the position inside
+a multi-dimensional array.
+  
+<span class="c">// Examples:</span>
+let a = #[1, 2, "hi", 'abc];
+array_at(a, 3);
+<span class="c">//=> abc</span>
+a[2];
+<span class="c">//=> "hi"</span>
+a = #[#[1,2], #[3,4]];
+array_ref(a, [1, 0]);
+<span class="c">//=> 3</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>arrays_at(arrays, index)
+<b>returns: </b>a list of elements at the (zero-based) `index` of the arrays in the list `arrays`.
+
+`index` can also be a list of integers that indicates the position inside a
+multi-dimensional array.
+
+<span class="c">// Example:</span>
+arrays_at([#[1, 2, 3], #['a, 'b, 'c]], 2); 
+<span class="c">//=> [3, c]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>array_set(array, index, obj)
+<b>function: </b>array_ref_set(array, index, obj)      
+returns: void
+<b>syntax: </b>array[index] = obj    
+Sets the element at the (zero-based) index of the array arr to the object obj.
+
+For `array_ref_set`, the index argument can also be a
+list of integers that indicates the position inside a multi-dimensional array.
+
+<span class="c">// Examples:</span>
+let a = make_array([2, 3]); 
+a; 
+<span class="c">//=> #[#[false, false, false], #[false, false, false]]</span>
+array_ref(a, [1, 2]); 
+<span class="c">//=> false</span>
+array_ref_set(a, [1, 2], "hello"); 
+array_ref(a, [1, 2]); 
+<span class="c">//=> hello</span>
+
+a[1][2];
+<span class="c">//=> hello</span>
+a[0][1] = 100;
+a;
+<span class="c">//=> #[#[false, 100, false], #[false, false, "hello"]]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>array_fill(array, object)
+<b>returns: </b>void
+
+sets all elements of `array` to `object`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>array_to_list(array)
+<b>returns: </b>a list with all the elements of `array`.
+</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>list_to_array(list)
+<b>returns: </b>an array with all the elements of `list`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>array_copy(array)
+<b>returns: </b>a new array with all the elements of `array`.</code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>array_append(array, @rest a1, ...)
+<b>returns: </b>a new array with all the elements of the arrays `a1 ...` appended to `array`.
+
+<span class="c">// Examples:</span>
+array_append(#[1, 2, 3], #[4, 5, 6], #[100]); 
+<span class="c">//=> #[1, 2, 3, 4, 5, 6, 100]</span>
+array_append(#[1, 2, 3]); 
+<span class="c">//=> #[1, 2, 3]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>array_shrink(array, n)
+<b>returns: </b>void
+
+reduces the size of `array` to `n`.
+
+<span class="c">// Example:</span>
+let a = #['a, 'b, 'c]; 
+array_shrink(a, 1); 
+a; 
+<span class="c">//=> #[a]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>subarray(array, start, end)
+<b>returns: </b>a new array with the elements of `array` from `start` (inlusive) to `end` (exclusive).
+
+<span class="c">// Examples:</span>
+subarray(#[1, 2, 3, 4, 5], 2, 4); 
+<span class="c">//=> #[3, 4]</span>
+subarray(#[1, 2, 3, 4, 5], 2, 5); 
+<span class="c">//=> #[3, 4, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>subarray_fill(array, start, end, object)
+<b>returns: </b>void
+
+This function is like array_fill, but fills only a selected part of `array`.
+It sets the elements of `array`, beginning with index `start` (inclusive) and ending
+with index `end` (exclusive) to `object`.
+
+<span class="c">// Examples:</span>
+let a = #[1, 2, 3, 4, 5]; 
+subarray_fill(a, 2, 4, 'x); 
+a; 
+<span class="c">//=> #[1, 2, x, x, 5]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>subarray_move(array, start, end, dst_array, dst_start)
+<b>returns: </b>void
+
+Replaces part of the contents of `dst_array` with part of the contents of `array`.
+Copies elements from `array`, beginning with index `start` (inclusive) and ending with
+index `end` (exclusive) to `dst_array` beginning with index `dst_start` (inclusive).
+
+<span class="c">// Example:</span>
+let a = #[1, 2, 3, 4, 5]; 
+let b = #['a, 'b, 'c, 'd, 'e]; 
+subarray_move(a, 3, 5, b, 1); 
+b; 
+<span class="c">//=> #[a, 4, 5, d, e]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>array_map(f , array1, ...)
+<b>returns: </b>an array containing the result of applying the function `f` to
+the elements of `array1, ...`.
+
+The arrays `array1 ...` must be of the same length.
+`f` must accept as many arguments as there are arrays.
+
+<span class="c">// Example:</span>
+array_map(^(x, y) x * y, #[1, 2, 3], #[4, 5, 6]); 
+<span class="c">//=> #[4, 10, 18]</span></code></pre>
+</div>
+
+<div class="highlight">
+<pre><code><b>function: </b>array_for_each(f , array1, ...)
+<b>returns: </b>void
+
+Similar to array_map but the `f` is called only for its side-effect.
+
+<span class="c">// Example:</span>
+array_for_each(^(x, y) showln(x * y), #[1, 2, 3], #[4, 5, 6]); 
+<span class="c">//-> 4 
+     10
+     18</span></code></pre>
+</div>
+
+<a name="bytearrays"></a>
+<h4>Bytearrays</h4>
+<p>Bytearrays are arrays of raw binary data. They are organized as a sequence of exact unsigned or signed 8-bit integers.
+  The length of a bytearray is the number of 8-bit bytes it store, and indices into a bytearray are always given as byte offsets.</p>
+
+<p>Unsigned bytearray literals are written with the <code>#u8</code> prefix and signed byte arrays are written with the <code>#s8</code> prefix.
+  For example, this is an unsigned bytearray literal: <code>#u8[1, 10, 250]</code>, and this is a signed bytearray literal: 
+  <code>#s8[-10, 90, -100]</code>. An unsigned bytearray can contain integers in the range <code>0 to 255</code> and a 
+  signed bytearray can contain integers in the range <code>-128 to 127</code>.</p>
+
+<p>This section describe the functions that operate on both signed and unsigned bytearrays. The functions that deal with unsigned values
+  have the suffix or infix <code>u8</code> and the functions that deal with signed values have the suffix or infix <code>s8</code>.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_u8array(obj)
+<b>function: </b>is_s8array(obj)
+<b>returns: </b>true if `obj` is an array of unsigned/signed values, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array(ubyte1, ...)
+<b>function: </b>s8array(sbyte1, ...)
+<b>returns: </b>an array of the unsigned/signed values.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>make_u8array(d, fill = 0)
+<b>function: </b>make_s8array(d, fill = 0)
+<b>returns: </b>an array of unsigned/signed values of size `d`.
+
+`d` must be an unsigned integer. If `fill` is provided, the array elements are initialized
+to that value.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_length(bytearray)
+<b>function: </b>s8array_length(bytearray)
+<b>function: </b>count(bytearray)
+<b>returns: </b>the number of elements in `bytearray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_at(bytearray, n)
+<b>function: </b>s8array_at(bytearray, n)
+<b>returns: </b>the `n`<sup>th</sup> element of `bytearray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_set(bytearray, n, b)
+<b>function: </b>s8array_set(bytearray, n, b)
+<b>returns: </b>void
+
+Sets the `n`<sup>th</sup> element of `bytearray` to `b`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>bytearray[index]
+<b>returns: </b>the byte at `index`.
+
+Raises an error if `index` is out of bounds.
+
+<b>syntax: </b>bytearray[index] = b
+<b>returns: </b>void
+
+Destructively sets the byte at `index` to `b`.
+Raises an error is `index` is out of bounds.
+
+<span class="c">// Examples:</span>
+let ub = #u8[1,2,3];
+ub[2];
+<span class="c">//=> 3</span>
+ub[2] = 100;
+ub;
+<span class="c">//=> #u8[1, 2, 100]</span>
+let sb = #s8[-1,-2,-3];
+sb[2];
+<span class="c">//=> -3</span>
+sb[2] = -90;
+sb;
+<span class="c">//=> #s8[-1, -2, -90]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_to_list(bytearray)
+<b>function: </b>s8array_to_list(bytearray)
+<b>returns: </b>a list with all the elements of `bytearray`</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>list_to_u8array(list)
+<b>function: </b>list_to_s8array(list)
+<b>returns: </b>a bytearray with all the elements of `list`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>object_to_u8array(obj, encoder = identity)
+<b>returns: </b>a bytearray that encodes the object `obj`.
+      
+<b>function: </b>u8array_to_object(bytearray, decoder = identity)
+</b>returns: </b>an object deserialized from `bytearray`.
+
+The optional `encoder` and `decoder` parameters are functions that take a single argument.
+`encoder` is called during serialization. As the serializer walks through `obj`,
+it calls `encoder` on each sub-object that is encountered. Similarly `decoder`
+is called during deserialization once for each sub-object encountered.
+The `encoder` and `decoder` are used to perform transformations on the objects.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_fill(bytearray, fill)
+<b>function: </b>s8array_fill(bytearray, fill)
+<b>returns: </b>void
+
+Sets all elements in `bytearray` to the object `fill`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_append(bytearray, @rest bytearray_1, ...)
+<b>function: </b>s8array_append(bytearray, @rest bytearray_1, ...)
+<b>returns: </b>a new bytearray created by appending `bytearray_1 ...` to `bytearray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_copy(bytearray)
+<b>function: </b>s8array_copy(bytearray)
+<b>returns: </b>a new bytearray with all the elements of bytearray.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_shrink(bytearray, n)
+<b>function: </b>s8array_shrink(bytearray, n)
+<b>returns: </b>void
+
+Reduces the size of `bytearray` to `n`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>subu8array(bytearray, start, end)
+<b>function: </b>subs8array(bytearray, start, end)
+<b>returns: </b>a new bytearray with all the elements of `bytearray` from the index `start` (inclusive)
+to `end` (exclusive).</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>subu8array_fill(bytearray, start, end, fill)
+<b>function: </b>subs8array_fill(bytearray, start, end, fill)
+<b>returns: </b>void
+
+Similar to u8array_fill or s8array_fill, but only the elements from `start` (inclusive) to `end`
+(exclusive) are replaced with `fill`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>subu8array_move(bytearray, start, end, dst_bytearray, dst_start)
+<b>function: </b>subs8array_move(bytearray, start, end, dst_bytearray, dst_start)
+<b>returns: </b>void
+
+Replaces part of the contents of `dst_bytearray` with part of the contents of `bytearray`.
+It copies elements from `bytearray`, beginning with index `start` (inclusive) and ending with
+index `end` (exclusive) to `dst_bytearray` beginning at index `dst_start` (inclusive).</code></pre>
+</div>
+
+  <h4>Arrays of other numeric types</h4>
+<p>Slogan also supports arrays of 16-bit, 32-bit and 64-bit signed/unsigned integers and 32-bit and 64-bit floats. The prefixes assigned to these arrays are:
+  <code>#s16</code>, <code>#u16</code>, <code>#s32</code>, <code>#u32</code>,  <code>#s64</code>, <code>#u64</code>,  <code>#f32</code> and <code>#f64</code> respectively. The functions that work with these arrays are also similar to those of bytearrays, just use the appropriate type prefix or infix. For example, the predicate to check if an array is an <code>#f32</code> is <code>is_f32array</code>.</p>
+
+<div class="highlight">
+  <pre><code><b>function:</b> is_u8array(obj) 
+<b>function: </b>is_s8array(obj)
+<b>function:</b> is_u16array(obj) 
+<b>function: </b>is_s16array(obj)
+<b>function:</b> is_u32array(obj) 
+<b>function: </b>is_s32array(obj)
+<b>function:</b> is_u64array(obj) 
+<b>function: </b>is_s64array(obj)
+<b>function:</b> is_f32array(obj) 
+<b>function: </b>is_f64array(obj)
+<b>returns:</b> true if `obj` is a numeric-array of type unsigned 8-bit integer, signed 8-bit integer,
+unsigned 16-bit integer, signed 16-bit integer, unsigned 32-bit integer, signed 32-bit integer,
+unsigned 64-bit integer, signed 64-bit integer, 32-bit floating point or 64-bit floating point
+respectively, false otherwise.
+
+<span class="c">// Example</span>
+is_u8array(#[1, 2, 3]); 
+<span class="c">//=> false</span>
+
+is_u8array(#u8[1, 2, 3]); 
+<span class="c">//=> true</span>
+
+is_s8array(#s8[-1, 2, 3]); 
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<a name="bitarrays"></a>
+<h4>Bitarrays</h4>
+<p>A bitarray is a compact array of bit values.</p>
+<p>Bitarray literals have the prefix <code>#b</code>. For example, this is a bitarray literal with 4 bits: <code>#b[1, 0, 1, 1]</code>.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array(bit1, ...)
+<b>returns:</b> a new bitarray with `bit1 ...` as elements.
+
+Each of the values `bit1 ...` should be either 0 or 1.
+(All values other than 0 will turn the corresponding bit on).
+
+<span class="c">// Example:</span>
+bit_array(1, 0, 0, 1, 1); 
+<span class="c">//=> #b[1, 0, 0, 1, 1]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>make_bit_array(n)
+<b>returns: </b>a new bitarray of size `n`.
+
+All the elements are initialized to 0.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_bit_array(obj) 
+<b>returns: </b>true if `obj` is a bit-array, false otherwise.
+
+<span class="c">// Examples:</span>
+is_bit_array(#b[1, 0, 1, 1]); 
+<span class="c">//=> true</span>
+
+is_bit_array(#u8[1, 0, 1, 1]); 
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_length(bitarray)
+<b>function: </b>count(bitarray)
+<b>returns: </b>the number of bits in `bitarray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_set(bitarray, n)
+<b>returns: </b>void
+
+Turns the `n`<sup>th</sup> bit on in `bitarray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_is_set(bitarray, n)
+<b>returns: </b>true if the `n`<sup>th</sup> bit is on in `bitarray`.
+
+
+<span class="c">// Example: </span>
+let a = make_bit_array(5); 
+bit_array_set(a, 2); 
+bit_array_is_set(a, 2); 
+<span class="c">//=> true</span>
+bit_array_is_set(a, 1); 
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_at(bitarray, n)
+<b>returns: </b>the bit value at `n`.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>syntax:</b> bitarray[index]
+<b>returns: </b>true if the bit at `index` is on in `bitarray`.
+
+If `index` is out of bounds, returns false.
+
+<b>syntax: </b>bitarray[index] = b
+<b>returns: </b>void
+
+If `index` is out of bounds, no change will happen to `bitarray`.
+Turns on the bit at `index` if `b` is a truthy, turns it off if `b` is false.
+Note that `0` is a truth value.
+
+<span class="c">// Examples:</span>
+a;
+<span class="c">//=> #b[0, 0, 1, 0, 0]</span>
+a[0] = true;
+a;
+<span class="c">//=> #b[1, 0, 1, 0, 0]</span>
+a[0];
+<span class="c">//=> true</span>
+a[0] = 0;
+a;
+<span class="c">//=> #b[1, 0, 1, 0, 0]</span>
+a[0] = false;
+a;
+<span class="c">//=> #b[0, 0, 1, 0, 0]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_is_all_set(bitarray)
+<b>returns: </b>true if all bits are on in `bitarray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_is_any_set(bitarray)
+<b>returns: </b>true if atleast one bit is on in `bitarray`.
+</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_clear(bitarray, n)
+<b>returns:</b> void
+
+Turns the `n`<sup>th</sup> bit off in `bitarray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_set_all(bitarray)
+<b>returns: </b>void
+
+Turns all bits on in `bitarray`.</code></pre>
+  </div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_clear_all(bitarray)
+<b>returns: </b>void
+
+Turns all bits off in `bitarray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_to_list(bitarray)
+<b>returns: </b>a list of integers corresponding to the bits in `bitarray`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>list_to_bit_array(lst)
+<b>returns: </b>a bitarray initialized from the list of integers `lst`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_to_string(bitarray)
+<b>returns: </b>a string of the characters '1' and '0' corresponding to the bits in `bitarray`.
+
+<span class="c">// Example:</span>      
+bit_array_to_string(#b[1, 0, 1, 1]); 
+<span class="c">//=> "1011"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_to_bit_array(string)
+<b>returns: </b>a bitarray initialized from `string`.
+
+`string` should only contain the characters '1' and '0'.
+
+<span class="c">// Example:</span>
+string_to_bit_array("1011"); 
+<span class="c">//=> #b[1, 0, 1, 1]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>u8array_to_bit_array(u8array)
+<b>returns: </b>a bitarray initialized from the bits in `u8array`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_is_eq(arr1, arr2)
+<b>returns: </b>true if the bitarrays `arr1` and `arr2` has the same bits set.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_array_blit(bitarray, offset, dest_bitarray, dest_offset, count)
+<b>returns: </b>the updated bitarray dest_bitarray.
+
+Copies the bit-pattern in `bitarray` to `dest_bitarray`. `count` bits are copied starting
+at `offset` in `bitarray`. Bits are copied to `dest_bitarray` starting at `dest_offset`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bit_arrays_concat(arrays)
+<b>returns: </b>a new bit array which is the concatenation of the bitarrays in the list `arrays`.
+
+<span class="c">// Example:</span>
+bit_arrays_concat([#b[1, 0, 1], #b[0, 1, 0], #b[1, 1, 1]]); 
+<span class="c">//=> #b[1, 0, 1, 0, 1, 0, 1, 1, 1]</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>subbitarray(bitarray, start, end)
+<b>returns: </b>a new bitarray with elements from `bitarray` starting at `start` (inclusive)
+and ending at `end` (exclusive).</code></pre>
+</div>
+
+<a name="htabs"></a>
+<h4>Hashtables</h4>
+<p>Hashtables represent sets of associations between arbitrary values. They serve essentially the same purpose as 
+  association lists but are typically much faster when large numbers of associations are involved. Hashtable literals are written
+  by enclosing pairs of associations in <code>#{}</code>, for example <code>#{'name:'slogan, 'type:'dynamic}</code>.
+
+<div class="highlight">
+  <pre><code><b>function: </b>make_hashtable(hash_f, eq_predicate, @optional size)
+<b>retruns: </b>a new hashtable.
+
+`hash_f` and `eq_predicate` must be functions. If `size` is provided, it must be a nonnegative
+exact integer indicating approximately how many elements the hashtable should initially hold.
+Hashtables grow as needed, but when the hashtable grows it generally must rehash all of the
+existing elements. Providing a nonzero size can help limit the amount of rehashing that must
+be done as the table is initially populated.
+
+The new hashtable computes hash values using `hash_f` and compare keys using `eq_predicate`,
+neither of which should modify the hashtable. `eq_predicate` should compare two keys and return
+false only if the two keys should be distinguished. `hash_f` should accept a key as an
+argument and return a nonnegative exact integer value that is the same each time it is called
+with arguments that `eq_predicate` does not distinguish.
+
+<span class="c">// Example:</span>
+let h = make_hashtable(string_hash, string_is_eq); 
+hashtable_set(h, "name", "mat"); 
+hashtable_at(h, "name"); 
+<span class="c">//=> "mat"</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>make_eq_hashtable(@optional size)
+<b>function: </b>make_eqv_hashtable(@optional size)
+<b>retruns: </b>a new hashtable that uses is_eq/is_eqv for comparing keys.
+
+An eq_hashtable or a eqv_hashtable employs a hash function based on object addresses.
+Their hash and equivalence functions are suitable for any object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>make_equal_hashtable(@optional size)
+<b>retruns: </b>a new hashtable that uses is_equal for comparing keys.
+      
+An equal_hashtable uses the built-in equal_hash function which takes into
+consideration the current structure and contents of a key.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_hashtable(obj)
+<b>retruns: </b>true if `obj` is a hashtable, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>eq_hash(obj)
+<b>function: </b>eqv_hash(obj)
+<b>function: </b>equal_hash(obj)
+<b>function: </b>string_hash(str)
+<b>function: </b>string_ci_hash(str)
+<b>function: </b>symbol_hash(sym)
+<b>retruns: </b>an exact nonnegative integer hash value.
+
+These hash function are suitable for use with the appropriate predicate:
+is_eq for eq_hash and symbol_hash, is_eqv for eqv_hash, is_equal for equal_hash,
+string_is_eq for string_hash, and string_is_ci_eq for string_ci_hash.
+The hash values returned by equal_hash, string_hash, and string_ci_hash are typically
+dependent on the current structure and contents of the input values and are thus unsuitable
+if keys are modified while they have associations in a hashtable.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_set(hashtable, key, value)
+<b>retruns: </b>void
+
+`key` should be of the appropriate type expected by the hash and equivalence functions.
+`value` may be any object. Any existing association that key holds in the hashtable
+is replaced by `value`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_at(hashtable , key, default = false)
+<b>retruns: </b>the value associated with `key` in `hashtable`, `default` if no
+association is found.      
+
+`key` should be of the appropriate type expected by the hash and equivalence functions.
+`default` may be any object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>hashtable[key]
+<b>returns:</b> the value associated with `key` or false.</code></pre>
+
+<div class="highlight">
+  <pre><code><b>syntax: </b>hashtable[key] = value
+<b>returns:</b> void
+        
+Associates `key` with `value` in `hashtable`.
+
+<span class="c">// Example:</span>
+h;
+<span class="c">//=> #{"name": "mat"}</span>
+h["n"];
+<span class="c">//=> false</span>
+h["n"] = 100;
+h;
+<span class="c">//=> #{"n": 100, "name": "mat"}</span>
+h["n"];
+<span class="c">//=> 100</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_contains(hashtable , key)
+<b>retruns: </b>true if an association for `key` exists in `hashtable`, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_update(hashtable , key, f, default)
+<b>retruns: </b>void
+`key` should be of an appropriate type for the hash and equivalence functions.
+`default` may be any object. The function `f` should accept one argument, should
+return one value, and should not modify the hashtable.
+
+hashtable_update applies `f` to the value associated with `key` in the hashtable,
+or to `default` if no value is associated with `key`. If `f` returns, key is
+associated with the value returned by `f`, replacing the old association, if any.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_size(hashtable)
+<b>retruns: </b>the number of entries in `hashtable`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_copy(hashtable)
+<b>retruns: </b>a new hashtable containing the same entries as in `hashtable`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_keys(hashtable)
+<b>retruns: </b>an array containing all the keys of `hashtable`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_values(hashtable)
+<b>retruns: </b>an array containing all the values in `hashtable`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_entries(hashtable)
+<b>retruns: </b>a pair of two arrays: the first one with the keys and the second one 
+with the values from `hashtable`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>hashtable_for_each(f, hashtable)
+<b>retruns: </b>void
+
+For each entry in `hashtable`, calls the function `f` by passing it the key
+and value as arguments.
+
+<span class="c">// Example:</span>
+let h = make_eq_hashtable(); 
+hashtable_set(h, 'name, "nemo"); 
+hashtable_set(h, 'age, 1); 
+hashtable_for_each(^(k, v) println(k, ": ", v), h); 
+<span class="c">//-> name: nemo
+     age: 1</code></pre>
+</div>
+
+<a name="sets"></a>
+<h4>Sets</h4>
+
+  <p>A set stores an unordered sequence of objects without duplicates. It is an implementation of the mathematical concept of a finite set.
+    Unlike most other collection types, rather than retrieving a specific element from a set, one typically tests a value for membership in a set.
+    A set literal is written by enclosing the objects in a <code>#()</code>. Example: <code>#(1, 2, 3, 4, 5)</code>.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set(object)
+<b>returns:</b> a set with the elements in `object`
+
+`object` should be either a set, list, vector, string or a hashtable.
+If `object` is a hashtable, each key-value pair will become an entry in the set
+
+<span class="c">// Examples:</span>
+set(#{1:2, 3:4});
+<span class="c">//=> #(1:2,3:4)</span>
+set("hello, world");
+<span class="c">//=> #(\,,\o,\e,\w,\r,\h,\d,\l,\space)</span>
+set([1,2,3,2,3,4]);
+<span class="c">//=> #(1,2,3,4)</span>
+set(#[1,2,3,2,3,4]);
+<span class="c">//=> #(1,2,3,4)</span>
+set(#(1,2,3,2,3,4));
+<span class="c">//=> #(1,2,3,4)</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>make_set(obj1, ...)
+<b>returns:</b> a set of `obj1, ...`.
+
+<span class="c">// Examples:</span>
+make_set();
+<span class="c">//=> #()</span>
+make_set(1);
+<span class="c">//=> #(1)</span>
+make_set(1,2,3,2,3,4);
+<span class="c">//=> #(1,2,3,4)</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_length(set)
+<b>function: </b>count(set)
+<b>returns:</b> the number of elements in the set.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_set(object)
+<b>returns: </b>true if `object` is a set, false otherwise.
+</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_set_member(set, object)
+<b>returns: </b>true if `set` contains `object`, false otherwise.
+
+The comparison predicate used is `is_equal`.
+
+<span class="c">// Examples:</span>
+is_set_member(#(1,2,3), 2);
+<span class="c">//=> true</span>
+is_set_member(#(1,2,3), 4);
+<span class="c">//=> false</span>
+is_set_member(#(1, 2, "hi", 3), "hi");
+<span class="c">//=> true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_difference(set1, ...)
+<b>returns:</b> the first set without the elements of `set1, ...`.
+
+<span class="c">// Examples:</span>
+set_difference(#(1,2,3));
+<span class="c">//=> #(1,2,3)</span>
+set_difference(#(1,2), #(2,3));
+<span class="c">//=> #(1)</span>
+set_difference(#(1,2,3), #(1), #(1,4), #(3));
+<span class="c">//=> #(2)</span>
+set_difference(#('a, 'b, 'c, 'd), set_difference(#('a, 'b, 'c, 'd), #('c, 'e, 'a, 'f, 'd)));
+<span class="c">//=> #(c,d,a)</span></code></pre>
+  </div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_intersection(set1, ...)
+<b>returns:</b> a set that is the intersection of `set1, ...`.
+
+<span class="c">// Examples:</span>
+set_intersection(#(1,2));
+<span class="c">//=> #(1,2)</span>
+set_intersection(#(1,2), #(2,3));
+<span class="c">//=> #(2)</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_union(set1, ...)
+<b>returns: </b>a set that is the union of `set1, ...`.
+
+<span class="c">// Examples:</span>
+set_union(#(1));
+<span class="c">//=> #(1)</span>
+set_union(#(1,2), #(3,4,1));
+<span class="c">//=> #(1,2,3,4)</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_superset(set1, set2)
+<b>returns: </b>true if `set1` is a superset of `set2`.
+
+<span class="c">// Examples:</span>
+is_superset(#(1,2), #(2));
+<span class="c">//=> true</span>
+is_superset(#(1,2), #(2, 1));
+<span class="c">//=> true</span>
+is_superset(#(1,2), #(2, 3));
+<span class="c">//=> false</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_subset(set1, set2)
+<b>returns: </b>true if `set1` is a subset of `set2`.
+
+<span class="c">// Examples:</span>
+is_subset(#(1,2), #(2));
+<span class="c">//=> false</span>
+is_subset(#(1,2), #(1,2));
+<span class="c">//=> true</span>
+is_subset(#(1,2,3), #(1,2));
+<span class="c">//=> false</span>
+is_subset(#(3), #(1,2));
+<span class="c">//=> false</span>
+is_subset(#(2), #(1,2));
+true</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_to_list(set)
+<b>returns: </b>a list with all the elements of the set.</code></pre></div>
+
+<h4>Generic accessors and mutators</h4>
+<div class="highlight">
+  <pre><code><b>function: </b>ref(object, index, @optional default = false) 
+<b>returns: </b>returns the element at `index`. if `index` is out of bounds, return `default`.
+
+<b>function: </b>ref_set(object, index, value) 
+<b>returns: </b>void
+
+`Ref_set` sets the element at `index` to value.
+`Ref` and `ref_set` are generic functions that can be overriden by a user-defined object.
+Strings, lists, arrays and hashtables implement them by default. Any object that
+implement these functions automatically gets to work with the `[]` syntax.
+
+<span class="c">// Examples:</span>
+s;
+<span class="c">//=> "heLLo, world"</span>
+ref(s, 10);
+<span class="c">//=> \l</span>
+s[11];
+<span class="c">//=> \d</span>
+ref(#{"one":1, "two":2}, "three");
+<span class="c">//=> false</span>
+ref(#{"one":1, "two":2}, "one");
+<span class="c">//=> 1</span>
+
+function make_bag(xs)
+  let (len = array_length(xs)
+       bag_ref = ^(index) xs[index]
+       bag_ref_set = ^(index, value) xs[index] = value)
+    ^(msg)
+    | 'first -> when (len > 0) array_at(xs, 0)
+    | 'rest -> when (len > 1) make_bag(subarray(xs, 1, len))
+    | 'count -> len
+    | 'ref -> bag_ref
+    | 'ref_set -> bag_ref_set;
+
+let b = make_bag(#[10, 20, 30]);
+b[0];
+<span class="c">//=> 10</span>
+b[1] = 100;
+b[1];
+<span class="c">//=> 100</span>
+ref(b, 2);
+<span class="c">//=> 30</span>
+ref_set(b, 2, 200);
+b[2];
+<span class="c">//=> 200</span></code></pre>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (ref_set)</title>
+  </head>
+
+  <body>
+    <h2>ref_set</h2>
+
+    <div class="prog">
+      <pre><code>
+ref_set(s, i, v)
+      </code></pre>
+    </div>
+
+    <p>Set the element at index <code>i</code> in the sequence <code>s</code> to the value <code>v</code>.
+      Return <code><a href="void.html">void</a></code>.</p>
+
+    <p><code><a href="ref.html">Ref</a></code> and <code>ref_set</code> are generic functions that can be overridden by a user-defined object.
+      <a href="string.html">Strings</a>, <a href="list.html">lists</a>, <a href="array.html">arrays</a> and <a href="make_hashtable.html">hash tables</a>
+      implement them by default. Any object that implement these functions automatically starts working with the <code>[]</code> syntax.</p>
+        
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="ref.html">ref</a></div>
+      <div class="ref"><a href="first.html">first</a></div>
+      <div class="ref"><a href="rest.html">rest</a></div>
+      <div class="ref"><a href="count.html">count</a></div>
+      <div class="ref"><a href="at.html">at</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

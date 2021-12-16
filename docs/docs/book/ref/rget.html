@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (rget)</title>
+  </head>
+
+  <body>
+    <h2>rget</h2>
+
+    <div class="prog">
+      <pre><code>
+rget(r, <span class="pw">@optional</span> timeout, default = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Return the object bound to the <a href="rvar.html">reactive variable</a> <code>r</code>.</p>
+
+    <p>If <code>timeout</code> is not specified, <code>rget</code> will wait till the reactive variable is bound by another task.
+      If <code>timeout</code> is specified and the variable is not bound within it runs-out, <code>rget</code> will return
+      the value of <code>default</code>. If there are no other tasks running this function will raise
+      a "Deadlock detected" error.</p>
+
+    <p>The <code><span class="kw">?</span>r</code> syntax has the same semantics as <code>rget</code> with no
+      <code>timeout</code> specified.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> x = <span class="kw">?</span>
+<span class="kw">!</span>{task_sleep(5); <span class="kw">?</span>x = 100}
+rget(x, 2) <span class="comment">// wait for 2 seconds</span>
+<span class="comment">// false</span>
+rget(x, 4) <span class="comment">// wait for another 4 seconds, `x` should be bound by now.</span>
+<span class="comment">// 100</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="rbind.html">rbind</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

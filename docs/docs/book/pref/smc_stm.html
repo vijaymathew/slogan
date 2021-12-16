@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Packages Reference - smc.stm</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">package: smc</h1>
+    <h1 class="title">module: stm</h1>
+
+    <p>The <code>stm</code> module implements a
+      <a href="https://en.wikipedia.org/wiki/Software_transactional_memory" target="_blank">software transactional memory</a> system.
+      The functions exported by this module are documented in the following sections.</p>
+
+    <h2>stm.var</h2>
+    <div class="prog">
+      <pre><code>
+stm.var(init_val = <span class="pw">false</span>, group = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Return a new transactional variable initialized to <code>init_val</code>.</p>
+    <p>A transactional variable is usually <a href="#read">read</a> and <a href="#write">written</a> within the context of
+      a <a href="#transact">running transaction</a>.
+      The optional argument <code>group</code> specifies the <a href="#exec">transaction group</a> that will be associated with this
+      variable. A program may choose to group together transaction variables to improve performance.</p>
+
+    <a name="read"></a><h2>stm.read</h2>
+    <div class="prog">
+      <pre><code>
+stm.read(tvar, txn)
+      </code></pre>
+    </div>
+
+    <p>Return the value of the transaction variable <code>tvar</code> as seen in the context of the transaction <code>txn</code>.</p>
+
+        <h2>stm.read_enforce</h2>
+    <div class="prog">
+      <pre><code>
+stm.read_enforce(tvar, txn)
+      </code></pre>
+    </div>
+
+    <p>Return the value that was last committed to the transaction variable <code>tvar</code>. This function should be called only if the
+      transaction <code>txn</code> wants to make sure <code>tvar</code> meets some constraints before a new value is written to it.</p>    
+
+    <a name="write"></a><h2>stm.write</h2>
+    <div class="prog">
+      <pre><code>
+stm.write(tvar, new_val, txn)
+      </code></pre>
+    </div>
+
+    <p>Write the value <code>new_val</code> to the transaction variable <code>tvar</code>. Return <code><a href="../ref/void.html">void</code></a>.</p>
+    <p>This new value will be visible only within the transaction
+      <code>txn</code>. The new value will be made visible to the rest of the system only after the transaction has successfully committed
+      <code>tvar</code>.</p>
+
+    <h2>stm.peek</h2>
+    <div class="prog">
+      <pre><code>
+stm.peek(tvar)
+      </code></pre>
+    </div>
+
+    <p>Return the value of the transaction variable <code>tvar</code> that was last committed. This function may return an inconsistent value.</p>
+
+    <a name="transact"></a><h2>stm.transact</h2>
+    <div class="prog">
+      <pre><code>
+stm.transact(fn)
+      </code></pre>
+    </div>
+
+    <p>Call the function <code>fn</code> with a new transaction as its argument. Return the value of <code>fn</code>.</p>
+    
+    <h4>Example:</h4>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> t = stm.var(100)
+<span class="pw">!</span>stm.transact(^(txn) stm.write(t, stm.read(t, txn) + 10, txn))
+task_sleep(2)
+stm.peek(t)
+<span class="comment">// 110</span>
+      </code></pre>
+    </div>
+
+    <h2>stm.abort</h2>
+    <div class="prog">
+      <pre><code>
+stm.abort(txn, val = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Abort the transaction <code>txn</code> and return <code>val</code>.</p>
+    <p>All transactions (at any level of "nesting") must be explicitly aborted.</p>
+
+    <h2>stm.retry</h2>
+    <div class="prog">
+      <pre><code>
+stm.retry(txn)
+      </code></pre>
+    </div>
+
+    <p>Restart the transaction. All changes made to local transaction variables will be reset.</p>
+    <p>All transactions (at any level of "nesting") must be explicitly restarted.</p>    
+
+    <a name="exec"></a><h2>stm.group</h2>
+    <div class="prog">
+      <pre><code>
+stm.group(<span class="pw">@optional</span> name = <span class="kw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Return a new transaction group with the given name.</p>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="smc.html">Index</a> |  <a href="index.html">Packages Index</a>
+    </p>
+    
+  </body>
+</html>

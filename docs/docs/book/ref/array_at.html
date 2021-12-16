@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (array_at)</title>
+  </head>
+
+  <body>
+    <h2>array_at</h2>
+
+    <div class="prog">
+      <pre><code>
+array_at(a, i)
+      </code></pre>
+    </div>
+
+    <p>Return the element at the (zero-based) <code>i<sup>th</sup></code> position of the <a href="array.html">array</a> <code>a</code>.</p>
+
+    <p>The <code>i<sup>th</sup></code> element can be also accessed using the array reference operator as, <code>a[i]</code>.</p>
+    <p><code>Array_at</code> and <code>[]</code> will raise an <code>"Out of range"</code> error if <code>i &lt; 0</code> or
+      <code>i &gt;= <a href="array_length.html">array_length</a>(a)</code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = #[1, 2, <span class="str">"hi"</span>, <span class="sym">'abc</span>]
+array_at(a, 3)
+<span class="comment">// abc</span>
+a[2]
+<span class="comment">// hi</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="array_ref.html">array_ref</a></div>
+      <div class="ref"><a href="array_set.html">array_set</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

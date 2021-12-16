@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (take)</title>
+  </head>
+
+  <body>
+    <h2>take</h2>
+
+    <div class="prog">
+      <pre><code>
+take(n, xs)
+      </code></pre>
+    </div>
+
+    <p>Return a new <a href="list.html">list</a> with the first <code>n</code> elements from the sequence <code>xs</code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+take(3, [1, 2, 3, 4, 5])
+<span class="comment">// [1, 2, 3]</span>
+
+take(30, [1, 2, 3, 4, 5])
+<span class="comment">// [1, 2, 3, 4, 5]</span>
+
+take(0, [1, 2, 3, 4, 5])
+<span class="comment">// []</span>
+
+take(-3, [1, 2, 3, 4, 5])
+<span class="comment">// []</span>
+
+<span class="kw">function</span> ints(n) n:<span class="kw">~</span>ints(n+1)
+<span class="kw">let</span> s = ints(10)
+take(10, s)
+<span class="comment">// [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="drop.html">drop</a></div>
+      <div class="ref"><a href="take_while.html">take_while</a></div>
+      <div class="ref"><a href="list_tail.html">list_tail</a></div>      
+      <div class="ref"><a href="filter.html">filter</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

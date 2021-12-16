@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_l/r/trim)</title>
+  </head>
+
+  <body>
+    <h2>string_l/r/trim</h2>
+
+    <div class="prog">
+      <pre><code>
+string_trim(s)
+string_ltrim(s)
+string_rtrim(s)
+      </code></pre>
+    </div>
+
+    <p>Return a new copy of the <a href="string.html">string</a> <code>s</code> with white-spaces removed from its left (<code>ltrim</code>),
+      right (<code>rtrim</code>) or both left and right (<code>trim</code>).</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"  hello "</span>
+<a href="showln.html">showln</a>(<span class="str">"##"</span>, s, <span class="str">"##"</span>)
+<span class="comment">//&gt; ##  hello ##</span>
+showln(<span class="str">"##"</span>, string_ltrim(s), <span class="str">"##"</span>)
+<span class="comment">//&gt; ##hello ##</span>
+showln(<span class="str">"##"</span>, string_rtrim(s), <span class="str">"##"</span>)
+<span class="comment">//&gt; ##  hello##</span>
+showln(<span class="str">"##"</span>, string_trim(s), <span class="str">"##"</span>)
+<span class="comment">//&gt; ##hello##</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="make_string.html">make_string</a></div>
+      <div class="ref"><a href="string_copy.html">string_copy</a></div>
+      <div class="ref"><a href="char_is_whitespace.html">char_is_whitespace</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

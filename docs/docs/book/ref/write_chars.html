@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (write_chars)</title>
+  </head>
+
+  <body>
+    <h2>write_chars</h2>
+
+    <div class="prog">
+      <pre><code>
+write_chars(str, s = <a href="current_reader.html">current_writer</a>())
+      </code></pre>
+    </div>
+
+    <p>Write the characters in the <a href="string.html">string</a> <code>str</code> to the textual output-stream <code>s</code>.
+      Return <code><a href="void.html">void</a></code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// writing a utf-8 encoded text file:</span>
+<span class="kw">let</span> t = <a href="transcoder.html">transcoder</a>(<span class="sym">'UTF_8</span>)
+<span class="kw">let</span> f = <a href="file_writer.html">file_writer</a>(<span class="str">"hello.txt"</span>, transcoder = t)
+write_chars(<span class="str">"hello, world"</span>, f)
+<a href="close_writer.html">close_writer</a>(f)
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="write_char.html">write_char</a></div>
+      <div class="ref"><a href="write_n_chars.html">write_n_chars</a></div>      
+      <div class="ref"><a href="write_bytes.html">write_bytes</a></div>
+      <div class="ref"><a href="show.html">show</a></div>      
+      <div class="ref"><a href="write.html">write</a></div>
+      <div class="ref"><a href="print.html">print</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

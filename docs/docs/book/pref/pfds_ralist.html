@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Packages Reference - pfds.ralist</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">package: pfds</h1>
+    <h1 class="title">module: ralist</h1>
+
+    <p>The <code>ralist</code> module implements a random-access list that can be used as an immutable array.
+      This module exports a single function <code>make</code> for creating a random-access list.</p>
+
+    <h2>ralist.make</h2>
+
+    <div class="prog">
+      <pre><code>
+ralist.make(init_seq = [])
+      </code></pre>
+    </div>
+
+    <p>Return a new random-access list initialized with the values from the sequence <code>init_seq</code>, which can be
+      any object that implements the <code><a href="../ref/first.html">first</a></code> and <code><a href="../ref/rest.html">rest</a></code>
+      generic functions.</p>
+
+    <p>The new random-access list is represented as a closure that can respond to the following messages:</p>
+
+    <div class="prog">
+      <pre><code>
+at(i)
+      </code></pre>
+    </div>
+    <p>Return the element at index <code>i</code>. Raise an error if the index is invalid.</p>
+
+    <div class="prog">
+      <pre><code>    
+set(i, x)
+      </code></pre>
+    </div>
+    <p>Return a new list with the value at index <code>i</code> updated to <code>x</code>. Raise an error if
+      the index is invalid.</p>
+
+        <div class="prog">
+      <pre><code>
+head()
+      </code></pre>
+    </div>
+    <p>Return the first element in the list. Raise an error if the list is empty.</p>
+
+    <div class="prog">
+      <pre><code>    
+tail()
+      </code></pre>
+    </div>
+    <p>Return a new list with the first element removed. Raise an error if the list is empty.</p>
+    
+    <div class="prog">
+      <pre><code>
+<a href="../ref/first.html">first</a>
+      </code></pre>
+    </div>
+    <p>Return the first element in the list. Raise an error if the list is empty.</p>
+
+    <div class="prog">
+      <pre><code>    
+<a href="../ref/first.html">rest</a>
+      </code></pre>
+    </div>
+    <p>Return a new list with the first element removed. Return <code><span class="pw">false</span></code> if the list is empty.</p>
+
+    <div class="prog">
+      <pre><code>
+cons(x)
+      </code></pre>
+    </div>
+    <p>Return a new list queue with the element <code>x</code> added.</p>
+
+    <div class="prog">
+      <pre><code>
+count
+      </code></pre>
+    </div>
+    <p>Return the number of elements in the list.</p>
+
+    <div class="prog">
+      <pre><code>
+is_empty()
+      </code></pre>
+    </div>
+<p>Return <code><span class="pw">true</span></code> if the list is empty,
+  return <code><span class="pw">false</span></code> otherwise.</p>    
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> xs = ralist.make([100, 200, 300])
+xs[0]
+<span class="comment">// 100</span>
+<span class="kw">let</span> ys = xs.set(1, 250)
+xs[1]
+<span class="comment">// 200</span>
+ys[1]
+<span class="comment">// 250</span>
+      </code></pre>
+    </div>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="pfds.html">Index</a> |  <a href="index.html">Packages Index</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fold)</title>
+  </head>
+
+  <body>
+    <h2>fold</h2>
+
+    <div class="prog">
+      <pre><code>
+fold(fn, init, <span class="pw">@rest</span> xs, ...)
+      </code></pre>
+    </div>
+
+    <p>Return <code>init</code> if the list arguments <code>xs, ...</code> are empty. If they are not empty,
+      <a href="apply.html">apply</a> the function <code>fn</code> to <code>init</code> and the <a href="head.html">heads</a> of
+      <code>xs, ...</code>, then recur with the value returned by <code>fn</code> in place of <code>init</code> and the
+      <a href="tail.html">tails</a> of <code>xs, ...</code>.</p>
+
+    <p>The list arguments should all have the same length. <code>Fn</code> should accept one more argument than
+      the number of list arguments and return a single value. It should not mutate the lists.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+fold(<span class="kw">^</span>(init, x) init + x * x, 0, [1, 2, 3, 4, 5])
+<span class="comment">// 55</span>
+
+fold(<a href="pair.html">pair</a>, [], [1,2,3,4])
+<span class="comment">// []:1:2:3:4]</span>
+
+fold(`<a href="sub.html">-</a>`, 0, [1, 2, 3, 4])
+<span class="comment">// -10</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="fold_left.html">fold_left</a></div>
+      <div class="ref"><a href="fold_right.html">fold_right</a></div>
+      <div class="ref"><a href="accumulate.html">accumulate</a></div>
+      <div class="ref"><a href="map.html">map</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

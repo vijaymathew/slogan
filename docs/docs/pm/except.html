@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>The Slogan Programming Language</title>
+    <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+    <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+  </head>
+  <body>
+    
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" >
+          <a href="./ffi.html" title="Foreign Function Interface"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="./rec.html" title="Records"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+        <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+      </ul>
+    </div>
+    
+    <div id="site" class="site">
+      <div class="title"><h3>Exceptions</h3></div>
+
+      <p>Exceptions enable a program to signal, detect, and recover from errors that occur when it is run.</p>
+      
+<div class="highlight">
+  <pre><code><b>syntax: </b>try expr1 catch (exception) expr2 finally expr3 
+<b>syntax: </b>trycc expr1 catch (exception) expr2 finally expr3 
+<b>returns: </b>the value of evaluating `expr1`, if it raises no exception.
+
+If `expr1` raises an exception, it is passed to the catch block.
+`expr2` in the catch block can then deal with this object in a suitable manner.
+The finally clause is optional. If it is provided, `expr3` will be evaluated even in
+the case of an exception.
+
+`trycc` allows the continuation of the `raise` function to be invoked if `expr2`
+return normally. This means that an exception raised in `expr2`, if not handled
+there itself, may lead to an infinite loop. In all normal circumstances,
+try should be preferred over trycc.
+
+Before handing over `exception` to the catch clause, Slogan will try to parse it into
+a pair of format `tag:params`.
+`tag` is a symbol that identifies the type of error and `params` is an association list 
+that contain the properties of the exception. The following are the built-in error tag symbols:
+
+error, unbound_global, range_error, wrong_number_of_arguments, number_of_arguments_limit,
+not_a_function, unknown_keyword_argument, keyword_expected, wrong_type,
+improper_length_list, divide_by_zero, heap_overflow, stack_overflow,
+system_error, no_such_file_or_directory, unbound_environment_variable,
+scheduler_error, deadlock, abandoned_mutex, join_timeout, started_task,
+terminated_task, uncaught_error, noncontinuable, expression_parsing,
+datum_parsing, cfun_conversion, sfun_conversion, multiple_c_return.
+
+If the exception is already a tagged-pair or not of a built-in exception type,
+it is passed as is to catch.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>raise(obj)
+<b>returns: </b>void
+
+Tail-calls the current exception-handler with `obj` as the sole argument.
+If the exception-handler returns, the continuation of the call to raise is invoked.
+(If called within a try or trycc statement the current exception-handler is the expression
+in the catch clause.)
+
+<span class="c">// Examples:</span>
+try 100 + raise('oops) 
+catch (e) { showln(e); 2 }; 
+<span class="c">//-> oops</span>
+<span class="c">//=> 2</span>
+
+trycc 100 + raise('oops) 
+catch (e) { showln(e); 2 }; 
+<span class="c">//-> oops</span>
+<span class="c">//=> 102</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>abort(obj)
+<b>returns: </b>void
+
+Calls the current exception-handler with `obj` as the sole argument.
+If the exception-handler returns, abort will be tail-called with a
+noncontinuable-exception object, whose reason field is `obj`, as sole argument.
+
+<span class="c">// Examples:</span>
+callcc(^(k) try 1 + abort('hello) 
+            catch (e) 
+            { showln(e); 
+              if (is_noncontinuable_exception(e)) 
+               k(noncontinuable_exception_reason(e))
+              else 100 }); 
+<span class="c">//-> hello</span>
+<span class="c">//=> 100</span>
+
+callcc(^(k) trycc 1 + abort('hello) 
+            catch (e) 
+            { showln(e); 
+              if (is_noncontinuable_exception(e)) 
+               k(noncontinuable_exception_reason(e))
+              else 100 });
+<span class="c">//-> hello</span>
+<span class="c">//-> [noncontinuable, reason:hello]</span>
+<span class="c">//-> hello</span></code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_noncontinuable_exception(obj)
+<b>returns: </b>true if `obj` is a noncontinuable-exception object, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>noncontinuable_exception_reason(e)
+<b>returns: </b>the reason associated with noncontinuable-exception object `e`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>show_exception(e, stream = current_writer())
+<b>returns: </b>void
+
+Prints the human-readable representation of the exception object `e` to the textual output stream.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>current_exception_handler()
+<b>returns: </b>the current exception handler function.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_current_exception_handler(f)
+<b>returns: </b>void
+
+Sets the current exception handler function to `f` which takes a single argument
+that represent the exception currently being handled. The current exception handler
+function is not active in the REPL. To test these functions you should compile a script.
+For example, compile the following scripts, run the executables and see how changing the
+current exception handler affect the way error is reported:
+
+<span class="c">// test1.sn</span>
+1 / 0; 
+
+<span class="c">// Compile test1.sn to a standalone executable:</span>
+compile("test1", exe = true);
+
+<span class="c">// Run from the OS shell:</span>
+$ ./test1 
+<span class="c">//-> *** ERROR -- Divide by zero
+(/ 1 0)</span>
+
+
+<span class="c">// test2.sn</span>
+set_current_exception_handler(^(ex) showln("ERROR CAUGHT!!", ex)); 
+1 / 0; 
+
+<span class="c">// Compile test2.sn to a standalone executable:</span>
+compile("test2", exe = true);
+
+<span class="c">// Run from the OS shell:</span>
+$ ./test2
+<span class="c">//-> "ERROR CAUGHT!!"#&lt;divide-by-zero-exception #2&gt;</span></code></pre>
+</div>
+            
+
+<h4>Error-Exception Objects</h4>
+
+      <div class="highlight">
+        <pre><code><b>function: </b>error(message, obj1, ...)
+<b>returns: </b>unspecified
+
+`raises` an error-exception object whose message field is `message` and arguments field
+is the list of values `obj1, ...`.</code></pre>
+      </div>
+
+      <div class="highlight">
+        <pre><code><b>function: </b>is_error(obj)
+<b>returns: </b>true if `obj` is an error-exception object, false otherwise.
+</code></pre>
+</div>
+
+      <div class="highlight">
+        <pre><code><b>function: </b>error_message(e)
+<b>function: </b>error_args(e)
+<b>returns:</b> the message/arguments associated with the error-exception object `e`.</code></pre>
+</div>
+
+    </div>
+  </body>
+</html>
+      

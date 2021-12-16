@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Packaging and Distribution</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">12</h1>
+    <h1 class="title">Packaging and Distribution</h1>
+
+    <p>Slogan has a built-in package manager to ease distribution of software. Any Slogan project can be converted into a package by
+      adding two files to the project's root folder &ndash; <code>init.sn</code> and <code>build</code>. <code>Init.sn</code> is a Slogan script
+      called by the Slogan runtime for loading the package. It contains all initialization code for the package. <code>Build</code>
+      should be an executable script that is used to compile the package. It can also contain code to install any dependencies the
+      package needs to work properly. The code that needs to run each time the package is loaded must be in the file <code>src/core.sn</code>.
+
+    <p>To make ourselves familiar with the process of creating packages, let us work through an example.
+      The project from which we create the package is called "simple" and its directory structure is as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+simple/
+      -&gt; init.sn
+      -&gt; build
+      -&gt; src/
+      --&gt; core.sn
+      </code></pre>
+    </div>
+
+    <p>The script <code>src/core.sn</code> implements the entire functionality of the package:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// src/core.sn</span>
+
+<span class="kw">function</span> hello() <span class="str">"hello simple world!"</span>
+      </code></pre>
+    </div>
+    
+    <p><code>Init.sn</code> call the <code><a href="ref/init_package.html">init_package</a></code> function which will find the correct path
+      to <code>core.sn</code> and load it:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// init.sn</span>
+init_package(<span class="str">"simple"</span>)
+      </code></pre>
+    </div>
+    
+    <p>The <code>build</code> script compiles <code>init.sn</code> into object code:</p>
+
+    <div class="prog">
+      <pre><code>
+#!/bin/bash
+<a href="cmdline.html">slogan -c</a> init
+      </code></pre>
+    </div>
+    
+<p>Make sure that the <code>build</code> script is executable:</p>
+
+<div class="prog">
+  <pre><code>
+$ chmod +x build
+  </code></pre>
+</div>
+
+    <p>You may also write the build script in Slogan. In that case the name of the script must be <code>build.sn</code>.
+      The Slogan interpreter will evaluate this while building the package, so it need not be made executable. If you choose to write
+      the build script in Slogan, its contents should be:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// build.sn</span>
+<a href="ref/compile.html">compile</a>(<span class="str">"init"</span>)
+      </code></pre>
+    </div>
+
+    <p>To test the package, we should first install it using the Slogan package manager:</p>
+
+    <div class="prog">
+      <pre><code>
+$ <a href="cmdline.html">slogan -i</a> "simple,local,/mypackages/simple"
+      </code></pre>
+    </div>
+
+    <p>You should replace the path <code>/mypackages/simple</code> with the actual path to your package.</p>
+
+    <p>Now that the package is installed, we can load and use it:</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/load_package.html">load_package</a>(<span class="str">"simple"</span>)
+hello()
+<span class="comment">// hello simple world</span>
+      </code></pre>
+    </div>
+    
+    <p>Once a package is developed and tested, it can be distributed as a compressed file or hosted on a network server.
+      See the reference on the <code><a href="ref/install_package.html">install_package</a></code> function to learn more about remote
+      distribution options.</p>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="syntax.html">Next</a> | <a href="ffi.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_split)</title>
+  </head>
+
+  <body>
+    <h2>string_split</h2>
+
+    <div class="prog">
+      <pre><code>
+string_split(s, <span class="pw">@optional</span> delim = \space, include_empty = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Split the <a href="string.html">string</a> <code>s</code> and return the parts as a <a href="list.html">list</a> of strings.</p>
+
+    <p><code>Delim</code> should be a <a href="is_char.html">character</a>, a list of characters or a predicate that accepts a
+      character as its sole argument.</p>
+
+    <p>If <code>delim</code> is a character, <code>s</code> is split at each position where <code>delim</code> occurs.</p>
+
+    <p>If <code>delim</code> is a list of characters, <code>s</code> is split at each position where one of those
+      characters occur.</p>
+
+    <p>If <code>delim</code> is a function, it is called with each character in <code>s</code> as argument.
+      If <code>delim</code> returns <code><span class="pw">true</span></code> for a character, <code>s</code> is split at that point and that part is
+      added to the result list.</p>
+    
+    <p>If <code>include_empty</code> is <code><span class="pw">true</span></code>, empty parts are also included in the result.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="str">"hello, world"</span>
+string_split(s)          
+<span class="comment">// [hello,, world]</span>
+string_split(s, \,)
+<span class="comment">// [hello,  world]</span>
+
+string_split(s, ^(c) <a href="char_is_eq.html">char_is_eq</a>(c, \l))
+<span class="comment">// [he, o wor, d]</span>
+
+s = <span class="str">"1;2.3,4.5;6"</span>
+string_split(s, [\;, \., \,])
+<span class="comment">// [1, 2, 3, 4, 5, 6]</span>
+string_split(s, [\;, \,])
+<span class="comment">// [1, 2.3, 4.5, 6]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="strings_join.html">strings_join</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

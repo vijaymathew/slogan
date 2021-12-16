@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+    <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+
+  <div id="site" class="site">
+    <div class="title"><h3>The power of pattern matching</h3></div>
+
+    <p>Slogan has the ability to take apart data structures and do pattern matching on them.
+      A pattern match expression has the following general form:</p>
+    
+    <div class="highlight">
+      <pre><code><span class="k">match</span> (value)
+  pattern_1 -> result_1
+| pattern_2 -> result_2          
+| ...</code></pre></div>
+
+    <p>If <code>value</code> does not match any of the listed patterns, a <code>no_match_found</code> error is raised.</p>
+    
+    <p>Let us begin our exploration of pattern matching with the help of a few simple examples. Later we will see how this facility can lead to
+      the clean and concise specification of a non-trivial algorithm.</p>
+
+    <p>Our first example re-implements a function from Slogan <code>core</code> - the <code>length</code> function that return the number of
+      elements in a list.</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> length(xs)
+  <span class="k">match</span>(xs)
+    [] -> 0        
+  | head:tail -> 1 + length(tail)</code></pre></div>
+
+    <p>Our definition of <code>length</code> does a pattern destructuring on its argument. If the pattern matches an empty list, <code>0</code> is returned.
+      If the pattern matches a head and a tail pair, the length is <code>1</code> added to the length of tail.</p>
+
+    <p>We can write this function more compactly, by eliminating the explicit declaration of <code>match</code>. We also do not need to
+      bind the <code>head</code> variable because we don't use it. This can be replaced by the <code>`-`</code> wildcard character.</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> length(xs)
+| [] -> 0        
+| _:tail -> 1 + length(tail)</code></pre></div>
+
+    <p>Pattern matching can be done on any data type with a literal representation - numbers, strings, lists, arrays, hashtables, sets and so on.
+      Some more examples are shown below:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> factorial(n)
+| 0 -> 1
+| _ -> n * factorial(n-1)
+
+factorial(10)
+<span class="c">//=> 3628800</span>
+factorial(3)
+<span class="c">//=> 6</span>
+
+<span class="c">// Evaluate arithmetic expressions in the
+// format #{operation: [expr1, expr2]}, where `operation`
+// is one of the four symbols - 'add, 'sub, 'mul and 'div.
+// An expression can also be a numeric literal.</span>  
+<span class="k">function</span> calculator(expr)
+| #{'add: [e1, e2]}    -> calculator(e1) + calculator(e2)
+| #{'sub: [e1, e2]}    -> calculator(e1) - calculator(e2)
+| #{'mul: [e1, e2]}    -> calculator(e1) * calculator(e2)
+| #{'div: [e1, e2]}    -> calculator(e1) / calculator(e2)
+| e <span class="k">where</span> is_number(e) -> e
+
+calculator(#{'add: [#{'mul: [10, 20]}, 500]})
+<span class="c">//=> 700</span>
+calculator(#{'sub: [100, 20]})
+<span class="c">//=> 80</span>
+calculator(#{'sub: [100, "ok"]})
+<span class="c">//-> error: no_match_found</span></code></pre></div>
+
+    <p>The <code>calculator</code> function makes use of the <code>where</code> guard in the last pattern to make sure that
+      the value that gets bound to the variable is a number.</p>
+
+    <p>In addition to the built-in data structures, user defined records can also be destructured:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">record</span> circle(radius)
+<span class="k">record</span> rectangle(width, length)
+    
+<span class="k">function</span> area(shape)
+| circle(r) -> 3.14159 * (r * r)
+| rectangle(w, ln) -> w * ln
+
+area(circle(radius = 10.34))
+<span class="c">//=> 335.88497980399995</span>
+area(rectangle(width=20, length=52.78))
+<span class="c">//=> 1055.6</span></code></pre></div>
+
+    <p>If a function with an implicit match takes more than one parameter, all the arguments are packed into a list and passed to the
+      pattern matcher:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> f(a, b)
+| [1, b] -> b * 10
+| [2, b] -> b * 100
+
+f(1, 2)
+<span class="c">//=> 20</span>
+f(2, 2)
+<span class="c">//=> 200</span></code></pre></div>
+
+    <p>Slogan supports <code>or-patterns</code>, which is a feature that allows us to collapse multiple clauses with identical right-hand sides
+      into a single clause:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> f(xs)
+| [a, b]
+| #[a, b]
+| #(a, b) -> a * b
+
+f([10, 20])
+<span class="c">//=> 200</span>
+
+f(#[10, 20])
+<span class="c">//=> 200</span>
+          
+f(#(10, 20))
+<span class="c">//=> 200</span></code></pre></div>
+
+    <h4>A self-balancing search tree</h4>
+    
+    <p>Now that we have covered the basics, let us write some code that exploits the true expressive power of pattern matching!
+      We are going to implement a data structure that is often flagged as "advanced". This is the red-black tree - one of the most popular
+      of all balanced binary trees.</p>
+
+    <p>In a red-black tree every node is colored either red or black and it satisfies the following two balance invariants:</p>
+    <p><ol>
+        <li>No red node has a red child.</li>
+        <li>Every path from the root to an empty node contains the same number of black nodes.</li>
+    </ol></p>
+    <p>These invariants guarantee that the longest possible path in the tree is not longer than
+      the shortest possible path times two. (The longest path has alternating red and black nodes and the shortest path has only black nodes.)</p>
+    <p>These invariants are enforced while inserting a new node, using a <code>balance</code> function. This function re-configures
+      all possible black-red-red paths into a red-black-black path. The black-red-red paths can occur in four configurations,
+      depending on whether the red node is a left or right child. The rewrite required is the same in all cases. Pattern matching makes it possible
+      to write the <code>balance</code> function in a compact, declarative style:</p>
+    <div class="highlight">
+      <pre><code><span class="k">function</span> balance(color, t, z, d) 
+| ['b, ['r,['r,a,x,b],y,c], z, d] 
+| ['b, ['r,a,x,['r,b,y,c]], z, d] 
+| ['b, a, x, ['r,['r,b,y,c],z,d]] 
+| ['b, a, x, ['r,b,y,['r,c,z,d]]]
+    -> ['r,['b,a,x,b],y,['b,c,z,d]]
+| _ -> [color, t, z, d]</code></pre></div>
+
+    <p>The complete code for the red-black tree is shown below. It is implemented as
+      a module with a simple public interface of two functions for inserting and fetching key-value data.<p>
+
+    <div class="highlight">
+      <pre><code><span class="k">module</span> red_black_tree(get, put)
+{ <span class="k">function</span> get(x, t)
+  | [_, 'empty] -> false
+  | [x, [_,a,y,b]] ->
+    <span class="k">match</span> (y)
+      k:v ->           
+       <span class="k">if</span> (x < k) get(x, a)
+       <span class="k">else if</span> (k < x) get(x, b)
+       <span class="k">else</span> v
+
+  <span class="k">function</span> balance(color, t, z, d) 
+  | ['b, ['r,['r,a,x,b],y,c], z, d] 
+  | ['b, ['r,a,x,['r,b,y,c]], z, d] 
+  | ['b, a, x, ['r,['r,b,y,c],z,d]] 
+  | ['b, a, x, ['r,b,y,['r,c,z,d]]]
+      -> ['r,['b,a,x,b],y,['b,c,z,d]]
+  | _ -> [color, t, z, d]
+
+  <span class="k">function</span> insert(x, s)
+  { <span class="k">function</span> ins(rs)
+    | 'empty -> ['r,'empty,x,'empty]
+    | [color,a,y,b] ->
+      <span class="k">match</span>([x,y])
+        [kx:_, ky:_] ->
+        <span class="k">if</span> (kx < ky) balance(color, ins(a), y, b)
+        <span class="k">else if</span> (ky < kx) balance(color, a, y, ins(b))
+        <span class="k">else</span> s;
+      <span class="k">match</span>(ins(s)) [_,a,y,b] -> ['b,a,y,b] }
+
+  <span class="k">function</span> put(key, value, s = 'empty) insert(key:value, s) }
+          
+<span class="c">// Usage:</span>
+<span class="k">let</span> rbt = red_black_tree
+<span class="k">let</span> t = rbt.put(0, 'abc)
+for_each(^(i) t = rbt.put(i, i*100, t), range(1, 1000))
+
+rbt.get(0, t)
+<span class="c">//=> abc</span>
+rbt.get(125, t)
+<span class="c">//=> 12500</span>
+rbt.get(23, t)
+<span class="c">//=> 2300</span>
+rbt.get(997, t)
+<span class="c">//=> 99700</span>
+rbt.get(1322, t)
+<span class="c">//=> false</span></code></pre></div>
+
+<p>(For a detailed description of a red-black tree structure similar to the one presented here, please see the book "Purely functional data structures" by Chris Okasaki.)</p>
+  </div>
+</body>
+</html>
+    

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (process_times)</title>
+  </head>
+
+  <body>
+    <h2>process_times</h2>
+
+    <div class="prog">
+      <pre><code>
+process_times()
+      </code></pre>
+    </div>
+
+    <p>Return a three element <a href="f32array.html">f64 array</a> containing the cpu time that has been used by the program and 
+      the real time that has elapsed since it was started.</p>
+
+    <p>The first element of the result corresponds to "user" time in seconds, the second element
+      corresponds to "system" time in seconds and the third element is the elapsed real time in seconds.
+      On operating systems that can't differentiate user and system time, the system time is zero.
+      On operating systems that can't measure cpu time, the user time is equal to the elapsed real
+      time and the system time is zero.</p>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="real_time.html">real_time</a></div>
+      <div class="ref"><a href="cpu_time.html">cpu_time</a></div>      
+      <div class="ref"><a href="time.html">time</a></div>
+      <div class="ref"><a href="now.html">now</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

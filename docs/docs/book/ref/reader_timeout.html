@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (reader/writer_timeout)</title>
+  </head>
+
+  <body>
+    <h2>reader/writer_timeout</h2>
+
+    <div class="prog">
+      <pre><code>
+reader_timeout(reader, timeout, <span class="pw">@optional</span> f)
+writer_timeout(writer, timeout, <span class="pw">@optional</span> f)  
+      </code></pre>
+    </div>
+
+    <p>Set timeouts on read and write operations. Return <code><a href="void.html">void</a></code>.</p>
+    
+    <p>Both <code>reader</code> and <code>writer</code> are <a href="current_reader.html">streams</a>.
+      <code>Timeout</code> is a real number indicating the number of seconds to wait. The optional argument
+      <code>f</code>, if specified, must be a function that takes no arguments and will be called on the timeout event.
+      If this call return <code><span class="pw">false</span></code>, the IO operation is abandoned and the
+      <a href="eof_object.html">end-of-file object</a> is returned for readers and an exception will be <a href="raise.html">raised</a> for writers.
+      Otherwise the IO operation will be attempted again. Note that if the stream's timeout value has not changed, then <code>f</code>
+      will be called again immediately. <code>F</code> defaults to a function that always return <code><span class="pw">false</span></code>.</p>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="read.html">read</a></div>
+      <div class="ref"><a href="write.html">write</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

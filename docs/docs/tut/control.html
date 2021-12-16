@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+    <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+
+  <div id="site" class="site">
+    <div class="title"><h3>Custom control structures</h3></div>
+
+    <p>This post is about defining new control structures in Slogan. Those familiar with Lisp must be thinking about macros.
+      Slogan don't have macros, but the compact notation for function literals makes it easy to define and use custom control structures.
+      Let us look at a couple of simple examples.</p>
+
+    <p>The following program defines a complement for the built-in <code>when</code> construct.
+      This new construct - called <code>unless</code> - executes its body only if the condition expression evaluates to false.</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> unless(condition, body) <span class="k">when</span>(not(condition)) body()
+
+<span class="c">// Usage:</span>    
+unless(10 < 2, ^showln("hello"))            
+<span class="c">//-> hello</span>
+
+unless(1 < 2, ^showln("hello"))</code></pre></div>
+
+           <p>As we can see, the expression that makes up <code>body</code> must be wrapped in a no-argument function (denoted by <code>^</code>).
+             This ensures its conditional evaluation.</p>
+
+<p>The next example will define a looping construct similar to the <code>do-while</code> construct in C:</p>
+
+<div class="highlight">
+  <pre><code><span class="k">function</span> do_while(body, condition)
+{ body(); when(condition()) do_while(condition, body) }
+
+<span class="c">// Usage:</span>      
+<span class="k">let</span> i = 0
+do_while(^{showln(i); i=i+1}, ^i<0)
+<span class="c">//-> 0</span>
+
+i = 0
+do_while(^{showln(i); i=i+1}, ^i<3)
+<span class="c">//-> 0
+     1
+     2</code></pre></div>
+
+<h4>Advanced flow control with continuations</h4>
+<p>A continuation represents a particular point in a program's execution. Slogan allows capturing the active continuation with the <code>callcc</code>
+  function. <code>Callcc</code> is passed a function which is called with the current continuation as its sole argument. The current continuation
+  itself is represented as a single-parameter function. Invoking this function causes the program control to return to the point where <code>callcc</code>
+  was called. The argument passed to the continuation function will become the return value of <code>callcc</code>.</p>
+<p>Slogan use continuations to implement some of its advanced features like <a href="../pm/bd.html#iters">iterators</a> or generators. A simple control structure that can be implemented with
+  continuations is the <code>return</code> statement found in most imperative programming languages: </p>
+
+<div class="highlight">
+  <pre><code><span class="c">// This is a contrived example, but the pattern
+// can be used to implement non-local exit from a function.</span>
+<span class="k">function</span> f(n)
+  callcc(^(return)
+  { <span class="k">when</span> (is_prime(n)) return(n)
+    f(n+1) })
+
+<span class="c">// Usage:</span>
+f(10)
+<span class="c">//=> 11</span>
+f(1034)
+<span class="c">//=> 1039</span></code></pre></div>
+
+<p>The next example shows how to use continuations to implement threads for cooperative multitasking.</p>
+
+<div class="highlight">
+  <pre><code><span class="k">let</span> threads = []
+
+<span class="k">function</span> thread(thunk) threads = append(threads, [thunk])
+
+<span class="k">function</span> thread_start()
+  <span class="k">let</span> (p = head(threads))
+  { threads = tail(threads)
+    p() }
+
+<span class="k">function</span> thread_yield()
+  callcc(^(k) { thread(^k(false)); thread_start() })
+
+<span class="c">// Usage:</span>
+thread(^let loop(i = 0) { thread_yield(); showln("Thread A ", i); loop(i+1) })
+thread(^let loop(i = 0) { thread_yield(); showln("Thread B ", i); loop(i+1) })
+thread_start()
+
+<span class="c">//-> Thread A 0
+     Thread B 0
+     Thread A 1
+     ...</code></pre></div>
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (char_is_***)</title>
+  </head>
+
+  <body>
+    <h2>char_is_***</h2>
+
+    <div class="prog">
+      <pre><code>
+char_is_eq(c1, <span class="pw">@rest</span> ...)
+char_is_lt(c1, <span class="pw">@rest</span> ...)
+char_is_gt(c1, <span class="pw">@rest</span> ...)
+char_is_lteq(c1, <span class="pw">@rest</span> ...)
+char_is_gteq(c1, <span class="pw">@rest</span> ...)
+char_is_ci_eq(c1, <span class="pw">@rest</span> ...)
+char_is_ci_lt(c1, <span class="pw">@rest</span> ...)
+char_is_ci_gt(c1, <span class="pw">@rest</span> ...)
+char_is_ci_lteq(c1, <span class="pw">@rest</span> ...)
+char_is_ci_gteq(c1, <span class="pw">@rest</span> ...)
+      </code></pre>
+    </div>
+
+    <p>Predicates for comparing <a href="is_char.html">characters</a>. Return <code><span class="pw">true</span></code> if the relation holds,
+      otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>The <code>char_is_ci_***</code> predicates ignores the case of the characters being compared.</p>
+
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+char_is_eq(\a, \A)
+<span class="comment">// false</span>
+char_is_ci_eq(\a, \A)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="char_is_alphabetic.html">char_is_alphabetic</a></div>
+      <div class="ref"><a href="number_is_eq.html">number_is_eq</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

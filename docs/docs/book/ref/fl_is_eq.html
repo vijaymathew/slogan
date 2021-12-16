@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fl_is_eq)</title>
+  </head>
+
+  <body>
+    <h2>fl_is_eq</h2>
+
+    <div class="prog">
+      <pre><code>
+fl_is_eq(fl1, <span class="pw">@rest</span> ...)
+fl_is_lt(fl1, <span class="pw">@rest</span> ...) 
+fl_is_gt(fl1, <span class="pw">@rest</span> ...) 
+fl_is_lteq(fl1, <span class="pw">@rest</span> ...) 
+fl_is_gteq(fl1, <span class="pw">@rest</span> ...) 
+      </code></pre>
+    </div>
+
+    <p><code>Fl_is_eq</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are equal, return
+      <code><span class="pw">false</span></code> otherwise. Raise an error if an argument is not a <a href="is_flonum.html">flonum</a>.</p>
+
+    <p><code>Fl_is_lt</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically increasing, i.e., each
+      argument is greater than the preceding ones, return <code><span class="pw">false</span></code> otherwise.
+      Raise an error if an argument is not a flonum.</p>
+      
+    <p><code>Fl_is_gt</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically decreasing,
+      return <code><span class="pw">false</span></code> otherwise. Raise an error if an argument is not a flonum.</p>
+    
+    <p><code>Fl_is_lteq</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically nondecreasing, i.e., each
+      argument is not less than the preceding ones, return <code><span class="pw">false</span></code> otherwise.
+      Raise an error if an argument is not a flonum.</p>
+    
+    <p><code>Fl_is_gteq</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically non-increasing,
+      return <code><span class="pw">false</span></code> otherwise. Raise an error if an argument is not a flonum.</p>
+
+    <p>Comparisons involving a <a href="fl_is_nan">NaN</a> always return <code><span class="pw">false</span></code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+fl_is_eq(1., 1.0)
+<span class="comment">// true</span>
+
+fl_is_lteq(1., 1., 2., 3., 4., 4.2)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="fladd.html">fladd</a></div>      
+      <div class="ref"><a href="fl_is_zero.html">fl_is_zero</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

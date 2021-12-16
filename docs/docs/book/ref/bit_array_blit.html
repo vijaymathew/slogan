@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (bit_array_blit)</title>
+  </head>
+
+  <body>
+    <h2>bit_array_blit</h2>
+
+    <div class="prog">
+      <pre><code>
+bit_array_blit(b, offset, dest_bitarray, dest_offset, count)
+      </code></pre>
+    </div>
+
+    <p>Copy the bit-pattern in the <a href="bit_array.html">bit array</a> <code>b</code> to <code>dest_bitarray</code>.
+      <code>Count</code> bits are copied starting at <code>offset</code> index in <code>b</code>.
+      Bits are copied to <code>dest_bitarray</code> starting at the <code>dest_offset</code> index.
+      Return the updated bit array.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> b = #b[0, 1, 1, 0, 1]
+<span class="kw">let</span> d = <a href="make_bit_array.html">make_bit_array</a>(10)
+b
+<span class="comment">// #b[0, 1, 1, 0, 1]</span>
+d
+<span class="comment">// #b[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]</span>
+bit_array_blit(b, 1, d, 5, 4)
+<span class="comment">// #b[0, 0, 0, 0, 0, 1, 1, 0, 1, 0]</span>
+d
+<span class="comment">// #b[0, 0, 0, 0, 0, 1, 1, 0, 1, 0]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="bit_arrays_concat.html">bit_arrays_concat</a></div>
+      <div class="ref"><a href="subbitarray.html">subbitarray</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (***_hash)</title>
+  </head>
+
+  <body>
+    <h2>***_hash</h2>
+
+    <div class="prog">
+      <pre><code>
+eq_hash(obj)
+eqv_hash(obj)
+equal_hash(obj)
+string_hash(str)
+string_ci_hash(str)
+symbol_hash(sym)
+      </code></pre>
+    </div>
+
+    <p>Return an <a href="exact.html">exact</a> nonnegative integer hash value generated from the argument object.</p>
+
+    <p>These hash function are suitable for use with the appropriate predicate: <code><a href="is_eq.html">is_eq</a></code> for
+      <code>eq_hash</code> and <code>symbol_hash</code>, <code><a href="is_eqv.html">is_eqv</a></code> for <code>eqv_hash</code>,
+      <code><a href="is_equal.html">is_equal</a></code> for <code>equal_hash</code>,
+      <code><a href="string_is_eq.html">string_is_eq</a></code> for <code>string_hash</code>, and
+      <code><a href="string_is_eq.html">string_is_ci_eq</a></code> for <code>string_ci_hash</code>. In other words,
+      <code>eq_hash(a) == eq_hash(b)</code> implies <code>is_eq(a, b) == <code><span class="pw">true</span></code></code>, <code>eqv_hash(a) == eqv_hash(b)</code> implies
+      <code>is_eqv(a, b) == <code><span class="pw">true</span></code></code>, <code>equal_hash(a) == equal_hash(b)</code> implies <code>is_equal(a, b) == <code><span class="pw">true</span></code></code>,
+      <code>string_hash(s1) == string_hash(s2)</code> implies <code>string_is_eq(s1, s2) == <code><span class="pw">true</span></code></code>,
+      and <code>string_ci_hash(s1) == string_ci_hash(s2)</code> implies <code>string_is_eq(s1, s2) == <code><span class="pw">true</span></code></code>.</p>
+
+    <p>For <code>symbol_hash</code>, when <code>sym</code> is an interned symbol the value returned is the same as:
+      <code>string_hash(<a href="symbol_to_string.html">symbol_to_string</a>(sym))</code>.</p>
+    
+    <p>The hash values returned by <code>equal_hash</code>, <code>string_hash</code>, and <code>string_ci_hash</code> are typically
+      dependent on the current structure and contents of the input values and are thus unsuitable
+      if keys are modified while they have associations in a <a href="make_hashtable">hash table</a>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+string_hash(<span class="str">"car"</span>)
+<span class="comment">// 444471047</span>
+string_hash(<span class="str">"car"</span>) == symbol_hash(<span class="sym">'car</span>)
+<span class="comment">// <code><span class="pw">true</span></code></span>
+      </code></pre>
+    </div>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

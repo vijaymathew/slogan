@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (until)</title>
+  </head>
+
+  <body>
+    <h2>until</h2>
+
+    <div class="prog">
+      <pre><code>
+until(p, fn, x) 
+      </code></pre>
+    </div>
+
+    <p>Apply the function <code>fn</code> to <code>x</code> and pass the result <code>r</code> to the predicate <code>p</code>.
+      If <code>p</code> return <code><span class="pw">true</span></code>, <code>r</code> is returned, otherwise pass <code>r</code> to
+      a recursive call to <code>until</code>.</p>
+
+    <p>Return the final value of applying the function <code>fn</code> to <code>x</code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+until(<a href="is_prime.html">is_prime</a>, <a href="partial.html">partial</a>(`<a href="add.html">+</a>`, 1), 1000)
+<span class="comment">// 1009</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="do_times.html">do_times</a></div>
+      <div class="ref"><a href="callcc.html">callcc</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

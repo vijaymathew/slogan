@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (array_shrink)</title>
+  </head>
+
+  <body>
+    <h2>array_shrink</h2>
+
+    <div class="prog">
+      <pre><code>
+array_shrink(arr, n)
+      </code></pre>
+    </div>
+
+    <p>Reduce the size of the <a href="array.html">array</a> <code>arr</code> to <code>n</code>. Raise an "Out of range" error if <code>n</code> is not
+      in <code>0 &le; n &le; <a href="array_length.html">array_length</a>(arr)</code>. Return <a href="void.html">void</a>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = #[10, 20, 30]
+array_shrink(a, 1) 
+a
+<span class="comment">// #[10]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="subarray.html">subarray</a></div>      
+      <div class="ref"><a href="array_copy.html">array_copy</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (mutex)</title>
+  </head>
+
+  <body>
+    <h2>mutex</h2>
+
+    <div class="prog">
+      <pre><code>
+mutex(<span class="pw">@optional</span> name = <code>void</code>)
+      </code></pre>
+    </div>
+
+    <p>Return a new mutex in the unlocked/not-abandoned state.</p>
+
+    <p>A mutex can be in one of four states: locked (either owned or not owned) and unlocked (either abandoned or not abandoned). An attempt to
+      lock a mutex only succeeds if the mutex is in an unlocked state, otherwise the current <a href="task.html">task</a> will wait.
+      A mutex in the locked/owned state has an associated owner task, which by convention is the task that is responsible for
+      unlocking the mutex (this case is typical of critical sections implemented as "lock mutex, perform operation, unlock mutex").
+      A mutex in the locked/not-owned state is not linked to a particular task.</p>
+
+    <p>A mutex becomes locked when a task locks it using the <code><a href="mutex_lock.html">mutex_lock</a></code> function. A mutex becomes
+      unlocked/abandoned when the owner of a locked/owned mutex terminates. A mutex becomes unlocked/not-abandoned when a task unlocks it
+      using the <code><a href="mutex_unlock.html">mutex_unlock</a></code> function.
+
+    <p>The mutex primitives do not implement recursive mutex semantics. An attempt to lock a mutex that is locked implies that the current task
+      waits even if the mutex is owned by the current task (this can lead to a deadlock if no other task unlocks the mutex).</p>
+
+    <p>Each mutex has a specific field which can be used in an application specific way to <a href="mutex_set_data.html">associate data</a>
+      with the mutex.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// updating shared state without a data race:</span>          
+<span class="kw">let</span> x = 0
+<span class="kw">let</span> mx = mutex()
+
+<span class="kw">function</span> incx()
+{ <a href="mutex_lock.html">mutex_lock</a>(mx)
+  x = <a href="inc.html">inc</a>(x)
+  <a href="mutex_unlock.html">mutex_unlock</a>(mx) }
+
+<span class="pw">!</span>incx()
+<span class="pw">!</span>incx()
+x
+<span class="comment">// 2</span>
+
+<span class="comment">// an abstraction to make sure a mutex is unlocked,
+// even if the critical section throws an unhandled error.
+// usage: !call_with_mutex(a_function, a_mutex)</span>
+<span class="kw">function</span> call_with_mutex(fn, m)
+{ mutex_lock(m)
+  <span class="kw">try</span> fn()
+  <span class="kw">finally</span> mutex_unlock(m) }
+
+<span class="comment">// multiple locks/unlocks from the same task:</span>
+<span class="kw">function</span> mutex_lock_recursively(m)
+  <span class="kw">if</span> (<a href="mutex_state.html">mutex_state</a>(m) == <a href="self.html">self</a>())
+   <a href="mutex_set_data.html">mutex_set_data</a>(m, inc(mutex_data(m)))
+  <span class="kw">else</span>
+  { mutex_lock(m)
+    mutex_set_data(m, 0) }
+
+<span class="kw">function</span> mutex_unlock_recursively(m)
+  <span class="kw">if</span> (<a href="is_zero.html">is_zero</a>(mutex_data(m)))
+    mutex_unlock(m)
+  <span class="kw">else</span> mutex_set_data(m, <a href="dec.html">dec</a>(mutex_data(m)))
+
+<span class="comment">// usage example:  </span>
+<span class="pw">!</span>{ mutex_lock_recursively(mx)
+   <a href="showln.html">showln</a>(1)
+   mutex_lock_recursively(mx)
+   showln(2)
+   mutex_unlock_recursively(mx)
+   showln(1)
+   mutex_unlock_recursively(mx)
+   showln(<span class="str">"bye"</span>) }
+<span class="comment">//&gt; 1
+    2
+    1
+    bye</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="monitor.html">monitor</a></div>
+      <div class="ref"><a href="rvar.html">rvar</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

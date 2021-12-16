@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (drop_while)</title>
+  </head>
+
+  <body>
+    <h2>drop_while</h2>
+
+    <div class="prog">
+      <pre><code>
+drop_while(p, xs) 
+      </code></pre>
+    </div>
+
+    <p>Return the suffix of the sequence <code>xs</code> remaining after removing elements that satisfy
+      the predicate <code>p</code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+drop_while(<a href="is_positive.html">is_positive</a>, [1, 2, 3, -4, 5])
+<span class="comment">// [-4, 5]</span>
+
+<span class="kw">function</span> ints(n) n:<span class="kw">~</span>ints(n+1)
+<span class="kw">let</span> s = ints(10)
+<a href="take.html">take</a>(3, drop_while(<a href="is_even.html">is_even</a>, s))
+<span class="comment">// [11, 12, 13]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="drop.html">drop</a></div>
+      <div class="ref"><a href="take_while.html">take_while</a></div>
+      <div class="ref"><a href="filter.html">filter</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

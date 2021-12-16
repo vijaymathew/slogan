@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (accumulate)</title>
+  </head>
+
+  <body>
+    <h2>accumulate</h2>
+
+    <div class="prog">
+      <pre><code>
+accumulate(fn, init, seq)
+      </code></pre>
+    </div>
+
+    <p>Return <code>init</code> if the sequence <code>seq</code> is empty. If it is not empty,
+      apply the function <code>fn</code> to <code>init</code> and the <a href="first.html">head</a> of <code>seq</code>,
+      then recur with the value returned by <code>fn</code> in place of <code>init</code> and the <a href="rest.html">tail</a>
+      of <code>seq</code>.</p>
+    <p>Return the final value of <code>fn</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> ints(n)
+  <span class="kw">when</span> (n &lt; 10) n:~ints(n+1)
+
+<span class="kw">let</span> s = ints(1)
+s = accumulate(`<a href="add.html">+</a>`, 0, s)
+s
+<span class="comment">// 1:&lt;promise&gt;</span>
+<a href="first.html">second</a>(s)
+<span class="comment">// 3</span>
+<a href="first.html">third</a>(s)
+<span class="comment">// 6</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="fold_left.html">fold_left</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

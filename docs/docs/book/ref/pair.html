@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (pair)</title>
+  </head>
+
+  <body>
+    <h2>pair</h2>
+
+    <div class="prog">
+      <pre><code>
+pair(a, b)
+      </code></pre>
+    </div>
+
+    <p>Return a new pair whose <a href="head.html">head</a> is the object <code>a</code> and whose <a href="tail.html">tail</a> is the object
+      <code>b</code>.</p>
+
+    <p>A pair can also be constructed by using the <code>:</code> operator as in, <code>a:b</code>.</p>
+    <p>The form <code>a:</code> will create the pair <code>a:<a href="void.html">void</a></code>. This form is useful for
+      specifying spliced indices into <a href="list.html">lists</a> and <a href="array.html">arrays</a>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+pair(3, 4)
+<span class="comment">// 3:4</span>
+
+pair(3, pair(4, 5))
+<span class="comment">// 3:4:5</span>
+
+pair(3, 4:(5:[]))
+<span class="comment">// [3, 4, 5]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_pair.html">is_pair</a></div>      
+      <div class="ref"><a href="car.html">car</a></div>
+      <div class="ref"><a href="cdr.html">cdr</a></div>
+      <div class="ref"><a href="first.html">first</a></div>
+      <div class="ref"><a href="rest.html">rest</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (mutex_unlock)</title>
+  </head>
+
+  <body>
+    <h2>mutex_unlock</h2>
+
+    <div class="prog">
+      <pre><code>
+mutex_unlock(m, @optional mn = <span class="pw">false</span>, timeout = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Unlocks the <a href="mutex.html">mutex</a> <code>m</code> by making it unlocked/not-abandoned.
+      It is not an error to unlock an unlocked mutex and a mutex that is owned by any <a href="task.html">task</a>.
+      If supplied, <code>mn</code> must be a <a href="monitor.html">monitor</a> object. The current task is
+      blocked and added to the monitor before unlocking the mutex; the task can unblock at any time but no later than
+      when an appropriate call to <code><a href="monitor_notify.html">monitor_notify</a></code> or
+      <code><a href="monotor_broadcast.html">monitor_broadcast</a></code> is performed, and no later
+      than the <code>timeout</code> (if timeout is supplied). If there are tasks waiting to lock
+      this mutex, the scheduler selects a task, the mutex becomes locked/owned or
+      locked/not-owned, and the task is unblocked. Mutex_unlock returns <code><span class="pw">false</span></code> when
+      the timeout is reached, otherwise it returns <code><span class="pw">true</span></code>.</p>
+    
+    <p>If provided, <code>timeout</code> should be an exact or inexact real number representing a relative time in seconds from the moment
+      <code>mutex_unlock</code> was called.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// updating shared state without a data race:</span>          
+<span class="kw">let</span> x = 0
+<span class="kw">let</span> mx = mutex()
+
+<span class="kw">function</span> incx()
+{ <a href="mutex_lock.html">mutex_lock</a>(mx)
+  x = <a href="inc.html">inc</a>(x)
+  <a href="mutex_unlock.html">mutex_unlock</a>(mx) }
+
+<span class="pw">!</span>incx()
+<span class="pw">!</span>incx()
+x
+<span class="comment">// 2</span>          
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="mutex.html">mutex</a></div>
+      <div class="ref"><a href="mutex_unlock.html">mutex_unlock</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

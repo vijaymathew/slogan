@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (hashtable_entries)</title>
+  </head>
+
+  <body>
+    <h2>hashtable_entries</h2>
+
+    <div class="prog">
+      <pre><code>
+hashtable_entries(ht)
+      </code></pre>
+    </div>
+
+    <p>Return a <a href="pair.html">pair</a> of <a href="array.html">arrays</a> &ndash; the first one with the keys and the second one 
+      with the values from the <a href="make_hashtable.html">hash table</a> <code>ht</code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+hashtable_entries(#{1:2, <span class="sym">'hello</span>:<span class="str">"world"</span>})
+<span class="comment">// #[1, hello]:#[2, world]</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="hashtable_keys.html">hashtable_keys</a></div>
+      <div class="ref"><a href="hashtable_values.html">hashtable_values</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

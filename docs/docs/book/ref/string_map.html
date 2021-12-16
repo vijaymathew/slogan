@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_map)</title>
+  </head>
+
+  <body>
+    <h2>string_map</h2>
+
+    <div class="prog">
+      <pre><code>
+string_map(fn, s1, <span class="pw">@rest</span>, ...)
+      </code></pre>
+    </div>
+
+    <p>The function <code>fn</code> is called for each <a href="is_char.html">character</a> in the <a href="string.html">strings</a>
+      <code>s1, ...</code> and produce a result character. <code>String_map</code> will return a <a href="list.html">list</a> with
+      all these characters.</p>
+
+    <p><code>Fn</code> should accept as many arguments as there are strings.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+string_map(<a href="char_downcase.html">char_downcase</a>, <span class="str">"HELLO"</span>)
+<span class="comment">// hello</span>
+
+string_map(<span class="kw">^</span>(a, b) <span class="kw">if</span> (<a href="char_is_upper_case.html">char_is_upper_case</a>(a)) a <span class="kw">else</span> b, <span class="str">"HeLlO"</span>, <span class="str">"wOrLd"</span>)
+<span class="comment">// HOLLO</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_for_each.html">string_for_each</a></div>
+      <div class="ref"><a href="map.html">map</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

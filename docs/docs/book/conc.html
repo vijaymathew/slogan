@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Concurrency and Parallelism</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">8</h1>
+    <h1 class="title">Concurrency and Parallelism</h1>
+
+    <p>In the concurrent model of computation, a program is organized as a composition of several autonomous activities or <em>tasks</em>. A web server
+      that handle thousands of clients at once is an example of a concurrent program. Concurrency is also essential for programs that interact with
+      their environment, e.g games and GUI programs.</p>
+
+    <p>Slogan support three styles of concurrent programming. The first is <em>declarative concurrency</em>, which enable us to apply simple
+      functional reasoning techniques for verifying the correctness of concurrent programs. The second style of concurrent programming is based on the
+      <a href="https://en.wikipedia.org/wiki/Actor_model" target="_blank">Actor model</a>. Here the concurrent tasks work towards a common goal
+      by doing independent computation and communicating with each other by asynchronous message passing. Slogan also support imperative multi-tasking,
+      based on shared memory and locks. The first few sections of this chapter will cover the various
+      forms of concurrent programming supported by Slogan.</p>
+    
+    <p>Two concurrent tasks are executing <em>parallely</em> if they are scheduled to run on two separate hardware processors. Two separate
+      tasks may also be made to share a single core, by <a href="https://en.wikipedia.org/wiki/Time-sharing" target="_blank">time-sharing</a>.
+      Depending on the implementation, a Slogan task may share computing resources with
+      other tasks or it may run on an independent processor. The task abstraction is high-level and do not give the programmer much control on how
+      an individual task is scheduled.</p>
+
+    <p>Slogan has a parallel programming facility designed to help programmers take direct advantage of the multiple cores they may have on
+      their computers. The parallel programming facility, which is also based on a simple model of message-passing, will be
+      discussed in the last section of this chapter.</p>
+    
+    <h2>8.1 Tasks</h2>
+
+    <p>Units of concurrent program execution are known as <em>tasks</em>. A new task is created and started by the
+      <a href="ref/task.html">task</a> function. It takes a function as argument, which will be called from the newly launched task.
+      The spawn operator (<code><span class="pw">!</span></code>) also starts a new task.
+      The expression following the spawn operator will be evaluated in a new task.
+      Both the <code>task</code> function and the spawn operator return an object that represents the new task. This object can be used to
+      perform operations like sending asynchronous messages to the task, prematurely terminating the task etc.</p>
+
+    <p>The task will finish running and its resources will be released once the function or expression used to start it is fully evaluated.
+      If an error is thrown by during the execution of the task and it is un-handled within the task's body, then the task will terminate
+      immediately.</p>
+
+    <p>The next program defines a simple task that runs forever. It prints the message "hello" to the output stream, sleeps for 2 seconds and loops-back
+      to print the message again. (If you are running this from the REPL, press Ctrl+C to terminate the process and get out of the loop).</p>
+
+    <div class="prog">
+      <pre><code>
+task(<span class="kw">^</span>() <span class="kw">letfn</span> loop ()
+         { <a href="ref/showln.html">showln</a>(<span class="str">"hello"</span>)
+           <a href="ref/task_sleep.html">task_sleep</a>(2)
+           loop() })
+<span class="comment">//> hello
+    hello
+    hello ...</span>
+      </code></pre>
+    </div>
+
+    <p>The same program can be written using the spawn operator as shown below:</p>
+    <div class="prog">
+      <pre><code>
+<span class="pw">!</span><span class="kw">letfn</span> loop ()
+ { showln(<span class="str">"hello"</span>)
+   task_sleep(2)
+   loop() }
+<span class="comment">//> hello
+    hello
+    hello ...</span>
+      </code></pre>
+    </div>
+    
+    <h3>8.1.1 Nondeterminism</h3>
+
+    <p>The programs we wrote in the previous chapters were all <em>deterministic</em>. That means, for a given input the computation will always
+      pass through the same steps and states to reach a final state that can be predicted before-hand. This property do not hold true once we have
+      concurrently executing tasks in our program. In other words, execution of concurrent tasks are inherently <em>nondeterministic</em>. This is
+      because, concurrency introduces a <em>choice</em> after each computation step, i.e. the choice of which task to run next.</p>
+
+    <p>The choice of which thread to execute next is done by a part of the system known as the <em>scheduler</em>. At each computation step,
+      the scheduler picks one among all the ready tasks to execute next. We say a task is ready or <em>runnable</em>, if its
+      has all the information it needs to execute at least one computation step. A task that do not have this information is said to be
+      <em>suspended</em>.</p>
+
+    <p>To better understand nondeterminism, let us revisit the bank account example from the <a href="state.html">chapter</a> about state and modularity.
+      Basically, a bank account is a closure that responds to <code>deposit</code> and <code>withdraw</code> messages and update the <code>balance</code>
+      accordingly. An example transaction on a bank account with opening balance <code>100</code> is shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> account = make_bank_account(100)
+account.deposit(150)
+account.withdraw(200)
+account.deposit(300)
+account.deposit(400)
+account.withdraw(200)
+account.balance <span class="comment">// 100 + 150 - 200 + 300 + 400 - 200</span>
+<span class="comment">// 550</span>
+      </code></pre>
+    </div>
+
+    <p>Now let us see what will happen if we introduce concurrency into the program, where each update is performed in a separate task:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> account = make_bank_account(100)
+{ <span class="pw">!</span>account.deposit(150)
+  <span class="pw">!</span>account.withdraw(200)
+  <span class="pw">!</span>account.deposit(300)
+  <span class="pw">!</span>account.deposit(400)
+  <span class="pw">!</span>account.withdraw(200) }
+account.balance
+<span class="comment">// ???</span>
+      </code></pre>
+    </div>
+
+    <p>As we are running only a few tasks here, the account balance may still be <code>550</code>, but there is no guarantee for that. What if the first
+      task is not immediately scheduled for running? The second <code>withdraw</code> call may run instead, resulting in an error. Then the next two
+      <code>deposits</code> may execute followed by the last <code>withdraw</code>. After this the first <code>withdraw</code> may be scheduled to run
+      at last. What will be the balance now? It would be <code>750</code> if the scheduler ran the tasks exactly as we
+      described above. But the scheduler is free to prioritize any task above others and the result may be something else. We can try to simulate the above
+      scenario by asking the first task to suspend itself for a few seconds. This can be achieved by calling the
+      <a href="ref/task_sleep.html"><code>task_sleep</code></a> function.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> account = make_bank_account(100)
+{ <span class="pw">!</span>{ task_sleep(3); account.deposit(150) }
+  <span class="pw">!</span>account.withdraw(200)
+  <span class="pw">!</span>account.deposit(300)
+  <span class="pw">!</span>account.deposit(400)
+  <span class="pw">!</span>account.withdraw(200) }
+account.balance
+<span class="comment">// 750???</span>
+      </code></pre>
+    </div>
+
+    <p>What we have here is a <em>race condition</em>, a situation in which the program does not give the correct result for some
+      interleaving of the operations of multiple tasks. Now this may seem rather harmless. If the first <code>withdraw</code> can be
+      tried again, we will end-up with the expected balance of <code>550</code>. But think of another situation where the first calls to
+      <code>deposit</code> and <code>withdraw</code> was executed in order and the current balance is now <code>50</code>. Next the task to
+      deposit <code>300</code> is scheduled to run. It read the current balance into memory and just then it got suspended by the
+      scheduler. The next task to deposit <code>400</code> executes now. It runs to completion and the balance is now <code>450</code>.
+      Now the previous <code>deposit</code> task is scheduled to run again. It proceeds to add <code>300</code> to the current balance (as
+      it saw) and the final balance in the account is now <code>350</code>. The deposit of <code>400</code> is lost forever! This is a specific
+      instance of a race condition known as a <em>data race</em> where competing tasks end up with corrupt or invalid data.</p>
+
+    <p>To prevent race conditions, we need some mechanism for tasks to communicate with each other and
+      <em>synchronize</em> their activities. The next few sections will explore how to do this and make concurrent programs
+      more deterministic.</p>
+
+    <h2>8.2 Declarative Concurrency</h2>
+
+    <p>What does it mean for a concurrent program to be declarative? As we already saw, the result a concurrent program can
+      produce is dependent on the order of task scheduling.
+      We say a concurrent program is <em>declarative</em>, if for multiple executions with the same input, it either (1) do not terminate
+      or (2) it eventually reaches a point where it produce results that are equivalent.</p>
+
+    <h3>8.2.1 Reactive Variables</h3>
+
+    <p>The simplest way to write concurrent declarative programs is by using <em>reactive variables</em>. A reactive variable is different from a normal
+      variable in that it can be created in an <em>unbound</em> state and at a later point in time, bound to some value. A reactive variable
+      can be bound only to a single value. Any further attempts to bind a different value to the reactive variable will fail.
+      A task trying to get the value of a reactive variable will be suspended until the variable is bound.</p>
+
+    <p>The following program shows how a reactive variable is used to communicate a value between two tasks. Later we will see how reactive
+      variables enable us to design concurrent programs that are <em>declarative</em> by the definitions we saw above.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> r = <span class="pw">?</span> <span class="comment">// an unbound reactive variable</span>
+<span class="pw">!</span>showln(<span class="pw">?</span>r) <span class="comment">// the task will wait until the `r` is bound to a value</span>
+
+<span class="pw">?</span>r = 100
+<span class="comment">//&gt; 100</span>
+      </code></pre>
+    </div>
+
+    <p>The assignment done to the reactive variable is <em>atomic</em>. It means, while one task is updating the value of a reactive variable,
+      the system will prevent other tasks from accessing it. Once a reactive variable is updated, it effectively becomes a read-only variable,
+      no further updates are allowed on it.</p>
+
+    <p>Let us write a more complex concurrent program designed around reactive variables. Consider a program where we have
+      a <em>producer</em> and a <em>consumer</em>. The producer creates a stream of values. The consumer will take each
+      value from the stream and does some computation with it. We a have simple producer in the following program, where the stream consists of
+      integers in a range. We have introduced a sleep before adding a new integer to the stream to simulate the effect of the producer doing some
+      long computation. On the generated stream, we apply a function, print the result and also construct a new stream of all the results. This is
+      achieved by calling the <a href="ref/map.html"><code>map</code></a> function.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> producer(a, b)
+  <span class="kw">if</span> (a < b)
+  { task_sleep(2)
+    a:producer(a+1, b) }
+  <span class="kw">else</span> []
+
+<span class="kw">function</span> consumer_callback(x)
+  <span class="kw">let</span> (r = <a href="ref/sqrt.html">sqrt</a>(x))
+  { showln(r)
+    r }
+
+<span class="kw">let</span> xs = producer(1, 5)
+<span class="kw">let</span> ys = map(consumer_callback, xs)
+<span class="comment">//&gt; 1
+    1.4142135623730951
+    1.7320508075688772
+    2</span>
+
+ys
+<span class="comment">// [1, 1.4142135623730951, 1.7320508075688772, 2]</span>
+      </code></pre>
+    </div>
+
+    <p>As you run this program, you observe that <code>map</code> has to wait for 10 seconds before it could start processing any values.
+      Is it possible to start any useful computation as soon as there are values available in the producer's stream? We update the producer
+      as shown below.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> producer(a, b, r)
+  <span class="kw">if</span> (a < b)
+    <span class="kw">let</span> (r2 = <span class="pw">?</span>)
+    { task_sleep(2)
+      <span class="pw">?</span>r = a:r2
+      producer(a+1, b, r2) }
+  <span class="kw">else</span> <span class="pw">?</span>r = []
+
+<span class="kw">function</span> consumer(r)
+  <span class="kw">let</span> (v = <span class="pw">?</span>r)
+    <span class="kw">if</span> (is_empty(v)) []
+    <span class="kw">else let</span> (result = sqrt(head(v)))
+    { showln(result)
+      result:consumer(tail(v)) }
+      </code></pre>
+    </div>
+
+    <p>Instead of constructing the stream as a plain list of integers, the new producer will
+      run in its own task and construct pairs of integers and reactive variables. The consumer can bind to the head of this stream,
+      which itself is represented by a reactive variable. As soon as this variable is bound, the consumer can start doing its work.</p>
+
+    <p>We can see the <code>consumer</code> kicking-in as soon as a value is ready in the producer's stream:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> r = <span class="pw">?</span>
+<span class="pw">!</span>producer(1, 5, r)
+consumer(r)
+<span class="comment">//&gt; 1
+    1.4142135623730951
+    1.7320508075688772
+    2
+<span class="comment">// [1, 1.4142135623730951, 1.7320508075688772, 2]</span>
+      </code></pre>
+    </div>
+
+    <h3>8.2.2 Event Notification</h3>
+
+    <p>Reactive variables are a means to synchronize the activities of multiple tasks. A task may still execute their computations independently
+      of others, but when it reaches a point where it expects some event to have already happened, it should suspend itself. How can it be
+      notified when the event really happens? By waiting for a reactive variable to be bound! We shall apply this
+      technique to the bank transactions example we saw earlier. We enforce the order in the transactions using reactive variables:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> r1, r2, r3, r4 = <span class="pw">?</span>, <span class="pw">?</span>, <span class="pw">?</span>, <span class="pw">?</span>
+<span class="kw">let</span> account = make_bank_account(100)
+{ <span class="pw">!</span>{ task_sleep(3); account.deposit(150); <span class="pw">?</span>r1 = <span class="pw">true</span> }
+  <span class="pw">!</span>when (<span class="pw">?</span>r1) { account.withdraw(200); <span class="pw">?</span>r2 = <span class="pw">true</span> }
+  <span class="pw">!</span>when (<span class="pw">?</span>r2) { account.deposit(300); <span class="pw">?</span>r3 = <span class="pw">true</span> }
+  <span class="pw">!</span>when (<span class="pw">?</span>r3) { account.deposit(400); <span class="pw">?</span>r4 = <span class="pw">true</span> }
+  <span class="pw">!</span>when (<span class="pw">?</span>r4) account.withdraw(200) }
+
+<span class="comment">// wait for 3 seconds...</span>
+account.balance
+<span class="comment">// 550</span>
+      </code></pre>
+    </div>
+
+    <p>In this example, the tasks have been effectively serialized, losing the benefit of concurrency. But in practice, this need not be the case.
+      Each task may proceed to do other stuff concurrently after setting the reactive variable to <code><span class="pw">true</span></code>
+      and unblocking the next task in queue.</p>
+
+    <h3>8.2.3 Getting out of Time</h3>
+
+    <p>Reactive variables can help us design concurrent programs that exist completely outside the dimension of time. In other words, a concurrent
+      program can be written in such a way that it is not constrained by how time flows within or outside the system. To make this clear, let us consider
+      the example of a solver for the simple equation <code>z = x + y</code>. Imagine the solver as a creature moving around in space with three sensors
+      attached to it. Each of the sensors can detect the values for <code>x</code>, <code>y</code> and <code>z</code> transmitted by other creatures
+      that float around the solver. Each creature exists in its own parallel world and the solver cannot predict in advance which sensor will be activated
+      and in what order. But as soon as it has enough values, it should be able to solve the equation and bring itself into a consistent state.</p>
+
+    <p>We can express the solver as a function that tries to find the value of all variables in the equation with whatever information it has at any
+      point in time. Once it has solved the equation for a given set of values, it displays its current state and goes back to solve for the next couple of values
+      detected by the sensors. Each sensor is represented by a reactive variable.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> solver()
+{ <span class="comment">// Each variable is solved in its own task because the
+  // solver do not know in which order the sensors gets activated.</span>
+  <span class="pw">!?</span>z = <span class="pw">?</span>x + <span class="pw">?</span>y
+  <span class="pw">!?</span>x = <span class="pw">?</span>z - <span class="pw">?</span>y
+  <span class="pw">!?</span>y = <span class="pw">?</span>z - <span class="pw">?</span>x
+
+  flush_sensors()
+  solver() }
+
+<span class="comment">// Display the values of all variables and reset
+// the sensors.</span>    
+<span class="kw">function</span> flush_sensors()
+{ showln(#{<span class="sym">'x</span>:<span class="pw">?</span>x, <span class="sym">'y</span>:<span class="pw">?</span>y, <span class="sym">'z</span>:<span class="pw">?</span>z})
+  x = <span class="pw">?</span>
+  y = <span class="pw">?</span>
+  z = <span class="pw">?</span> }
+
+<span class="comment">// Initialize the sensors and start the solver.</span>
+<span class="kw">let</span> x, y, z = <span class="pw">?</span>, <span class="pw">?</span>, <span class="pw">?</span>
+<span class="pw">!</span>solver()
+
+<span class="comment">// Now the sensors will start detecting values in random order and trigger the solver:</span>
+?x = 100
+?y = 40
+<span class="comment">//&gt; #{x:100, y:40, z:140}</span>
+?y = 50
+?z = 60
+<span class="comment">//&gt; #{x:10, y:50, z:60}</span>
+      </code></pre>
+    </div>
+
+    <h2>8.3 Message-Passing Concurrency</h2>
+
+    <p>Message passing is a programming style in which a program consists of independent entities that interact by sending each other
+      messages asynchronously, i.e., without waiting for a reply. This programming style was first studied by Carl Hewitt in
+      the <a href="https://en.wikipedia.org/wiki/Actor_model" target="_blank">actor model</a>. Message passing is important in
+      artificial intelligence programming using multi-agent system frameworks. Each agent is an independent unit of communication
+      working towards some local goal. If they can interact properly, the agents can also reach some global goal, working together.
+      The message passing agents can be used to build highly reliable systems. Since the agents are independent, one can take over the work of
+      another, if that one fails.</p>
+
+    <p>In Slogan, the message passing agents are represented by tasks. A task has a mailbox attached to it where it can receive messages from
+      other tasks. The following program shows a simple agent which echoes back whatever message is sent to it:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> echo = <span class="pw">!</span>{<span class="kw">let</span> sender:message = <a href="ref/task_receive.html">task_receive</a>(); <a href="ref/task_send.html">task_send</a>(sender, message)}
+task_send(echo, <a href="ref/self.html">self</a>():<span class="sym">'hello</span>)
+task_receive()
+<span class="comment">// hello</span>
+      </code></pre>
+    </div>
+
+    <p>The echo task expects the message to be a pair of the sender task object and the message itself. The sender task object is required for
+      sending back the reply. The sender calls the <a href="ref/self.html"><code>self</code></a> function to get the handle to the current task object.</p>
+
+    <p>Slogan define two operators for receiving and sending messages. The <code><span class="pw">!&gt;</span></code> operator is used to send
+      a message to a task. Unlike the <code>task_send</code> function, the <code><span class="pw">!&gt;</span></code> operator will return the
+      message that was sent. The <code><span class="pw">!&lt;</span></code> operator is used to retrieve the next message from the
+      current task's mailbox. Utilizing these operators, we can rewrite the above example more compactly:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> echo = <span class="pw">!</span>{<span class="kw">let</span> sender:message = <span class="pw">!&lt;</span>; sender <span class="pw">!&gt;</span> message}
+echo <span class="pw">!&gt;</span> self():<span class="sym">'hello</span>
+<span class="comment">// &lt;task&gt;:hello</span>
+<span class="pw">!&lt;</span>
+<span class="comment">// hello</span>
+      </code></pre>
+    </div>
+
+    <h3>8.3.1 Designing Protocols</h3>
+
+    <p>Tasks work together by exchanging messages in coordinated ways. It is interesting to study what kinds of coordination are important.
+      This leads us to define a protocol as a sequence of messages between two or more parties that can be understood at a higher level of
+      abstraction than just its individual messages. Let us take a closer look at two simple messaging protocols and see how to realize them with task
+      objects.</p>
+
+    <h4>8.3.1.1 Request-Reply</h4>
+
+    <p>The most basic protocol we can come up with is based on the request-reply messaging pattern. In this pattern, a <em>client</em> task
+      will send a request to a <em>server</em> task and the server will respond with some result. If the computation on the server
+      takes too long to perform, it can send back an <em>acknowledgment</em> token that the client can use
+      to fetch the result later.</p>
+
+    <p>Here we will implement only the simple case. The server we are going to write can handle multiple clients
+      simultaneously, by spawning a sub-task for each request. A client can also send multiple requests to the server because the message send operation
+      is non-blocking. So here is the definition of the server and client functions:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> server()
+  <span class="kw">let</span> (client:reqid:reqbody = <span class="pw">!&lt;</span>)
+  { <span class="pw">!</span>handle_client(client, reqid, reqbody)
+    server() }
+
+<span class="kw">function</span> handle_client(client, reqid, n)
+  client <span class="pw">!&gt;</span> reqid:<a href="ref/sqrt.html">sqrt</a>(n)
+
+<span class="kw">function</span> client()
+ <span class="kw">let</span> (c = <a href="ref/self.html">self</a>())
+ { s <span class="pw">!&gt;</span> c:1:10
+   s <span class="pw">!&gt;</span> c:2:34
+   s <span class="pw">!&gt;</span> c:3:12
+   <a href="ref/list.html">list</a>(<span class="pw">!&lt;</span>, <span class="pw">!&lt;</span>, <span class="pw">!&lt;</span>) }
+      </code></pre>
+    </div>
+
+    <p>The server expects the client to send its request in the format: <code>client_task_object:request_id:request_body</code>.
+      The <code>request_body</code> must be a number. Once it receives a request, the server will spawn a new task to handle it and goes
+      back to accept the next request. The client handler function will find the square root of the number and send it back to the client
+      along with the <code>request_id</code>. The sample client will send three requests in succession and return
+      their responses in a single list.</p>
+
+    <p>Here is how we would use our client-server pair:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="pw">!</span>server()
+client()
+<span class="comment">// [1:3.1622776601683795, 2:5.830951894845301, 3:3.4641016151377544]</span>
+      </code></pre>
+    </div>
+
+    <p>Can you figure out how the client will behave if the server crashes before it can serve all requests? To find out, let us rewrite the server
+      in such a way that it will fail intermittently.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> server()
+  <span class="kw">let</span> (client:reqid:reqbody = <span class="pw">!&lt;</span>)
+  { <span class="kw">when</span> (<a href="ref/is_zero.html">is_zero</a>(<a href="ref/random_integer.html">random_integer</a>(2)))
+    { <a href="ref/showln.html">showln</a>(<span class="str">"server: i am dying!"</span>)
+      <a href="ref/raise.html">raise</a>(<span class="str">"aaaah!"</span>) }
+    <span class="pw">!</span>handle_client(client, reqid, reqbody)
+    server() }
+      </code></pre>
+    </div>
+
+    <p>If we run the client again you may see this behavior if there are no other tasks running in the system:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <span class="pw">!</span>server()
+client()
+<span class="comment">//&gt; server: i am dying!
+//&gt; error: Deadlock detected</span>
+      </code></pre>
+    </div>
+
+    <p>If there are other tasks running in the system, the call to <code>client</code> will just hang forever, waiting for a response to come.</p>
+
+    <p>We can make the client more robust by calling the <code><a href="ref/task_receive.html">task_receive</a></code> function with a timeout
+      and a default value. If a response is not received before the timeout expires, the client will assume the server is dead and return the default
+      value. It will never crash or hang the task it is running in.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> client()
+ <span class="kw">let</span> (c = <a href="ref/self.html">self</a>())
+ { s <span class="pw">!&gt;</span> c:1:10
+   s <span class="pw">!&gt;</span> c:2:34
+   s <span class="pw">!&gt;</span> c:3:12
+   <span class="kw">let</span> r = ^() task_receive(.5, 0)
+   list(r(), r(), r()) }
+      </code></pre>
+    </div>
+
+    <p>Now, if the server is down, it is dead forever, unless someone restarts it. It is possible to make it self-healing and more resilient to
+      failures. In a future chapter we will see how to deal with failure conditions more gracefully.</p>
+
+    <h4>8.3.1.2 Publish-Subscribe</h4>
+
+    <p>Let us look at another interesting pattern in which a server pushes updates to a set of clients. Data is pushed as a continuous stream
+      and any client that connects to the server can read the stream, starting from that point in time.</p>
+
+    <p>The server we are going to write models an application that sends out stock market
+      <a href="http://www.investopedia.com/terms/t/tick.asp" target="_blank">ticks</a> to investors. Each tick
+      has the format <code>[symbolic_name_of_company, timestamp_of_tick, tick_value]</code>. A new tick is generated every 2 seconds.</p>
+        
+    <p>The code for the server is shown below.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> tick_server(clients)
+  <span class="kw">let</span> (c = <a href="ref/task_receive.html">task_receive</a>(2, false))
+  { <span class="kw">when</span> (c) clients = c:clients
+    <a href="ref/for_each.html">for_each</a>(<span class="kw">^</span>(c) c <span class="pw">!&gt;</span> new_tick(), clients)
+    tick_server(clients) }
+
+<span class="kw">let</span> symbols = [<span class="sym">'XYZ</span>, <span class="sym">'ABC</span>, <span class="sym">'HIJ</span>]
+
+<span class="kw">function</span> new_tick()
+  [random_at(symbols), <a href="ref/floor.html">floor</a>(<a href="ref/now_seconds.html">now_seconds</a>()), <a href="ref/random_real.html">random_real</a>()]
+
+<span class="kw">function</span> random_at(xs)
+  xs[<a href="ref/random_integer.html">random_integer</a>(<a href="ref/length.html">length</a>(xs))]
+      </code></pre>
+    </div>
+    
+    <p>Multiple clients can connect to a running instance of the tick server. Each of them will be served a separate stream of ticks.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> tick_client(server, name)
+{ server <span class="kw">!&gt;</span> <a href="ref/self.html">self</a>()
+  <span class="kw">letfn</span> loop ()
+  { showln(name, <span class="str">": "</span>, <span class="pw">!&lt;</span>)
+    loop() }}
+
+<span class="kw">let</span> s = <span class="pw">!</span>tick_server([])
+<span class="pw">!</span>tick_client(s, <span class="str">"1"</span>)
+<span class="pw">!</span>tick_client(s, <span class="str">"2"</span>)
+
+<span class="comment">//&gt; 1: [HIJ, 1494573730., .2876463473845367]
+    1: [ABC, 1494663730., .013863292728449427]
+    2: [HIJ, 1494663730., .8162050798467028]
+    2: [HIJ, 1494663732., .11536616785362432]
+    1: [XYZ, 1494663732., .7824845469456133]
+    2: [HIJ, 1494663734., .15957494643321002]
+    1: [HIJ, 1494663734., .209029373358495]</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 8.1.</b> &nbsp; A client connecting to the server will receive all ticks that are published. What if the client is interested
+      only in ticks associated with the symbol <code><span class="sym">'HIJ</span></code>. What if another client wants to see only those ticks
+      generated every 10 seconds? A task can sit between the client and server and <em>filter</em> the stream for the client.
+      The client then talks only to the filter task and not directly to the server. Implement the <em>pipeline</em> just described.</p>
+    
+    <h2>8.4 Shared-Memory Concurrency</h2>
+
+    <p>In the preceding sections we explored how to write concurrent programs that don't dabble with mutable objects shared between tasks.
+      But some problems may require to maintain a shared state that will be accessed and modified by multiple tasks. In the bank account example
+      at the beginning of this chapter, we learned that this will lead to a race condition, if the access to the shared state is not properly
+      serialized. We can enforce serialization by making tasks wait on reactive variables, but this can lead to broken programs if clients of
+      the bank account object fails to do the serialization properly. Another way to avoid the race condition is by allowing only one task at a
+      time to access the state variable. This is achieved through <em>mutual exclusion</em>, which we discuss in this section.</p>
+
+    <p>A <code><a href="ref/mutex.html">mutex</a></code> is an object that can be owned only by a single task at a given time. A task claims
+      ownership of mutex by <em>locking</em> it. The mutex is released when the task that owns it call <em>unlock</em> on it. The code
+      between the calls to <code><a href="ref/mutex_lock.html">mutex_lock</a></code> and
+      <code><a href="ref/mutex_unlock.html">mutex_unlock</a></code> is called a <em>critical region</em>. Only the thread that has locked the mutex
+      can execute the critical region. This means, if a mutation happens in a critical region, it is guaranteed that only one task will be attempting
+      to do that at a time.</p>
+
+    <p>The next program rewrites the bank account in such a way that the changes to the balance happens in a critical region. This is achieved by
+      packaging a mutex inside the closure and doing the assignment to balance after locking this mutex. This happens transparently to the users of
+      a bank account object.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_bank_account(balance)
+  <span class="pw">where</span> balance > 0
+{ let m = mutex()
+
+  <span class="kw">function</span> deposit(amount)
+  { mutex_lock(m)    
+    balance = balance + amount
+    mutex_unlock(m) }
+
+  <span class="kw">function</span> withdraw(amount)
+    <span class="pw">where</span> balance - amount > 0
+  { mutex_lock(m)
+    balance = balance - amount
+    mutex_unlock(m) }
+
+  <span class="kw">^</span>(message)
+  | <span class="sym">'balance</span> -> balance
+  | <span class="sym">'deposit</span> -> deposit
+  | <span class="sym">'withdraw</span> -> withdraw }
+      </code></pre>
+    </div>
+
+    <p>With critical regions in place, concurrent tasks, updating the same bank account, will not be allowed to step-over the work another
+      task has done. Each task will perform its update on a valid balance and other tasks wanting to make a deposit or withdraw will have
+      to wait until the current ongoing update is finished. Note that the query for the current balance itself is not locked. This may cause a client
+      to see a stale value, but this will never lead to a situation where the balance becomes invalid.</p>
+
+    <h3>8.4.1 Memory model</h3>
+
+    <p>Read and update operations on variables, arrays, strings and hash-tables are not atomic. An application has to avoid write/read and
+      write/write races between tasks through appropriate use of synchronization primitives like the mutex.</p>
+
+    <p>The language runtime makes sure that concurrent reads and writes to input/output <a href="ref/current_reader.html">streams</a> are properly serialized.</p>
+
+    <p>Slogan has built-in modules that implement <a href="./pref/pfds.html">purely functional data structures</a> and <a href="./pref/smc.html">software transactional memory</a>. These facilities can greatly ease
+      the development of concurrent programs that need to share state between tasks. You are encouraged to explores these modules.</p>
+   
+
+    <h2>8.5 A Concurrent Time-Server</h2>
+
+    <p>Now it's time to revisit the time server from <a href="elem.html">Chapter 3</a>.
+      There we had a server which can handle multiple clients, but only one at a time.
+      A new client has to wait for the server to finish serving the currently connected client before it can get its response. With our new-found
+      knowledge about tasks, we can fix the situation. The server sends each client to be handled by a dedicated task and immediately moves on to receive
+      the next incoming connection. As Slogan can efficiently run millions of tasks, the server is limited only by the number of open network connections
+      that the host operating system permits for a process.</p>
+
+    <p>Here is the code for our new concurrent time server:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> server = <a href="ref/tcp_server_stream.html">tcp_server_stream</a>(2121)
+
+<span class="kw">function</span> client_handler(client)
+{ <span class="kw">let</span> request = <a href="ref/read_line.html">read_line</a>(client)
+  <span class="kw">if</span> (request == <span class="str">"GET TIME"</span>)
+    showln(stream = client, <a href="ref/time_to_string.html">time_to_string</a>(<a href="ref/now.html">now</a>()))
+  <span class="kw">else</span>
+    showln(stream = client, <span class="str">"error: invalid request"</span>)
+  <a href="ref/close_stream.html">close_stream</a>(client) }
+
+<span class="kw">function</span> time_server()
+  <span class="kw">let</span> (client = <a href="ref/read.html">read</a>(server))
+  { <span class="pw">!</span>client_handler(client)
+    time_server() }
+
+<span class="comment">// start the server</span>
+time_server()
+<span class="comment">// we will never reach here</span>
+close_stream(server)
+      </code></pre>
+    </div>
+
+    <h2>8.6 Dynamic Variables</h2>
+
+    <p>Variables generally have static scope. They can also have dynamic scope with task specific bindings.
+      Dynamic bindings are established by the <code><span class="kw">letdyn</span></code> expression. Dynamic variable names must
+      follow a certain naming convention &ndash; they must begin and end with the percentage character (<code>%</code>).
+      The following program shows a function that changes its output based on the dynamic binding
+      of the variable <code><span class="pw">%</span>abc<span class="pw">%</span></code>:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> <span class="pw">%</span>abc<span class="pw">%</span> = 20
+<span class="kw">function</span> df() <span class="pw">%</span>abc<span class="pw">%</span> * 100
+
+df()
+<span class="comment">// 2000</span>
+
+<span class="kw">letdyn</span> (<span class="pw">%</span>abc<span class="pw">%</span> = 5) df()
+<span class="comment">// 500</span>
+
+df()
+<span class="comment">// 2000</span>
+
+<span class="comment">// a dynamic binding is visible only within the current task:</span>
+{ <span class="pw">!</span><span class="kw">letdyn</span> (<span class="pw">%</span>abc<span class="pw">%</span> = 5) showln(df())
+  <span class="pw">!</span><span class="kw">letdyn</span> (<span class="pw">%</span>abc<span class="pw">%</span> = 10) showln(df()) }
+<span class="comment">//&gt; 500
+//&gt; 1000</span>
+      </code></pre>
+    </div>
+
+    <h2>8.7 Parallel Programming</h2>
+
+    <p>Slogan tasks are really light-weight because multiple tasks may share a single hardware processor. There is no way the user can make sure
+      that a newly started task will execute on a dedicated processor. To execute some code on a separate processor, a new set of functions are required.
+      These are the <a href="ref/process.html">process</a>, <a href="ref/process_send.html">process_send</a> and
+      <a href="ref/process_receive.html">process_receive</a> functions. Together these three functions implement a simple message passing model for
+      multi-core programming.</p>
+
+    <p>The following program shows how to execute a computation parallely using the <code>process</code> abstraction:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> handler(msg)
+| [<span class="sym">'add</span>, x, y] -> x + y
+| _ -> <span class="sym">'invalid_message</span>
+
+<span class="kw">let</span> child = process(<span class="kw">^</span>(parent)
+                    <span class="kw">letfn</span> loop (msg = process_receive(parent))
+                      <span class="kw">when</span> (msg &lt;&gt; <span class="sym">'quit</span>)
+                      { process_send(parent, handler(msg))
+                        loop(process_receive(parent)) })
+
+process_send(child, [<span class="sym">'add</span>, 10, 20])
+process_send(child, [<span class="sym">'sub</span>, 10, 20])
+process_receive(child)
+<span class="comment">// 30</span>
+process_receive(child)
+<span class="comment">// invalid_message</span>
+process_send(child, <span class="sym">'quit</span>)
+<a href="ref/process_close.html">process_close</a>(child)
+      </code></pre>
+    </div>
+
+    <p>Once all computations required from a new process is finished, the resources held by it must be released by calling
+      the <code><a href="ref/process_close.html">process_close</a></code> function.</p>
+
+    <p><b>Exercise 8.2.</b> &nbsp; Extend the <code>handler</code> so that it can also respond to the <code><span class="pw">'sub</span></code>
+      request.</p>
+
+    <p>While designing parallel programs using the <code>process</code> abstraction, keep in mind that the messaging functions <code>process_send</code>
+      and <code>process_receive</code> are not optimized to deal with large data. You can get the best out of these functions by using them to
+      exchange short messages, ideally less than 1KB (1024 bytes) in size. If you want to send a large chunk of data to another process, do that by
+      passing a "pointer" to that data as a message. This "pointer" should point to a file or a database where the real data is stored.</p>
+    
+    <hr></hr>
+
+    <p align="center">
+      <a href="lazy.html">Next</a> | <a href="state.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

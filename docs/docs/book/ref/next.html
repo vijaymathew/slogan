@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (next)</title>
+  </head>
+
+  <body>
+    <h2>next</h2>
+
+    <div class="prog">
+      <pre><code>
+next(iter, <span class="pw">@optional</span> arg = <span class="void.html">void</span>)
+      </code></pre>
+    </div>
+
+    <p>Move the iterator <code>iter</code> forward by one position. The value of <code>arg</code> is passed to the call to
+      <code><span class="kw">yield</span></code> that created the iterator and will become its return value.</p>
+
+    <p>Return the updated iterator.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = <span class="pw">false</span>
+<span class="kw">function</span> f(x)
+  <span class="kw">letfn</span> loop ()
+  { <span class="kw">let</span> b = <span class="kw">yield</span> x
+    a = b
+    x = x + 1
+    loop() }
+
+<span class="kw">let</span> iter = f(10)
+<a href="first.html">first</a>(iter)
+<span class="comment">;; 10</span>
+first(next(iter, 'hi))
+<span class="comment">;; 11</span>
+a
+<span class="comment">;; hi</span>
+      </code></pre>
+    </div>
+    
+                      
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="rest.html">rest</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

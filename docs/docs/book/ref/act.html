@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (act)</title>
+  </head>
+
+  <body>
+    <h2>act</h2>
+
+    <div class="prog">
+      <pre><code>
+act(fn, <span class="pw">@key</span> wait_to_close = 2)
+      </code></pre>
+    </div>
+
+    <p>Start a new process and call the function <code>fn</code> in that process. The return value of <code>act</code> is a function that the
+      parent process can call to send messages to the child process. Let us call this function the <em>messenger</em>. The parent process
+      can call <code>messenger</code> with a single argument. <code>Messenger</code> will immediatley return a new function,
+      called the <em>future</em>.
+      Behind the scene, the value passed to <code>messenger</code> will be forwarded to the client process which will invoke <code>fn</code> with this
+      value as argument. At some later point in time, the parent process can call <code>future</code> and fetch the result of executing
+      <code>fn</code>.</p>
+    
+    <p>Two arguments are treated specially by <code>messenger</code> - the symbols <code><span class="sym">'info</span></code> and
+      <code><span class="sym">'quit</span></code>. For the argument <code><span class="sym">'info</span></code> <code>messenger</code> will
+      return the process information object of the child process. Passing the symbol <code><span class="sym">'quit</span></code> will cause
+      the child process to terminate.</p>
+
+    <p><code>Future</code> takes an optional <code>timeout</code> and <code>default</code> arguments so that it need not block indefinitely
+      waiting for a response from the child process. When the <code>timeout</code> is reached, <code>future</code> will return the <code>default</code>
+      value.</p>
+
+    <p><code>Wait_to_close</code> must be an integer that specifies how long the client should be allowed to run before responding to the
+      <code><span class="sym">'quit</span></code> message. This might be useful if the client need some time to finish some cleanup tasks.
+      It defaults to 2 seconds.</p>
+      
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> p = act(<span class="kw">^</span>(message)
+            | <span class="sym">'hi</span> -> <span class="sym">'hello</span>
+            | [<span class="sym">'add</span>, a, b] -> a + b
+            | _ -> <span class="sym">'invalid</span>);
+                            
+<span class="kw">let</span> f = p(<span class="sym">'hi</span>)
+f()
+<span class="comment">// hello</span>
+p.hi()
+<span class="comment">// hello</span>
+f = p([<span class="sym">'add</span>, 10, 20])
+f()
+<span class="comment">// 30</span>
+f = p(<span class="sym">'hey</span>)
+f()
+<span class="comment">// invalid</span>
+p(<span class="sym">'quit</span>) <span class="comment">// or `p.quit`</span>
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="process.html">process</a></div>
+      <div class="ref"><a href="react.html">react</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

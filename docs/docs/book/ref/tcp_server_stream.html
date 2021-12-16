@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (tcp_server_stream)</title>
+  </head>
+
+  <body>
+    <h2>tcp_server_stream</h2>
+
+    <div class="prog">
+      <pre><code>
+tcp_server_stream(address, <span class="pw">@key</span> port_number, backlog = 128,
+                  reuse_address = <span class="pw">true</span>, transcoder)
+      </code></pre>
+    </div>
+
+    <p>Return a new <code>tcp-server-stream</code> from which network connections from clients are obtained.</p>
+
+    <p><code>Address</code> indicates the internet address of the network interface on which connections
+      requests are accepted, and possibly the IP port number. A string of the form "INTF:PORT"
+      will be parsed and the value of <code>INTF</code> will be assigned to address and the integer value of
+      <code>PORT</code> will be assigned to port_number. This argument can also be a 4 element byte-array
+      (or <code><a href="u8array.html">u8array</a></code> which
+      contain the 32-bit IPv4 address or an 8 element byte-array which contain the 128-bit IPv6 address.</p>
+
+    <p><code>Port_number</code> must be an exact integer. Indicates the IP port number assigned to the socket which
+      accepts connection requests from clients.</p>
+
+    <p><code>Backlog</code> must be a positive-exact-integer. Indicates the maximum number of connection requests
+      that can be waiting to be accepted by a call to read (technically it is the value passed as the
+      second argument of the UNIX listen() function). The default value of this setting is 128.</p>
+
+    <p><code>Reuse_address</code> should be a boolean value. Controls whether it is possible to assign a
+      port number that is currently active. Note that when a server process terminates, the socket
+      it was using to accept connection requests does not become inactive immediately.
+      Instead it remains active for a few minutes to ensure clean termination of the connections.
+      A setting of false will cause an exception to be raised in that case. A setting of true
+      will allow a port number to be used even if it is active. The default value of
+      this setting is <code><span class="pw">true</span></code>.</p>
+
+    <p><code>Transcoder</code>, if present, must be a <a href="transcoder.html">transcoder</a> object that will be used to encode and decode
+      characters in the stream.</p>
+      
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// A simple network echo server:</span>          
+<span class="kw">let</span> s = tcp_server_stream(2020)
+
+<span class="kw">function</span> echo(client)
+{ showln(stream = client, <a href="read_line.html">read_line</a>(client))
+  <a href="flush_writer.html">flush_writer</a>(client) }
+  
+<span class="kw">letfn</span> loop (client = <a href="read.html">read</a>(s))
+{ !<a href="call_with_stream.html">call_with_stream</a>(client, echo)
+  loop(read(s)) }
+
+<span class="comment">// The following code can be used to test the echo server:</span>
+<span class="kw">let</span> c = <a href="tcp_client_stream.html">tcp_client_stream</a>(<span class="str">"localhost:2020"</span>)
+showln(stream = c, <span class="str">"hello"</span>)
+flush_writer(c)
+read_line(c)
+<span class="comment">//> hello</span>          
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_stream.html">file_stream</a></div>
+      <div class="ref"><a href="pipe_stream.html">pipe_stream</a></div>
+      <div class="ref"><a href="string_reader.html">string_reader</a></div>
+      <div class="ref"><a href="string_writer.html">string_writer</a></div>
+      <div class="ref"><a href="byte_array_reader.html">byte_array_reader</a></div>
+      <div class="ref"><a href="byte_array_writer.html">byte_array_writer</a></div>
+      <div class="ref"><a href="bits_reader.html">bits_reader</a></div>
+      <div class="ref"><a href="bits_writer.html">bits_writer</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

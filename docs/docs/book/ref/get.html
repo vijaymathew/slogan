@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (get)</title>
+  </head>
+
+  <body>
+    <h2>get</h2>
+
+    <div class="prog">
+      <pre><code>
+get(xs, obj, <span class="pw">@optional</span> default = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Return tail of the first element of the <a href="list.html">list</a> <code>xs</code> whose head is <a href="is_equal.html">equivalent</a>
+      to <code>obj</code>. If no such element is found, return <code>default</code>.</p>
+
+    <h3>Examples:</h3>
+    <div class="prog">
+      <pre><code>
+get([1:2, 3:4], 1)
+<span class="comment">// 2</span>
+
+get([1:2, 3:4], 5)
+<span class="comment">// false</span>
+
+get([1:2, 3:4], 5, 6)
+<span class="comment">// 6</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="assoc.html">assoc</a></div>        
+      <div class="ref"><a href="member.html">member</a></div>      
+      <div class="ref"><a href="find.html">find</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (root_task)</title>
+  </head>
+
+  <body>
+    <h2>root_task</h2>
+
+    <div class="prog">
+      <pre><code>
+root_task(fn, <span class="pw">@key</span> args, suspended,
+          name = <a href="void.html">void</a>, group,
+          input_stream = <a href="current_reader.html">current_reader</a>(),
+          output_stream = <a href="current_reader.html">current_writer</a>())
+      </code></pre>
+    </div>
+
+    <p>Return a new <a href="task.html">task</a>.</p>
+
+    <p>This function is similar to <code><a href="task.html">task</a>()</code> except the created task does not inherit the
+      dynamic environment from the current task and the base priority is set to <code>0</code>,
+      the priority boost is set to <code>1.0e-6</code>, and the quantum is set to <code>0.02</code>.
+      The dynamic environment of the task has the global bindings of the parameter objects,
+      except current_reader which is bound to <code>input_stream</code>,
+      current_writer which is bound to <code>output_stream</code>, and current_directory which is
+      bound to the initial current working directory of the current process.</p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="self.html">self</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

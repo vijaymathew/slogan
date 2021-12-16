@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (realize)</title>
+  </head>
+
+  <body>
+    <h2>realize</h2>
+
+    <div class="prog">
+      <pre><code>
+realize(n, s)
+      </code></pre>
+    </div>
+
+    <p>Return a <a href="pair.html">pair</a> with the first <code>n</code> elements of the sequence <code>s</code> in its head and
+      the rest of <code>s</code> in its tail.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+realize(3, [1, 2, 3, 4, 5])
+<span class="comment">// [[1, 2, 3], 4, 5]</span>
+
+<span class="kw">function</span> ints(n) n:<span class="kw">~</span>ints(n+1)
+<span class="kw">let</span> xs = ints(10)
+realize(5, xs)
+<span class="comment">// [10, 11, 12, 13, 14]:15:&lt;promise&gt;</span>
+realize(3, <a href="tail.html">tail</a>(realize(5, xs)))
+<span class="comment">// [15, 16, 17]:18:&lt;promise&gt;</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="nth.html">nth</a></div>
+      <div class="ref"><a href="accumulate.html">accumulate</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

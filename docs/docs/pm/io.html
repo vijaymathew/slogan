@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+  <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right" >
+        <a href="./mt.html" title="Multitasking & Parallelism"
+           accesskey="N">next</a></li>
+      <li class="right" >
+        <a href="./mod.html" title="Modularity"
+           accesskey="P">previous</a> |</li>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+  
+  <div id="site" class="site">
+    <div class="title"><h3>Input and Output</h3></div>
+    <p>All input and output operations are performed through objects called <em>streams</em>. A stream is a pointer into a (possibly infinite) stream of data (often a file), 
+      an opening through which programs may draw bytes or characters from the stream or place bytes or characters into the stream. 
+      A stream may be an input stream, an output stream, or both simultaneously.</p>
+
+    <p>There are initially three streams: the current input stream, current output stream, and current error stream, which are textual streams 
+      connected to the process's standard input, standard output, and standard error streams. Several ways to open new streams are provided.</p>
+
+    <p>If one of the input operations is asked to read from a stream that has reached the end of a finite stream, it returns the <code>eof</code> (end-of-file) object. The predicate <code>is_eof_object</code> may be used to determine if the value returned 
+      from the input operation is the eof object.</p>
+
+    <p>Streams are either binary or textual. A binary stream allows a program to read or write 8-bit unsigned bytes, or "octets," from or 
+      to the underlying stream. A textual stream allows a program to read or write characters.</p>
+
+    <p>A stream may be buffered for efficiency, to eliminate the overhead of a call into the operating system for each byte or character. 
+      Three standard buffer modes are supported: <code>block</code>, <code>line</code>, and <code>none</code>. With block buffering, 
+      input is drawn from a stream and output is sent to the stream in chunks of some implementation-dependent size. With line buffering, 
+      buffering is performed on a line-by-line basis or on some other implementation-dependent basis. Line buffering is typically distinguished 
+      from block buffering only for textual output streams; there are no line divisions in binary streams, and input is likely to be drawn from a 
+      stream as it becomes available. With buffer-mode <code>none</code>, no buffering is performed, so output is sent immediately to 
+      the stream and input is drawn only as needed.</p>
+
+    <p>The remainder of this chapter cover operations on <a href="#transc">transcoders</a>, <a href="#fstreams">file streams</a>,
+      <a href="#stdstreams">standard streams</a> and streams on <a href="#sbstreams">strings</a>, <a href="#sbstreams">bytearrays</a>,
+      <a href="#proc">processes</a> and the <a href="#net">network</a>. We will also discuss <a href="#generic">generic stream functions</a>
+      and <a href="#tokens">functions</a> that specialize on splitting up input streams into <a href="#tokens">tokens</a>.</p>
+
+    <a name="transc"></a>
+    <h4>Transcoders</h4>
+    <p>In many cases, the underlying stream is organized as a sequence of bytes, but these bytes may have to be treated as encodings for characters. 
+      In this case, a textual stream may be created with a transcoder to decode bytes to characters (for input) or encode characters to 
+      bytes (for output). A transcoder encapsulates a codec that determine how characters are represented as bytes. </p>
+
+
+<div class="highlight">
+  <pre><code><b>function: </b>transcoder(codec, @optional eol_style = 'crlf, error_handling_mode = 'ignore)
+<b>returns: </b>a transcoder encapsulating `codec`, `eol_style`, and `error_handling_mode`.
+
+`codec` must be one of the following symbols: 'iso_8859_1, 'ascii, 'utf_8,
+'utf_16, 'utf_16le, 'utf_16be, 'ucs_2, 'ucs_2le, 'ucs_2be, 'ucs_4, 'ucs_4le, 'ucs_4be.
+
+`eol_style` determines how line endings are recognized. Supported eol styles are:
+
+'lf: line-feed character.
+'cr: carriage-return character.
+'crlf: carriage return followed by line feed.
+'none: no line endings are recognized.
+
+In addition to the codec and eol style, a transcoder encapsulates just one other
+piece of information: an error-handling mode that determine what happens if a decoding
+or encoding error occurs, i.e., if a sequence of bytes cannot be converted to a character
+with the encapsulated codec in the input direction or a character cannot be converted to
+a sequence of bytes with the encapsulated codec in the output direction. The error-handling
+mode should be one of 'ignore, 'raise and 'replace.
+If the error-handling mode is 'ignore, the offending sequence of bytes or the
+character is ignored. If the error-handling mode is 'raise, an exception with condition
+type i/o-decoding or i/o-encoding is raised; in the input direction, the stream is positioned
+beyond the sequence of bytes. If the error-handling mode is 'replace, a replacement
+character or character encoding is produced. In the input direction the replacement character
+is `U+FFFD`, while in the output direction the replacement is either the encoding of
+`U+FFFD` for unicode codecs or the encoding of the question-mark character ( ? )
+for other codecs.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>transcoder_codec(transcoder)
+<b>function: </b>transcoder_eol_style(transcoder)
+<b>function: </b>transcoder_error_handling_mode(transcoder)
+<b>returns: </b>the codec, eol_style, or error_handling_mode of transcoder.
+
+<span class="c">// Example:</span>
+let t = transcoder('utf_8, 'lf, 'raise); 
+transcoder_codec(t); 
+<span class="c">//=> utf_8</span>
+transcoder_eol_style(t); 
+<span class="c">//=> lf</span>
+transcoder_error_handling_mode(t); 
+<span class="c">//=> raise</span></code></pre>
+</div>
+
+<a name="fstreams"></a>
+<h4>File Streams</h4>
+<div class="highlight">
+  <pre><code><b>function: </b>file_reader(path, @key options, buffer_mode, transcoder)
+<b>returns: </b>a new input stream for the file named by `path`.
+      
+If present, `options` must be a list of symbols that control aspects of file operations.
+The only option that is valid is 'truncate which means that the file will be truncated
+when it is opened.
+
+`buffer_mode` is a symbol that controls buffering. Valid values are 'block, 'line and 'none.
+By default, buffering is turned off.
+
+If `transcoder` is specified, it must be a transcoder object and file_reader will return a
+textual input stream that will be decoded with `transcoder`. Otherwise, a binary input stream
+is returned.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>file_writer(path, @key options, buffer_mode, transcoder, permissions = 0o666)
+<b>returns: </b>a new output stream for the file named by `path`.
+
+If present, `options` must be a list of symbols that control aspects of file operations.
+The options that are valid are 'create, 'no_create, 'maybe_create, 'append and 'truncate.
+
+The 'create option requires that the file does not exist (otherwise an exception is raised) and
+creates the file when it is opened.
+The 'no_create option requires that the file exist (otherwise an exception is raised).
+The 'maybe_create option will create the file if it does not exist. This is the default option.
+The 'append option controls whether output will be added to the end of the file.
+This is useful for writing to log files that might be open by more than one process.
+By default appending is turned-off.
+The 'truncate option controls whether the file will be truncated when it is opened.
+This option is turned-on by default when no 'append option is provided and turned-off
+when 'append is not provided.
+
+`buffer_mode` is a symbol that controls buffering. Valid values are 'block, 'line and 'none.
+By default, buffering is turned off.
+
+If `transcoder` is present and not false, it must be a transcoder object and file_writer
+will return a textual output stream that will be encoded using `transcoder`.
+Otherwise, a binary output stream is returned.
+
+`permissions` control the UNIX permissions that will be attached to the file if it is created.
+The default value of this setting is `0o666`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>file_stream(path, @key options, buffer_mode, transcoder, permissions = 0o666)
+<b>returns: </b>a new input/output stream for the file named by `path`.</code></pre>
+</div>
+
+<a name="stdstreams"/></a>
+<h4>Standard Streams</h4>
+
+<div class="highlight">
+  <pre><code><b>function: </b>current_reader()
+<b>function: </b>current_writer()
+<b>function: </b>current_error_stream()
+<b>returns: </b>the current input/output/error streams.
+
+These function return streams that are attached to a process's standard input, standard output,
+and standard error streams.</code></pre>
+</div>
+
+<a name="sbstreams"></a>
+<h4>String and Byte Array Streams</h4>
+
+<div class="highlight">
+  <pre><code><b>function: </b>byte_array_reader(byte_array, @key transcoder)
+<b>returns: </b>a new input stream that draws input from the byte_array.
+
+`byte_array` must be an array of unsigned bytes.
+If `transcoder` is present, it must be a transcoder object and byte_array_reader will return
+a textual input stream which will be decoded with `transcoder`.
+Otherwise, a binary input stream is returned.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>byte_array_writer(@key transcoder)
+<b>returns: </b>a new output stream for writing unsigned bytes.
+
+If `transcoder` is present, it must be a transcoder object, and byte_array_writer will return
+a textual output stream which will be encoded with `transcoder`.
+Otherwise, a binary output stream is returned.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>get_output_bytes(s)
+<b>returns: </b>the array of bytes written to the byte array output stream `s`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_reader(string)
+<b>returns: </b>a new input stream that draws input from `string`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>string_writer()
+<b>returns: </b>a new output stream for writing characters.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>get_output_string(s)
+<b>returns: </b>a string of characters written to the string output stream `s`.</code></pre>
+</div>
+
+<a name="proc"></a>
+<h4>Process Streams</h4>
+<p>The functions described in this section start a new operating system process and create a bidirectional stream for
+  communication with that process on its standard input and standard output. </p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>pipe_reader(path, arguments = [], environment, directory, stdin_redirection = true,
+                      stdout_redirection = true, stderr_redirection, pseudo_terminal,
+                      show_console = true, transcoder)
+<b>function: </b>pipe_writer(path, arguments = [], environment, directory, stdin_redirection = true, 
+                      stdout_redirection = true, stderr_redirection, pseudo_terminal,
+                      show_console = true, transcoder)      
+<b>function: </b>pipe_stream(path, arguments = [], environment, directory, stdin_redirection = true, 
+                      stdout_redirection = true, stderr_redirection, pseudo_terminal, 
+                      show_console = true, transcoder)      
+<b>returns: </b>a stream that can be used to communicate with an operating system process.
+
+`path` indicates the location of the executable program in the filesystem.
+
+`direction` should be one of the symbols 'input_output, 'input or 'output.
+Defaults to 'input_output.
+
+`arguments` a list of strings. Indicates the string arguments that are passed to the program.
+The default value of this setting is the empty list (i.e. no arguments).
+
+`environment` should be a list of strings. Indicates the set of environment variable bindings
+that the process receives. Each element of the list is a string of the form "VAR=VALUE",
+where VAR is the name of the variable and VALUE is its binding. When environment is false,
+the process inherits the environment variable bindings of its parent process.
+The default value of this setting is false.
+
+`directory` indicates the current working directory of the process. When directory is false,
+the process uses the value of `current_directory()`. The default value of this setting is false.
+
+`stdin_redirection` should be either true or false. Indicates how the standard input of the
+process is redirected. A setting of true will redirect the standard input from the process-stream
+(i.e. what is written to the process-stream will be available on the standard input).
+A setting of false will leave the standard input as-is, which typically results in input coming
+from the console. The default value of this setting is true.
+
+`stdout_redirection` should be either true or false. Indicates how the standard output of
+the process is redirected. A setting of true will redirect the standard output to the
+process-stream (i.e. all output to standard output can be read from the process-stream).
+A setting of false will leave the standard output as-is, which typically results in the
+output going to the console. The default value of this setting is true.
+
+`stderr_redirection` should be either true or false. Indicates how the standard error of
+the process is redirected. A setting of true will redirect the standard error to the
+process-stream (i.e. all output to standard error can be read from the process-stream).
+A setting of false will leave the standard error as-is, which typically results in error
+messages being output to the console. The default value of this setting is false.
+
+`pseudo_terminal` should be either true or false. This setting applies to UNIX. It indicates
+what type of device will be bound to the process' standard input and standard output.
+A setting of true will use a pseudo-terminal device (this is a device that behaves like
+a tty device even though there is no real terminal or user directly involved). A setting of
+false will use a pair of pipes. The difference is important for programs which behave
+differently when they are used interactively, for example shells. The default value of
+this setting is false.
+
+`show_console` should be either true or false. It controls whether the process'
+console window will be hidden or visible. The default value of this setting is true
+(i.e. show the console window).
+
+`transcoder`, if present, must be a transcoder object, and this function returns a
+textual stream whose transcoder is `transcoder`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>pipe_process_pid(s)
+<b>returns: </b>the ID of the process attached to the process stream `s`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>pipe_process_status(s)
+<b>returns: </b>the exit status of the process attached to the process stream `s`.</code></pre>
+</div>
+
+<a name="net"></a>
+<h4>TCP Streams</h4>
+
+<div class="highlight">
+  <pre><code><b>function: </b>tcp_server_stream(address, @key port_number, backlog = 128,
+                            reuse_address = true, transcoder)
+<b>returns: </b>a tcp-server-stream from which network connections to clients are obtained.
+
+`address` indicates the internet address of the network interface on which connections
+requests are accepted, and possibly the IP port number. A string of the form "INTF:PORT"
+will be parsed and the value of `INTF` will be assigned to address and the integer value of
+`PORT` will be assigned to port_number. This argument can also be a 4 element u8 array which
+contain the 32-bit IPv4 address or an 8 element u8 array which contain the 128-bit IPv6 address.
+
+`port_number` must be an exact integer. Indicates the IP port number assigned to the socket which
+accepts connection requests from clients.
+
+`backlog` must be a positive-exact-integer. Indicates the maximum number of connection requests
+that can be waiting to be accepted by a call to read (technically it is the value passed as the
+second argument of the UNIX listen() function). The default value of this setting is 128.
+
+`reuse_address` should be either true or false. Controls whether it is possible to assign a
+port number that is currently active. Note that when a server process terminates, the socket
+it was using to accept connection requests does not become inactive immediately.
+Instead it remains active for a few minutes to ensure clean termination of the connections.
+A setting of false will cause an exception to be raised in that case. A setting of true
+will allow a port number to be used even if it is active. The default value of
+this setting is true.
+
+`transcoder`, if present, must be a transcoder object, and this function returns a
+textual stream whose transcoder is `transcoder`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>tcp_client_stream(address, @key port_number, keep_alive, coalesce = true, transcoder)
+<b>returns:</b> a tcp-client-stream that represent a connection to a TCP server and allows
+communication with that server.
+
+`address` indicates the internet address of the server, and possibly the IP port number.
+A string of the form "INTF:PORT" will be parsed and the value of `INTF` will be assigned
+to address and the integer value of `PORT` will be assigned to port_number.
+This argument can also be a 4 element u8 array which contains the 32-bit IPv4 address or
+an 8 element u8 array which contains the 128-bit IPv6 address.
+
+`port_number` must be an exact integer. Indicates the IP port number of the server to connect.
+
+`keep_alive` should be either true or false. Controls the use of the "keep alive" option
+on the connection. The "keep alive" option will periodically send control packets on
+otherwise idle network connections to ensure that the server host is active and reachable.
+The default value of this setting is false.
+
+`coalesce` should be either true or false. Controls the use of TCP's "Nagle algorithm"
+which reduces the number of small packets by delaying their transmission and coalescing
+them into larger packets. A setting of true will coalesce small packets into larger ones.
+A setting of false will transmit packets as soon as possible.
+The default value of this setting is true. Note that this setting does not
+affect the buffering of the stream.
+`transcoder`, if present, must be a transcoder object, and this function returns a
+textual stream whose transcoder is `transcoder`.</code></pre>
+</div>
+
+<a name="generic"></a>
+<h4>Stream Operations</h4>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_stream(obj)
+<b>function: </b>is_writer(obj)
+<b>function: </b>is_reader(obj)
+<b>returns: </b>true if `obj` is a stream, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>close_stream(s)
+<b>function: </b>close_writer(s)
+<b>function: </b>close_reader(s)
+returns: void
+
+If the stream `s` is not already closed, these functions closes it, first flushing
+any buffered bytes or characters to the underlying stream if the stream is an output stream.
+Once a stream is closed, no more input or output operations may be performed on it.
+Because the operating system may place limits on the number of file streams open at one time
+or restrict access to an open file, it is good practice to close any file stream that will
+no longer be used for input or output.
+Closing a stream that has already been closed has no effect.
+
+Closing a string or byte array stream has no effect. As they consume no system resources, string
+and byte array streams can be safely reclaimed by the garbage collector.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>stream_position(stream)
+<b>returns: </b>the stream's current position.
+
+A stream may allow queries to determine its current position in the underlying
+stream of bytes or characters. If so, stream_position returns the current position.
+For binary streams, the position is always an exact nonnegative integer byte displacement
+from the start of the byte stream. For textual streams, the representation of a position
+is unspecified; it may not be an exact nonnegative integer and, even if it is, it may not
+represent either a byte or character displacement in the underlying stream.
+If stream_position is called on a stream that does not support it, an exception is raised.</code></pre>
+</div>
+
+
+<div class="highlight">
+  <pre><code><b>function: </b>stream_has_position(stream)
+<b>returns: </b>true if `stream` allows querying position, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>set_stream_position(stream, pos, @optional whence = 'beginning)
+<b>returns: </b>the new position on success.
+      
+A stream may allow its current position to be moved directly to a different position
+in the underlying stream of bytes or characters. If so, set_stream_position changes the
+current position to `pos`. For binary streams, the position `pos` must be an exact
+nonnegative integer byte displacement from the start of the byte stream.
+For textual streams, the representation of a position is unspecified, but `pos` must
+be an appropriate position for the textual stream. If set_stream_position is called on a
+stream that does not support it, an exception is raised.
+
+The symbolic argument `whence` should be one of: 'beginning, 'current or 'end. When `whence` is
+omitted or is 'beginning, the position is relative to the beginning of the file. When `whence` is 'current,
+`pos` is taken to be relative to the current byte position of the file.
+When whence is `end`, `pos` is taken to be relative to the end of the file.
+
+If `stream` is a binary output stream and the position is set beyond the current end
+of the data in the underlying stream, `stream` is not extended until new data is written
+at that position. If new data is written at that position, the contents of each
+intervening position is unspecified. Binary streams created with file_writer and file_reader
+can always be extended in this manner within the limits of the underlying operating system.
+In other cases, attempts to set the stream beyond the current end of data in the underlying
+object may result in an exception.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>call_with_stream(stream, f)
+<b>returns: </b>the value returned by the function `f`.
+
+`call_with_stream` calls the `f` with `stream` as its only argument. If `f` returns,
+call_with_stream closes `stream` and returns the value returned by `f`. If `f` raise an exception,
+call_with_stream closes `stream` and re-throws the exception.
+
+`call_with_stream` does not automatically close `stream` if a continuation created outside of `f`
+is invoked, since it is possible that another continuation created inside of `f` will be invoked
+at a later time, returning control to `f`.
+
+<span class="c">// Example:</span>
+call_with_stream(file_writer("abc"), ^(s) println(stream = s, "hello, world"));
+call_with_stream(file_reader("abc"), ^(s) read_line(s));
+<span class="c">//=> "hello, world"</span></code></pre>
+</div>
+                           
+
+<h4>Input Operations</h4>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_eof_object(obj)
+<b>returns: </b>true if `obj` is the eof-object, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>eof_object()
+<b>returns: </b>the eof-object.
+</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_byte(s = current_reader()) 
+<b>returns: </b>the next byte from binary input stream `s`, or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_n_bytes(n, s = current_reader()) 
+<b>returns: </b>an unsigned byte array containing the next `n` bytes from binary input stream `s`,
+or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_all_bytes(s = current_reader(), bufsize = 1024) 
+<b>returns: </b>an unsigned byte array containing all the remaining bytes from binary input stream `s`, 
+or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_char(s = current_reader()) 
+<b>returns: </b>the next character from textual input stream `s`, or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>peek_char(s = current_reader()) 
+<b>returns: </b>the next character from textual input stream `s` without actually removing it 
+from the stream, or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_n_chars(n, s = current_reader()) 
+<b>returns: </b>a string containing the next `n` characters from textual input stream `s`,
+or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_all_chars(s = current_reader(), bufsize = 1024) 
+<b>returns: </b>a string containing all the remaining characters from textual input stream `s`, 
+or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_line(s = current_reader(), separator = \newline, include_separator = false,
+                    max_length = false) 
+<b>returns: </b>a string containing all the characters upto `separator` from the textual
+input stream `s`, or the eof object.
+
+Reads characters from the character input-stream `s` until a specific separator or
+the end-of-file is encountered and returns a string containing the sequence of characters
+read. If it is specified, `max_length` must be a nonnegative exact integer and it places
+an upper limit on the number of characters that are read.
+
+`separator` is included at the end of the string only if it was the last character read and
+`include_separator` is true. `separator` must be a character or false (in which case all
+the characters until the end-of-file are read).</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_all(s = current_reader(), reader = read) 
+<b>returns: </b>a list of values read by `reader` from the input stream `s`.
+
+Repeatedly calls the function `reader` with the stream `s` as the sole argument and
+accumulates a list of each value returned up to the end-of-file object.
+Returns the accumulated list without the end-of-file object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read(s = current_reader()) 
+<b>returns: </b>the next Slogan datum from the input stream `s`, or the eof object.
+      
+`s` should point to a stream of compiled Slogan datums.
+(To parse and read tokens from Slogan source code, use the tokenizer functions described
+<a href="#tokens">later</a> in this chapter.)
+
+</code></pre>
+</div>
+
+<h4>Output Operations</h4>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_byte(byte, s = current_writer()) 
+<b>returns: </b>void
+
+Writes `byte` to the binary output-stream `s`. `byte` must be a non-negative
+integer in the range 0 - 255.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_bytes(bytes, s = current_writer()) 
+<b>returns: </b>the number of bytes written.
+
+Writes the elements in `bytes` to the binary output-stream `s`.
+`bytes` must be a byte array (#u8[...]) of unsigned integers in the range 0 - 255.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_n_bytes(bytes, start, end, s = current_writer()) 
+<b>returns: </b>the number of bytes written.
+
+Writes the elements in the range `start` to `end` from `bytes` to the binary output-stream `s`.
+`bytes` must be a byte array (#u8[...]) of unsigned integers in the range 0 - 255.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_char(char, s = current_writer()) 
+<b>returns: </b>void
+
+Writes the character `char` to the textual output-stream `s`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_chars(str, s = current_writer()) 
+<b>returns: </b>void
+
+Writes the characters in the string `str` to the textual output-stream `s`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_n_chars(str, start, end, s = current_writer()) 
+<b>returns: </b>void</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>show(@key stream = current_writer(), quotes = false, obj1, ...)
+<b>function: </b>showln(@key stream = current_writer(), quotes = false, obj1, ...)
+<b>returns: </b>void
+
+Writes the textual representation of the objects `obj1 ...` to the output-stream `stream`.
+If `quotes` is true, prints the enclosing quotes for strings and symbols.
+`showln` also outputs a line-feed character (newline) after printing the objects.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write(object, stream = current_writer())
+<b>returns: </b>void
+
+Writes the compiled (or internal) representation of `object` to the output-stream `stream`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>display(object, stream = current_writer())
+<b>returns: </b>void
+
+Similar to `write`, but prints strings without quotes.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>print(@key stream = current_writer(), obj1, ...)
+<b>function: </b>println(@key stream = current_writer(), obj1, ...)      
+<b>returns: </b>void
+
+Similar to `display`, but when a compound object is encountered (pair, list, array)
+the elements of that object are recursively written without the surrounding
+tokens (parentheses, spaces, dots, etc).</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>newline(s = current_writer()) 
+<b>returns: </b>void
+
+Outputs a line-feed character (newline) to the textual output-stream `s`.</code></pre>
+</div>
+
+
+<div class="highlight">
+  <pre><code><b>function: </b>flush_writer(s = current_writer()) 
+<b>returns: </b>void
+
+Forces any bytes or characters in the buffer associated with the output-stream `s`
+to be sent immediately to the underlying stream.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>reader_timeout(reader, timeout, @optional f)
+<b>function: </b>writer_timeout(writer, timeout, @optional f)      
+<b>returns: </b>void
+
+Set timeouts on read and write operations.
+Both `reader` and `writer` are streams. `timeout` is a real number indicating
+the number of seconds to wait. The optional argument `f`, if specified, must be a function
+that takes no arguments and will be called on the timeout event. If this call return false, t
+he IO operation is abandoned and the end-of-file object is returned for readers and an
+exception will be raised for writers. Otherwise the IO operation will be attempted again.
+Note that if the stream's timeout value has not changed the `f` will be called again immediately.
+`f` defaults to a function that always return false.</code></pre>
+</div>
+
+<a name="bit_streams"></a>
+<h4>Bit streams</h4>
+<p>Bit streams are for reading and writing data at bit-level. As a simple example of bit encoded data,
+  consider 16-bit color values. In 16-bit color, the red and blue components are encoded using 5-bits each,
+  while the green component takes up 6-bit. The following program reads and writes 16-bit encoded color
+  values: </p>
+
+<div class="highlight">
+  <pre><code>function encode_color(rgb)
+  letseq (out = byte_array_writer(),
+          encoder = bits_writer(out))
+  { write_bits(encoder, rgb['red], 5)
+    write_bits(encoder, rgb['green], 6)
+    write_bits(encoder, rgb['blue], 5)
+    bits_writer_flush(encoder)
+    get_output_bytes(out) }
+
+function decode_color(color)
+  letseq (in = byte_array_reader(color),
+          decoder = bits_reader(in),
+          r = read_bits(decoder, 5),
+          g = read_bits(decoder, 6),
+          b = read_bits(decoder, 5))
+      #{'red: r, 'green: g, 'blue: b}
+
+decode_color(encode_color(#{'red: 12, 'green: 51, 'blue: 20}))
+<span class="c">//=> #{'red: 12, 'green: 51, 'blue: 20}</span></code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bits_reader(r)
+<b>returns: </b>a bits reader that read bits from the stream reader `r`.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_bit(br)
+<b>returns: </b>true if the next bit in the bits_reader `br` is 1, false otherwise.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>read_bits(br, n)
+<b>returns: </b>an integer packed with the next `n` bits from the bits_reader `br`.
+
+`n` must be in the range 1-31</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bits_reader_align(br)
+<b>returns: </b>void.
+
+Align the bits_reader `br` to the next byte in the input.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bits_writer(w)
+<b>returns: </b>a bits writer that write bits to the writer stream `w`.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_bit(bw, b)
+<b>returns: </b>void
+
+Write the bit `b` to the bits_writer `bw`.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>write_bits(bw, i, n)
+<b>returns: </b>void
+
+Write `n` bits from the integer `i` to the bits_writer `bw`.</code></pre></div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>bits_writer_flush(bw)
+<b>returns: </b>void
+
+Flush the bits in the bits_writer `bw` to the underlying stream writer.</code></pre></div>
+
+    <a name="tokens"></a>
+<h4>Tokenizers</h4>
+<p>A stream of characters read from an input stream can be split into tokens using a tokenizer. This sections gives a 
+  description of functions used for tokenizing an input stream.</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>stream_tokenizer(delimiters, s = current_reader()) 
+<b>returns: </b>a tokenizer on the input stream `s`.
+
+If `delimiters` is either a character or a list of characters, a tokenizer will
+be returned that splits the stream at the character or each one of the characters.
+If delimiters is false, a tokenizer will be created that treat the input stream as
+Slogan source code and tokenizes the input based on the language syntax.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>get_token(tokenizer) 
+<b>returns: </b>the next token from `tokenizer` or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>peek_token(tokenizer) 
+<b>returns: </b>the next token from `tokenizer` without removing it from the stream or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_keyword_token(token) 
+<b>returns: </b>true if the symbol `token` is a Slogan keyword, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>is_special_token(token) 
+<b>returns: </b>true if the symbol `token` represents a Slogan operator, false otherwise.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>special_token_to_string(token) 
+<b>returns: </b>a textual representation of the symbol `token`.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>expression(tokenizer) 
+<b>returns: </b>the next compiled expression from `tokenizer` or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>statement(tokenizer) 
+<b>returns: </b>the next compiled statement from `tokenizer` or the eof object.</code></pre>
+</div>
+
+<div class="highlight">
+  <pre><code><b>function: </b>slogan(tokenizer) 
+<b>returns: </b>the next compiled expression or statement from `tokenizer` or the eof object.</code></pre>
+</div>
+
+  </div>
+</body>
+</html>

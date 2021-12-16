@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (now)</title>
+  </head>
+
+  <body>
+    <h2>now</h2>
+
+    <div class="prog">
+      <pre><code>
+now(<span class="pw">@optional</span> milliseconds)
+      </code></pre>
+    </div>
+
+    <p>Return an <a href="assoc.html">association list</a> with the various components of time.</p>
+
+    <p>If <code>milliseconds</code> is not provided, the current system time is returned.
+      Otherwise, <code>milliseconds</code> is parsed to time components and returned.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+now()
+<span class="comment">// [seconds:38, minute:29, hour:21, month_day:18, month:5, year:2016,
+    week_day:6, year_day:169, is_utc: false, is_dst:false]</span>
+
+now(now_seconds())
+<span class="comment">// [seconds:0, minute:2, hour:22, month_day:18, month:5, year:2016,
+    week_day:6, year_day:169, is_utc: false, is_dst:false]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="now_utc.html">now_utc</a></div>        
+      <div class="ref"><a href="now_seconds.html">now_seconds</a></div>  
+      <div class="ref"><a href="time.html">time</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (bits_reader)</title>
+  </head>
+
+  <body>
+    <h2>bits_reader</h2>
+
+    <div class="prog">
+      <pre><code>
+bits_reader(r)
+      </code></pre>
+    </div>
+
+    <p>Return a bits reader that read bits from the <a href="current_reader.html">stream reader</a> <code>r</code>.</p>
+    
+    <h3>Examples:</h3>
+
+    <p>Bit streams are for reading and writing data at bit-level. As a simple example of bit encoded data, consider 16-bit color values.
+      In 16-bit color, the red and blue components are encoded using 5-bits each, while the green component takes up 6-bit.
+      The following program reads and writes 16-bit encoded color values:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> encode_color(rgb)
+  <span class="kw">let</span> (out = <a href="byte_array_writer.html">byte_array_writer</a>(),
+       encoder = <a href="bits_writer.html">bits_writer</a>(out))
+  { <a href="write_bits.html">write_bits</a>(encoder, rgb[<span class="sym">'red</span>], 5)
+    write_bits(encoder, rgb[<span class="sym">'green</span>], 6)
+    write_bits(encoder, rgb[<span class="sym">'blue</span>], 5)
+    <a href="bits_writer_flush.html">bits_writer_flush</a>(encoder)
+    <a href="get_output_bytes.html">get_output_bytes</a>(out) }
+
+<span class="kw">function</span> decode_color(color)
+  <span class="kw">let</span> (in = <a href="byte_array_writer.html">byte_array_reader</a>(color),
+          decoder = bits_reader(in),
+          r = <a href="read_bits.html">read_bits</a>(decoder, 5),
+          g = read_bits(decoder, 6),
+          b = read_bits(decoder, 5))
+      #{<span class="sym">'red</span>: r, <span class="sym">'green</span>: g, <span class="sym">'blue</span>: b}
+
+decode_color(encode_color(#{<span class="sym">'red</span>: 12, <span class="sym">'green</span>: 51, <span class="sym">'blue</span>: 20}))
+<span class="comment">// #{red: 12, green: 51, blue: 20}</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_reader.html">file_reader</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

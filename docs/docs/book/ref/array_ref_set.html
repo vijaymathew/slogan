@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (array_ref_set)</title>
+  </head>
+
+  <body>
+    <h2>array_ref_set</h2>
+
+    <div class="prog">
+      <pre><code>
+array_ref_set(arr, i, obj)
+      </code></pre>
+    </div>
+
+    <p>Set the element at the (zero-based) index <code>i</code> of the <a href="array.html">array</a> <code>arr</code> to the object <code>obj</code>.
+      Return <code><a href="void.html">void</a></code>.</p>
+
+    <p>The index argument can also be a list of integers that indicates the position inside a multi-dimensional array.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> a = <a href="make_array.html">make_array</a>([2, 3])
+a
+<span class="comment">// #[#[false, false, false], #[false, false, false]]</span>
+array_ref_set(a, [1, 2], <span class="str">"hello"</span>)
+<a href="array_ref.html">array_ref</a>(a, [1, 2])
+<span class="comment">// hello</span>
+
+a[1][2]
+<span class="comment">// hello</span>
+a[0][1] = 100
+a
+<span class="comment">// #[#[false, 100, false], #[false, false, "hello"]]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="array_ref.html">array_ref</a></div>
+      <div class="ref"><a href="array_set.html">array_set</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

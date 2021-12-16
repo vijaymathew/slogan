@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (file_reader)</title>
+  </head>
+
+  <body>
+    <h2>file_reader</h2>
+
+    <div class="prog">
+      <pre><code>
+file_reader(path, <span class="pw">@key</span> options, buffer_mode, transcoder)
+      </code></pre>
+    </div>
+
+    <p>Return a new <a href="current_reader.html">input stream</a> for the file named identified by <code>path</code>.</p>
+      
+    <p>If present, <code>options</code> must be a list of symbols that control aspects of file operations.
+      The only option that is valid is <code><span class="sym">'truncate</span></code> which means that the file will be truncated
+      when it is opened.</p>
+
+    <p><code>Buffer_mode</code> is a symbol that controls buffering. Valid values are <code><span class="sym">'block</span></code>,
+      <code><span class="sym">'line</span></code> and <code><span class="sym">'none</span></code>. By default, buffering is turned off.</p>
+
+    <p>If <code>transcoder</code> is specified, it must be a <a href="transcoder.html">transcoder</a> object and <code>file_reader</code> will return a
+      textual input stream that will be decoded with this object. Otherwise, a binary input stream is returned.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// reading a utf-8 encoded text file:</span>
+<span class="kw">let</span> t = transcoder(<span class="sym">'UTF_8</span>)
+<span class="kw">let</span> f = file_reader(<span class="str">"greek.txt"</span>, transcoder = t)
+<span class="kw">let</span> contents = <a href="read_all_chars.html">read_all_chars</a>(f)
+<a href="close_reader.html">close_reader</a>(f)
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_writer.html">file_writer</a></div>
+      <div class="ref"><a href="read_all_bytes.html">read_all_bytes</a></div>
+      <div class="ref"><a href="call_with_stream.html">call_with_stream</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

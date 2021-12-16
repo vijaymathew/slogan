@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fxshift_***)</title>
+  </head>
+
+  <body>
+    <h2>fxshift_***</h2>
+
+    <div class="prog">
+      <pre><code>
+fxshift(fx, i)
+fxshift_left(fx, i)
+fxshift_right(fx, i)
+fxshift_wrap(fx, i)
+fxshift_left_wrap(fx, i)
+fxshift_right_wrap(fx, i)
+fxlshift_right_wrap(fx, i)
+      </code></pre>
+    </div>
+
+    <p>Return the <span class="is_fixnum.html">fixnum</span> <code>fx</code> arithmetically or logically shifted left or right
+      by <code>i</code> positions.</p>
+
+    <p>For all functions except <code>fxshift</code> and <code>fxshift_wrap</code>, <code>i</code> must be a non-negative integer.
+      If <code>i</code> is non-negative, it must be less than the value of <code><a href="fixnum_width.html">fixnum_width</a>()</code>.
+      If <code>i</code> is negative, <code>fxshift</code> will return the result of arithmetically shifting <code>fx</code> right by <code>i</code> bits.
+      Otherwise, <code>fxshift</code> will return the result of shifting <code>fx</code> left by <code>i</code> bits.</p>
+
+    <p><code>Fxlshift_right_wrap</code> logically right-shifts <code>fx</code> by <code>i</code> bits.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="number_to_string.html">number_to_string</a>(<a href="fxand.html">fxior</a>(4294967296, fxshift(1, 2)), 2)
+<span class="comment">// 100000000000000000000000000000100</span>
+
+number_to_string(fxior(4294967296, fxshift(fxshift(1, 2), -3)), 2)
+<span class="comment">// 100000000000000000000000000000000</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="fxadd.html">fxadd</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

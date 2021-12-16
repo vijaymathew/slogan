@@ -1,0 +1,245 @@
+/* general site formatting */
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: white;
+  font-family: 'Verdana', Geneva, sans-serif;
+}
+
+#site {
+  max-width: 55em;
+  text-align: left;
+  line-height: 1.5em;
+  margin: 3em auto 2em auto;
+  padding: 0 1.5em;
+}
+#site .title {
+    font-weight: bold;
+}
+#site .links {
+    text-align: center;
+}
+#site .links a {
+    text-decoration: none;
+    color: #808080;
+}
+#site .contact a:hover {
+    color: black;
+}
+
+.title, h1, h2, h3, h4, h5, h6 {
+  font-family: Helvetica, Arial, Clean, sans-serif;
+  font-size: 105%;
+}
+
+.title {
+  text-align: center;
+  font-size: 130%;
+}
+
+h1 {
+  font-size: 110%;
+  padding-top: 1ex;
+}
+
+h2 {
+  padding-top: 1ex;
+}
+
+h5 {
+    font-size: 100%; font-style: italic;
+}
+
+p {
+  margin: 1em 0;
+}
+
+a {
+  text-decoration: none;
+  color: #00b;
+}
+  a:visited { color: #88b; }
+  a:hover   { color: #008; }
+
+ol {
+  margin-left: 2.25em;
+}
+
+ul {
+  margin-left: 1.8em;
+  list-style-type: circle;
+}
+
+.figure {
+  text-align: center;
+}
+  .figure p.note { font-size: 75%; }
+
+hr {
+  margin: 40px 0 10px 0;
+}
+
+/* benchmarks table */
+
+table.benchmarks {
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: collapse;
+}
+  table.benchmarks thead {
+    /* border-top: 1px solid black; */
+    border-bottom: 1px solid black;
+  }
+  table.benchmarks tbody {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+  }
+  table.benchmarks colgroup col.relative {
+    border-left: 1px solid black;
+  }
+  table.benchmarks thead th,
+  table.benchmarks thead td {
+    width: 10ex;
+    text-align: center;
+    padding: 0 1ex;
+  }
+  table.benchmarks thead td {
+    padding-bottom: 0.75ex;
+  }
+  table.benchmarks tbody {
+    font: 80% Monaco, Courier, mono;
+  }
+  table.benchmarks tbody th {
+    font-weight: normal;
+    text-align: left;
+    padding: 0 1em;
+  }
+  table.benchmarks tbody td.data {
+    text-align: right;
+    padding: 0 2em 0 0;
+  }
+
+/* inline code and code blocks */
+
+code {
+     font: 105% Courier, 'Courier New', Courier, monospace; 
+    /* font: 100% Monaco, 'Lucida Console', Monaco, monospace; */
+}
+
+pre {
+  border: 1px solid #ddd;
+  margin: 1em 2em 1em 1.5em;
+  padding: .75em 1.25em;
+  line-height: 1em;
+}
+
+.sidebar {
+  border: 1px solid #ddd;
+  padding: .75em 1.25em;
+  line-height: 1.45em;
+  margin: 1em 0.5em 1em 0em;
+  font-size: 90%;
+}
+
+blockquote {
+  margin: 1em 2em 1em 1em;
+  background-color: #fcedde;
+}
+
+/* pages listing blog posts */
+
+#blogindex {
+  width: 30em;
+  margin: 2em auto 2em auto;
+}
+  #blogindex ul {
+    margin: 0 2.5em 0 1em;
+  }
+  #blogindex ul.posts {
+    list-style-type: none;
+  }
+    #blogindex ul.posts li {
+      line-height: 1.75em;
+      margin: 0;
+    }
+    #blogindex ul.posts .timestamp {
+      float: right;
+      color: #aaa;
+    }
+
+/* blog post pages */
+
+#blogpost {
+  margin-bottom: 3em;
+}
+  #blogpost .timestamp {
+    color: #aaa;
+  }
+
+#trackbacks {
+  margin-bottom: 3em;
+}
+
+/* disqus comment threads */
+
+#disqus_thread {
+  font-family: Helvetica, Arial, Clean, sans-serif;
+  font-size: 85%;
+}
+  #dsq-pagination {
+    font-size: 85%;
+  }
+
+.chaplink {
+  font-family: Helvetica, Arial, Clean, sans-serif;
+  font-size: 90%;
+}
+.prevlink {
+  float: left;
+}
+.nextlink {
+  float: right;
+}
+
+/* downloads page */
+
+.downloads {
+  border-collapse: separate;
+  border-spacing: 2px;
+  border-color: silver;
+  margin-left: 5%;
+  width: 90%;
+}
+.downloads tbody {
+  width: 100%;
+}
+.downloads td {
+  text-align: center;
+  width: 25%;
+}
+.downloads th {
+  padding: 0 5px;
+}
+.downloads td, .downloads th {
+  border: solid 1px;
+  padding: 1px;
+  vertical-align: middle;
+}
+.downloads a {
+  display: block;
+  width: 100%;
+}
+.downloads a:hover {
+  background: lightgreen;
+}
+
+.api b { color: #445588; font-weight: bold; font-size: 90% }
+.api code { color: #445588; font-style: italic; font-size: 95% }

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (ffi_call_***)</title>
+  </head>
+
+  <body>
+    <h2>ffi_call_***</h2>
+
+    <p>The functions described below are used for calling a C function.
+      <code>fn_pointer</code> is the function pointer returned by <code><a href="ffi_fn.html">ffi_fn</a></code>.
+      <code>Args</code> must be an array and <code>argp</code> must be a pointer to a C object. That means <code>argp</code> will almost always
+      be a value returned by a previous call to a C function that returns a <code><span class="pw">void</span> *</code>.</p>
+    
+    <div class="prog">
+      <pre><code>ffi_call_void(fn_pointer, args) 
+<b>returns: </b>void</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_void_pointer(fn_pointer, args)
+<b>returns: </b>a C pointer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_char_string(fn_pointer, args) 
+<b>returns: </b>a string.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_int(fn_pointer, args) 
+<b>returns: </b>an integer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_uint(fn_pointer, args) 
+<b>returns: </b>an integer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_int64(fn_pointer, args) 
+<b>returns: </b>a 64-bit integer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_float(fn_pointer, args) 
+<b>returns:</b> a real number.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_double(fn_pointer, args) 
+<b>returns: </b>a real number.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_obj(fn_pointer, args) 
+<b>returns: </b>a Slogan object.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_void_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>void</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_void_pointer_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>a C pointer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_char_string_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>a string.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_int_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>an integer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_uint_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>an unsigned integer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_int64_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>a 64-bit integer.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_float_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>a real number.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_double_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>a real number.</code></pre>
+    </div>
+
+    <div class="prog">
+      <pre><code>ffi_call_obj_with_void_pointer(fn_pointer, argp, args) 
+<b>returns: </b>a Slogan object.</code></pre>
+    </div>
+    
+    <h3>Examples:</h3>
+    
+    <p>Please see the <a href="../cref/index.html">Foreign Function Interface Reference</a> for examples.</p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="ffi_open.html">ffi_open</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

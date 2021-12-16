@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (task_join)</title>
+  </head>
+
+  <body>
+    <h2>task_join</h2>
+
+    <div class="prog">
+      <pre><code>
+task_join(t, <span class="pw">@optional</span> timeout, timeout_val)
+      </code></pre>
+    </div>
+
+    <p>Causes the current task to wait until the task <code>t</code> terminates (normally or not) or until the
+      <code>timeout</code> is reached (if <code>timeout</code> is supplied). If <code>timeout</code> is reached, 
+      return <code>timeout_val</code> (if it is supplied), otherwise a <code>join-timeout-exception</code> object
+      is raised. If <code>t</code> terminated normally, the content of its <code>end-result</code> field is
+      returned, otherwise the content of its <code>end-exception</code> field is raised. (Both these fields are private to
+      the task object and cannot be accesses through other means).</p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="task.html">task</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

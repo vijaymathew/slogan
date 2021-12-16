@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (monitor)</title>
+  </head>
+
+  <body>
+    <h2>monitor</h2>
+
+    <div class="prog">
+      <pre><code>
+monitor(<span class="pw">@optional</span> name = <a href="void.html">void</a>)
+      </code></pre>
+    </div>
+
+    <p>Return a new monitor.</p>
+
+    <p>A monitor represents a set of blocked <a href="task.html">tasks</a>. These blocked tasks are waiting for a certain
+      condition to become <code><span class="pw">true</span></code>. When a task modifies some program state that might make
+      the condition <code><span class="pw">true</span></code>, the task unblocks some number of tasks (one or all depending on the primitive used)
+      so they can check if the condition is now <code><span class="pw">true</span></code>. This allows complex forms of intertask
+      synchronization to be expressed more conveniently than with <a href="mutex.html">mutexes</a> alone.</p>
+
+    <p>Each monitor has a specific field which can be used in an application specific way to <a href="monitor_set_data.html">associate data</a>
+      with the condition variable.</p>
+
+    <h3>Examples:</h3>
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> mx, mn = mutex(), monitor()
+<span class="kw">!</span>{ <a href="mutex_lock.html">mutex_lock</a>(mx)
+   <a href="mutex_unlock.html">mutex_unlock</a>(mx, mn)
+   <a href="showln.html">showln</a>(<span class="str">"done..."</span>) }
+<span class="kw">!</span>{ mutex_lock(mx)
+   mutex_unlock(mx, mn)
+   showln(<span class="str">"bye."</span>) }
+<span class="kw">!</span><a href="monitor_broadcast.html">monitor_broadcast</a>(mn)
+<span class="comment">//&gt; done...
+    bye.</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="monitor_notify.html">monitor_notify</a></div>      
+      <div class="ref"><a href="monitor_name.html">monitor_name</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

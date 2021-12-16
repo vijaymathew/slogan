@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew Pandyalakal." />
+  <link rel="stylesheet" href="docs/book/style.css" type="text/css" />
+</head>
+<body>
+  
+  <a href="https://github.com/vijaymathew/slogan" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+  
+  <p class="firstslogan"><span class="big">Slogan</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="https://github.com/vijaymathew/slogan/releases" target="_blank" class="mainlink">Downloads</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="./docs/book/index.html" class="mainlink">Documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="https://groups.google.com/forum/#!forum/slogan-lang" target="_blank" class="mainlink">Discuss</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </p>
+  
+  <p><b>Slogan</b> is a programming language designed for high-performance <a href="docs/book/conc.html">concurrent</a>, networked applications.
+    It features <a href="docs/book/func.html">first-class functions</a>, lexical scoping and operations on
+    <a href="docs/book/cdt.html">structured data</a> like <a href="docs/book/bdt.html">strings</a>, lists, arrays, sets and hash tables.
+    Its powerful <a href="docs/book/flow.html">control flow</a> and <a href="docs/book/syntax.html">syntactic</a> abstraction
+    capabilities makes Slogan a highly extensible programming language.</p>
+  
+  <div class="snippet">
+    <h2>A Taste of Slogan</h2>
+    <div class="progmain">
+      <div class="slide 0">
+        <div class="prog">
+          <pre><code><span class="kw">let</span> greetings = [<span class="str">"hello world"</span>, <span class="str">"हैलो दुनिया"</span>,
+                 <span class="str">"안녕하세요 세계"</span>, <span class="str">"merhaba dünya"</span>]
+<a href="docs/book/ref/for_each.html">for_each</a>(<a href="docs/book/ref/showln.html">showln</a>, greetings)
+
+<span class="comment">//&gt; hello world
+    हैलो दुनिया
+    안녕하세요 세계
+    merhaba dünya</span></pre></code>
+        </div>
+      </div>
+
+      <div class="slide 1">
+        <div class="prog">
+          <pre><code><span class="comment">// A concurrent TCP/IP "echo" server.</span>
+<span class="kw">function</span> echo_server(server_address = <span class="str">""</span>, port = 1221)
+  <span class="kw">let</span> (server = <a href="docs/book/ref/tcp_server_stream.html">tcp_server_stream</a>(server_address,
+                                  port_number = port))
+    <span class="kw">letfn</span> loop (client = <a href="docs/book/ref/read.html">read</a>(server))
+    { <span class="kw">!</span>respond_to(client)
+      loop(read(server)) }
+
+<span class="kw">function</span> respond_to(client)
+{ <a href="docs/book/ref/showln.html">showln</a>(stream = client, <a href="docs/book/ref/string_upcase.html">string_upcase</a>(<a href="docs/book/ref/read_line.html">read_line</a>(client)))
+  <a href="docs/book/ref/close_stream.html">close_stream</a>(client) }
+
+<span class="comment">// Start the server on port 1221:</span>
+echo_server()</code></pre>
+
+        </div>
+      </div>
+
+      <div class="slide 2">
+        <div class="prog">
+          <pre><code><span class="comment">// A client for the "echo" server.
+<span class="kw">let</span> c = <a href="docs/book/ref/tcp_client_stream.html">tcp_client_stream</a>(<span class="str">"localhost:1221"</span>)
+<a href="docs/book/ref/showln.html">showln</a>(stream = c, <span class="str">"hello"</span>)
+<a href="docs/book/ref/flush_writer.html">flush_writer</a>(c)
+<a href="docs/book/ref/read_line.html">read_line</a>(c)
+<span class="comment">// HELLO</span>
+<a href="docs/book/ref/close_stream.html">close_stream</a>(c)</code></pre>
+        </div>
+      </div>
+
+      <div class="slide 3">
+        <div class="prog">
+          <pre><code><span class="comment">// Lazy Programming!</span>
+<span class="kw">function</span> integers(start) start:<span class="pw">~</span>integers(start + 1)
+<span class="kw">function</span> primes(seq) <a href="docs/book/ref/filter.html">filter</a>(<a href="docs/book/ref/is_prime.html">is_prime</a>, seq)
+
+<span class="kw">let</span> primes_from_1000 = primes(integers(1000))
+<a href="docs/book/ref/first.html">first</a>(primes_from_1000)
+<span class="comment">// 1009</span>
+second(primes_from_1000)
+<span class="comment">// 1013</span>
+<a href="docs/book/ref/nth.html">nth</a>(1234, primes_from_1000)
+<span class="comment">// 11689</span></code></pre>
+        </div>
+      </div>
+
+      <div class="slide 4">
+        <div class="prog">
+          <pre><code><span class="comment">// Actors in a concurrent computation.</span>
+<span class="kw">function</span> calc()
+  <span class="kw">let</span> ([sender, [opr, a, b]] = <span class="pw">!&lt;</span>)
+  { sender <span class="pw">!&gt;</span>
+      <span class="kw">case</span> (opr)
+        <span class="sym">add</span>  -&gt; a + b
+      | <span class="sym">sub</span>  -&gt; a - b
+      | <span class="sym">div</span>  -&gt; a / b
+      | <span class="sym">mult</span> -&gt; a * b
+      | _    -&gt; <span class="sym">'invalid_operation</span>
+    calc() }
+
+<span class="kw">let</span> calculator = <span class="kw">!</span>calc()
+calculator <span class="pw">!&gt;</span> [<a href="docs/book/ref/self.html">self</a>(), [<span class="sym">'add</span>, 10, 20]] <span class="pw">!&lt;</span>
+<span class="comment">// 30</span>
+calculator <span class="pw">!&gt;</span> [self(), [<span class="sym">'mult</span>, 12, 93]] <span class="pw">!&lt;</span>
+<span class="comment">// 1116</span></code></pre>
+        </div>
+      </div>
+
+      <div class="slide 5">
+        <div class="prog">
+          <pre><code><span class="comment">// Destrcuture and pattern-match composite objects.</span>
+<span class="kw">function</span> color(xs)
+| [255, 0, 0] -&gt; <span class="sym">'red</span>
+| [0, 255, 0] -&gt; <span class="sym">'green</span>
+| [0, 0, 255] -&gt; <span class="sym">'blue</span>
+| [r, g, b]
+  <span class="pw">where</span> is_color(r)
+        && is_color(g)
+        && is_color(b)
+               -&gt; [<span class="sym">'RGB</span>, r, g, b]
+| _            -&gt; <span class="sym">'invalid_color_description</span>
+
+<span class="kw">function</span> is_color(n) <a href="docs/book/ref/is_integer.html">is_integer</a>(n) && n &gt;= 0 && n &lt;= 255</code></pre>
+        </div>
+      </div>
+  <div class="nav">
+    <a class="navbut" onclick="plusSlides(-1)">&#10094;</a>
+    <a class="navbut" onclick="plusSlides(1)">&#10095;</a>
+  </div>
+
+    </div>
+  </div>
+  
+  <h2>Summary of Features</h2>
+  
+  <ul>
+    <li>Dynamic and strong type system</li>
+    <li>Rich library: data structures, I/O, networking</li>
+    <li><a href="http://unicode.org/standard/WhatIsUnicode.html" target="_blank">Unicode</a> support</li>
+    <li>Efficient concurrency: execute tens-of-thousands of independent tasks</li>
+    <li>Multi-core parallelism based on a simple message-passing model</li>
+    <li>Declarative programming: reactive variables, pattern matching</li>
+    <li>Polymorphism, <a href="https://en.wikipedia.org/wiki/Multiple_dispatch" target="_blank">multiple dispatch</a></li>
+    <li>Hygienic and unhygienic syntax extensions</li>
+    <li>Interpreter and <a href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop" target="_blank">REPL</a> for fast program design and development</li>
+    <li>Optimizing compiler for generating stand-alone binaries</li>
+    <li>Easy integration with C libraries</li>
+    <li>Modules and namespaces for program organization</li>
+    <li>Built-in package manager</li>
+  </ul>
+  <br></br>
+    <p>Slogan is <a href="../index.html">my</a> hobby project and can be considered beta quality software.
+    If you are a programmer and would like to hack on language implementation, you are welcome to contribute.
+    You can work on one of the <a href="https://github.com/vijaymathew/slogan/issues" target="_blank">open issues</a>
+    or implement features/enhancements that you believe will make Slogan a better language. Send me your pull-request and
+    it may make into the next release of Slogan!</p>
+  <hr class="maintext"></hr>
+
+  <br></br>
+
+    <script language="javascript">
+var slideIndex;
+showSlides(slideIndex);
+
+function plusSlides(n) {
+  showSlides(slideIndex += n);
+}
+
+function currentSlide(n) {
+  showSlides(slideIndex = n);
+}
+
+function showSlides(n) {
+    var i;
+    var slides = document.getElementsByClassName("slide");
+    if (!slideIndex) slideIndex = 1;
+    if (!n) n = 1;
+    if (n > slides.length) {slideIndex = 1} 
+    if (n < 1) {slideIndex = slides.length}
+    for (i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none"; 
+    }
+    slides[slideIndex-1].style.display = "block"; 
+}
+                    </script>
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Packages Reference - pfds.queue</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">package: pfds</h1>
+    <h1 class="title">module: queue</h1>
+
+    <p>The <code>queue</code> module implements an immutable FIFO data structure.
+      This module exports a single function <code>make</code> for creating a new queue.</p>
+
+    <h2>queue.make</h2>
+
+    <div class="prog">
+      <pre><code>
+queue.make(init_seq = [])
+      </code></pre>
+    </div>
+
+    <p>Return a new queue initialized with the values from the sequence <code>init_seq</code>, which can be
+      any object that implements the <code><a href="../ref/first.html">first</a></code> and <code><a href="../ref/rest.html">rest</a></code>
+      generic functions.</p>
+
+    <p>The new queue is represented as a closure that can respond to the following messages:</p>
+
+    <div class="prog">
+      <pre><code>
+head()
+      </code></pre>
+    </div>
+    <p>Return the value at the front of the queue. Raise an error if the queue is empty.</p>
+
+    <div class="prog">
+      <pre><code>    
+tail()
+      </code></pre>
+    </div>
+    <p>Return a new queue with the front item removed. Raise an error if the queue is empty.</p>
+
+    <div class="prog">
+      <pre><code>
+snoc(x)
+      </code></pre>
+    </div>
+    <p>Return a new queue with the element <code>x</code> added to its back.</p>
+
+    <div class="prog">
+      <pre><code>
+is_empty()
+      </code></pre>
+    </div>
+    <p>Return <code><span class="pw">true</span></code> if the queue is empty, return <code><span class="pw">false</span></code> otherwise.</p>    
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> q = queue.make([1, 2])
+q.head()
+<span class="comment">// 1</span>
+q.tail().head()
+<span class="comment">// 2</span>
+q.tail().tail().is_empty()
+<span class="comment">// true</span>
+q = q.snoc(3)
+q.tail().tail().is_empty()
+<span class="comment">// false</span>
+q.tail().tail().head()
+<span class="comment">// 3</span>          
+      </code></pre>
+    </div>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="pfds.html">Index</a> |  <a href="index.html">Packages Index</a>
+    </p>
+    
+  </body>
+</html>

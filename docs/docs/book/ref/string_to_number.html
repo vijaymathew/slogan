@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_to_number)</title>
+  </head>
+
+  <body>
+    <h2>string_to_number</h2>
+
+    <div class="prog">
+      <pre><code>
+string_to_number(s, <span class="pw">@optional</span> radix = 10)
+      </code></pre>
+    </div>
+
+    <p>Return the number represented by the string <code>s</code>. Raise an error if <code>s</code> cannot be parsed as a number.</p>
+
+    <p>The number is interpreted in <code>radix</code>, which must be an exact integer from the <a href="set.html">set</a>
+      <code>#(2, 8, 10, 16)</code>. <code>Radix</code> defaults to <code>10</code>. Any radix specifier within the
+      string, e.g., <code>0x</code>, will override the <code>radix</code> argument.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+string_to_number("3.4e3") + 1
+<span class="comment">// 3401.</span>
+
+string_to_number("0x-2e2", 16)
+<span class="comment">// -738</span>
+
+string_to_number("0x-2e2", 10)
+<span class="comment">// -738</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="number_to_string.html">number_to_string</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

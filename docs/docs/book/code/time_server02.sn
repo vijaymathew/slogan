@@ -1,0 +1,17 @@
+let server = tcp_server_stream(2121)
+            
+function client_handler()
+{ let client = read(server)
+  let request = read_line(client)
+  if (request == "GET TIME")
+    showln(stream = client, time_to_string(now()))
+  else
+    showln(stream = client, "error: invalid request")
+  close_stream(client)
+  // call self to handle next client
+  client_handler() }
+
+// start the handler
+client_handler()  
+// we will never reach here
+close_stream(server)

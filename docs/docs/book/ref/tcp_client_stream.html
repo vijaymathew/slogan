@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (tcp_client_stream)</title>
+  </head>
+
+  <body>
+    <h2>tcp_client_stream</h2>
+
+    <div class="prog">
+      <pre><code>
+tcp_client_stream(address, <span class="pw">@key</span> port_number, keep_alive, coalesce = <span class="pw">true</span>, transcoder)          
+      </code></pre>
+    </div>
+
+    <p>Return a tcp-client-stream that represent a connection to a TCP server and allows communication with that server.</p>
+
+    <p><code>Address</code> indicates the internet address of the server, and possibly the IP port number.
+      A string of the form "INTF:PORT" will be parsed and the value of <code>INTF</code> will be assigned
+      to address and the integer value of <code>PORT</code> will be assigned to port_number.
+      This argument can also be a 4 element <a href="u8array.html">u8array</a> which contains the 32-bit IPv4 address or
+      an 8 element u8array which contains the 128-bit IPv6 address.</p>
+
+    <p><code>Port_number</code> must be an exact integer. Indicates the IP port number of the server to connect.</p>
+
+    <p><code>Keep_alive</code> should be either <span class="pw">true</span> or <span class="pw">false</span>.
+      Controls the use of the <a href="https://en.wikipedia.org/wiki/Keepalive#TCP_keepalive" target="_blank">keep alive</a>
+      option on the connection. The "keep alive" option will periodically send control packets on
+      otherwise idle network connections to ensure that the server host is active and reachable.
+      The default value of this setting is <span class="pw">false</span>.</p>
+
+    <p><code>Coalesce</code> should be either <span class="pw">true</span> or <span class="pw">false</span>.
+      Controls the use of <a href="https://en.wikipedia.org/wiki/Nagle%27s_algorithm" target="_blank">Nagle's algorithm</a>
+      which reduces the number of small packets by delaying their transmission and coalescing
+      them into larger packets. A setting of true will coalesce small packets into larger ones.
+      A setting of <span class="pw">false</span> will transmit packets as soon as possible.
+      The default value of this setting is <span class="pw">true</span>. Note that this setting does not
+      affect the buffering of the stream.</p>
+
+    <p><code>Transcoder</code>, if present, must be a <a href="transcoder.html">transcoder</a> object that will be used to encode and decode
+      characters in the stream.</p>
+      
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// A simple network echo server:</span>          
+<span class="kw">let</span> s = <a href="tcp_server_stream.html">tcp_server_stream</a>(2020)
+
+<span class="kw">function</span> echo(client)
+{ showln(stream = client, <a href="read_line.html">read_line</a>(client))
+  <a href="flush_writer.html">flush_writer</a>(client) }
+  
+<span class="kw">letfn</span> loop (client = <a href="read.html">read</a>(s))
+{ !<a href="call_with_stream.html">call_with_stream</a>(client, echo)
+  loop(read(s)) }
+
+<span class="comment">// The following code can be used to test the echo server:</span>
+<span class="kw">let</span> c = tcp_client_stream(<span class="str">"localhost:2020"</span>)
+showln(stream = c, <span class="str">"hello"</span>)
+flush_writer(c)
+read_line(c)
+<span class="comment">//> hello</span>          
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_stream.html">file_stream</a></div>
+      <div class="ref"><a href="pipe_stream.html">pipe_stream</a></div>
+      <div class="ref"><a href="string_reader.html">string_reader</a></div>
+      <div class="ref"><a href="string_writer.html">string_writer</a></div>
+      <div class="ref"><a href="byte_array_reader.html">byte_array_reader</a></div>
+      <div class="ref"><a href="byte_array_writer.html">byte_array_writer</a></div>
+      <div class="ref"><a href="bits_reader.html">bits_reader</a></div>
+      <div class="ref"><a href="bits_writer.html">bits_writer</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

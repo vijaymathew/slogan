@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (disable/enable_asserts)</title>
+  </head>
+
+  <body>
+    <h2>disable/enable_asserts</h2>
+
+    <div class="prog">
+      <pre><code>
+disable_asserts()
+enable_asserts()          
+      </code></pre>
+    </div>
+
+    <p>Disable/enable assertions dynamically. Return <code><a href="void.html">void</a></code>.</p>
+
+    <p>The <code><span class="kw">assert</span></code> statement is a powerful debugging tool.
+      Using this statement you can tell the program to test if an expression meets a condition
+      and if not to <a href="raise.html">raise</a> an exception.</p>
+
+    <p>When assertions are disabled, failed assertions will all return <code><span class="pw">true</span></code>.</p>
+
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">assert</span> 1 &lt; 2 
+<span class="kw">assert</span> 10 &gt; 20
+<span class="comment">//&gt; error: assertion_failed line: 1</span>
+disable_asserts()
+<span class="kw">assert</span> 10 &gt; 20
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <p><code><span class="kw">Assert</span></code> can be asked to print an alternate error message:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">assert</span> 1 &gt; 2, <span class="str">"We have a problem!"</span>
+<span class="comment">//&gt; error: We have a problem!</span>
+      </code></pre>
+    </div>
+g
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>The Slogan Programming Language</title>
+    <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+    <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+  </head>
+  <body>
+    
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" >
+        <a href="./syntax.html" title="Building new syntax"
+           accesskey="P">next</a>
+        <li class="right" >
+          <a href="./ffi.html" title="FFI"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+        <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+      </ul>
+    </div>
+    
+    <div id="site" class="site">
+      <div class="title"><h3>Packages</h3></div>
+
+      <p>Slogan has a built-in package manager that makes it easy to work with packages developed by third-party developers.
+        Any Slogan project can be converted into a package by adding just two files to its root folder - <em>init.sn</em> and <em>build</em>.
+        "init.sn" is a simple Slogan script that is called by the Slogan runtime for loading the package. So it should contain
+        all initialization code for the package. "build" should be an executable script that will compile the package. It can also
+        contain code to install any dependencies the package might have. The package manager also requires a file named <em>core.sn</em> in the
+        package's <em>src</em> folder. This should contain the entry-point code for the package itself.</p>
+
+      <p>To make these points clear let us look at an example. We will call our package "simple" and it will have the following directory structure:</p>
+
+      <p><pre><code>simple/
+        -> init.sn
+        -> build
+        -> src/
+        --> core.sn</code></pre></p>
+
+          <p>In our example, <em>src/core.sn</em> implements the entire functionality of the package:</p>
+
+          <div class="highlight">
+            <pre><code><span class="c">// src/core.sn</span>
+
+function hello() "hello simple world!";</pre></code></div>
+
+          <p><em>init.sn</em> contain a single call to the <code>init_package</code> function which will find the correct path to <em>core.sn</em> and load it:</p>
+
+          <div class="highlight">
+            <pre><code><span class="c">// init.sn</span>
+init_package("simple");</code></pre></div>
+
+          <p>The <em>build</em> script will compile <em>init.sn</em> into object code:</p>
+
+          <p><pre><code>#!/bin/bash
+slogan -c init</code></pre></p>
+          <p>Make sure that the build script is executable:</p>
+          <p><pre><code>$ chmod +x build</code></pre></p>
+
+          <p>You can also use Slogan to write the build script. In that case the name of the script must be &quot;<code>build.sn</code>&quot;.
+            Slogan interpreter evaluates this while building the package, so it need not be made executable. If you choose to write the build
+            script in Slogan, its contents will be:</p>
+
+          <p>
+            <div class="highlight"><pre><code><span class="c">// build.sn</span>
+compile("init")</code></pre></div></p>
+          
+          <p>To test the package, first install it using the Slogan package manager:</p>
+          <p><pre><code>$ slogan -i "simple,local,/mypackages/simple"</code></pre></p>
+
+          <p>You should replace the path to the <em>/mypackages/simple</em> with an actual path on your machine. Now that the package is installed, you can load and use it:</p>
+
+          <div class="highlight"><pre><code>load_package("simple");
+hello(); 
+<span class"c">//=> hello simple world</span></code></pre></div>
+
+          <p>A package can be removed from the system by using the <code>-u</code> option of the slogan command:<p>
+            <p><pre><code>$ slogan -u simple</code></pre></p>
+
+            <h4>Package management functions</h4>
+
+            <div class="highlight">
+              <pre><code><b>function: </b>install_package(name, type, url, force)
+<b>returns: </b>`name` if the package is successfully installed.
+
+Installs the package named `name`. `type` must be a symbol and must be one of 'local, 'git
+or 'remote. If `type` is 'local, url should be the full path to the package directory or
+the full path of a tar.gz, a tar.bz2 or a .zip file that contains the package. For `type`
+'git, url must be the location of the git repository of the package. If `type` is 'remote,
+url must point to a tar.gz, a tar.bz2 or a .zip package hosted on an HTTP or FTP server.</code></pre>
+            </div>
+
+            <div class="highlight">
+            <pre><code><b>function: </b>init_package(name)
+<b>returns: </b>the name of the machine compiled `core` file of the package.
+
+links in the `core` file of the package named `name`.
+            </div>
+            
+            <div class="highlight">
+  <pre><code><b>function: </b>uninstall_package(name)
+<b>returns: </b>`name` if the package is successfully removed.</code></pre>
+</div>
+
+                        <div class="highlight">
+  <pre><code><b>function: </b>load_package(name)
+<b>returns: </b>`name` if the package is successfully loaded.</code></pre>
+</div>
+
+          </div>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (file_***)</title>
+  </head>
+
+  <body>
+    <h2>file_***</h2>
+
+    <div class="prog">
+      <pre><code>
+file_type(path) 
+file_device(path) 
+file_inode(path) 
+file_mode(path) 
+file_number_of_links(path) 
+file_owner(path) 
+file_group(path) 
+file_size(path) 
+file_last_access_time(path) 
+file_last_modification_time(path) 
+file_last_change_time(path) 
+file_creation_time(path)
+file_attributes(path) 
+      </code></pre>
+    </div>
+
+    <p>Return the various attributes of the file at <code>path</code>.</p>
+
+    <p>These functions combines a call to <code><a href="file_info.html">file_info</a></code> with an <a href="file_info_attributes.html">accessor</a>
+        to one of the file-information object's fields.</p>
+
+    <p>For <code>file_type(path)</code>, the returned value is one of the following symbols:</p>
+
+    <p><span class="sym">'regular</span> (a regular file), <span class="sym">'directory</span>,
+      <span class="sym">'character_special</span> (character special device),
+      <span class="sym">'block_special</span> (block special device),
+      <span class="sym">'fifo</span>, <span class="sym">'symbolic_link</span>,
+      <span class="sym">'socket</span>, <span class="sym">'unknown</span> (file is of an unknown type).</p>
+
+    <p>For <code>file_last_access_time</code>, <code>file_last_modification_time</code>, <code>file_last_change_time</code> and
+      <code>file_creation_time</code>, the return value is a UNIX timestamp. (seconds elapsed since the UNIX epoch).</p>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="file_exists.html">file_exists</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (file_stream)</title>
+  </head>
+
+  <body>
+    <h2>file_stream</h2>
+
+    <div class="prog">
+      <pre><code>
+file_stream(path, <span class="pw">@key</span> options, buffer_mode, transcoder, permissions = 0o666)
+      </code></pre>
+    </div>
+
+    <p>Return a new input/output <a href="current_reader.html">stream</a> for the file at <code>path</code>.</p>
+      
+    <p>If present, <code>options</code> must be a list of symbols that control aspects of file operations.
+      The options that are valid are <code><span class="sym">'create</span></code>,
+      <code><span class="sym">'no_create</span></code>, <code><span class="sym">'maybe_create</span></code>,
+      <code><span class="sym">'append</span></code> and <code><span class="sym">'truncate</span></code>.</p>
+    
+    <p>The <code><span class="sym">'create</span></code> option requires that the file does not exist (otherwise an exception is raised) and
+      creates the file when it is opened.</p>
+    <p>The <code><span class="sym">'no_create</span></code> option requires that the file exist (otherwise an exception is raised).</p>
+    <p>The <code><span class="sym">'maybe_create</span></code> option will create the file if it does not exist. This is the default option.</p>
+    <p>The <code><span class="sym">'append</span></code> option controls whether output will be added to the end of the file.
+    This is useful for writing to log files that might be open by more than one process.
+    By default appending is turned-off.</p>
+    <p>The <code><span class="sym">'truncate</span></code> option controls whether the file will be truncated when it is opened.
+      This option is turned-on by default when no <code><span class="sym">'append</span></code> option is provided and turned-off
+      when <code><span class="sym">'append</span></code> is not provided.</p>
+
+    <p><code>Buffer_mode</code> is a symbol that controls buffering. Valid values are <code><span class="sym">'block</span></code>,
+      <code><span class="sym">'line</span></code> and <code><span class="sym">'none</span></code>.
+      By default, buffering is turned off.</p>
+
+    <p>If <code>transcoder</code> is present and is not <code><span class="pw">false</span></code>, it must be a
+      <a href="transcoder.html">transcoder object</a> and
+      <code>file_writer</code> will return a textual output stream that will be encoded with <code>transcoder</code>.
+      Otherwise, a binary output stream is returned.</p>
+
+    <p><code>Permissions</code> control the UNIX permissions that will be attached to the file if it is created.
+      The default value of this setting is <code>0o666</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = file_stream(<span class="str">"out.txt"</span>, options = [<span class="sym">'create</span>])
+<a href="showln.html">showln</a>(stream = s, <span class="str">"hello, world"</span>)
+<a href="set_stream_position.html">set_stream_position</a>(s, 0)
+<a href="read_line.html">read_line</a>(s)
+<span class="comment">// hello, world</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_reader.html">file_reader</a></div>
+      <div class="ref"><a href="file_writer.html">file_writer</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.call)</title>
+  </head>
+
+  <body>
+    <h2>compiler.call</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.call(fn_name, args)
+      </code></pre>
+    </div>
+
+    <p>Return the intermediate language code required to call the function named <code>fn_name</code> with arguments in the list <code>args</code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// dynamically generate and evaluate the function definition: `function f(a, b) a + b`</span>
+
+<span class="kw">let</span> f = <a href="eval.html">eval</a>(<a href="cfunction.html">compiler.function_</a>([<span class="sym">'a</span>, <span class="sym">'b</span>], compiler.call(<span class="sym">'`+`</span>, [<span class="sym">'a</span>, <span class="sym">'b</span>])))
+
+f(10, 20)
+<span class="comment">// 30</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

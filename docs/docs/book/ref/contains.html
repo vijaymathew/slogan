@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (contains)</title>
+  </head>
+
+  <body>
+    <h2>contains</h2>
+
+    <div class="prog">
+      <pre><code>
+contains(obj, key)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the object <code>obj</code> knows about an association for <code>key</code>,
+      otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p><code>Contains</code> is a generic method.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> t = #{<span class="sym">'a</span>:10, <span class="sym">'b</span>:20}
+contains(t, <span class="sym">'a</span>)
+<span class="comment">// true</span>
+contains(t, <span class="sym">'c</span>)
+<span class="comment">// false</span>
+
+<span class="comment">// A custom type that can keep track of keys-value mappings:</span>
+<span class="kw">function</span> make_table(xys)
+  <span class="kw">^</span>(msg)
+  | <span class="sym">'contains</span> -&gt; <span class="kw">^</span>(k) <span class="kw">if</span> (assoc(k, xys)) <span class="pw">true</span> <span class="kw">else</span> <span class="pw">false</span>
+
+<span class="kw">let</span> t2 = make_table([<span class="sym">'a</span>:10, <span class="sym">'b</span>:20, <span class="sym">'c</span>:30])
+contains(t2, <span class="sym">'c</span>)
+<span class="comment">// true</span>
+contains(t2, <span class="sym">'a</span>)
+<span class="comment">// true</span>
+contains(t2, <span class="sym">'z</span>)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="hashtable_contains.html">hashtable_contains</a></div>  
+      <div class="ref"><a href="ref.html">ref</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

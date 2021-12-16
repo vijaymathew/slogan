@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (copy_bit_field)</title>
+  </head>
+
+  <body>
+    <h2>copy_bit_field</h2>
+
+    <div class="prog">
+      <pre><code>
+copy_bit_field(i1, start, end, i2)
+      </code></pre>
+    </div>
+
+    <p>Return the <a href="is_integer.html">integer</a> <code>i1</code> with <code>n</code> bits from <code>start</code> (inclusive)
+      to <code>end</code> (exclusive) replaced by the low-order <code>n</code> bits of the integer <code>i2</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<a href="number_to_string.html">number_to_string</a>(copy_bit_field(0b10000, 0, 3, 0b10101), 2)
+<span class="comment">// 10101</span>
+number_to_string(copy_bit_field(0b00000, 1, 4, 0b10111), 2)
+<span class="comment">// 1110</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="bshift.html">bshift</a></div>
+      <div class="ref"><a href="rotate_bit_field.html">rotate_bit_field</a></div>
+      <div class="ref"><a href="reverse_bit_field.html">reverse_bit_field</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

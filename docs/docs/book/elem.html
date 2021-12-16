@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Elementary Slogan</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">3</h1>
+    <h1 class="title">Elementary Slogan</h1>
+
+    <p>In this chapter we will closely examine the basic constructs from which programs are built in Slogan. Like any other powerful
+      language, Slogan allows us to combine these basic elements to build complex ones. <a name="01-back"></a>
+      We will also have a sneak peek at some of the means of abstractions offered by Slogan.<sup><a href="#01">1</a></sup></p>
+
+    <h2>3.1 Expressions</h2>
+
+    <p><a href="tut.html">The preceding chapter</a> showed how to use the REPL to interactively run code. The program fragments that you type in are
+      called <em>expressions</em>. The Slogan interpreter responds by displaying the <em>value</em> of those expressions. One of the most
+      primitive expression is a number. As there is nothing much to be done to a number in isolation, the interpreter will just give it back.</p>
+
+    <div class="prog">
+      <pre><code>
+2017
+<span class="comment">// 2017</span>
+      </code></pre>
+    </div>
+
+    <p>Numbers can be combined together using the familiar arithmetic operators to produce new values:</p>
+
+    <div class="prog">
+      <pre><code>
+2017 + 1
+<span class="comment">// 2018</span>
+1000 - 300 + 3
+<span class="comment">// 703</span>
+1000 - 300 * 3
+<span class="comment">// 100</span>
+4/2
+<span class="comment">// 2</span>
+      </code></pre>
+    </div>
+
+    <p>The arithmetic operators follow the commonly understood
+      <a href="https://en.wikipedia.org/wiki/Order_of_operations" target="_blank">precedence and associativity rules</a>.
+      Multiplication and division takes precedence over addition and subtraction. The arithmetic operators with the same precedence
+      associate from left to right. Parentheses are used to explicitly override precedence or group parts of an expression
+      that should be evaluated first.</p>
+
+    <div class="prog">
+      <pre><code>
+(1000 - 300) * 3
+<span class="comment">// 2100</span>
+      </code></pre>
+    </div>
+
+    <p>There are many more operations you can perform on primitive data like numbers. These operations are all defined as <em>functions</em>.
+      A function is usually invoked by calling its name followed by a list of arguments enclosed in parentheses. Examples of some useful
+      numeric functions are given below:</p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/sqrt.html">sqrt</a>(1729)
+<span class="comment">// 41.58124577258358</span>
+<a href="ref/mod.html">mod</a>(5, 2)
+<span class="comment">// 1</span>
+<a href="ref/abs.html">abs</a>(-1)
+<span class="comment">// 1</span>
+<a href="ref/sin.html">sin</a>(3.14)
+<span class="comment">// .0015926529164868282</span>
+      </code></pre>
+    </div>
+
+    <p>In fact, the arithmetic operators are all functions with special syntactic support from the language. The functions associated with
+      the operators can be accessed by enclosing the operators in tick-quotes (<code>`</code>).</p>
+
+    <div class="prog">
+      <pre><code>
+`<a href="ref/mult.html">*</a>`(10, 2)
+<span class="comment">// 20</span>
+`<a href="ref/add.html">+</a>`(1, 2, 3, 4, 5)
+<span class="comment">// 15</span>
+      </code></pre>
+    </div>
+    
+    <p>In this section we have introduced two important concepts &ndash; <em>expressions</em> and <em>values</em>. A <em>value</em> is the result of
+      an expression. To repeat the point with a simple example, <code>10 * 2</code> is not a value because a computation can still be performed on it.
+      The result of that computation &ndash; the number <code>20</code> &ndash; is a value because no more operations can be performed on it.</p>
+    
+    <h3>3.1.1 Remembering Values</h3>
+    
+    <p>If we can associate a name with a value, it will be easier to refer to that value later. The names given to values are called <em>variables</em>.
+      <a name="02-back"></a>We name things with the <code><span class="kw">let</span></code> statement.<sup><a href="#02">2</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> rectangle_width = 23
+<span class="kw">let</span> rectangle_length = 52
+<span class="kw">let</span> rectangle_area = rectangle_width * rectangle_length
+
+rectangle_area
+<span class="comment">// 1196</span>
+      </code></pre>
+    </div>
+
+    <p>The <code><span class="kw">let</span></code> statement is Slogan's simplest means of abstraction, for it allows to refer to results of
+      complex computations by name.</p>
+
+    <p>The names that we use for variables are generally known as <em>identifiers</em>. Keywords, variables, and
+      <a href="./bdt.html#symbols">symbols</a> are collectively
+      called identifiers. Identifiers may be formed from letters, digits and these special characters: _, $, %, and @. Some characters are reserved by
+      the language for special purposes, mostly to be used as operators. The characters that cannot normally be used in identifiers
+      are: +, -, /, *, <, ', >, =, \, #, ., (, ), {, }, [, ], ,, :, ; &, ? and |.</p>
+
+    <p>Identifiers are case-sensitive. For example, <code>rectangle_width</code> and <code>Rectangle_Width</code> are considered to
+      be different identifiers. There is no inherent limit to the length of identifiers.</p>
+
+    <p>A number of identifiers are reserved by Slogan for syntactic definition. These are known as reserved words or <em>keywords</em>.
+      They cannot be used as names for variables. The reserved words in Slogan are listed below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function
+module
+record
+true
+false
+if
+else
+when
+let
+letfn
+letrec
+letdyn
+yield
+case
+match
+where
+try
+trycc
+catch
+finally
+namespace
+declare
+assert
+for
+break
+continue</span>
+      </code></pre>
+    </div>
+
+    <h3>3.1.2 Grouping Expressions Together</h3>
+
+    <p>It is possible to have multiple expressions evaluated in sequence and have a single value returned. Such groupings of expressions are
+      known as <em>code blocks</em>. The expressions in a code block are enclosed in opening and closing curly braces. (<code>{ }</code>).
+      The expressions in a code block is evaluated one after the other in the order they appear and the value of the final expression
+      will be returned as the value of the entire block.</p>
+
+    <div class="prog">
+      <pre><code>
+{ <a href="ref/showln.html">showln</a>(1 + 2)
+  showln(2 * 2)
+  sqrt(5 + 2) }
+<span class="comment">//&gt; 3
+//&gt; 4
+// 2.6457513110645907</span>
+      </code></pre>
+    </div>
+
+    <p>A code block is like any other expression that evaluates to a single value. It can appear wherever ordinary expressions are legal.</p>
+
+    <p>The scope of variables defined in a code block are limited to that code block.
+      They won't be visible to code outside the block.
+      All variable definition statements must appear at the top of the code block.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> x = 100
+
+{ <span class="kw">let</span> x = 200
+  x + 10 }
+<span class="comment">// 210</span>
+
+x + 10
+<span class="comment">// 110</span>
+      </code></pre>
+    </div>
+    
+    <h2>3.2 Defining Functions</h2>
+
+    <p>The previous section described how values can be abstracted away by assigning them to variables.
+      Function definitions are a more powerful abstraction mechanism by which an expression itself can be referenced by a name.</p>
+
+    <p>Imagine how you would express the conversion of temperature from Celsius to Fahrenheit. The procedure can be described in English
+      as &quot;multiply temperature in Celsius by 9, then divide by 5, then add 32&quot;. This description can be translated to a Slogan
+      function as</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> celsius_to_fahrenheit(temperature)
+  temperature * 9 / 5 + 32
+      </code></pre>
+    </div>
+
+    <p>A function definition is introduced by the <code><span class="kw">function</span></code> keyword. It is followed by the function's name.
+      The <code>celsius_to_fahrenheit</code> function requires the caller to specify the temperature in Celsius that needs to be converted.
+      This value becomes an entry in the parenthesized <em>parameter</em> list of the function. The parameter list is followed by an expression
+      which is the formula for converting <code>temperature</code> to Fahrenheit. Unlike functions in imperative languages such as C, no explicit
+      <code>return</code> statement is required to return a value from the function. The value of the last expression is implicitly
+      returned as the value of the function call.</p>
+
+    <p>Here are a few instances of using the temperature conversion function:</p>
+
+    <div class="prog">
+      <pre><code>    
+celsius_to_fahrenheit(180)
+<span class="comment">// 356</span>
+celsius_to_fahrenheit(30)
+<span class="comment">// 86</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 3.1.</b> &nbsp; Define a function to express the idea of <em>squaring</em>, i.e, multiplying a number <code>x</code> by itself.</p>
+
+    <p><b>Exercise 3.2.</b> &nbsp; Write a function that takes the radius of a circle as argument and return its area. The area of a circle
+      is computed by the formula: <code>area = &pi; &times; radius<sup>2</sup></code>.</p>
+
+
+    <h2>3.3 Comparison and Logical Operations</h2>
+
+    <p>Slogan represent <a href="https://en.wikipedia.org/wiki/Boolean_data_type" target="_blank">truth or Boolean values</a> with the
+      identifiers <code><span class="kw">true</span></code> and <code><span class="kw">false</span></code>. They are used as
+      values for operations that return an <em>yes</em> or <em>no</em> answer. For instance, we can check if two values are equal
+      and get back a Boolean result:</p>
+
+    <div class="prog">
+      <pre><code>
+1 == 1
+<span class="comment">// true</span>
+2 == 3
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <p>We can also do other kinds of comparisons like checking if a value is less than or greater than another value:</p>
+
+    <div class="prog">
+      <pre><code>
+1 &lt; 2            
+<span class="comment">// true</span>
+1 &lt; 1
+<span class="comment">// false</span>    
+1 &lt;= 1 <span class="comment">// less-than-or-equal-to</span>
+<span class="comment">// true</span>
+1 &gt; 2
+<span class="comment">// false</span>
+1 &gt; 1
+<span class="comment">// false</span>    
+1 &gt;= 1 <span class="comment">// greater-than-or-equal-to</span>
+<span class="comment">// true</span>
+
+1 &lt;&gt; 2 <span class="comment">// not-equals</span>
+<span class="comment">// true</span>
+<a href="ref/not.html">not</a>(1 == 2)
+<span class="comment">// true</span>
+
+<span class="comment">// like arithmetic operators, comparison operators are also real functions</span>
+`&lt;`(1, 2, 3, 4, 5)
+<span class="comment">// true</span>
+`&lt;`(1, 2, 3, 4, 4)
+<span class="comment">// false</span>
+`&lt;=`(1, 2, 3, 4, 4)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <p>Often we want to make a decision based on more than one Boolean value. <a name="03-back"></a>The two logical operators - <code>&&</code>
+      (<code><span class="pw">and</span></code>) and <code>||</code> (<code><span class="pw">or</span></code>) - are used for
+      combining Boolean values.<sup><a href="#03">3</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+1 &lt; 2 && 2 == 2
+<span class="comment">// true</span>
+<a href="ref/and.html">and</a>(1 &lt; 2, 2 == 2, 3 &gt; 2)
+<span class="comment">// true</span>
+1 &lt; 0 || 2 == 3 || 3 == 3
+<span class="comment">// true</span>
+<a href="ref/or.html">or</a>(1 &lt; 0, 2 == 3, 3 &gt; 4)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+    
+    <h2>3.4 Conditional Expressions</h2>
+
+    <p>Conditional expressions allows us to make a test and perform different operations based on the result of that test. <a name="04-back"></a>
+      The most general conditional is the <code><span class="kw">if</span></code> expression.<sup><a href="#04">4</a></sup></p>
+
+    <p>The syntax of <code><span class="kw">if</span></code> is shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">if</span> (condition_expression)
+  consequent_expression            
+<span class="kw">else</span>
+  alternative_expression
+      </code></pre>
+    </div>
+
+    <p>If <code>condition_expression</code> evaluates to <code><span class="kw">true</span></code>, <code>consequent_expression</code> is
+      evaluated, otherwise <code>alternative_expression</code> is evaluated. The value of the expression that gets evaluated will
+      become the value of the whole <code><span class="kw">if</span></code> expression.</p>
+
+    <p>Let us write a function that makes use of comparison operators and condition expressions. The function is called <code>reciprocal</code>
+      and it computes <code>1/n</code> for a number <code>n</code> when it is not equal to <code>0</code>. <a name="05-back"></a>
+      If <code>n</code> is <code>0</code> <code>reciprocal</code> will return the string <code>"oops!"</code>.<sup><a href="#05">5</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> reciprocal(n)
+  <span class="kw">if</span> (n == 0) <span class="str">"oops!"</span>
+  <span class="kw">else</span> 1/n
+      </code></pre>
+    </div>
+
+    <p>Examples of using the <code>reciprocal</code> function are shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+reciprocal(10)
+<span class="comment">// 1/10</span>
+reciprocal(1/10)
+<span class="comment">// 10</span>
+reciprocal(0)
+<span class="comment">// oops!</span>
+reciprocal(reciprocal(1/10))
+<span class="comment">// 1/10</span>
+      </code></pre>
+    </div>
+
+    <p><code>Alternative_expression</code> can be another <code><span class="kw">if</span></code> expression, making it
+      possible to check for multiple conditions. This is demonstrated by the next function which calculates train fare discounts based on the age
+      and sex of the traveler. The rules for computing the discounts are these &ndash; if the traveler is female, give a <code>7%</code> discount,
+      if the traveler is more than <code>60</code> years of age, add <code>12.5%</code> to the discount. The function takes
+      the original fare, the age of the traveler and a Boolean value that indicates whether the traveler is female or not.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> discount(fare, age, is_female)
+  <span class="kw">if</span> (is_female && age &gt; 60) fare * (0.07 + 0.125)
+  <span class="kw">else if</span> (is_female) fare * 0.07
+  <span class="kw">else if</span> (age &gt; 60) fare * 0.125
+  <span class="kw">else</span> 0
+
+<span class="comment">// Usage:</span>
+discount(1230, 61, <span class="pw">true</span>)  
+<span class="comment">// 239.85</span>
+discount(1230, 42, <span class="pw">true</span>)
+<span class="comment">// 86.10000000000001</span>
+discount(1230, 42, <span class="pw">false</span>)
+<span class="comment">// 0</span>
+discount(1230, 63, <span class="pw">false</span>)
+<span class="comment">// 153.75</span>
+      </code></pre>
+    </div>
+    
+    <p><code>Alternative_expression</code> is optional. If it is omitted and <code>consequent_expression</code> evaluates to
+      <code><span class="kw">false</span></code>, <code><span class="kw">if</span></code> will return <code><span class="kw">false</span></code>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">if</span> (1 &lt; 2) 100
+<span class="comment">// 100</span>
+<span class="kw">if</span> (1 &gt; 2) 100
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <p>The <code><span class="kw">when</span></code> expression is a cleaner alternative to <code><span class="kw">if</span></code> expressions
+      without the <code><span class="kw">else</span></code> clause.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">when</span> (1 &lt; 2) 100
+<span class="comment">// 100</span>
+<span class="kw">when</span> (1 &gt; 2) 100
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+    <h3>3.4.1 The Truthfulness of Values</h3>
+
+    <p>Though Slogan support two explicit identifiers to represent Boolean values, all values other than the identifier
+      <code><span class="kw">false</span></code> is treated as true by the conditional expressions.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">if</span> (1 + 2) <span class="str">"ok"</span> <span class="kw">else</span> <span class="str">"no"</span>
+<span class="comment">// ok</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 3.3.</b> &nbsp; Define a function that takes three numbers as arguments and returns the sum of the squares
+        of the two larger numbers.</p>
+    
+    <h2>3.5 Repeating Yourself</h2>
+
+    <p>Some problems require iterating over the same expressions for a given number of times. Most imperative languages provide
+      constructs like the <code>for</code> and <code>while</code> loops for this purpose. Slogan gives you a simpler solution &ndash;
+      if a function wants to repeatedly do some stuff, just make recursive calls to itself. If the recursive call is made at a
+      position which is the last expression in the function, Slogan will <a href="https://en.wikipedia.org/wiki/Tail_call" target="_blank">
+        arrange its internal affairs</a> in such a way that the call stack won't overflow.</p>
+
+    <p>The next example defines a function that prints a table of Celsius to Fahrenheit conversions. It take three arguments - the lower limit
+      of the table, the upper bound and the size by which each entry in the table differs.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> print_temperature_table(lower, upper, size)
+  <span class="kw">when</span> (lower &lt;= upper)
+  { showln(lower, "c:", celsius_to_fahrenheit(lower), "f")
+    print_temperature_table(lower + size, upper, size) }
+      </code></pre>
+    </div>
+
+    <p>This function makes use of the <code>celsius_to_fahrenheit</code> function we defined earlier.
+      <code>Print_temperature_table</code> will call itself until the limit is reached. This recursive call is made as the
+      last expression in the conditional block. This also happens to be the last expression executed by the function. So Slogan translates
+      this into an <em>iterative</em> call, removing the previous call stacks from the call frame. <a name="06-back"></a>
+      This optimization allows the function to call itself as many times as it wants and no special looping construct
+      is needed.<sup><a href="#06">6</a></sup></p>
+
+    <p>Before we move to the next topic, let us once see the <code>print_temperature_table</code> in action:</p>
+
+    <div class="prog">
+      <pre><code>
+print_temperature_table(0, 100, 20)
+<span class="comment">//&gt; 0c:32f
+   20c:68f
+   40c:104f
+   60c:140f
+   80c:176f
+   100c:212f</span>
+      </pre></code>
+    </div>
+
+    <p><b>Exercise 3.4.</b> &nbsp; Read the Wikipedia article on
+        <a href="https://en.wikipedia.org/wiki/Ancient_Egyptian_multiplication" target="_blank">ancient Egyptian multiplication</a>.
+        Use recursion to implement
+        <a href="https://en.wikipedia.org/wiki/Ancient_Egyptian_multiplication#Russian_peasant_multiplication" target="_blank">one of the
+          algorithms</a> described there.</p>
+    
+    <h2>3.6 Time Server Revisited</h2>
+
+    <p>Now we know enough about Slogan to fix the first problem that our <a href="./tut.html#timeserver">time server</a> had &ndash;
+      its inability to handle more than a single client. This can be fixed using recursion. We will put the basic
+      behavior of the server in a function that calls itself for handling each client.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// file: <a href="./code/time_server02.sn">time_server02.sn</a></span>
+            
+let server = tcp_server_stream(2121)
+            
+<span class="kw">function</span> client_handler()
+{ <span class="kw">let</span> client = read(server)
+  <span class="kw">let</span> request = read_line(client)
+  <span class="kw">if</span> (request == <span class="str">"GET TIME"</span>)
+    showln(stream = client, time_to_string(now()))
+  <span class="kw">else</span>
+    showln(stream = client, <span class="str">"error: invalid request"</span>)
+  close_stream(client)
+  <span class="comment">// call self to handle next client</span>
+  client_handler() }
+
+<span class="comment">// start the handler</span>
+client_handler()  
+<span class="comment">// we will never reach here</span>
+close_stream(server)
+      </code></pre>
+    </div>
+
+    <p>To try the new server, load the <code>time_server02.sn</code> script into the REPL:</p>
+
+    <div class="prog">
+      <pre><code>
+load(<span class="str">"time_server02"</span>)
+      </code></pre>
+    </div>
+
+    <p>Start another REPL and load the client <code><a href="code/time_client.sn">time_client.sn</a></code> script.
+      To send multiple requests to the
+      server, just reload the client multiple times. The new server will be able to handle these requests without requiring
+      a restart. A significant improvement indeed!</p>
+
+    <div class="prog">
+      <pre><code>
+load(<span class="str">"time_client"</span>)
+<span class="comment">//> 2017-04-30T08:00:48</span>
+load(<span class="str">"time_client"</span>)
+<span class="comment">//> 2017-04-30T08:00:49</span>
+      </code></pre>
+    </div>
+
+    <p>As the server always expects another client to connect, it will never terminate. You can terminate the server process by pressing the
+      <code>Control+C</code> key-combination in the shell that the server is running.</p>
+    
+    <hr></hr>
+
+    <div class="note">
+      <p>
+        <sup><a name="01"></a><a href="#01-back">1</a></sup>Starting from this chapter, we will only show code snippets and their output without
+        the <code>slogan&gt;</code> prompt. You may evaluate the programs interactively at the REPL or type them into a file that is compiled
+        and executed later. While using the REPL, remember to end all expressions with a semicolon (<code>;</code>), so that the interpreter can
+        kick-in and evaluate that expression. Semicolons are normally not required to terminate expressions entered into a file. So we omit them
+        in the code examples as well.
+      </p>
+    </div>
+
+    <div class="note">
+      <p>
+        <sup><a name="02"></a><a href="#02-back">2</a></sup>A <em>statement</em> is often defined as code that does something and does not produce
+        a value. Slogan do not have statements in this sense, it only have expressions. Even statements like <code><span class="kw">let</span></code>
+        return a value. This value is a special object known as <code><a href="ref/void.html">void</a></code>. So, in the context of Slogan, a statement
+        is an expression that returns <code>void</code>.
+      </p>
+    </div>
+
+    <div class="note">
+      <p>
+        <sup><a name="03"></a><a href="#03-back">3</a></sup><code>&&</code> takes precedence over <code>||</code>.
+      </p>
+    </div>
+    
+    <div class="note">
+      <p>
+        <sup><a name="04"></a><a href="#04-back">4</a></sup><code><span class="kw">If</span></code> is an expression because it returns the
+        value of the expression that was conditionally evaluated. This may come as a surprise for some among the readers as most popular languages
+        treat conditionals as statements.
+      </p>
+    </div>
+
+    <div class="note">
+      <p>
+        <sup><a name="05"></a><a href="#05-back">5</a></sup>The string data type will be covered in detail in the next chapter.
+      </p>
+    </div>
+
+    <div class="note">
+      <p>
+        <sup><a name="06"></a><a href="#06-back">6</a></sup>Slogan do have a built-in imperative looping construct which is similar to the
+        <code>for</code> loop in C. But Slogan's <code>for</code> loop is more powerful and expressive, as you will discover later. It is also
+        possible to add new looping constructs to the language using the syntactic extension facility. Despite all this, the preferred way
+        to repeatedly execute a piece of code in Slogan is by tail-recursion!
+      </p>
+    </div>    
+
+    <hr></hr>
+    <p align="center">
+      <a href="bdt.html">Next</a> | <a href="tut.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</head>

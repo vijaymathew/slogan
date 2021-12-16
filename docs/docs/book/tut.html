@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Getting Started</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">2</h1>
+    <h1 class="title">Getting Started</h1>
+
+    <h2>2.1 Installation</h2>
+
+    <p>Slogan is distributed in source code form. <a href="https://github.com/vijaymathew/slogan/releases" target="_blank">Download</a>
+      the latest release package and extract it. <a name="01-back"></a>Releases are available as
+      <a href="https://en.wikipedia.org/wiki/Zip_(file_format)" target="_blank">.zip</a> and
+      <a href="https://www.cyberciti.biz/faq/linux-unix-bsd-extract-targz-file" target="_blank">.tar.gz</a> archives.<sup><a href="#01">1</a></sup>
+      <a name="02-back"></a>In the extracted folder, run the install command:<sup><a href="#02">2</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+$ sudo ./install
+      </code></pre>
+    </div>
+
+    <p>The installation process should run smoothly on all modern operating systems in the UNIX family, like OS X, GNU Linux and the various BSDs.</p>
+    
+    <p>The best way to experiment with Slogan is through the REPL (the <em>read-eval-print loop</em>).
+      The REPL is the primary interface to the Slogan interpreter. You can launch the REPL by typing the command,</p>
+
+    <div class="prog">
+      <pre><code>
+$ slogan
+      </code></pre>
+    </div>
+
+    <p>This should land you in the REPL with the prompt shown below:</p>
+
+    <div class="prog">
+      <pre><code>slogan&gt;</code></pre>
+    </div>
+
+    <p><a name="03-back"></a>Now the Slogan interpreter<sup><a href="#03">3</a></sup> is waiting for some input.
+      Let us try typing <code>1 + 2;</code> followed by the enter key. <a name="04-back"></a>Slogan will respond back with the result:
+      <sup><a href="#04">4</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+slogan&gt; 1 + 2;
+<span class="comment">// 3</span>
+      </code></pre>
+    </div>
+    
+    <h2>2.2 Saying Hello</h2>
+
+    <p>Next we will write a small program to read the name of the user and print back a greeting. You may want to type this program into
+      a file and load it into the interpreter. I decided to type this program into a file named <code>hello.sn</code>.
+      (By convention, Slogan source files have the <code>.sn</code> extension). <a name="05-back"></a>
+      The following code listing shows the complete program:<sup><a href="#05">5</a></sup></p>
+
+    <div class="prog">
+      <pre><code>
+<a href="ref/showln.html">showln</a>(<span class="str">"Hello "</span>, <a href="ref/read_line.html">read_line</a>())
+      </code></pre>
+    </div>
+
+    <p>The program consists of calls to two built-in functions - <code>showln</code> and <code>read_line</code>.
+      <code>Showln</code> accepts an
+      arbitrary number of arguments and prints them to the standard output. <code>Read_line</code> reads one line of characters from the
+      standard input. To test the program, let us load the script into the REPL:</p>
+
+    <div class="prog">
+      <pre><code>
+slogan&gt; <a href="ref/load.html">load</a>(<span class="str">"hello"</span>);
+      </code></pre>
+    </div>
+
+    <p>You should see the REPL waiting for you to input something. Type a name, like "Nemo", and press enter. You should see
+      the following output:</p>
+
+    <div class="prog">
+        <pre><code>Hello Nemo</code></pre>
+    </div>
+
+    <p>Slogan is a compiled language. You can translate the "hello" program into instructions of the underlying hardware.
+      <a name="06-back"></a>This compilation can be done from the REPL itself, by calling the <a href="ref/compile.html"><code>compile</code></a>
+      function as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+compile(<span class="str">"hello"</span>, exe = <span class="pw">true</span>);
+      </code></pre>
+    </div>
+
+    <p>A binary file named "hello" will be produced. This is a stand-alone executable and can be distributed to run on other similar systems.
+      You may want to test the binary once by invoking it directly from the command line:</p>
+
+    <div class="prog">
+      <pre><code>
+$ ./hello
+Vijay
+<span class="comment">//&gt; Hello Vijay</span>
+      </code></pre>
+    </div>
+
+    <h2><a name="timeserver"></a>2.2 A Network Time Server and Client</h2>
+    
+    <p>In this section we examine how Slogan programs can communicate with each other over a network.</p>
+    
+    <p>The first program we write is a server, a program that responds to requests that it receive over the network. When the program runs,
+      it will start listening on port number <code>2121</code> for incoming requests. A valid request is the message <code>GET TIME</code>.
+      The server will return the current time as response. All other requests are considered invalid and an error message is returned.</p>
+
+    <p>The following code listing shows the first version of our "time server". A description of what each line in the program does is given
+      as comments in the code itself. (A line that starts with two slash characters (<code>&#47;&#47;</code>) is treated as a comment. Multi-line
+      comments are enclosed in a <code>&#47;&#42;</code> and a <code>&#42;&#47;</code>. Comments are ignored by the interpreter and the compiler).</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// file: <a href="./code/time_server.sn">time_server.sn</a>
+
+// Start the server and listen for connections on port 2121</span>
+<span class="kw">let</span> server = tcp_server_stream(2121)
+            
+<span class="comment">// Accept the first client connection</span>
+<span class="kw">let</span> client = read(server)
+
+<span class="comment">/* Read request from client, if it is valid
+  return the current time on server,
+  otherwise return an error message */</span>  
+<span class="kw">let</span> request = read_line(client)    
+<span class="kw">if</span> (request == <span class="str">"GET TIME"</span>)
+  showln(stream = client, time_to_string(now()))
+<span class="kw">else</span>
+  showln(stream = client, <span class="str">"error: invalid request"</span>)
+
+<span class="comment">// Release the system resources used by both streams</span>
+close_stream(client)
+close_stream(server)
+      </code></pre>
+    </div>
+
+    <p>To test the server, we need a client to talk in our time protocol. Let us write the client next:</p>
+
+    <div class="prog">
+        <pre><code>
+<span class="comment">// file: <a href="./code/time_client.sn">time_client.sn</a>
+
+// Connect to the time server, running on the same machine</span>
+<span class="kw">let</span> client = tcp_client_stream(<span class="str">"localhost"</span>, port_number = 2121)
+showln(stream = client, <span class="str">"GET TIME"</span>)
+flush_writer(client)
+showln(read_line(client))
+close_stream(client)
+        </code></pre>
+    </div>
+
+    <p><a name="07-back"></a>Now we are all set to test the server-client pair. Make sure you have two instances of the Slogan REPL running.
+      Load<sup><a href="#07">7</a></sup> the server into the first REPL:</p>
+
+    <div class="prog">
+      <pre><code>
+slogan&gt; load(<span class="str">"time_server"</span>);
+      </code></pre>
+    </div>
+
+    <p>Next, load the client into the second REPL. You should see the client printing the current time it received from the server.</p>
+
+    <div class="prog">
+      <pre><code>
+slogan&gt; load(<span class="str">"time_client"</span>);
+<span class="comment">//&gt; 2017-04-24T22:46:47</span>
+      </code></pre>
+    </div>
+
+    <p>The time server, though it works, clearly has some limitations. First of all, it can handle only one client. It has to be restarted
+      to handle the next one! We need to change the code in such a way that the server once invoked will go on to process all clients that wish
+      to talk to it. It should also respond to each client as fast as possible. That means handling one client should not block or delay the
+      response to other clients. The server should also become more robust. For instance, what will happen if the client tries to connect to a
+      server that is not up and running? Right now, the client will display an error message and crash.
+      In the following chapters we will learn about features offered by Slogan to help us fix all these problems. So, stay along!</p>
+
+    <hr></hr>
+
+    <div class="note">
+      <p><sup><a name="01"></a><a href="#01-back">1</a></sup>You can also <a href="https://git-scm.com/docs/git-clone" target="_blank">clone</a>
+        the development branch from
+        <a href="https://github.com/vijaymathew/slogan" target="_blank">github</a> to have access to the latest bug fixes
+        and features.</p>
+    </div>
+
+    <div class="note">    
+      <p><sup><a name="02"></a><a href="#02-back">2</a></sup>The
+        <a href="https://github.com/vijaymathew/slogan/blob/master/README.md" target="_blank">README</a> file in the source folder contains
+        detailed information on compiling and installing Slogan.</p>
+    </div>
+
+    <div class="note">
+      <p><sup><a name="03"></a><a href="#03-back">3</a></sup>Having an interpreter greatly influences the way programs are designed and developed.
+        You can quickly experiment with ideas in the REPL and get immediate feedback. Once you have ironed-out an idea, it can
+        make into the final program which is compiled to machine code.</p>
+    </div>
+    
+    <div class="note">
+      <p><sup><a name="04"></a><a href="#04-back">4</a></sup>In the code examples, the value of an expression will be shown as a simple comment
+        right after the expression. The commenting convention <code>//&gt;</code> is used to mark output produced by a side-effecting
+        operation, like printing a value to the standard output stream.</p>
+    </div>
+
+    <div class="note">
+      <p><sup><a name="05"></a><a href="#05-back">5</a></sup>Any text editor can be used to compose Slogan programs.
+        An <code>emacs-mode</code> is available in the Slogan source distribution to provide basic syntax highlighting for the Emacs editor.</p>
+    </div>
+
+    <div class="note">
+      <p><sup><a name="06"></a><a href="#06-back">6</a></sup>Another way to produce an executable is to use the <code>-x</code> option of
+        the <a href="cmdline.html"><code>slogan</code> command</a>: <code>$ slogan -x hello</code></p>
+    </div>
+
+    <div class="note">
+      <p><sup><a name="07"></a><a href="#07-back">7</a></sup>If you make changes to a script, you should call the
+        <a href="ref/reload.html"><code>reload</code></a> function on that script to make the changes available in the REPL.</p>
+    </div>
+
+    <hr></hr>
+    <p align="center">
+      <a href="elem.html">Next</a> | <a href="intro.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

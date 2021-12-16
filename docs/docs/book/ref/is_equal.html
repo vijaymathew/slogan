@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_equal)</title>
+  </head>
+
+  <body>
+    <h2>is_equal</h2>
+
+    <div class="prog">
+      <pre><code>
+is_equal(obj1, obj2)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if <code>obj1</code> and <code>obj2</code>
+      have the same structure and contents,
+      otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>Two objects are equal if each of their constituent parts are equal according to <code><a href="is_eqv.html">is_eqv</a></code>.</p>
+    <p>The equals operator (<code>==</code>) have the same behavior as <code>is_equal</code> and the not-equals operator (<code>&lt;&gt;</code>)
+      have the same behavior as <code><a href="not.html">not</a>(is_equal(a, b))</code>.</p>
+
+    <p><code>Is_equal</code> is a generic function by default and can be overridden for custom datatypes without an
+      explicit <code><span class="kw">declare</span> <span class="pw">generic</span></code>.</p>
+
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+is_equal([1, 2, [3, 4]], [1, 2, [3, 4]])
+<span class="comment">// true</span>
+
+[1, 2, [3, 4]] == [1, 2, [3, 4]]
+<span class="comment">// true</span>
+    
+is_equal(<span class="str">"hello"</span>, <span class="str">"hello"</span>)
+<span class="comment">// true</span>
+
+is_equal(<span class="str">"hello"</span>, <span class="str">"hEllo"</span>)
+<span class="comment">// false</span>
+
+not(is_equal(<span class="str">"hello"</span>, <span class="str">"hEllo"</span>))
+<span class="comment">// true</span>
+
+<span class="str">"hello"</span> &lt;&gt; <span class="str">"hEllo"</span>
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <p>The operators <code>==</code> and <code>&lt;&gt;</code> will recognize custom types, if they respond
+      to the <code><span class="sym">'is_equal</span></code> message. This is demonstrated by the next program.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> point(x, y)
+  <span class="kw">^</span>(message)
+  | <span class="sym">'get</span> -> [x, y]
+  | <span class="sym">'is_equal</span> -> <span class="kw">^</span>(p) p.get == [x, y]
+  
+<span class="kw">let</span> p1 = point(10, 20)
+<span class="kw">let</span> p2 = point(10, 20)
+<span class="kw">let</span> p3 = point(10, 30)
+p1 == p2
+<span class="comment">// true</span>
+p1 == p3
+<span class="comment">// false</span>
+p1 &lt;&gt; p3
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <p><code>Is_equal</code> cannot be used to compare two function objects. Always use <code><a href="is_eq.html">is_eq</a></code>
+      for this.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> f = <a href="sqrt.html">sqrt</a>
+is_eq(f, sqrt)
+<span class="comment">// true</span>
+is_eq(f, <a href="sin.html">sin</a>)
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_eqv.html">is_eqv</a></div>
+      <div class="ref"><a href="is_eq.html">is_eq</a></div>
+      <div class="ref"><a href="compare.html">compare</a></div>
+      <div class="ref"><a href="string_is_eq.html">string_is_eq</a></div>
+      <div class="ref"><a href="number_is_eq.html">number_is_eq</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

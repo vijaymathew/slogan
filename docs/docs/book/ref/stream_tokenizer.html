@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (stream_tokenizer)</title>
+  </head>
+
+  <body>
+    <h2>stream_tokenizer</h2>
+
+    <div class="prog">
+      <pre><code>
+stream_tokenizer(delimiters, s = <a href="current_reader.html">current_reader</a>)
+      </code></pre>
+    </div>
+
+    <p>A stream of <a href="is_char.html">characters</a> read from an input stream can be split into tokens using a tokenizer.
+      <code>Stream_tokenizer</code> Return a tokenizer on the input stream <code>s</code>.</p>
+
+    <p>If <code>delimiters</code> is either a character or a list of characters, a tokenizer will be returned that splits the stream at
+      the character or each one of the characters. If delimiters is <code><span class="pw">false</span></code>, a tokenizer will be
+      created that treat the input stream as Slogan source code and tokenizes the input based on the language syntax.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> t = stream_tokenizer(\;, <a href="string_reader.html">string_reader</a>(<span class="str">"abc;def;g:h;i"</span>))
+          
+<span class="kw">function</span> print_tokens(t)
+  <span class="kw">when</span> (<a href="not.html">not</a>(<a href="is_eof_object.html">is_eof_object</a>(<a href="peek_token.html">peek_token</a>(t))))
+  { <a href="showln.html">showln</a>(<a href="get_token.html">get_token</a>(t))
+    print_tokens(t) }
+
+print_tokens(t)
+<span class="comment">//&gt; abc
+  def
+  g:h
+  i</span>
+
+t = stream_tokenizer([\;, \:], string_reader(<span class="str">"abc;def;g:h;i"</span>))
+print_tokens(t)
+<span class="comment">//&gt; abc
+  def
+  g
+  h
+  i</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="statement.html">statement</a></div>
+      <div class="ref"><a href="slogan.html">slogan</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>

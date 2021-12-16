@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (process_receive)</title>
+  </head>
+
+  <body>
+    <h2>process_receive</h2>
+
+    <div class="prog">
+      <pre><code>
+process_receive(p, <span class="pw">@optional</span> timeout, default)
+      </code></pre>
+    </div>
+
+    <p>Return an object read from the <a href="process.html">process</a> <code>p</code>. If <code>timeout</code> is specified and no
+      response is received before it runs-out, the value of <code>default</code> will be returned.</p>
+
+    <p>A process can send and receive numbers, symbols, strings, pairs and arrays. More complex objects like functions should
+      be explicitly serialized and de-serialized. The functions <a href="object_to_u8array.html">object_to_u8array</a> and
+      <a href="u8array_to_object.html">u8array_to_object</a> can be used for this.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> p = process(<span class="kw">^</span>(cp) showln(<span class="str">"server says: "</span>, <a href="process_receive.html">process_receive</a>(cp)))
+<a href="process_send.html">process_send</a>(p, <span class="str">"hello"</span>)
+<span class="comment">//&gt; server says: hello
+<a href="process_close.html">process_close</a>(p)
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="process.html">process</a></div>
+      <div class="ref"><a href="process_send.html">process_send</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

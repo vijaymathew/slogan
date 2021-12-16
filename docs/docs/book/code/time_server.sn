@@ -1,0 +1,18 @@
+// Start the server and listen for connections on port 2121
+let server = tcp_server_stream(2121)
+            
+// Accept the first client connection
+let client = read(server)
+
+/* Read request from client, if it is valid
+  return the current time on server,
+  otherwise return an error message */  
+let request = read_line(client)
+if (request == "GET TIME")
+  showln(stream = client, time_to_string(now()))
+else
+  showln(stream = client, "error: invalid request")
+
+// Release the system resources used by both streams
+close_stream(client)
+close_stream(server)

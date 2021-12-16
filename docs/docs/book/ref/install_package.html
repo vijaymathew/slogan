@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (install_package)</title>
+  </head>
+
+  <body>
+    <h2>install_package</h2>
+
+    <div class="prog">
+      <pre><code>
+install_package(pn, type, url, force)
+      </code></pre>
+    </div>
+
+    <p>Installs the package named <code>pn</code>. <code>Type</code> must be one of the symbols <code><span class="sym">'local</span></code>,
+      <code><span class="sym">'git</span></code> or <code><span class="sym">'remote</span></code>. If <code>type</code> is
+      <code><span class="sym">'local</span></code>, <code>url</code> must be the full path to the package directory or
+      the full path of a <code>tar.gz</code>, a <code>tar.bz2</code> or a <code>.zip</code> file that contains the package. For <code>type</code>
+      <code><span class="sym">'git</span></code>, <code>url</code> must be the location of the git repository of the package.
+      If <code>type</code> is <code><span class="sym">'remote</span></code>,
+      <code>url</code> must point to a <code>tar.gz</code>, a <code>tar.bz2</code> or a <code>.zip</code> package hosted on an HTTP or
+      FTP server.</p>
+
+    <p>Return <code>pn</code> on success.</p>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="uninstall_package.html">uninstall_package</a></div>
+      <div class="ref"><a href="init_package.html">init_package</a></div>
+      <div class="ref"><a href="load_package.html">load_package</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (fx_is_eq/lt/gt/lteq/gteq)</title>
+  </head>
+
+  <body>
+    <h2>fx_is_***</h2>
+
+    <div class="prog">
+      <pre><code>
+fx_is_eq(fx1, <span class="pw">@rest</span> ...)
+fx_is_lt(fx1, <span class="pw">@rest</span> ...) 
+fx_is_gt(fx1, <span class="pw">@rest</span> ...) 
+fx_is_lteq(fx1, <span class="pw">@rest</span> ...) 
+fx_is_gteq(fx1, <span class="pw">@rest</span> ...) 
+      </code></pre>
+    </div>
+
+    <p><code>Fx_is_eq</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are equal, return
+      <code><span class="pw">false</span></code> otherwise. Raise an error if an argument is not a fixnum.</p>
+
+    <p><code>Fx_is_lt</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically increasing, i.e., each
+      argument is greater than the preceding ones, return <code><span class="pw">false</span></code> otherwise.
+      Raise an error if an argument is not a fixnum.</p>
+      
+    <p><code>Fx_is_gt</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically decreasing,
+      return <code><span class="pw">false</span></code> otherwise. Raise an error if an argument is not a fixnum.</p>
+    
+    <p><code>Fx_is_lteq</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically nondecreasing, i.e., each
+      argument is not less than the preceding ones, return <code><span class="pw">false</span></code> otherwise.
+      Raise an error if an argument is not a fixnum.</p>
+    
+    <p><code>Fx_is_gteq</code> &ndash; return <code><span class="pw">true</span></code> if its arguments are monotonically non-increasing,
+      return <code><span class="pw">false</span></code> otherwise. Raise an error if an argument is not a fixnum.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+fx_is_eq(1, 1)
+<span class="comment">// true</span>
+
+fx_is_lteq(1, 1, 2, 3, 4, 4)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_fixnum.html">is_fixnum</a></div>
+      <div class="ref"><a href="fxadd.html">fxadd</a></div>      
+      <div class="ref"><a href="fxand.html">fxand</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (file_exists)</title>
+  </head>
+
+  <body>
+    <h2>file_exists</h2>
+
+    <div class="prog">
+      <pre><code>
+file_exists(p, <span class="pw">@optional</span> chase)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the string <code>p</code> is the path to an existing file,
+      return <code><span class="pw">false</span></code> otherwise.</p>
+      
+    <p>When <code>chase</code> is <code><span class="pw">false</span></code> (the default), symbolic links will not be chased. In
+      other words if the path refers to a symbolic link, <code>file_exists</code> will return <code><span class="pw">true</span></code>
+      whether or not it points to an existing file.</p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="file_info.html">file_info</a></div>
+      <div class="ref"><a href="delete_file.html">delete_file</a></div>
+      <div class="ref"><a href="rename_file.html">rename_file</a></div>
+      <div class="ref"><a href="copy_file.html">copy_file</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.if_)</title>
+  </head>
+
+  <body>
+    <h2>compiler.if_</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.if_(condition, consequent, alternative)
+compiler.if_multi(conditions_consequences)
+compiler.when_(condition, consequent)
+compiler.case_(conditions_consequences)   
+      </code></pre>
+    </div>
+
+    <p>Return the intermediate language code required for conditional branching.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// if (1 &lt; 2) 100 else 200</span>          
+<a href="eval.html">eval</a>(compiler.if_(<a href="ccall.html">compiler.call</a>(<span class="sym">'`&lt;`</span>, [1, 2]), 100, 200))
+<span class="comment">// 100</span>
+
+<span class="comment">// if (1 &gt; 2) 100 else if (2 &gt; 1) 200 else 300</span>
+eval(compiler.if_multi([[compiler.call(<span class="sym">'`&gt;`</span>, [1, 2]), 100],
+                        [compiler.call(<span class="sym">'`&gt;`</span>, [2, 1]), 200],
+                        [<span class="sym">'else</span>, 300]]))
+<span class="comment">// 200</span>
+
+<span class="comment">// case (x) 100 -&gt; a | 200 -&gt; b | else -&gt; c</span>
+<span class="kw">let</span> x = 200  
+eval(compiler.case_(<span class="sym">'x</span>, [[[100], <span class="str">"a"</span>], [[200], <span class="str">"b"</span>], [<span class="sym">'else</span>, <span class="str">"c"</span>]]))
+<span class="comment">// b</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (apply)</title>
+  </head>
+
+  <body>
+    <h2>apply</h2>
+
+    <div class="prog">
+      <pre><code>
+apply(fn, obj, ..., list)
+      </code></pre>
+    </div>
+
+    <p><code>Apply</code> invokes <code>fn</code>, passing the first <code>obj</code> as the first argument, the second <code>obj</code> as
+      the second argument, and so on for each object in <code>obj ...</code>, and passing the elements of <code>list</code> in order
+      as the remaining arguments. Thus, <code>fn</code> is called with as many arguments as there are <code>obj</code>s plus elements
+      of <code>list</code>.</p>
+    
+    <p><code>Apply</code> is useful when some or all of the arguments to be passed to a function are in a list, without explicitly
+      destructuring the list.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+apply(<a href="append.html">append</a>, [1,2,3], [[\a, \b], [5, 6]])
+<span class="comment">// [1, 2, 3, \a, \b, 5, 6]</span>
+
+<span class="kw">function</span> add_heads(xs)
+  apply(<a href="add.html">`+`</a>, <a href="map.html">map</a>(head, xs))
+
+add_heads([1:2, 3:4, 5:6])
+<span class="comment">// 9</span>
+      </code></pre>
+    </div>
+
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="map.html">map</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

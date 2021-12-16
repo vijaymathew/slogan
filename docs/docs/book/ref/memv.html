@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (memv)</title>
+  </head>
+
+  <body>
+    <h2>memv</h2>
+
+    <div class="prog">
+      <pre><code>
+memv(x, xs)
+      </code></pre>
+    </div>
+
+    <p>Return the first tail of the <a href="list.html">list</a> <code>xs</code> whose head is equivalent to <code>x</code>.
+      Return <code><span class="pw">false</span></code> if <code>x</code> is not found in <code>xs</code>.</p>
+
+    <p>The equivalence test for <code>memv</code> is <code><a href="is_eqv.html">is_eqv</a></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+memv(1020032003209020020020, [1, 2, 1020032003209020020020, 4, 5])
+<span class="comment">// [1020032003209020020020, 4, 5]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="memq.html">memq</a></div>
+      <div class="ref"><a href="member.html">member</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

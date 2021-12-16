@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (assq)</title>
+  </head>
+
+  <body>
+    <h2>assq</h2>
+
+    <div class="prog">
+      <pre><code>
+assq(x, xys)
+      </code></pre>
+    </div>
+
+    <p>Return the first element from the association list <code>xys</code> whose head is equivalent to <code>x</code>.
+      Return <code><span class="pw">false</span></code> if the element is not found.</p>
+
+    <p>An association list is a proper <a href="list.html">list</a> whose elements are <a href="pair.html">pairs</a> of the
+      form <code>key:value</code>.</p>
+
+    <p>The equivalence test for <code>assq</code> is <code><a href="is_eq.html">is_eq</a></code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+assq(<span class="sym">'b</span>, [<span class="sym">'a</span>:1, <span class="sym">'b</span>:2, <span class="sym">'c</span>:3])
+<span class="comment">// b:2</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="assoc.html">assoc</a></div>
+      <div class="ref"><a href="assv.html">assv</a></div>
+      <div class="ref"><a href="assp.html">assp</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (number_to_string)</title>
+  </head>
+
+  <body>
+    <h2>number_to_string</h2>
+
+    <div class="prog">
+      <pre><code>
+number_to_string(n, <span class="pw">@optional</span> radix = 10)
+      </code></pre>
+    </div>
+
+    <p>Return the external representation of the number <code>n</code> as a string.</p>
+
+    <p>The number is expressed in <code>radix</code>, which must be an exact integer from the <a href="set.html">set</a> <code>#(2, 8, 10, 16)</code>.
+      <code>Radix</code> defaults to <code>10</code>. In any case, no radix specifier will appear in the resulting string.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+number_to_string(221/12)
+<span class="comment">// 221/12</span>
+
+<a href="string_length.html">string_length</a>(number_to_string(221/12))
+<span class="comment">// 6</span>
+
+number_to_string(221/12, 16)
+<span class="comment">// dd/c</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string_to_number.html">string_to_number</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

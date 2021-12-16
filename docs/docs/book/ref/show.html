@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (show)</title>
+  </head>
+
+  <body>
+    <h2>show</h2>
+
+    <div class="prog">
+      <pre><code>
+show(<span class="pw">@key</span> stream = <a href="current_writer.html">current_writer</a>(), quotes = <span class="pw">false</span>, obj1, ...)
+      </code></pre>
+    </div>
+
+    <p>Write the textual representation of the objects <code>obj1 ...</code> to the output-stream <code>stream</code>.
+      If <code>quotes</code> is <span class="pw">true</span>, output the enclosing quotes for strings and symbols.
+      After writing <code>obj1 ...</code>, return <code>void</code>.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+show(<span class="str">"hello, world"</span>)
+<span class="comment">//> hello, world</span>
+show(quotes = <span class="pw">true</span>, <span class="str">"hello, world"</span>)
+<span class="comment">//> "hello, world"</span>
+
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="showln.html">showln</a></div>
+      <div class="ref"><a href="display.html">display</a></div>
+      <div class="ref"><a href="write.html">write</a></div>
+      <div class="ref"><a href="print.html">print</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

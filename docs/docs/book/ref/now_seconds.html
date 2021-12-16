@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (now_seconds)</title>
+  </head>
+
+  <body>
+    <h2>now_seconds</h2>
+
+    <div class="prog">
+      <pre><code>
+now_seconds(<span class="pw">@optional</span> tm)
+      </code></pre>
+    </div>
+
+    <p>Return seconds elapsed since the epoch. The epoch is 00:00:00 Coordinated Universal Time 01-01-1970.
+      If <code>tm</code> is the result of calling <code><a href="now.html">now</a>()</code>, the milliseconds representing that
+      time is returned. Otherwise, the current system time as seconds (with nanosecond precision) is returned.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> tm = now()
+now_seconds()
+<span class="comment">// 1496675523.234862</span>
+now_seconds(tm)
+<span class="comment">// 1494575520</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="now.html">now</a></div>  
+      <div class="ref"><a href="time.html">time</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

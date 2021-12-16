@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (mutex_state)</title>
+  </head>
+
+  <body>
+    <h2>mutex_state</h2>
+
+    <div class="prog">
+      <pre><code>
+mutex_state(m)
+      </code></pre>
+    </div>
+
+    <p>Return information about the state of <a href="mutex.html">mutex</a> <code>m</code>.</p>
+    <p>Possible states are:</p>
+    <p>
+      <ol>
+        <li><a href="task.html">Task</a> T: the mutex is in the locked/owned state and task T is the owner of the mutex.</li>
+        <li><span class="sym">'not_owned</span>: the mutex is in the locked/not-owned state.</li>
+        <li><span class="sym">'abandoned</span>: the mutex is in the unlocked/abandoned state.</li>
+        <li><span class="sym">'not_abandoned</span>: the mutex is in the unlocked/not-abandoned state.</li>
+      </ol>
+    </p>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="mutex_lock.html">mutex_lock</a></div>
+      <div class="ref"><a href="mutex_unlock.html">mutex_unlock</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

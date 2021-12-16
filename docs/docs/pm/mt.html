@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+  <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right" >
+        <a href="./si.html" title="System Interface"
+           accesskey="N">next</a></li>
+      <li class="right" >
+        <a href="./io.html" title="Input and Output"
+           accesskey="P">previous</a> |</li>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+  
+  <div id="site" class="site">
+    <div class="title"><h3>Multitasking & Parallelism</h3></div>
+
+    <p>This chapter describe the functions for creating and managing <a href="#tasks">multiple concurrent tasks</a> (or threads of execution).
+    We will also learn about <a href="#rvars">reactive variables</a> and see how to write <a href="#par">multi-core parallel programs</a>.</p>
+
+    <a name="tasks"></a>
+    <h4>Tasks</h4>
+    <div class="highlight">
+      <pre><code><b>function: </b>task(f, @key args, suspended, name = void, group) 
+<b>returns: </b>a new task.
+
+The function `f` is executed in the new task. If `args` are not provided or is false,
+`f` is treated as a no-argument function. Otherwise the list of objects `args `is
+passed to `f` when it is called. `f` should take as many arguments as there are
+elements in `args`. If `suspended` is true the task is created in the suspended
+state. It has to be started with a call to `task_run(task)`. If provided, `name` and
+`group` identifies the task's name and the group it belongs to.</code></pre>
+    </div>
+                               
+
+    <div class="highlight">
+      <pre><code><b>syntax: </b>!expression
+<b>returns: </b>a new task.
+
+`expression` is executed in the new task.
+
+<span class="c">// Example:</span>
+!let loop(i = 0) { showln(i); task_sleep(2); loop(i+1) };
+<span class="c">//=> &lt;task&gt;</span>
+
+<span class="c">// the task will print the new value of `i` in the background, every two seconds.
+<span class="c">//-> 0
+1
+2 ...</span></code></pre>
+    </div>
+    
+    <div class="highlight">
+      <pre><code><b>function: </b>root_task(f, @key args, suspended, name = void, group,
+                    input_stream = current_input_stream(),
+                    output_stream = current_output_stream()) 
+<b>returns: </b>a new task.
+
+This function is similar to task() except the created task does not inherit the
+dynamic environment from the current task and the base priority is set to 0,
+the priority boost is set to 1.0e-6, and the quantum is set to 0.02.
+The dynamic environment of the task has the global bindings of the parameter objects,
+except current_input_stream which is bound to input_stream,
+current_output_stream which is bound to output_stream, and current_directory which is
+bound to the initial current working directory of the current process.</code></pre>
+    </div>
+
+<div class="highlight">  
+      <pre><code><b>function: </b>self() 
+<b>returns: </b>the current task.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>is_task(obj) 
+<b>returns: </b>true if `obj` is a task object, false otherwise.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_run(task) 
+<b>returns: </b>`task`.
+
+Makes `task` runnable.
+
+<span class="c">// Example:</span>
+let a = task(^(x, y) showln(x + y), args = [10, 20], suspended = true); 
+task_run(a); 
+<span class="c">//-> 30</span></code></pre>
+</div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_yield() 
+<b>returns: </b>void
+
+Causes the current task to exit the running state as if its quantum had expired.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_sleep(timeout) 
+<b>returns: </b>void
+
+Causes the current task to wait until `timeout` is reached. This blocks the task
+only if `timeout` represents a point in the future. It is an error for `timeout` to be false.
+
+`timeout` can be exact integers to indicate seconds or fractional numbers to indicate
+sub-second timeouts.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_terminate(task) 
+<b>returns: </b>void
+
+Causes an abnormal termination of `task`. If `task` is not already terminated, all mutexes
+owned by it become unlocked/abandoned and a terminated-exception object is stored in its
+`end-exception` field. If `task` is the current task, task_terminate does not return.
+The actual termination of `task` will occur at some point between the calling of task_terminate
+and a finite time in the future (an explicit task synchronization is needed to detect
+termination, see task_join).</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_join(task, @optional timeout, timeout_val) 
+<b>returns: </b>`timeout_val`
+
+Causes the current task to wait until `task` terminates (normally or not) or until the
+`timeout` is reached (if `timeout` is supplied). If `timeout` is reached, this function
+returns `timeout_val` (if it is supplied), otherwise a join-timeout-exception object
+is raised. If `task` terminated normally, the content of its end-result field is
+returned, otherwise the content of its end-exception field is raised.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_name(task) 
+<b>returns: </b>the name of `task`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_set_data(task, obj) 
+<b>returns: </b>void
+
+Puts an arbitrary object `obj` in task's data field.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_data(task) 
+<b>returns: </b>the arbitrary object in the task's data field.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_set_base_priority(task, p) 
+<b>returns: </b>void
+
+Sets the base priority of `task` to the real number `p`.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_base_priority(task) 
+<b>returns: </b>the base priority of `task`.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_set_priority_boost(task, p) 
+<b>returns: </b>void
+
+Sets the priority boost of `task` to the non-negative real number `p`.</code></pre>
+    </div>
+    
+    <div class="highlight">
+      <pre><code><b>function: </b>task_priority_boost(task) 
+<b>returns: </b>the priority boost of `task`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_base_priority(task) 
+<b>returns: </b>the base priority of `task`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_set_quantum(task, q) 
+<b>returns: </b>void
+
+Sets the quantum of `task` to the non-negative real number `q`.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_quantum(task) 
+<b>returns: </b>the quantum of `task`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_send(task, msg) 
+<b>returns: </b>void
+
+Adds the message `msg` at the end of the mailbox `task`.
+`msg` can be any valid Slogan object.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>syntax: </b>task !&gt; msg
+<b>returns: </b>msg
+
+Adds the message `msg` at the end of the mailbox `task`.
+`msg` can be any valid Slogan object.</code></pre>
+    </div>
+    
+    <div class="highlight">
+      <pre><code><b>function: </b>task_receive(@optional timeout, default)
+<b>function: </b>task_messages_next(@optional timeout, default)
+<b>syntax: </b>!&lt;          
+<b>returns: </b>a message from the current task's mailbox.
+
+`task_receive` advances the mailbox cursor of the current task to the next message,
+removes that message from the mailbox, rewinds the mailbox cursor, and returns the message.
+When `timeout` is not specified, the current task will wait until a message is available in the
+mailbox. When `timeout` is specified and `default` is not specified,
+a mailbox-receive-timeout-exception object is raised if the timeout is reached before a
+message is available. When `timeout` is specified and default is specified, `default`
+is returned if the timeout is reached before a message is available.
+
+The `!&lt;` operator has the same semantics as task_receive without `timeout` and
+`default` specified.
+
+`task_messages_next` behaves like task_receive except that the message remains in
+the mailbox and the mailbox cursor is not rewound.
+
+<span class="c">// Examples:</span>
+let t1 = task(^let loop (msg = task_receive()) { task_send(head(msg), tail(msg) * 2);
+                                                 loop(task_receive()) });
+task_send(t1, self():10);
+task_receive();
+<span class="c">//=> 20</span>
+task_send(t1, self():2);
+task_receive();
+<span class="c">//=> 4</span>
+
+<span class="c">// the same program using the shorter ! syntax:</span>
+let t2 = !let loop (msg = !<) { head(msg) !> tail(msg) * 2; loop(!<) };
+t2 !> self():10;
+!<;
+<span class="c">//=> 20</span>
+t2 !> self():2;
+!<;
+<span class="c">//=> 4</span></code></pre>
+    </div>
+    
+    <div class="highlight">
+      <pre><code><b>function: </b>task_messages_rewind(@optional remove_last_read)
+<b>returns: </b>void
+
+Rewinds the mailbox cursor of the current task so that the next call to task_messages_next
+and task_receive will access the oldest message in the mailbox. Additionally if `remove_last_read`
+is true the message most recently accessed by a call to task_messages_next will be removed from
+the mailbox. When task_messages_next has not been called since the last call to task_receive or
+task_messages_rewind, a call to task_messages_rewind with remove_last_read set to true only
+resets the mailbox cursor (no message is removed).</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_group(name = void, parent)
+<b>returns: </b>a new task group identified by `name` and with the parent group `parent`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>is_task_group(obj)
+<b>returns: </b>true if `obj` is a task group, false otherwise.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_group_name(tg)
+<b>returns: </b>the name of the task group `tg`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_group_parent(tg)
+<b>returns: </b>the parent group of the task group `tg`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_group_resume(tg)
+<b>returns: </b>marks all tasks in the group `tg` as runnable.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_group_suspend(tg)
+<b>returns: </b>marks all tasks in the group `tg` as not runnable.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>task_group_terminate(tg)
+<b>returns: </b>marks all tasks in the group `tg` for termination.</code></pre>
+      </div>
+
+        <div class="highlight">
+      <pre><code><b>function: </b>task_state(task)
+<b>returns: </b>returns an object that represents the state of `task`.</code></pre>
+        </div>
+
+<p>The following functions are provided to query various properties of a task state object returned by the <code>task_state</code> function:</p>
+
+<div class="highlight">
+  <pre><code><b>function: </b>task_state_is_uninitialized(ts)
+<b>function: </b>task_state_is_initialized(ts)
+<b>function: </b>task_state_is_active(ts)
+<b>function: </b>task_state_active_waiting_for(ts)
+<b>function: </b>task_state_active_timeout(ts)
+<b>function: </b>task_state_is_normally_terminated(ts)
+<b>function: </b>task_state_normally_terminated_result(ts)                     
+<b>function: </b>task_state_is_abnormally_terminated(ts)
+<b>function: </b>task_state_abnormally_terminated_reason(ts)
+<b>returns: </b>returns a state variable associated with the task state object `ts`.</code></pre>
+</div>
+
+    <h5>Mutexes</h5>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex(name = void)
+<b>returns: </b>a new mutex in the unlocked/not-abandoned state.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>is_mutex(obj)
+<b>returns: </b>true if `obj` is a mutex, false otherwise.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex_name(mutex)
+<b>returns: </b>the name of `mutex`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex_set_data(mutex, obj)
+<b>returns: </b>void
+
+Sets the data field of `mutex` to the arbitrary object `obj`.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex_data(mutex)
+<b>returns: </b>the arbitrary object in the data field of `mutex`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex_state(mutex)
+<b>returns: </b>information about the state of `mutex`.
+
+Possible states are:
+
+task T: the mutex is in the locked/owned state and task T is the owner of the mutex.
+'not_owned: the mutex is in the locked/not-owned state.
+'abandoned: the mutex is in the unlocked/abandoned state.
+'not_abandoned: the mutex is in the unlocked/not-abandoned state.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex_lock(mutex, @optional timeout, task)
+<b>returns: </b>either true or false.
+
+Locks `mutex`. If `mutex` is currently locked, the current task waits until
+`mutex` is unlocked, or until `timeout` is reached (if `timeout` is supplied).
+If `timeout` is reached, mutex_lock returns false. Otherwise, the state of
+`mutex` is changed as follows:
+
+if task is false `mutex` becomes locked/not-owned,
+otherwise, let T be task (or the current task if task is not supplied),
+if T is terminated `mutex` becomes unlocked/abandoned,
+otherwise `mutex` becomes locked/owned with T as the owner.
+
+After changing the state of `mutex`, an abandoned-mutex-exception object
+is raised if `mutex` was unlocked/abandoned before the state change,
+otherwise mutex_lock returns true. It is not an error if `mutex` is owned
+by the current task (but the current task will have to wait).</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>mutex_unlock(mutex, @optional monitor, timeout)
+<b>returns: </b>either true or false.
+
+Unlocks `mutex` by making it unlocked/not-abandoned.
+It is not an error to unlock an unlocked mutex and a mutex that is
+owned by any task. If the monitor (or condition-variable) monitor is supplied,
+the current task is blocked and added to the monitor before unlocking `mutex`;
+the task can unblock at any time but no later than when an appropriate call
+to monitor_notify or monitor_broadcast is performed (see below), and no later
+than the timeout (if timeout is supplied). If there are tasks waiting to lock
+this mutex, the scheduler selects a task, the mutex becomes locked/owned or
+locked/not-owned, and the task is unblocked. Mutex_unlock returns false when
+the timeout is reached, otherwise it returns true.</code></pre>
+    </div>
+
+    <h5>Monitors</h5>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>monitor(name = void)
+<b>returns: </b>a new monitor.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>is_monitor(obj)
+<b>returns: </b>true if `obj` is a monitor object, false otherwise.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>monitor_name(monitor)
+<b>returns: </b>the name of `monitor`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>monitor_set_data(monitor, obj)
+<b>returns: </b>void
+
+Sets the data field of `monitor` to the arbitrary object `obj`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>monitor_data(monitor)
+<b>returns: </b>the arbitrary object in the data field of `monitor`.</code></pre>
+      </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>monitor_notify(monitor)
+<b>returns: </b>void
+
+Unblocks a task blocked on `monitor` (if there is at least one).</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>monitor_broadcast(monitor)
+<b>returns: </b>void
+
+Unblocks all tasks blocked on `monitor`.</code></pre>
+    </div>
+
+    <a name="rvars"></a>
+    <h4>Reactive Variables</h4>
+<p>Reactive variables are used in writing declarative concurrent programs. A newly initialized reactive variable
+  will be in an unbound state. If a task requires the value of a reactive variable, it will wait until that variable
+  is bound. This binding can happen only in another task. Thus reactive variables can act as a simple mechanism for
+  passing values between tasks. A reactive variable once assigned cannot be reassigned a new value. It is this
+  property that makes them useful in declarative concurrency.</p>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>rvar()
+<b>syntax: </b>?
+<b>returns: </b>an unbound reactive variable.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>rbind(r, obj)
+<b>syntax:</b> ?r = obj
+<b>returns: </b>void
+
+Binds the object `obj` to the reactive variable `r.</code></pre>
+      </div>
+   
+    <div class="highlight">
+      <pre><code><b>function: </b>rget(r, @optional timeout, default)
+<b>syntax: </b>?r          
+<b>returns: </b>the object bound to the reactive variable `r`.
+
+If `timeout` is not specified, waits till the reactive variable is bound by another task.
+If `timeout` is specified and the variable is not bound within it runs-out, rget will return
+the value of `default`. If there are no other tasks running this function will raise
+a "Deadlock detected" error.
+
+The `?r` syntax has the same semantics as `rget` with no `timeout` and `default` specified.</code></pre>
+    </div>
+
+<p>Example:</p>
+    <div class="highlight">
+      <pre><code>let x = ?;
+!showln(?x * 100);
+
+?x = 20;
+<span class="c">//=> 2000</span></code></pre>
+      </div>
+
+<p>A reactive variable can be defined an initialized in a single shot as shown below:</p>
+    <div class="highlight">
+      <pre><code>let ?x = 20;</code></pre></div>
+    
+    <h5>Memory coherency</h5>
+
+    <p>Read and write operations on the store (such as reading and writing a variable, an element of an array or a string) are not atomic. 
+      It is an error for a task to write a location in the store while some other task reads or writes that same location. It is the 
+      responsibility of the application to avoid write/read and write/write races through appropriate uses of the synchronization primitives.</p>
+
+    <p>Concurrent reads and writes to streams are allowed. It is the responsibility of the implementation to serialize accesses to a given 
+      stream using the appropriate synchronization primitives.</p>
+    
+    <a name="par"></a>
+    <h4>Parallel programming</h4>
+    <p>Slogan supports multi-core parallel programming with an API based on a simple message-passing model</a>.
+      A function can be executed on a separate processor core by calling it within the <code>process</code> or <code>act</code> functions.
+      The main program interacts with the spawned function using message passing.</p>
+
+<a name="process"></a>
+    <div class="highlight">
+      <pre><code><b>function: </b>process(f, @optional timeout)
+<b>returns: </b>an object that contain information about the newly started process.
+
+Arranges the function `f` to be executed parallely. If `timeout` is specified,
+an error is raised if the spawned process does not respond within `timeout`.</code></pre>
+    </div>
+      
+    <div class="highlight">
+      <pre><code><b>function: </b>process_send(pinfo, obj, @optional timeout)
+<b>returns: </b>the number of bytes sent to the process represented by `pinfo`.
+          
+Send the object `obj` to the process represented by `pinfo`. If `timeout` is specified,
+raise an error if the object cannot be sent within that time.</code></pre>
+    </div>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>process_receive(pinfo, @optional timeout, default)
+<b>returns: </b>an object read from the process represented by `pinfo`.</code></pre>
+    </div>
+
+<p>A process can send and receive numbers, symbols, strings, pairs and arrays. More complex objects like functions should be explicitly serialized and de-serialized. The functions `object_to_u8array` and `u8array_to_object` may be used for this.</p>
+
+    <div class="highlight">
+      <pre><code><b>function: </b>process_close(pinfo)
+<b>returns: </b>true if the connection with the process is closed, false otherwise.
+
+Closes the communication channel between the parent and child process. If called from parent,
+the child process is terminated.</pre></code></div>
+
+<p>Example:</p>
+
+    <div class="highlight">
+      <pre><code>let p = process(^(cp) showln("server says: ", process_receive(cp))); 
+process_send(p, "hello"); 
+<span class="c">//-> server says: hello</span>
+process_close(p); 
+<span class="c">//=> true</span></code></pre></div>
+
+    <a name="act"></a>
+    <div class="highlight">
+      <pre><code><b>function: </b>act(f, @optional timeout, default)
+<b>returns: </b>a function that send messages to the new process.
+
+Starts a new process and calls the function `f` in that process. This function is
+called with the objects received from the parent process until it receives the symbol 'quit.
+The return value of `act` is a function that the parent process can call to send messages
+to the child process. Any value passed to this function, except the symbol 'info is send
+to the child. For the argument 'info this function will return the process information object.
+Passing the symbol 'quit will cause this function to terminate the child and close the
+connection with it.
+
+For all other arguments, the function returned by `act` behave as follows. After sending
+the message, it will return a function that represent a "future" object. At a later point
+in time, this "future" can be invoked to get back the reply from the child. This function
+can be optionally passed two keyword arguments - `timeout` and `default` - to prevent the
+parent from waiting indefinitely for a reply.
+
+`timeout` is used by the parent and child processes to control the time they should wait for
+message sends and receives.
+`default` is used as the return value for process_receive calls that times-out.
+
+<span class="c">// Example:</span>
+let p = act(^(message)
+            | 'hi -> 'hello
+            | ['add, a, b] -> a + b
+            | _ -> 'invalid);
+                            
+let f = p('hi);
+f();
+<span class="c">//-> hello</span>
+p.hi();
+<span class="c">//-> hello</span>
+f = p(['add, 10, 20]);
+f();
+<span class="c">//-> 30</span>
+f = p('hey);
+f();
+<span class="c">//-> invalid</span>
+p('quit); <span class="c">// or `p.quit`</span>
+<span class="c">//=> true</span>
+
+Note that the function returned by message passing abstracts a simple request-reply protocol.
+The function must be invoked and the reply read before sending the next message. The function
+should not be shared between tasks.</code></pre></div>
+
+    <a name="react"></a>
+    <div class="highlight">
+      <pre><code><b>function: </b>react(f, cb, @optional timeout, default)
+<b>returns: </b>a function that send messages to the new process.
+
+Starts a new process and calls the function `f` in that process. This function is
+called with the objects received from the parent process until it receives the symbol 'quit.
+The return value of `react` is a function that the parent process can call to send messages
+to the child process. Any value passed to this function, except the symbol 'info is send
+to the child. For the argument 'info this function will return the process information object.
+Passing the symbol 'quit will cause this function to terminate the child and close the
+connection with it.
+
+For all other arguments, the function returned by `react` behave as follows. After sending
+the message, it will arrange an independent task to receive back the response. The function
+`cb` is called by this task with the response as argument. 
+
+`timeout` is used by the parent and child processes to control the time they should wait for
+message sends and receives.
+`default` is used as the return value for process_receive calls that times-out.
+
+<span class="c">// Example:</span>
+let r = ?;
+let p = react(^(message) | [x, y] -> x + y,
+              ^(message) | result -> ?r = result);
+p([10, 20]);
+?r;
+<span class="c">//=> 30</span>
+r = ?;
+p([10, 200]);
+?r;
+<span class="c">//=> 210</span>
+p.quit;</code></pre></div>    
+  </div>
+</body>
+</html>

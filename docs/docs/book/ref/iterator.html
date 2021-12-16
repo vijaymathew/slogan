@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (iterator)</title>
+  </head>
+
+  <body>
+    <h2>iterator</h2>
+
+    <div class="prog">
+      <pre><code>
+iterator(iter)
+      </code></pre>
+    </div>
+
+    <p>Return a zero-argument function that can be used to traverse the iterator <code>iter</code>.
+      Each call to the returned function will result in the next value from the iterator.
+      When all values in the iterator run out, this function will return <code><span class="pw">false</span></code>.
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> f(x)
+{ <span class="kw">yield</span> x+1
+  <span class="kw">yield</span> x+2 }
+
+<span class="kw">let</span> g = iterator(f(10))
+g()
+<span class="comment">// 11</span>
+g()
+<span class="comment">// 12</span>
+g()
+<span class="comment">// false</span>
+      </code></pre>
+    </div>
+
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_iterator.html">is_iterator</a></div>
+      <div class="ref"><a href="first.html">first</a></div>
+      <div class="ref"><a href="rest.html">rest</a></div>      
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

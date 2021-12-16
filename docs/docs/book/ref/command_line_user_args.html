@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (command_line_user_args)</title>
+  </head>
+
+  <body>
+    <h2>command_line_user_args</h2>
+
+    <div class="prog">
+      <pre><code>
+command_line_user_args()
+      </code></pre>
+    </div>
+
+    <p>Similar to <code><a href="command_line.html">command_line</a>()</code> but filters out all arguments processed by
+      the Slogan process.</p>
+      
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// echo.sn</span>
+<a href="showln.html">showln</a>(command_line())
+showln(command_line_user_args())
+      </code></pre>
+    </div>
+      <p>Ask the Slogan interpreter to evaluate the script, also pass some additional arguments to the
+        <code><a href="../cmdline.html">slogan</a></code> command:</p>
+
+      <div class="prog">
+        <pre><code>
+$ slogan -e echo.sn hello world
+<span class="comment">//&gt; [slogan, -e, echo.sn, hello, world]
+//&gt; [slogan, hello, world]</span>
+        </code></pre>
+      </div>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

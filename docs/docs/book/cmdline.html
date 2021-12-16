@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Command Reference</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">18</h1>
+    <h1 class="title">Command Reference</h1>
+
+    <p>The <code>slogan</code> program provide a unified interface for accessing the Slogan interpeter, REPL and compiler.
+      This program accept many command line options. This chapter document these options in detail.</p>
+
+    <p>The <code>slogan</code> command can be invoked in two ways as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+$ slogan &lt;options&gt;
+      </code></pre>
+    </div>
+
+    <p>This will start the interactive REPL where you can interpret programs.</p>
+
+    <div class="prog">
+      <pre><code>
+$ slogan &lt;options&gt; script
+      </code></pre>
+    </div>
+
+    <p>This will execute or compile a slogan script, depending on the options passed.</p>
+    
+    <p>Valid options are: </p>
+
+    <table>
+      <tr><th align="left">Option</th><th align="left" width="400">Description</th>
+      <tr><td><code>-e</code></td> <td align="left">Execute a script.</td></tr>
+      <tr><td><code>-c</code></td> <td align="left">Compile a script into a dynamically loadable object file.</td></tr>
+      <tr><td><code>-x</code></td> <td align="left">Compile a script into an executable binary.</td></tr>
+      <tr><td><code>-i</code></td> <td align="left">Install a package.</td></tr>
+      <tr><td><code>-u</code></td> <td align="left">Uninstall a package.</td></tr>
+      <tr><td><code>-ld-options</code></td> <td align="left">Additional options that will be passed to the system linker.</td></tr>
+      <tr><td><code>-cc-options</code></td> <td align="left">Additional options that will be passed to the system C compiler.</td></tr>
+      <tr><td><code>-r</code></td> <td align="left">Launch REPL after performing other options.</td></tr>
+      <tr><td><code>-v</code></td> <td align="left">Display version information and quit.</td></tr>
+      <tr><td><code>-h</code></td> <td align="left">Print this help and quit.</td></tr>
+    </table>
+
+    <p>Some of the options like <code>-i</code> take additional arguments. They are illustrated below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment"># install a package from a local folder or compressed archive (a .zip, .tar.gz or a .tar.bz2 file).</span>          
+$ slogan -i "package_name,local,/path_to_package_folder_or_archive"
+
+<span class="comment"># install a package from a git repository.</span>
+$ slogan -i "package_name,git,https://github.com/gitusername/package_name.git"
+
+<span class="comment"># install a package hosted on a remote server.</span>
+$ slogan -i "package_name,remote,http://slogan-packages.com/package_name.tar.gz"
+
+<span class="comment"># uninstall a package.</span>
+$ slogan -u "package_name"
+      </code></pre>
+    </div>
+
+    <p>You can install and uninstall packages from within a program as well. This is accomplished by calling the
+      <code><a href="ref/install_package.html">install_package</a></code> and <code><a href="ref/uninstall_package.html">uninstall_package</a></code>
+      functions.</p>
+
+    <p>Slogan programs runs on top of <a href="http://gambitscheme.org/" target="_blank">Gambit Scheme</a>. Options meant for the Gambit
+      virtual machine can also be passed as command line arguments for <code>slogan</code>. These options must be preceded by <code>-:</code> and each
+      option must be separated by comma. The most useful options accepted by the virtual machine is given below:</p>
+
+    <table>
+      <tr><th align="left">Option</th><th align="left" width="400">Description</th>
+      <tr><td><code>m</code></td> <td align="left">The minimum heap size in kilobytes.</td></tr>
+      <tr><td><code>h</code></td> <td align="left">The maximum heap size in kilobytes.</td></tr>
+      <tr><td><code>l</code></td> <td align="left">The heap live ratio after GC in percent.</td></tr>
+      <tr><td><code>-[OPT...]</code></td> <td align="left">Set standard input and output options; see below for OPT.</td></tr>
+    </table>
+
+    <p>OPT should be one of:</p>
+    <table>
+      <tr><td width="150"><code>A|1|2|4|6|8|U</code></td> <td align="left">Character encoding (ASCII|ISO-8859-1|UCS-2/4|UTF-16/8|UTF).</td></tr>
+      <tr><td><code>l|c|cl</code></td> <td align="left">End-of-line encoding (LF|CR|CR-LF).</td></tr>
+      <tr><td><code>u|n|f</code></td> <td align="left">Buffering (unbuffered|newline buffered|fully buffered).</td></tr>
+      <tr><td><code>r|R</code></td> <td align="left">Enable character encoding errors (on|off).</td></tr>
+      <tr><td><code>e|E</code></td> <td align="left">Enable line-editing (on|off), for terminals only.</td></tr> 
+    </table>
+
+    <p>Here are a few examples of passing command-line options to the VM:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment"># Evaluate a script after setting minimum heap-size of 500MB and maximum heap-size to 2GB:</span>
+$ slogan -:m500000,h2000000 -e script.sn
+
+<span class="comment"># Prepare the interpreter to read/write UTF-8 encoded files:</span>
+$ slogan -:-8
+slogan&gt; <a href="ref/load.html">load</a>(<span class="str">"utf8_encoded_source_code.sn"</span>)
+      </code></pre>
+    </div>
+
+    <p>A standalone Slogan program can accept all VM options in addition to its own <a href="ref/command_line.html">command line</a> arguments.</p>
+
+    <p>For a full list of virtual machine command line arguments, run,</p>
+
+      <div class="prog">
+        <pre><code>
+$ slogan -h
+        </code></pre>
+      </div>
+
+    <hr></hr>
+    <p align="center">
+      <a href="cref/index.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+
+  </body>
+</html>

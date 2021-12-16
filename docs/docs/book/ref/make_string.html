@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (make_string)</title>
+  </head>
+
+  <body>
+    <h2>make_string</h2>
+
+    <div class="prog">
+      <pre><code>
+make_string(n, <span class="pw">@optional</span> char = \nul)
+      </code></pre>
+    </div>
+
+    <p>Return a <a ref="string.html">string</a> of length <code>n</code>. If <code>char</code> is supplied, the string is filled with <code>n</code>
+      occurrences of <code>char</code>.</p>
+
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+make_string(5)
+<span class="comment">// \0\0\0\0\0</span>
+
+make_string(5, \y)
+<span class="comment">// yyyyy"</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="string.html">string</a></div>
+      <div class="ref"><a href="is_string.html">is_string</a></div>
+      <div class="ref"><a href="is_char.html">is_char</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

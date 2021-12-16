@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>The Slogan Programming Language</title>
+    <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+    <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+  </head>
+  <body>
+    
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" >
+          <a href="./except.html" title="Exceptions"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="./si.html" title="System Interface"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+        <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+      </ul>
+    </div>
+    
+    <div id="site" class="site">
+      <div class="title"><h3>Records</h3></div>
+      
+      <p>Records are a means for defining new, distinct types. Records are defined via the <code>record</code> syntactic form which is described below:</p>
+
+      <div class="highlight">
+        <pre><code><b>syntax: </b>record name (field1 = default_value where pre_condition, ...)
+
+`name` is the name of the new record and `field1 ...` are the names of its fields.
+The optional where clause specifies the pre-conditions that the values assigned to
+`field1 ...` should satisfy.
+`default_value1 ...`s are also optional and defaults to false.
+
+The record statement will automatically define the following functions:
+
+<b>function: </b>name(@key field1 = value1, ...) 
+<b>function: </b>make_name(value1, value2) 
+<b>returns: </b>a new instance of the record named `name` with its fields set to the given values.
+
+These are the constructor functions for the record.
+The make_name function expects all the fields to be specified in the same order as
+they were defined in the record statement.
+
+<b>function: </b>is_name(obj) 
+<b>returns: </b>true if `obj` is an instance of the record named `name`, false otherwise.
+
+<b>function: </b>name_field(r) 
+<b>returns: </b>the current value bound to `field` in the record instance `r`.
+
+<b>function: </b>name_set_field(r, value) 
+<b>returns: </b>void
+
+Sets `field` in the record object `r` to `value`.
+
+
+<span class="c">// Examples:</span>
+record point (x, y); 
+
+let p = point(y = 100, x = 20); 
+let p2 = make_point(1, 3.4); 
+point_x(p); 
+<span class="c">//=> 20</span>
+point_x(p2); 
+<span class="c">//=> 1</span>
+point_set_y(p2, 5.6); 
+point_y(p2); 
+<span class="c">//=> 5.6</span>
+
+<span class="c">// The point constructor allows us to leave out fields so they take default values:</span>
+p = point(x = 12); 
+point_x(p); 
+<span class="c">//=> 12</span>
+point_y(p); 
+<span class="c">//=> false</span>
+
+<span class="c">// A coordinate taking the default value of false does not look right.
+// So let us change the record definition a bit:</span>
+record point (x = 0, y = 0);
+
+p = point(x = 12); 
+point_x(p); 
+<span class="c">//=> 12</span>
+point_y(p); 
+<span class="c">//=> 0</span>
+
+<span class="c">// The where clause can restrict the range of values being assigned to the coordinates:</span>
+record point (x = 0 where x >= -80 && x <= 80, y = 0 where y >= 0 && y <= 80); 
+
+p = point(x = -100, y = 10); 
+<span class="c">//-> error: precondition_failed</span>
+
+p = point(x = -10, y = 10); 
+point_set_y(p, -1); 
+<span class="c">//-> error: precondition_failed</span>
+point_set_y(p, 1); 
+p;
+<span class="c">//=> #&lt;point #3 x: -10 y: 1&gt;</span>
+  
+<span class="c">//The make_point constructor will bypass all pre-condition checks:</span>
+p = make_point(-100, -10);
+p;
+<span class="c">//=> #&lt;point #4 x: -100 y: -10&gt;</span></code></pre>
+      </div>
+      
+<h5>Pattern matching records</h5>
+<p>Examples:</p>
+
+<div class="highlight">
+  <pre><code>record point (x, y); 
+record three_d_point (x, y, z); 
+
+function f(p) 
+ | point(x, y) -> println("point ", x, ":", y)
+ | three_d_point(x, y, z) -> println("3d_point ", x, ":", y, ":", z); 
+
+f(point(x = 10, y = 20)); 
+<span class="c">//-> point 10:20</span>
+f(three_d_point(x = 10, y = 20, z = 3.4)); 
+<span class="c">//-> 3d_point 10:20:3.4</span></code></pre>
+</div>
+
+<p>The <code>match</code> statement can also have a <code>where</code> clause that can be used to impose more restrictions on how the pattern
+  is matched. For example, if we want to match a <code>point</code> object only if its <code>x</code> is <code>10</code>, we would rewrite
+  the <code>match</code> statement as shown below:</p>
+
+<div class="highlight">
+  <pre><code> function f(p) 
+  | point(x, y) where x == 10 -> println("point ", x, ":", y)
+  | three_d_point(x, y, z) -> println("3d_point ", x, ":", y, ":", z); 
+
+f(point(x = 10, y = 20)); 
+<span class="c">//-> point 10:20</span>
+f(point(x = 5, y = 20)); 
+<span class="c">//-> error: no_match_found</span></code></pre>
+</div>
+
+<p>A record pattern match can refer members by position. This is achieved by prefixing the member name by the `@` character.
+  (This means record members are not allowed to start with the `@` character).</p>
+
+<div class="highlight">
+  <pre><code>let p = point(x = 10, y = 20)
+
+<span class="c">// pattern matching by position of record members,
+// can use any variable name prefixed by `@`:</span>
+match (p) point(@a, @b) -> [@a, @b];
+<span class="c">//=> [10, 20]</span>
+match (p) point(@b, @a) -> [@a, @b];
+<span class="c">//=> [20, 10]</span>
+
+<span class="c">// pattern matching by name record members, can be in any order:</span>
+match (p) point(x, y) -> [x, y];
+<span class="c">//=> [10, 20]</span>
+match (p) point(y, x) -> [x, y];
+<span class="c">//=> [10, 20]</span></code></pre></div>
+
+</div>
+  </body>
+</html>

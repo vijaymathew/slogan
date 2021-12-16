@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (assp)</title>
+  </head>
+
+  <body>
+    <h2>assp</h2>
+
+    <div class="prog">
+      <pre><code>
+assp(predic, xys, <span class="pw">@key</span> default = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Call the predicate <code>predic</code> with the head of each pair in the association list <code>xys</code>.
+      Return the pair for which <code>predic</code> returns <code><span class="pw">true</span></code>.
+      If no pair satisfied <code>predic</code>, return the value of <code>default</code>.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+assp(<a href="is_odd.html">is_odd</a>, [2:200, 3:300])
+<span class="comment">// 3:300</span>
+
+assp(<a href="is_even.html">is_even</a>, [2:200, 3:300])
+<span class="comment">// 2:200</span>
+
+assp(is_even, [1:200, 3:300])
+<span class="comment">// false</span>
+
+assp(is_even, [1:200, 3:300], default = 2)
+<span class="comment">// 2</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="assoc.html">assoc</a></div>
+      <div class="ref"><a href="assv.html">assv</a></div>
+      <div class="ref"><a href="assq.html">assq</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

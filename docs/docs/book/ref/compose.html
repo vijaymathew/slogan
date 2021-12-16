@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compose)</title>
+  </head>
+
+  <body>
+    <h2>compose</h2>
+
+    <div class="prog">
+      <pre><code>
+compose(<span class="pw">@rest</span>fn1, ...)
+      </code></pre>
+    </div>
+
+    <p>Return a function that is the composition of the functions <code>fn1, ....</code>.</p>
+
+    <p>The returned function will take a variable number of arguments, apply the rightmost of <code>fn1, ...</code>s
+      to the arguments, the next function in <code>fn1, ...</code> (right-to-left) to the result, and so on.
+      Each of <code>fn1, ...</code>, except the last, must take exactly one argument. The last function can take an arbitrary number of arguments.</p>
+      
+    <p>If <code>compose</code> is called with no arguments the <code><a href="identity.html">identity</a></code> function is returned.</p>
+
+    <h3>Examples:</h3>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> negative_quotient = compose(sub, div)
+negative_quotient(8, 3)
+<span class="comment">// -8/3</span>
+
+<span class="kw">let</span> s = compose(number_to_string, add)(10, 20, 8, 100)
+s
+<span class="comment">// 138</span>
+<a href="is_string.html">is_string</a>(s)
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="partial.html">partial</a></div>
+      <div class="ref"><a href="complement.html">complement</a></div>
+      <div class="ref"><a href="mapfn.html">mapfn</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

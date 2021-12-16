@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - A Tryst With Infinity</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">9</h1>
+    <h1 class="title">A Tryst With Infinity</h1>
+
+    <p>In <a href="state.html">Chapter 7</a> on State and Modularity, we learned how to use assignment as a tool for modeling the real world.
+      In the <a href="conc.html">preceding chapter</a> we came face-to-face with some of the complications that assignment can raise if
+      used along with concurrency. The root cause of the problem is that a variation in the object being modeled will lead to a state variation in
+      the program as well. Along with the problems of
+      concurrent assignments, objects with varying state has another drawback &ndash; they are ignorant of their own history. In other words, once
+      a state change has occurred, it is not possible to figure out how the object looked at a point in time in the past.</p>
+
+    <p>In this chapter we will explore another way to model change without assignments. The idea, at an abstract level, is to represent the varying
+      object as a function <em>f(x, t)</em>, which return the state of the object <code>x</code> at time <code>t</code>. This function can be implemented
+      using an association list or a hash table which maps a time to the state of <code>x</code> at that time. This will work as long as we don't
+      want the state at an arbitrary time in the future or in the past. But for this abstraction to be useful, we should be able to represent very large
+      or even <em>infinite</em> sequences of states. Slogan realizes this idea in the form of <em>lazy sequences</em>.</p>
+
+    <p>Before looking at how lazy sequences help us model systems with state without ever using assignment, we should get familiar with the programming
+      technique that make these sequences possible. This technique is known as <em>lazy</em> or <em>delayed evaluation</em>.</p>
+
+    <h2>9.1 Delayed Evaluation</h2>
+
+    <p>If we are allowed to package an expression in such a way that it can be evaluated later on demand, we have delayed evaluation in our language.
+      In fact you already know how to do delayed evaluations! When we package an expression as a function, we are effectively delaying the evaluation
+      of that expression until the function is called. For example, if we want an expensive computation to be evaluated only when its value is
+      actually needed by the program, we package the expression into a function. We call that function at the point in the program where the value
+      needs to be computed and used.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> expensive_computation = <span class="kw">^</span>() { <a href="ref/showln.html">showln</a>(<span class="str">"performing long computation..."</span>)
+                                  <a href="ref/task_sleep.html">task_sleep</a>(2)
+                                  12345 }
+
+expensive_computation()
+<span class="comment">//&gt; performing long computation...
+// 12345</span>
+expensive_computation()
+<span class="comment">//&gt; performing long computation...
+// 12345</span>
+      </code></pre>
+    </div>
+
+    <p>The problem with the <code>expensive_computation</code> function is that each time it is called, the whole computation is repeated again.
+      A better version of the function will cache the result once computed and return that value when the function is called again.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> expensive_computation = <span class="kw">let</span> (cached_result = <span class="pw">false</span>)
+                              <span class="kw">^</span>() <span class="kw">if</span> (cached_result) cached_result
+                                  <span class="kw">else</span> { showln(<span class="str">"performing long computation..."</span>)
+                                         task_sleep(2)
+                                         cached_result = 12345
+                                         cached_result }
+
+expensive_computation()
+<span class="comment">//&gt; performing long computation...
+// 12345</span>
+expensive_computation()
+<span class="comment">// 12345</span>
+      </code></pre>
+    </div>
+
+    <p>This optimization is known as <a href="https://en.wikipedia.org/wiki/Memoization" target="_blank">memoization</a>. Slogan provides
+      the <em>delay</em> operator (<code><span class="pw">~</span></code>) for expressing memoized functions easily.
+      Any expression can be delayed by prefixing it
+      with the delay operator. The delay operator's return value is an object called the <em>promise</em> which can be <em>forced</em>
+      to evaluate and return the expression's value. This value is cached by the promise object and returned when it is forced again.</p>
+
+    <p>We can rewrite the <code>expensive_computation</code> function using delay as shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> expensive_computation = <span class="pw">~</span>{ showln(<span class="str">"performing long computation..."</span>)
+                               task_sleep(2)
+                               12345 }          
+
+expensive_computation
+<span class="comment">// &lt;promise&gt;</span>
+<a href="ref/force.html">force</a>(expensive_computation)
+<span class="comment">//&gt; performing long computation...
+// 12345</span>
+force(expensive_computation)
+<span class="comment">// 12345</span>
+      </code></pre>
+    </div>
+
+    <h2>9.2 Lazy Sequences</h2>
+
+    <p>With that introduction to delayed expressions, we are in a position to understand sequences that can conceptually extend to infinity.
+      The fundamental data structure that can be used to represent a sequence of values is the <a href="ref/list.html">list</a>.
+      As we saw <a href="cdt.html">earlier</a> in this book, a list is just a <a href="ref/pair.html">pair</a> of pairs that is terminated by
+      an <a href="ref/is_empty.html">empty list</a>. To make this clear, look at the following definitions of two lists with similar layouts:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> xs = [1, 2, 3, 4, 5]
+<span class="kw">let</span> ys = 1:2:3:4:5:[]
+
+ys
+<span class="comment">// [1, 2, 3, 4, 5]</span>
+xs == ys
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <p>The problem with lists created from pairs is that they have to eventually terminate. What if we need a list from which we can fetch values
+      to our soul's content? This can be achieved by making a pair whose <a href="ref/head.html">head</a> is the first value in the sequence and
+      whose <a href="ref/tail.html">tail</a> is a <em>promise</em> to generate the next value when required. This idea is expressed in the
+      function below, which represents an infinite sequence of integers:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> infinite_integers(i)
+  i:<span class="pw">~</span>infinite_integers(i+1)
+      </code></pre>
+    </div>
+
+    <p><code>Infinite_integers</code> calls itself recursively to generate the next value in the sequence, but that call is delayed until the next value is
+      actually needed. So calling the function will not go into an infinite loop.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> xs = infinite_integers(1)
+xs
+<span class="comment">// [1, ...]</span>
+head(xs)
+<span class="comment">// 1</span>
+head(force(tail(xs)))
+<span class="comment">// 2</span>
+      </code></pre>
+    </div>
+
+    <p>To have to explicitly force each element in the sequence can be a bit awkward. The functions <code><a href="ref/first.html">first</a></code>,
+      <code><a href="ref/rest.html">rest</a></code> and <code><a href="ref/nth.html">nth</a></code> know how to access elements in a sequence,
+      invoking <code>force</code> at the right places.</p>
+
+    <div class="prog">
+      <pre><code>
+first(xs)
+<span class="comment">// 1</span>
+first(rest(xs))
+<span class="comment">// 2</span>
+nth(0, xs)
+<span class="comment">// 1</span>
+nth(10, xs)
+<span class="comment">// 11</span>
+      </code></pre>
+    </div>
+
+    <h3>9.2.1 Generic Operations on Sequences</h3>
+
+    <p>In Slogan, list is the default data structure for representing and manipulating a sequence of values. When coupled with
+      higher-order functions like <code><a href="ref/map.html">map</a></code>, <code><a href="ref/fold.html">fold</a></code> and
+      <code><a href="ref/filter.html">filter</a></code>, 
+      programs that manipulate lists can lead to elegant solutions to many data transformation problems. To illustrate this, consider
+      a program for computing the sum of all prime numbers in an interval. As a first attempt, let us define the program in an iterative style:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> sum_primes(a, b)
+  <span class="kw">letfn</span> loop (count = a, accum = 0)
+    <span class="kw">if</span> (count > b) accum
+    <span class="kw">else if</span> (<a href="ref/is_prime.html">is_prime</a>(count)) loop(inc(count), count + accum)
+    <span class="kw">else</span> loop(inc(count), accum)
+
+<span class="comment">// usage example:</span>
+sum_primes(1, 20)
+<span class="comment">// 77</span>
+sum_primes(10000, 1000000)
+<span class="comment">// 37544665627</span>
+      </code></pre>
+    </div>
+
+    <p>We can define this function in a more declarative style by using the higher-order functions we saw in <a href="func.html">Chapter 6</a>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> sum_primes(a, b)
+  fold(`<a href="ref/add.html">+</a>`, 0, filter(is_prime, <a href="ref/range.html">range</a>(a, b)))          
+      </code></pre>
+    </div>
+
+    <p>Though the second <code>sum_primes</code> is shorter and sweeter than the first, it is grossly inefficient when it comes to memory consumption.
+      <code>Filter</code> cannot do any work until <code>range</code> returns a whole list. Then a new list is generated by <code>filter</code> which
+      is reduced to a sum by <code>fold</code>.
+
+    <p>The inefficiency in using lists becomes painfully apparent if we use the same paradigm to compute the second prime in a large interval:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> nth_prime(n, a, b)
+  <a href="ref/nth.html">nth</a>(n, filter(<a href="ref/is_prime.html">is_prime</a>, range(a, b)))
+
+nth_prime(1, 1, 20)
+<span class="comment">// 3</span>
+nth_prime(1, 10000, 1000000)
+<span class="comment">// 10009</span>
+      </code></pre>
+    </div>
+
+    <p>The function does find the n<sup>th</sup> prime, but the computational overhead is outrageous for calls that search over a large range of
+      numbers. For instance, the call <code>nth_prime(10000, 1000000)</code> will construct a list of almost a million integers, filter this
+      list by testing each element for primality, and then ignore almost all of the result. If we were programming in the iterative style,
+      we would interleave the enumeration and the filtering, and stop when we reached the second prime.</p>
+
+    <p>With lazy sequences we can achieve the best of both worlds: We can formulate programs elegantly as sequence manipulations,
+      while attaining the efficiency of incremental computation. There are higher-order functions that can work with lists and lazy sequences
+      alike. <code>Filter</code> and <code>map</code> are two examples. When working with lazy sequences, they will construct only that
+      part of the sequence that is actually required for the current computation. As the computation makes progress,
+      more of the sequence will be realized maintaining an illusion of an infinite stream of values.</p>
+
+    <p>Both the <code>sum_primes</code> and <code>nth_prime</code> functions can be rewritten to take advantage of generic functions that
+      takes lazy sequences as arguments. Specifically, we have to replace the call to <code>range</code> with
+      <code><a href="ref/enumerate.html">enumerate</a></code> and the call to <code>fold</code> with
+      <code><a href="ref/accumulate.html">accumulate</a></code> . While <code>range</code> returns a fully realized list of values,
+      <code>enumerate</code> will give us a lazy sequence of the same values. <code>Accumulate</code> knows how to reduce a lazy sequence
+      to a single value, incrementally.</p>
+
+    <p>First we will write the <code>sum_primes</code> function using the new sequence functions:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> sum_primes(a, b)
+  accumulate(`+`, 0, filter(is_prime, enumerate(a, b)))
+      </code></pre>
+    </div>
+
+    <p>When we call <code>sum_primes</code> with a large range, it will return immediately with a lazy sequence of sums, deferring the actual
+      computation of the sum only when it is explicitly requested by a sequence accessor such as <code><a href="ref/nth.html">nth</a></code>:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = sum_primes(10000, 1000000)
+nth(10000, s)
+<span class="comment">// 628132235</span>
+      </code></pre>
+    </div>
+
+    <p>The performance enhancement we get for the <code>nth_prime</code> function is even more profound.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> nth_prime(n, a, b)
+  nth(n, filter(is_prime, enumerate(a, b)))
+
+nth_prime(1, 10000, 1000000) <span class="comment">// this call will return immediately</span>
+<span class="comment">// 10009</span>
+      </code></pre>
+    </div>
+
+    <h3>9.2.2 Modularity of Lazy Sequences</h3>
+
+    <p>As we saw in <a href="state.html">Chapter 7</a>, one of the major benefits of introducing assignment is that we can increase the modularity
+      of our systems by hiding or <em>encapsulating</em> its state in local variables. Let us revisit this idea with the example of a simple
+      <a href="https://en.wikipedia.org/wiki/Pseudorandom_number_generator" target="_blank">Pseudo-random Number Generator</a>.
+      <a name="01-back"></a>First let us implement a purely functional version of the PRNG that do not make use of local state
+      or assignments<sup><a href="#01">1</a></sup>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> rand(seed)
+  rand_update(seed)
+
+<span class="kw">function</span> rand_update(x)
+  <span class="kw">let</span> (a = 27, b = 26, m = 127)
+    <a href="ref/modulo.html">modulo</a>(a * x + b, m)
+      </code></pre>
+    </div>
+
+    <p>The functional purity of the <code>rand</code> function comes with a cost, users must take care of passing the accurate current state of the
+      PRNG to each successive call to the function. This is because its implementation is not modular enough to hide and keep track of its
+      internal state.</p>
+
+    <div class="prog">
+      <pre><code>
+rand(10)
+<span class="comment">// 42</span>
+rand(42)
+<span class="comment">// 17</span>
+rand(17)
+<span class="comment">// 104</span>
+      </code></pre>
+    </div>
+
+    <p>By bringing assignment to the scene, we will be able to create PRNG <em>objects</em> that can keep track of their own internal state and are
+      more modular.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_rand(seed)
+  <span class="kw">let</span> (x = seed)
+    <span class="kw">^</span>() { x = rand_update(x)
+          x }
+
+<span class="kw">let</span> r = make_rand(10)
+r()
+<span class="comment">// 42</span>
+r()
+<span class="comment">// 17</span>
+r()
+<span class="comment">// 104</span>
+      </code></pre>
+    </div>
+
+    <p>If we realize the PRNG using lazy sequences, we will be able to have the benefits of modularity by not incurring the costs
+      associated with assignment. With lazy sequences, we will have a stream of random numbers
+      produced by successive calls to <code>rand_update</code>.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> rand(seed)
+  <span class="kw">let</span> (x = rand_update(seed))
+     x:<span class="pw">~</span>rand(x)
+
+<span class="kw">let</span> rs = rand(10)
+nth(0, rs)
+<span class="comment">// 42</span>
+nth(2, rs)
+<span class="comment">// 104</span>
+nth(99, rs)
+<span class="comment">// 20</span>
+      </code></pre>
+    </div>
+
+    <p>We get considerable modularity with this approach, yet we do not have to maintain a changing local state.</p>
+
+    <h2>9.2 Generators</h2>
+
+    <p>Generators are functions that can behave as if they return an infinite sequence of values. A generator function can be made to <em>return</em>
+      a value before its body is fully evaluated. This is accomplished by calling the <code><span class="kw">yield</span></code> expression, which
+      returns a pair of the return value and an object known as an <em>iterator</em>. The iterator object knows how to restart the function where
+      <code><span class="kw">yield</span></code> was called. If the function is written in such a way that it will return another
+      <code>value:iterator</code> pair, the caller effectively gets a sequence of infinite values.</p>
+
+    <p>In the next example, we will write a function that will give us an infinite sequence of random numbers, generated with the help of
+      <code><span class="kw">yield</span></code>.</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> rand(seed)
+  <span class="kw">letfn</span> loop (x = rand_update(seed))
+  { <span class="kw">yield</span> x
+    loop(rand_update(x)) }
+
+<span class="kw">let</span> rs = rand(10)
+<a href="ref/first.html">first</a>(rs)
+<span class="comment">// 42</span>
+first(<a href="ref/rest.html">rest</a>(rs))
+<span class="comment">// 17</span>
+first(rest(rs))
+<span class="comment">// 104</span>
+      </code></pre>
+    </div>
+
+    <p>Note that once an iterator is asked to move forward, there is no way to ask it to get a value from the past. Because of this, they may not be a
+      stand-in replacement for lazy sequences created by the <code>delay</code> operator. A function that generates an iterator should also not call
+      itself recursively. Instead use a named <code><span class="kw">letfn</span></code> as shown in the example.</p>
+
+    <p>By default, <code><span class="kw">yield</span></code> returns <code><a href="ref/void.html">void</a></code>. The <code>next</code> function can
+      be called to pass a user-defined value to <code><span class="kw">yield</span></code>, which will become its return value. Please see the reference
+      on <code><a href="ref/next.html">next</a></code> for more information.</p>
+
+    <p>The traversal on an iterator can be wrapped into a convenience function. This is achieve by calling the
+      <code><a href="ref/iterator.html">iterator</a></code> constructor. This call will return a function that can be called to traverse the iterator.
+      Each call to this function will result in returning the next value from the iterator. When all values run out, this function will return
+      <code><span class="pw">false</span></code>.
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> iter = iterator(rand(100))
+
+iter()
+<span class="comment">// 59</span>
+iter()
+<span class="comment">// 95</span>
+      </code></pre>
+    </div>
+
+    <h2>9.3 Custom Sequences</h2>
+
+    <p>As we saw in the previous sections, <code>first</code> and <code>rest</code> are the generic means for accessing many types of sequences.
+      Their genericity is not limited to built-in sequences like lists, lazy sequences and generators. You can define your own custom sequence objects
+      that can be destructured with these functions. This can is accomplished by defining the object as a closure that responds to the
+      <code><span class="sym">'first</span></code> and <code><span class="sym">'rest</span></code> messages.</p>
+
+    <p>In this section we will define a custom sequence that respond to these messages and see how it automatically gets fitted into the larger context
+      of the language. The data structure we are going to define is simply called a <em>bag</em>. You create a bag with a collection of objects. These
+      objects can be taken out one by one, but there is no guarantee to the order in which they will come out, similar to picking out items from a real
+      bag without looking into it.</p>
+
+    <p>The following program defines the <code>bag</code> data structure. The constructor <code>make_bag</code> takes a finite sequence as argument.
+      This is sequence is shuffled and stored in a local list. The returned object redirects the <code>first</code> and <code>rest</code> messages to
+      this list.</p>
+      
+    <div class="prog">
+      <pre><code>
+<span class="kw">function</span> make_bag(objects)
+  <span class="kw">letfn</span> (objs = shuffle(objects))
+    <span class="kw">^</span>(msg)
+    | <span class="sym">'first</span> -> first(objs)
+    | <span class="sym">'rest</span> -> rest(objs)
+
+<span class="comment">// utility functions for shuffling a sequence.</span>
+<span class="kw">function</span> shuffle(objects)
+  <span class="kw">letfn</span> loop (objs = objects, result = [])
+    <span class="kw">if</span> (not(objs)) result
+    <span class="kw">else let</span> (len = count(objs))
+      <span class="kw">if</span> (len == 0) result
+      <span class="kw">else let</span> (i = random_integer(len))
+        loop(remove_nth(i, objs), nth(i, objs):result)
+
+<span class="kw">function</span> remove_nth(n, objects)
+  <span class="kw">letfn</span> loop (objs = objects, i = 0, result = [])
+    <span class="kw">if</span> (not(objs)) <a href="ref/reverse.html">reverse</a>(result)
+    <span class="kw">else if</span> (i == n) loop(rest(objs), i + 1, result)
+    <span class="kw">else</span> loop (rest(objs), i + 1, first(objs):result)
+      </code></pre>
+    </div>
+
+    <p>This is how you would use the new bag sequence:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> b = make_bag([1,2,3,4,5])
+<span class="comment">// the results you get may be different,
+// because the list is randomly shuffled by the bag.</span>
+first(b)
+<span class="comment">// 4</span>
+first(rest(b))
+<span class="comment">// 3</span>
+
+<span class="comment">// destructuring a bag:</span>
+<span class="kw">let</span> [a,b,c,d,e] = b;
+[a,b,c,d,e]
+<span class="comment">// [4, 3, 1, 2, 5]</span>
+      </code></pre>
+    </div>
+
+    <p>You can make the bag data structure more versatile by overriding the <code><a href="ref/ref.html">ref</a></code> and
+      <code><a href="ref/ref_set.html">ref_set</a></code> messages. See the references for more information.</p>
+                                                         
+    <hr></hr>
+    <div class="note">
+      <p>
+        <sup><a name="01"></a><a href="#01-back">1</a></sup>The algorithm we use to generate random numbers may not be suitable for real-world use.
+        For production code, use the built-in functions <code><a href="ref/random_integer.html">random_integer</a></code> or
+        <code><a href="ref/random_real.html">random_real</a></code>.
+      </p>
+    </div>
+
+    <hr></hr>
+    <p align="center">
+      <a href="flow.html">Next</a> | <a href="conc.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</head>
+  

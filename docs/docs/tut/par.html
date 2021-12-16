@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>The Slogan Programming Language</title>
+  <meta name="author" content="Vijay Mathew (Based on the design of Julia Language website)." />
+  <link rel="stylesheet" href="../../css/julia.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../../css/syntax.css" type="text/css" />
+</head>
+<body>
+
+    <div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li><a href="../../index.html">Slogan</a>&nbsp;/&nbsp;</li>
+      <li><a href="../index.html">Documentation</a>&nbsp;/&nbsp;</li>
+    </ul>
+  </div>
+
+  <div id="site" class="site">
+    <div class="title"><h3>Practical parallel programming</h3></div>
+
+    <p>This is a short tutorial on writing parallel programs in Slogan. We will learn how to compose a program out of several
+      independent activities, each represented by a higher-order function. On multi-core computers (which is the common breed today),
+      these functions will be executed simultaneously leading to significant gains in the overall performance of the program. In the course of this
+      tutorial we will encounter a couple of simple "laws" that help us identify computations begging to be parallelized.
+      We will also see how to deal with failing processes.</p>
+
+    <p>Let us solve an easy but useful problem. We will first tackle it using traditional sequential programming techniques.
+      Then we will identify a "hot spot" in the program that can benefit from parallelism. Because of the very high-level support
+      for parallel programming in Slogan, only small changes are required to make the sequential code run on multiple-cores.</p>
+
+    <p>The problem we are about to solve is this: parse a corpus (a collection of text documents) into individual words and report the <code>N</code> most frequent
+      words in each document. For example, if the corpus contain one document called "hamlet.txt" with the content
+      "to be or not to be" and our program is requested to print the three most frequent words in the corpus, then the output will be:</p>
+
+    <div class="highlight">
+      <pre><code><span class="c">hamlet.txt: [to: 2, be: 2, not: 1]</span></code></pre></div>
+
+    <p>One line will be printed for each document.</p>
+                                                                      
+    <p>We treat certain common words as "stop words" so the final report will be able to highlight the
+      characteristic nature of each document under consideration. We also try to filter out characters normally used as punctuation.</p>
+
+    <div class="highlight">
+      <pre><code><span class="c">// Not the prefect list of stop words, just good enough for our example!</span>
+<span class="k">let</span> stop_words = ["the", "by", "you", "we", "to", "of", "in", "was", "a",
+                  "an", "is", "and", "are", "has", "have", "had", "he", "his", "her",
+                  "she", "when", "how", "why", "what", "that", "then", "now", "i", "be",
+                  "it", "as", "with", "for", "but", "on", "my", "him", "so", "were", 
+		  "should", "would", "can", "shall", "will", "me", "at", "not", "they", "all",
+		  "been", "from", "very", "much", "no", "yes", "their", "this", "your", "said",
+		  "or", "them", "mr", "mrs", "txt", "any", "if", "in", "out", "there", "only",
+                  "up", "down", "who", "one", "went", "go", "do", "done", "did", "more", 
+                  "after", "upon", "into", "other", "these", "ye", "its", "such", "though",
+                  "those", "than", "still", "about", "here", "thou", "thy", "thee",
+                  "most", "must", "may", "which", "could", "before", "yet", "let", "soon",
+                  "some", "day", "every", "every", "know", "well", "might", "also", "shalt",
+                  "am", "never", "miss", "see", "seemed", "like", "over", "own"]
+
+<span class="k">let</span> delims = [\space, \newline, \,, \;, \:, \., \_, \-, \{, \}, \(, \), \[, \], \', \&quot;, \?, \!]</code></pre></div>
+
+    <p>The <code>word_count</code> function splits an input string into words and return a hashtable with each word mapped to the
+    number of times it appears in the string.</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> word_count(str)
+  <span class="k">letseq</span> (count_table = #{},
+          add_word_count =
+          ^(word) <span class="k">when</span> (string_length(word) > 1
+                        && not(member(word, stop_words))
+                        && not(char_is_numeric(string_at(word, 0))))
+            count_table[word] = inc(hashtable_at(count_table, word, 0)))
+   { for_each(^(w) add_word_count(string_trim(w)),
+                   string_split(string_downcase(str), delims))
+     count_table }</code></pre>
+    </div>
+
+    <p>The two functions shown below will read all the documents in a corpus and
+      construct a table that maps individual files to their word counts.</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> count_words_in_file(file_name)
+  <span class="k">let</span> (ct = word_count(call_with_stream(file_reader(file_name),
+                       ^(s) read_all_chars(s, file_size(file_name))))
+       xs = [])
+  { hashtable_for_each(^(k, v) xs = (k:v):xs, ct)
+    sort(xs, ^(x, y) tail(x) > tail(y)) }
+
+<span class="c">// Sequentially read and parse each file in the list `file_names`.</span>
+<span class="k">function</span> count_words_in_files(file_names)
+  <span class="k">let</span> (counts = map(count_words_in_file, file_names),
+       count_tables = #{})
+  { for_each(^(fn, c) count_tables[fn] = c, file_names, counts)
+    count_tables }</code></pre></div>
+
+    <p>It's time to test our code on a corpus of four large documents:</p>
+
+    <div class="highlight">
+      <pre><code><span class="c">// Files in the corpus were downloaded from Project Gutenberg (https://www.gutenberg.org/)</span>
+<span class="k">let</span> corpus = ["./corpus/war&peace.txt", "./corpus/mobydick.txt",
+              "./corpus/kjbible.txt", "./corpus/pride&prejudice.txt"]
+
+<span class="k">function</span> frequent_words(count_table, n) take(n, count_table)
+
+<span class="k">function</span> show_most_frequent_words(corpus, n, count_fn)
+  <span class="k">let</span> (start_secs = now_seconds(),
+       xs = count_fn(corpus))
+  { showln(now_seconds() - start_secs, " secs")
+    <span class="k">for</span> (i = 0; i < count(corpus); inc(i))
+      <span class="k">let</span> (fname = corpus[i])
+        showln(fname, ": ", frequent_words(xs[fname], n)) }
+
+show_most_frequent_words(corpus, 20, count_words_in_files)</code></pre></div>
+                    <p>On the machine I am testing, the call to <code>show_most_frequent_words</code> produced the following output:</p>
+                    <div class="highlight">
+                      <pre><code><span class="c">31.93878698348999 secs</span>
+
+<span class="c">./corpus/war&peace.txt: [pierre:1950, prince:1923, natásha:1206, man:1169, andrew:1136, himself:1012, time:923, princess:915, face:891, french:874, old:832, eyes:820, men:783, rostóv:772, room:769, thought:764, chapter:732, count:719, began:714, moscow:711]
+./corpus/mobydick.txt: [whale:1221, man:527, ship:511, ahab:511, old:452, sea:452, head:344, time:337, long:334, boat:329, captain:329, great:306, two:298, white:282, last:281, way:271, whales:268, again:261, stubb:257, queequeg:252]
+./corpus/kjbible.txt: [unto:8997, lord:7964, god:4472, man:2735, israel:2575, king:2548, son:2392, hath:2264, people:2146, came:2093, house:2024, come:1972, children:1821, land:1718, men:1677, against:1668, hand:1466, us:1452, saying:1445, made:1405]
+./corpus/pride&prejudice.txt: [elizabeth:634, darcy:418, bennet:324, bingley:307, jane:294, herself:227, sister:218, think:211, time:204, good:203, wickham:194, lady:190, little:189, collins:179, without:178, nothing:177, again:177, being:176, lydia:171, make:170]</span></code></pre></div>
+
+    <p>The program took more than 30 seconds to execute. Its performance might be improved by changing <code>word_count</code> to use a custom tokenizer
+      instead of the built-in <code>string_split</code> function, or I can simply take advantage of the multiple cores on my machine! What if I split the
+      corpus into two and process each half simultaneously and then merge the results back? This looks practical in our case. In fact, I can split the
+      corpus into as many pieces as there are processors on my machine. A master process can take care of merging the results. This is easy
+      because the order in which the hashtables are merged does not affect the final result.</p>
+
+<p>A new process is started by one of the three library functions - <code><a href="../pm/mt.html#process">process</a></code>, <code><a href="../pm/mt.html#act">act</a></code>, and <code><a href="../pm/mt.html#react">react</a></code>.
+  In this tutorial we concentrate only on <code>act</code>,
+      which takes a function as argument and returns a function. The returned function acts as a proxy for the new process. Arguments passed to this
+      function are forwarded to the new process as "messages". The function that was passed as the argument to <code>act</code> can respond to these messages
+      by performing some computation. The result of this computation is then send back to the parent process, i.e, the process that originally
+      called <code>act</code>. As no mechanisms other than function definition and invocation is involved, parallel programming in
+  Slogan is super easy. The gory details of inter-process communication is abstracted away by the library.</p>
+
+<p>The code required for the parallel tokenization of a list of documents is just a one line function:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> par_counter(file_names)
+  act(^(message) | 'start -> count_words_in_files(file_names))</code></pre></div>
+
+<p>On the receipt of the `start` message, the process will start tokenizing the files. The result of calling the sequential function
+  <code>count_words_in_files</code> is returned to the parent process.</p>
+
+    <p>The new <code>parellel_count_words_in_files</code> function takes advantage of <code>par_counter</code>:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> parallel_count_words_in_files(file_names)
+  <span class="k">letseq</span> (parts = split(file_names),
+          pc = par_counter(head(parts)),
+          pcount = pc.start,
+          ct01 = count_words_in_files(tail(parts)),
+          ct02 = pcount(timeout = 25, default = #{}))
+   { pc.quit; merge_tables(ct01, ct02) }</code></pre></div>
+
+    <p>This function first splits the input list into two. Then it calls <code>par_counter</code> to
+      start a new process and sends it the first half of the list. This is followed by the `start` message and
+      the new process starts to tokenize the first two files. Then <code>parallel_count_words_in_files</code> proceed to
+      tokenize the second half of the list. After that it waits for the child process to return. If the child process fails to
+      return within the specified timeout seconds, an empty hashtable will be used as the default value.
+      As it has no more work to do, the child process is asked to quit. The two tables are merged to produce the final result.</p>
+
+    <p>The definitions of the utility functions <code>split</code> and <code>merge_tables</code> are shown below:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">function</span> split(xs)
+  <span class="k">letseq</span> (ln = length(xs),
+          m = quotient(ln, 2))
+    sublist(xs, 0, m):sublist(xs, m, ln)
+
+<span class="k">function</span> merge_tables(t01, t02)
+{ hashtable_for_each(^(k, v) t01[k] = v, t02)
+  t01 }</code></pre></div>
+
+    <p>Did our initial attempt at parallelism really improve the running time of the program? Let's find out:</p>
+    <div class="highlight">
+      <pre><code>show_most_frequent_words(corpus, 20, parallel_count_words_in_files)
+<span class="c">//-> 22.461962938308716 secs</code></pre></div>
+
+    <p>The program finishes faster now. The processing time did not drop by half because the files being processed
+      are of varying sizes and one process will have to do more work than the other. (Woe to the process that read <em>War and Peace</em>!)</p>
+
+   <p>I have more cores on my machine than there are documents in the corpus, so I can still do better! What if one core is dedicated for each
+     document? Then the program should not take longer than the time required to process the largest document. Let us write a modified version
+     of <code>parallel_count_words_in_files</code> based on this idea and see how it performs:</p>
+
+   <div class="highlight">
+     <pre><code><span class="k">function</span> parallel_count_words_in_files_2(file_names)
+  <span class="k">letseq</span> (pcs = map(^(fn) par_counter([fn]), file_names),
+          pcounts = map(^(pc) pc.start, pcs),
+          to_secs = 15,
+          ct = first(pcounts)(timeout = to_secs, default = #{}))
+  { for_each(^(pcount) merge_tables(ct, pcount(timeout = to_secs, default = #{})),
+              rest(pcounts))
+    for_each(^(pc) pc.quit, pcs)
+    ct }
+
+  show_most_frequent_words(corpus, 20, parallel_count_words_in_files_2)
+  <span class="c">//-> 13.480767965316772 secs</span></code></pre></div>
+
+<p>The time required for processing the largest document is approximately 14 seconds and that is what the whole program is taking now to
+  execute. (Even faster execution times can be achieved by compiling the program with the <code>`slogan -x`</code> command.)</p>
+
+    <p>Not all computations may lend so easily to parallelization. We were able to tokenize the corpus parallely because the order in
+      which the final hashtables were merged back does not matter. If that was not the case, we would have to do more bookkeeping to make
+      sure of a sequential and ordered merge. Sometimes, enforcing an order is enough to take away all the advantages of parallelism.</p>
+
+    <p>Those who are fond of abstract algebra may realize that the word count tables under merge operation is a <a href="https://en.wikipedia.org/wiki/Monoid">monoid</a>. The following code snippet show how the two laws of "associativity" and "identity element" is satisfied when the binary function
+      <code>merge_tables</code> is invoked:</p>
+
+    <div class="highlight">
+      <pre><code><span class="k">let</span> a = #{1:2}
+<span class="k">let</span> b = #{3:4}
+<span class="k">let</span> c = #{5:6}
+
+<span class="c">// associativity: (a.b).c == a.(b.c)</span>
+<span class="k">assert</span> merge_tables(c, merge_tables(a, b)) == merge_tables(a, merge_tables(b, c))
+
+<span class="k">let</span> id = #{} <span class="c">// the identity element</span>
+
+<span class="c">// identity: c.id == c && id.c == c</span>
+<span class="k">assert</span> merge_tables(c, id) == c && merge_tables(id, c) == c</code></pre></div>
+      
+<p>This means we are free to merge in any order we want and still get back a valid final result. We can also safely
+  use the identity element (<code>#{}</code>) as the default intermediate result. Monoids and parallel machines are in good company!</p>
+
+    <p>A few comments on inter-process communication: In our code we return the entire result to the parent process.
+      This is OK for a small corpus, few megabytes in size. If we are dealing with much larger data sets, it is better to return just a
+      reference to the result. This reference can be a string that identifies a table in a database or can even be a symbol like <code>'done</code>.
+      The parent should know from configuration, where to pick the result from. Inter-process communication can be expensive, so keep it to the minimum.</p>
+
+    <p>How to detect and deal with failing processes? One simple strategy is to do a timeout and return a default value,
+      as we did in <code>parallel_count_words_in_files</code>. What if there is no reasonable default value? We can ask the child process to quit
+      and restart the computation. If there is no response even after a restart, the program may decide to log an error or raise a
+      notification. In a concurrent environment, it is better to fail early and loudly so some other process that is better at fixing problems can
+      kick in.</p>
+    <hr></hr>
+    <p><a href="./par_code.tar.gz">Download</a> the code and sample corpus for this tutorial.</p>
+  </div>
+</body>
+</html>

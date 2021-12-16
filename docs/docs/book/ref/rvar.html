@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (rvar)</title>
+  </head>
+
+  <body>
+    <h2>rvar</h2>
+
+    <div class="prog">
+      <pre><code>
+rvar(r, obj)
+      </code></pre>
+    </div>
+
+    <p>Return an unbound reactive variable.</p>
+
+    <p>Reactive variables are used in writing declarative concurrent programs. A newly initialized reactive variable
+      will be in an unbound state. If a <a href="task.html">task</a> requires the value of a reactive variable, it will wait
+      until that variable is bound. This binding should happen in another task. Thus reactive variables can act as a simple
+      mechanism for passing values between tasks. A reactive variable once assigned cannot be reassigned a new value.
+      It is this property that makes them useful in declarative concurrency.</p>
+
+    <p>The operator <code><span class="kw">?</span></code> can be used instead of <code>rvar</code> for creating a new unbound
+      reactive variable.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> x = <span class="kw">?</span>
+<span class="kw">!</span>showln(<span class="kw">?</span>x) <span class="comment">// task waits until `x` is bound.</span>
+<span class="kw">?</span>x = <span class="sym">'hello</span> <span class="comment">//  `x` is bound to a value, unblocking the waiting task.</span>
+<span class="comment">//&gt; hello</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="rbind.html">rbind</a></div>      
+      <div class="ref"><a href="rget.html">rget</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (compiler.assignment)</title>
+  </head>
+
+  <body>
+    <h2>compiler.assignment</h2>
+
+    <div class="prog">
+      <pre><code>
+compiler.assignment(name, value)
+      </code></pre>
+    </div>
+
+    <p>Return the intermediate language code required for assigning a new value to a variable.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// let xyz = 123</span>
+<a href="eval.html">eval</a>(<a href="clets.html">compiler.let_statement</a>(<span class="sym">'xyz</span>, 123))
+xyz
+<span class="comment">// 123</span>
+
+<span class="comment">// xyz = inc(xyz)</span>
+eval(compiler.assignment(<span class="sym">'xyz</span>, <a href="ccall.html">compiler.call</a>(<span class="sym">'inc</span>, [<span class="sym">'xyz</span>])))
+xyz
+<span class="comment">// 124</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="compiler.html">compiler</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>The Slogan Handbook - Low-Level Programming</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">11</h1>
+    <h1 class="title">Low-Level Programming</h1>
+
+    <p>Slogan, by design, is a high-level language, allowing you to build systems without being concerned too much about how
+      the underlying hardware works. For instance, the programmer need not worry about how memory is allocated for objects involved in
+      a computation and how that memory is returned to the system once the computation is over. Memory management is
+      <a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science)" target="_blank">fully automated</a> by the
+      Slogan runtime system. Despite being a high-level, dynamic language, Slogan programs are compiled to efficient machine code that can
+      sometimes rival the performance of statically typed languages.</p>
+
+    <p>While it's possible to write high-performance applications entirely in Slogan, situations may arise where a program needs direct access to
+      platform specific libraries. Examples of such libraries include hardware drivers and database clients. Sometimes the programmer may like to
+      have more control on how the application makes use of resources like memory and optimize a critical part of the program for performance.
+      Requirements like this makes it necessary to enable Slogan programs to integrate libraries written in system programming
+      languages like C and C++. The <em>Foreign Function Interface</em> (FFI) is a framework designed for this purpose.</p>
+
+    <p>Let us see how to create Slogan bindings to functions and structures defined in a small C library. The C library itself does not
+      do anything fancy. It export two functions &ndash; one for creating a structure that represents a Cartesian point and another function for
+      scaling a Cartesian point by a given factor. The code for the library is shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">// <a href="code/sample_c_lib.c">sample_c_lib.c</a>
+
+// Compile to a shared library (Linux):
+// $ gcc -Wall -shared -fPIC -o sample_c_lib.so sample_c_lib.c
+
+// Compile to a shared library (OS X):
+// $ gcc -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o sample_c_lib.so sample_c_lib.c</span>
+
+<span class="pw">#include</span> &lt;stdlib.h&gt;
+
+<span class="kw">struct</span> point {
+   <span class="pw">int</span> x;
+   <span class="pw">int</span> y;
+};
+
+<span class="kw">struct</span> point make_point(<span class="pw">int</span> x, <span class="pw">int</span> y)
+{
+   <span class="kw">struct</span> point p = {x, y};
+   <span class="kw">return</span> p;
+}
+
+<span class="kw">struct</span> point scale_point(<span class="kw">struct</span> point p, <span class="pw">int</span> factor)
+{
+  <span class="kw">struct</span> point fp = {p.x * factor, p.y * factor};
+  <span class="kw">return</span> fp;
+}
+      </code></pre>
+    </div>
+
+    <p>We should introduce the signatures of the definitions in the shared library to the Slogan program that wants to use it:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">declare</span> <span class="pw">ffi</span> <span class="str">"sample_c_lib.so"</span>
+[<span class="pw">struct</span> point [<span class="pw">int</span>:x, <span class="pw">int</span>:y],
+ point make_point [<span class="pw">int</span>, <span class="pw">int</span>],
+ point scale_point [point, <span class="pw">int</span>]]
+      </code></pre>
+    </div>
+
+    <p>After these declarations, the Slogan program can call the C functions, just like it would call normal Slogan functions.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> p = make_point(10, 20)
+p
+<span class="comment">// [0, x:10, y:20]</span>
+<span class="kw">let</span> p2 = scale_point(p, 5)
+p2
+<span class="comment">[0, x:50, y:100]</span>
+      </code></pre>
+    </div>
+
+    <p>The <code><span class="kw">declare</span> <span class="pw">ffi</span></code> statement has the following syntax:</p>
+
+    <div class="prog">
+      <pre><code>
+<code><span class="kw">declare</span> <span class="pw">ffi</span></code> &lt;library_name&gt; &lt;list_of_prototypes&gt;
+      </code></pre>
+    </div>
+    
+    <p><code>Library_name</code> must be a string or an identifier. If it is a string, it must be the full or
+      relative path of the C library to be loaded. If the path is relative, the library is first looked
+      up in the local folder and then under the paths specified by the <code>LD_LIBRARY_PATH</code>
+      <a href="https://en.wikipedia.org/wiki/Environment_variable" target="_blank">environment variable</a>.</p>
+
+    <p>If <code>library_name</code> is an identifier it must point to a library object loaded by the
+      <code><a href="ref/ffi_open.html">ffi_open</a></code> function.</p>
+
+    <p><code>List_of_prototypes</code> contain prototype declarations of functions and structures in the C library.
+      The Slogan compiler use these declarations to create functions that act as proxies to access C objects.</p>
+
+    <p>The syntax of a function prototype is shown below:</p>
+
+    <div class="prog">
+      <pre><code>
+&lt;return_type&gt; &lt;c_function_name&gt; &lt;list_of_argument_types&gt; <span class="pw">as</span> &lt;proxy_function_name&gt;
+      </code></pre>
+    </div>
+    
+    <p><code>Proxy_function_name</code> is optional. If provided, the Slogan function that acts as a proxy will be
+      bound to this name. Otherwise it will be bound to <code>c_function_name</code>.</p>
+
+    <p>The following table list type names that can be used in a prototype and their equivalent C-types:</p>
+
+    <p>
+      <table>
+        <tr>
+          <th scope="col" align="left">Type</th>
+          <th scope="col" align="left">Equivalent C-type</th>
+        </tr>
+        <tr><td>uint8</td> <td>uint8_t</td></tr>
+        <tr><td>int8</td> <td>int8_t</td></tr>
+        <tr><td>uint16</td> <td>uint16_t</td></tr>
+        <tr><td>int16</td> <td>int16_t</td></tr>
+        <tr><td>uint32</td> <td>uint32_t</td></tr>
+        <tr><td>int32</td> <td>int32_t</td></tr>
+        <tr><td>uchar</td> <td>unsigned char</td></tr>
+        <tr><td>char</td> <td>signed char</td></tr>
+        <tr><td>ushort</td> <td>unsigned short</td></tr>
+        <tr><td>short</td> <td>signed short</td></tr>
+        <tr><td>uint</td> <td>unsigned int</td></tr>
+        <tr><td>int</td> <td>signed int</td></tr>
+        <tr><td>ulong</td> <td>unsigned long</td></tr>
+        <tr><td>long</td> <td>signed long</td></tr>
+        <tr><td>uint64</td> <td>uint64_t</td></tr>
+        <tr><td>int64</td> <td>int64_t</td></tr>
+        <tr><td>float</td> <td>float</td></tr>
+        <tr><td>double</td> <td>double</td></tr>
+        <tr><td>longdouble</td> <td>long double</td></tr>
+        <tr><td>charstring</td> <td>char *</td></tr>
+        <tr><td>pointer</td> <td>void *</td></tr>
+        <tr><td>void</td> <td>void</td></tr>
+      </table>
+    </p>
+
+    <p>Note that the <code>void</code> type can only be used as a return type. It cannot be used as the type of a parameter.</p>
+
+    <p>The syntax of the specification for a C struct is as follows:</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="pw">struct</span> &lt;struct_name&gt; &lt;list_of_struct_members&gt;
+      </code></pre>
+    </div>
+
+    <p><code>List_of_struct_members</code> is an association list (a list of pairs) that map types and names of a struct member.</p>
+
+    <p>Slogan allow even finer grained control over how a shared library is loaded into a program's address space and how C functions are mapped to
+      into the program. It is also possible to call Slogan functions from a C program! Please see the reference documentation on the
+      <code><a href="./ref/ffi_open.html">ffi_open</a></code> and <code><a href="./cref/call_fn.html">___call_fn</a></code> functions for more details.</p>
+    
+    <hr></hr>
+    <p align="center">
+      <a href="dist.html">Next</a> | <a href="flow.html">Previous</a> | <a href="index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

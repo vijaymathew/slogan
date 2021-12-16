@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_symbol)</title>
+  </head>
+
+  <body>
+    <h2>is_symbol</h2>
+
+    <div class="prog">
+      <pre><code>
+is_symbol(obj)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if <code>obj</code> is a symbol, otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>Symbols are used for a variety of purposes as symbolic names in Slogan programs. <a href="string.html">Strings</a> could be used for most
+      of the same purposes, but an important characteristic of symbols makes comparisons for equality much more efficient.
+      Two symbols with the same name are identical in the sense of <code><a href="is_eq.html">is_eq</a></code>. This is so because
+      two symbols with the same sequence of characters are always stored in the same location in memory.</p>
+
+    <p>Symbol constants are written by prefixing identifiers with the quote mark ('). All characters valid in identifiers can be used in symbols.
+      Symbols with spaces and special characters are written by enclosing the symbol in tick (`) quotes, e.g: <code>'`hello world`</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+is_symbol(<span class="sym">'abc</span>)
+<span class="comment">// true</span>
+
+is_symbol(<a href="string_to_symbol.html">string_to_symbol</a>(<span class="str">"abc"</span>))
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="symbol_to_string.html">symbol_to_string</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (read_line)</title>
+  </head>
+
+  <body>
+    <h2>read_line</h2>
+
+    <div class="prog">
+      <pre><code>
+read_line(s = <a href="current_reader.html">current_reader</a>(),
+          separator = \newline,
+          include_separator = <span class="pw">false</span>,
+          max_length = <span class="pw">false</span>)
+      </code></pre>
+    </div>
+
+    <p>Read all the characters, upto the <code>separator</code> character, from the textual input stream <code>s</code>. Return these
+      characters as a single string. Return the <a href="eof_object.html"><code>eof</code> object</a> if end-of-stream has reached.
+      The <code>separator</code> character defaults to <code>\newline</code>.</p>
+
+    <p>If it is specified, <code>max_length</code> must be a nonnegative exact integer and it places
+      an upper limit on the number of characters that are read.</p>
+
+    <p><code>Separator</code> is included at the end of the string only if it was the last character read and
+      <code>include_separator</code> is <code><span class="pw">true</span></code>.</p>
+
+    <p>If <code>separator</code> is <code><span class="pw">false</span></code>, all the characters until the end-of-stream will be read.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="comment">// Read and print each line from a file of comma-separated-values:</span>          
+<span class="kw">let</span> grades = <a href="file_reader.html">file_reader</a>(<span class="str">"stud_grades.csv"</span>)
+<span class="kw">letseq</span> loop (line = read_line(grades))
+  <span class="kw">when</span> (<a href="not.html">not</a>(<a href="is_eof_object.html">is_eof_object</a>(line)))
+  { <a href="showln.html">showln</a>(line)
+    loop(read_line(grades)) }
+
+<span class="comment">//> 1,CS-101,A+
+    2,ART-166,A
+    3,STAT-103,B
+    ...</span>
+<a href="close_reader.html">close_reader</a>(grades)
+
+<span class="comment">// To read each element in the file, call `read_line(grades, \,)`.</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="read.html">read</a></div>
+      <div class="ref"><a href="read_all.html">read_all</a></div>
+      <div class="ref"><a href="read_all_chars.html">read_all_chars</a></div>
+      <div class="ref"><a href="read_n_chars.html">read_n_chars</a></div>
+      <div class="ref"><a href="read_char.html">read_char</a></div>
+      <div class="ref"><a href="peek_chars.html">peek_chars</a></div>
+      <div class="ref"><a href="read_all_bytes.html">read_all_bytes</a></div>
+      <div class="ref"><a href="read_n_bytes.html">read_n_bytes</a></div>
+      <div class="ref"><a href="read_byte.html">read_byte</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+
+  </body>
+</html>
+
+    

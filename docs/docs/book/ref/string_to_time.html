@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (string_to_time)</title>
+  </head>
+
+  <body>
+    <h2>string_to_time</h2>
+
+    <div class="prog">
+      <pre><code>
+string_to_time(s)
+      </code></pre>
+    </div>
+
+    <p>Return an <a href="assoc.html">association list</a> with the components of the <a href="https://www.iso.org/iso-8601-date-and-time-format.html" target="_blank">ISO-8601</a>
+      encoded <a href="string.html">string</a> <code>s</code>.</p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>	
+string_to_time(time_to_string(now()))
+<span class="comment">// [seconds:52, minute:58, hour:20, month_day:21, month:7, year:2016,
+      week_day:4, year_day:203, is_utc:false, is_dst:false]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="time_to_string.html">time_to_string</a></div>
+      <div class="ref"><a href="now.html">now</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

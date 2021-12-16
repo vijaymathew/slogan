@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (is_bit_set)</title>
+  </head>
+
+  <body>
+    <h2>is_bit_set</h2>
+
+    <div class="prog">
+      <pre><code>
+is_bit_set(i, index)
+      </code></pre>
+    </div>
+
+    <p>Return <code><span class="pw">true</span></code> if the bit at <code>index</code> of the integer <code>i</code> is set, i.e it is <code>1</code>.
+      Otherwise return <code><span class="pw">false</span></code>.</p>
+
+    <p>The <a href="https://en.wikipedia.org/wiki/Two%27s_complement" target="_blank">two's complement representation</a> of a nonnegative
+      number conceptually extends to the left
+      (toward more significant bits) with an infinite number of zero bits, and the two's complement
+      representation of a negative number conceptually extends to the left with an infinite
+      number of one bits.</p>
+
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+is_bit_set(0b01011, 0)
+<span class="comment">// true</span>
+
+is_bit_set(0b01011, 2) 
+<span class="comment">// false</span>
+
+is_bit_set(-1, 0) 
+<span class="comment">// true</span>
+
+is_bit_set(-1, 20) 
+<span class="comment">// true</span>
+
+is_bit_set(-3, 1) 
+<span class="comment">// false</span>
+
+is_bit_set(0, 5000) 
+<span class="comment">// false</span>
+
+is_bit_set(-1, 5000) 
+<span class="comment">// true</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="is_any_bits_set.html">is_any_bits_set</a></div>      
+      <div class="ref"><a href="is_all_bits_set.html">is_all_bits_set</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

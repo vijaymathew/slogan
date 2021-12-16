@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (random_source_for_integers/reals/byte_arrays)</title>
+  </head>
+
+  <body>
+    <h2>random_source_for_integers/reals/byte_arrays</h2>
+
+    <div class="prog">
+      <pre><code>
+random_source_for_integers(rs)
+random_source_for_reals(rs, <span class="pw">@optional</span> precision)
+random_source_for_byte_arrays(rs)
+      </code></pre>
+    </div>
+
+    <p>Return a function for generating pseudo random exact integers, inexact reals or 
+      byte arrays using the <a href="random_source.html">random source</a> object <code>rs</code>.</p>
+
+    <p>For <code>random_source_for_reals</code>, the optional parameter <code>precision</code> specifies an upper bound on the
+      minimum amount by which two generated pseudo-random numbers can be separated.</p>
+
+    <h3>Examples:</h3>
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> rs = random_source()
+<span class="kw">let</span> ri = <a href="random_source_for_integers.html">random_source_for_integers</a>(rs)
+<span class="kw">let</span> rr = <a href="random_source_for_integers.html">random_source_for_reals</a>(rs) 
+<span class="kw">let</span> ra = <a href="random_source_for_integers.html">random_source_for_byte_arrays</a>(rs)
+
+ri(10)
+<span class="comment">//  ...a random integer..</span>
+
+rr()
+<span class="comment">//  ...a random real...</span>
+
+ra(10)
+<span class="comment">//  #u8[...array of 10 random bytes...]</span>
+      </code></pre>
+    </div>
+    
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="default_random_source.html">default_random_source</a></div>
+      <div class="ref"><a href="random_integer.html">random_integer</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (callcc)</title>
+  </head>
+
+  <body>
+    <h2>callcc</h2>
+
+    <div class="prog">
+      <pre><code>
+callcc(fn)
+      </code></pre>
+    </div>
+
+    <p><code>Callcc</code> obtains its continuation and passes it to the function <code>fn</code>, which should accept one argument.
+      The continuation itself is represented by a function. Each time this function is applied to zero or more values, it returns the
+      values to the continuation of the <code>callcc</code> application. That is, when the continuation function is called, it returns
+      its arguments as the values of the application of <code>callcc</code>.</p>
+
+    <p>If <code>fn</code> returns normally when passed the continuation function, the values returned by <code>callcc</code> are the values
+      returned by <code>fn</code>.</p>
+
+    <p>Continuations allow the implementation of nonlocal exits, backtracking, coroutines, and multitasking.</p>
+    
+    <h3>Examples:</h3>
+
+    <p>The following example implements a simple coroutine mechanism where a function is allowed to "restart" another function from the point it
+      was called:</p>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> k = <span class="pw">false</span>
+
+<span class="kw">function</span> a()
+{ showln(<span class="sym">'a</span>:1)
+  showln(callcc(<span class="kw">^</span>(c) { k = c; b() }))
+  showln(<span class="sym">'a</span>:2) }
+
+<span class="kw">function</span> b()
+{ showln(<span class="sym">'b</span>:1)
+  k(<span class="str">"hello from b"</span>) }
+
+a()
+<span class="comment">//&gt; a:1
+    b:1
+    hello from b
+    a:2</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="dynamic_wind.html">dynamic_wind</a></div>
+      <div class="ref"><a href="values.html">values</a></div>
+      <div class="ref"><a href="call_with_values.html">call_with_values</a></div>      
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

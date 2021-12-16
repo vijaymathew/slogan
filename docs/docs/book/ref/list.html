@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (list)</title>
+  </head>
+
+  <body>
+    <h2>list</h2>
+
+    <div class="prog">
+      <pre><code>
+list(<span class="pw">@rest</span> obj1, ...)
+      </code></pre>
+    </div>
+
+    <p>Return a new list with <code>obj1, ...</code> as elements.</p>
+
+    <p>A new list can also be constructed using the literal syntax: <code>[obj1, ...]</code></p>
+    
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+list()
+<span class="comment">// []</span>
+list(1, 2, 3) == [1, 2, 3]
+<span class="comment">// true</span>
+
+<span class="kw">let</span> xs = [10, 20, 30]
+xs[1]
+<span class="comment">// 20</span>
+xs[1] = "hi"
+xs
+<span class="comment">// [10, hi, 30]</span>
+
+<span class="comment">// list comprehensions:</span>
+[x * y | x &lt;- <a href="range.html">range</a>(1, 2), y &lt;- <a href="range.html">range</a>(10, 12)]
+<span class="comment">// [10, 11, 12, 20, 22, 24]</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+    
+    <p>
+      <div class="ref"><a href="at.html">at</a></div>
+      <div class="ref"><a href="list_set.html">list_set</a></div>      
+      <div class="ref"><a href="append.html">append</a></div>
+      <div class="ref"><a href="reverse.html">reverse</a></div>
+    </p>
+
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

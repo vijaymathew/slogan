@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Reference (set_stream_position)</title>
+  </head>
+
+  <body>
+    <h2>set_stream_position</h2>
+
+    <div class="prog">
+      <pre><code>
+set_stream_position(s, pos, <span class="pw">@optional</span> whence = <span class="sym">'beginning</span>)
+      </code></pre>
+    </div>
+
+    <p>A <a href="current_reader.html">stream</a> may allow its current position to be moved directly to a different position
+      in the underlying stream of bytes or characters. If so, <code>set_stream_position</code> changes the
+      current position to <code>pos</code>. For binary streams, <code>pos</code> must be an exact
+      nonnegative integer byte displacement from the start of the byte stream.
+      For textual streams, the representation of a position is unspecified, but <code>pos</code> must
+      be an appropriate position for the textual stream. If <code>set_stream_position</code> is called on a
+      stream that does not support it, an exception is raised.</p>
+
+    <p>The symbolic argument <code>whence</code> should be one of: <span class="sym">'beginning</span>, <span class="sym">'current</span>
+      or <span class="sym">'end</span>. When <code>whence</code> is
+      omitted or is <span class="sym">'beginning</span>, the position is relative to the beginning of the file. When <code>whence</code>
+      is <span class="sym">'current,</span>
+      <code>pos</code> is taken to be relative to the current byte position of the file.
+      When <code>whence</code> is <span class="sym">'end</span>, <code>pos</code> is taken to be relative to the end of the file.</p>
+
+    <p>If the stream <code>s</code> is a binary output stream and the position is set beyond the current end
+      of the data in the underlying stream, <code>s</code> is not extended until new data is written
+      at that position. If new data is written at that position, the contents of each
+      intervening position is unspecified. Binary streams created with <code><a href="file_writer.html">file_writer</a></code>
+      and <code><a href="file_reader.html">file_reader</a></code>
+      can always be extended in this manner within the limits of the underlying operating system.
+      In other cases, attempts to set the stream beyond the current end of data in the underlying
+      object may result in an exception.</p>
+    
+    <p>Return the new position on success.</p>
+      
+    <h3>Examples:</h3>
+    
+    <div class="prog">
+      <pre><code>
+<span class="kw">let</span> s = <a href="file_stream.html">file_stream</a>(<span class="str">"out.txt"</span>, options = [<span class="sym">'create</span>])
+<a href="showln.html">showln</a>(stream = s, <span class="str">"hello, world"</span>)
+set_stream_position(s, 0)
+<a href="read_line.html">read_line</a>(s)
+<span class="comment">// hello, world</span>
+      </code></pre>
+    </div>
+
+    <h3>Also see:</h3>
+
+    <p>
+      <div class="ref"><a href="stream_position.html">stream_position</a></div>
+      <div class="ref"><a href="stream_has_position.html">stream_has_position</a></div>
+    </p>
+    
+    <hr></hr>
+    <p>
+      <a href="index.html">Core Module Index</a> | <a href="../index.html">Contents</a>
+    </p>
+    
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../style.css" type="text/css" />
+    <title>The Slogan Handbook - Packages Reference - pfds</title>
+  </head>
+
+  <body>
+    <h1 class="chapter">package: pfds</h1>
+    <h1 class="title"></h1>
+
+    <p>The <code>pfds</code> package contain implementations of immutable, persistent
+      data structures. The implementations are mostly based on Chris Okasaki's
+      book Purely Functional Data Structures.</p>
+
+    <h2>Installing</h2>
+
+    <p>The <code>pfds</code> package is located under the <code>pkgsrc</code> directory
+      in the Slogan source tree. You can install it from the REPL using the <code><a href="../ref/install_package.html">install_package</a></code>
+      function:</p>
+
+    <div class="prog">
+      <pre><code>
+install_package(<span class="str">"pfds"</span>, <span class="sym">'local</span>, <span class="str">"/path_to_slogan_src/pkgsrc/pfds"</span>)
+      </code></pre>
+    </div>
+
+    <p>Once installed, the package can be loaded to a program by calling the <code><a href="../ref/load_package.html">load_package</a></code>
+      function.</p>
+    
+    <h2>Modules</h2>
+
+    <p>
+      <div class="ref"><a href="pfds_tree.html">tree</a></div>
+      <div class="ref"><a href="pfds_heap.html">heap</a></div>
+      <div class="ref"><a href="pfds_queue.html">queue</a></div>
+      <div class="ref"><a href="pfds_ralist.html">ralist</a></div>
+    </p>
+
+    <hr></hr>
+    <p align="center">
+      <a href="index.html">Index</a> |  <a href="../index.html">Main Index</a>
+    </p>
+    
+  </body>
+</html>
