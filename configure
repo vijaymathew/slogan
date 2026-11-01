@@ -5,6 +5,9 @@ set -e
 SLOGAN_HOME=`pwd`
 
 cd ${SLOGAN_HOME}/platform/gsc
+# Mark the committed configure as up to date so make doesn't regenerate it
+# with the system autoconf (newer versions produce a broken libm check).
+touch configure
 ./configure --enable-single-host --bindir=${SLOGAN_HOME}/platform/gsc/bin --includedir=${SLOGAN_HOME}/platform/gsc/include --libdir=${SLOGAN_HOME}/platform/gsc/lib
 make
 
