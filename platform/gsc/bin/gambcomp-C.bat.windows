@@ -21,7 +21,7 @@ set BUILD_LIB=echo BUILD_LIB not yet implemented
 set BUILD_EXE=%%C_COMPILER%% %%FLAGS_EXE%% %%DEFS_EXE%% -I"%%GAMBITDIR_INCLUDE%%"  -o "%%BUILD_EXE_OUTPUT_FILENAME%%" %%BUILD_EXE_CC_OPTIONS%% %%BUILD_EXE_LD_OPTIONS_PRELUDE%% %%BUILD_EXE_INPUT_FILENAMES%% "%%GAMBITDIR_LIB%%/libgambit.a" %%LIBS%% %%BUILD_EXE_LD_OPTIONS%%
 
 set DEFS=
-set LIBS=-lutil -ldl -lm 
+set LIBS=-lm 
 set GAMBITLIB=gambit
 set GAMBITGSCLIB=gambitgsc
 set GAMBITGSILIB=gambitgsi

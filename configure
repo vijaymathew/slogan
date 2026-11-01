@@ -10,5 +10,9 @@ make
 
 cd ${SLOGAN_HOME}/platform/libffi-3.2.1
 ./configure --prefix=${SLOGAN_HOME}/platform/libffi-3.2.1/target/usr/local
+# Mark the prebuilt docs as up to date so make doesn't need makeinfo (texinfo).
+touch doc/stamp-vti
+touch doc/version.texi
+touch doc/libffi.info
 make install
 
