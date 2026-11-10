@@ -1,5 +1,4 @@
 Slogan is a general purpose functional programming language with facilities for concurrent and parallel computing.
-Note that I'm working on the next iteration of what started of as Slogan. You may want to keep track of https://github.com/vijaymathew/nex.
 
 #### Features
 
@@ -40,7 +39,9 @@ in the `src` folder and can be run as `./src/slogan`.
 
 Please visit http://schemer.in/slogan/ for tutorials and detailed documentation on the language.
 
-Slogan is under active development and can be considered beta quality.
+Note that I'm continuing my language design explorations that started of as Slogan. 
+You may keep track of my progress: https://github.com/vijaymathew/nex.
+
 Please report bugs/issues at https://github.com/vijaymathew/slogan/issues.
 
 Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2019 by Vijay Mathew Pandyalakal <vijay.the.lisper@gmail.com>
