@@ -1,4 +1,5 @@
 Slogan is a general purpose functional programming language with facilities for concurrent and parallel computing.
+Note that I'm working on the next iteration of what started of as Slogan. You may want to keep track of https://github.com/vijaymathew/nex.
 
 #### Features
 
